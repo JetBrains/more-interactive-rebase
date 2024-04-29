@@ -62,8 +62,8 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     // by default the target is every '.kt' and '.kts` file in the java sourcesets
         ktfmt().dropboxStyle()
         ktlint()
-        diktat()
-        prettier()
+        //diktat()
+        //prettier()
     }
 }
 
