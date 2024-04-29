@@ -1,12 +1,17 @@
-package com.jetbrains.interactive_rebase.listeners
+package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.application.ApplicationActivationListener
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.wm.IdeFrame
 
+/**
+ * Activation Listener
+ */
 internal class MyApplicationActivationListener : ApplicationActivationListener {
-
     override fun applicationActivated(ideFrame: IdeFrame) {
-        thisLogger().warn("Don't forget to remove all non-needed sample code files with their corresponding registration entries in `plugin.xml`.")
+        thisLogger().warn(
+            "Don't forget to remove all non-needed sample code " +
+                "files with their corresponding registration entries in `plugin.xml`.",
+        )
     }
 }
