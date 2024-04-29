@@ -1,0 +1,8 @@
+.idea
+.qodana
+build/
+bin/
+out/
+lib/
+.gradle/
+*.DS_Store
