@@ -1,5 +1,7 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import com.diffplug.gradle.spotless.SpotlessExtension
+
 
 fun properties(key: String) = providers.gradleProperty(key)
 fun environment(key: String) = providers.environmentVariable(key)
@@ -11,6 +13,7 @@ plugins {
     alias(libs.plugins.changelog)
     alias(libs.plugins.qodana)
     alias(libs.plugins.kover)
+    id("com.diffplug.spotless") version "6.25.0"
 }
 
 group = properties("pluginGroup").get()
@@ -18,6 +21,7 @@ version = properties("pluginVersion").get()
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
 }
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
@@ -53,6 +57,15 @@ koverReport {
         }
     }
 }
+configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+    kotlin {
+    // by default the target is every '.kt' and '.kts` file in the java sourcesets
+        ktfmt().dropboxStyle()
+        ktlint()
+        diktat()
+        prettier()
+    }
+}
 
 tasks {
     wrapper {
@@ -82,10 +95,10 @@ tasks {
         changeNotes = properties("pluginVersion").map { pluginVersion ->
             with(changelog) {
                 renderItem(
-                    (getOrNull(pluginVersion) ?: getUnreleased())
-                        .withHeader(false)
-                        .withEmptySections(false),
-                    Changelog.OutputType.HTML,
+                        (getOrNull(pluginVersion) ?: getUnreleased())
+                                .withHeader(false)
+                                .withEmptySections(false),
+                        Changelog.OutputType.HTML,
                 )
             }
         }
@@ -127,3 +140,4 @@ tasks {
         }
     }
 }
+
