@@ -1,0 +1,68 @@
+# This file is a template, and might need editing before it works on your project.
+# You can copy and paste this template into a new `.gitlab-ci.yml` file.
+# You should not add this template to an existing `.gitlab-ci.yml` file by using the `include:` keyword.
+# To contribute improvements to CI/CD templates, please follow the Development guide at:
+# https://docs.gitlab.com/ee/development/cicd/templates.html
+# This specific template is located at:
+# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Gradle.gitlab-ci.yml
+
+# This is the Gradle build system for JVM applications
+# https://gradle.org/
+# https://github.com/gradle/gradle
+
+image: gradle:8.7-jdk17
+
+stages:
+  - build
+  - staticAnalysis
+  - test
+
+variables:
+  # Disable the Gradle daemon to ensure isolated runs of the CI pipeline.
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+# Default build cache settings to extend from
+.build_cached:
+  cache:
+    key: "gradle-build"
+    paths:
+      # Only cache the gradle directory, as we do not use a shared cache
+      - .gradle/
+    policy: pull
+
+gradle_build:
+  extends: .build_cached
+  stage: build
+  cache:
+    policy: pull-push
+  artifacts:
+    name: build
+    expire_in: 6 hours
+    paths:
+      - build/
+  script:
+    - gradle build testClasses
+
+build-interactive-rebase-jetbrains:
+  extends:
+    - .build_cached
+  needs:
+    - gradle_build
+  dependencies:
+    - gradle_build
+  stage: build
+  script:
+    gradle assemble
+
+test-interactive-rebase-jetbrains:
+  extends:
+    - .build_cached
+  needs:
+    - gradle_build
+  dependencies:
+    - gradle_build
+  stage: test
+  script:
+    - gradle test #jacocoTestReport
+    #- cat interactive-rebase-jetbrains/build/reports/jacoco/test/html/index.html | grep -Po "Total.*?([0-9]{1,3})%"
+  coverage: /([0-9]{1,3})%/
