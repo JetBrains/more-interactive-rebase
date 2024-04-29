@@ -54,7 +54,7 @@ build-interactive-rebase-jetbrains:
   script:
     gradle interactive-rebase-jetbrains:assemble interactive-rebase-jetbrains:testClasses
 
-test-delivery-microservice:
+test-interactive-rebase-jetbrains:
   extends:
     - .build_cached
   needs:
