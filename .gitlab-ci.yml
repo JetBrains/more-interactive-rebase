@@ -52,7 +52,7 @@ build-interactive-rebase-jetbrains:
     - gradle_build
   stage: build
   script:
-    gradle interactive-rebase-jetbrains:assemble interactive-rebase-jetbrains:testClasses
+    gradle assemble
 
 test-interactive-rebase-jetbrains:
   extends:
@@ -63,6 +63,6 @@ test-interactive-rebase-jetbrains:
     - gradle_build
   stage: test
   script:
-    - gradle interactive-rebase-jetbrains:test interactive-rebase-jetbrains:jacocoTestReport
-    - cat interactive-rebase-jetbrains/build/reports/jacoco/test/html/index.html | grep -Po "Total.*?([0-9]{1,3})%"
+    - gradle test #jacocoTestReport
+    #- cat interactive-rebase-jetbrains/build/reports/jacoco/test/html/index.html | grep -Po "Total.*?([0-9]{1,3})%"
   coverage: /([0-9]{1,3})%/
