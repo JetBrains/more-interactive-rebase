@@ -5,6 +5,17 @@ import org.jetbrains.changelog.markdownToHTML
 fun properties(key: String) = providers.gradleProperty(key)
 fun environment(key: String) = providers.environmentVariable(key)
 
+buildscript {
+    repositories {
+        mavenCentral()
+        //Needed only for SNAPSHOT versions
+        //maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+    }
+    dependencies {
+        classpath("info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.15.0")
+    }
+}
+
 plugins {
     id("java")
     alias(libs.plugins.kotlin)
@@ -15,7 +26,7 @@ plugins {
     id("com.diffplug.spotless") version "6.25.0"
     id("jacoco")
     id("pmd")
-    //id("info.solidsoft.pitest") version "1.15.0"
+    id("info.solidsoft.pitest") version "1.15.0"
 }
 
 group = properties("pluginGroup").get()
@@ -29,8 +40,8 @@ repositories {
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
     implementation(libs.annotations)
-    testImplementation("org.mockito:mockito-core:3.12.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    testImplementation("org.mockito:mockito-core:3.12.4")
     testImplementation("org.assertj:assertj-core:3.23.1")
 }
 
@@ -73,6 +84,7 @@ koverReport {
         }
     }
 }
+
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     kotlin {
     // by default the target is every '.kt' and '.kts` file in the java sourcesets
@@ -82,6 +94,8 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
         //prettier()
     }
 }
+
+apply(plugin = "info.solidsoft.pitest")
 
 tasks {
     wrapper {
@@ -161,6 +175,14 @@ tasks {
         jacoco {
             enabled = true
             finalizedBy(jacocoTestCoverageVerification)
+        }
+        pitest {
+            junit5PluginVersion.set("1.2.0")
+            targetClasses.set(setOf("com.jetbrains.interactiveRebase.*")) //by default "${project.group}.*"
+            pitestVersion.set("1.15.0") //not needed when a default PIT version should be used
+            threads.set(4)
+            outputFormats.set(setOf("XML", "HTML"))
+            timestampedReports.set(false)
         }
     }
 
