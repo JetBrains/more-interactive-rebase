@@ -29,8 +29,9 @@ repositories {
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
     implementation(libs.annotations)
-    implementation("org.mockito:mockito-core:3.12.4")
+    testImplementation("org.mockito:mockito-core:3.12.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    testImplementation("org.assertj:assertj-core:3.23.1")
 }
 
 kotlin {
@@ -56,6 +57,12 @@ changelog {
 jacoco {
     toolVersion = "0.8.7" // Use the desired version of JaCoCo
     reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
+}
+
+pmd {
+    isConsoleOutput = true
+    toolVersion = "6.21.0"
+    incrementalAnalysis = true
 }
 
 // Configure Gradle Kover Plugin - read more: https://github.com/Kotlin/kotlinx-kover#configuration

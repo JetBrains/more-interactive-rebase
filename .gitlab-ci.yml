@@ -65,6 +65,17 @@ spotless-interactive-rebase-jetbrains:
   script:
     gradle spotlessKotlinCheck
 
+PMD-interactive-rebase-jetbrains:
+  extends:
+    - .build_cached
+  needs:
+    - gradle_build
+  dependencies:
+    - gradle_build
+  stage: staticAnalysis
+  script:
+    gradle pmdMain pmdTest
+
 test-interactive-rebase-jetbrains:
   extends:
     - .build_cached
