@@ -54,6 +54,17 @@ build-interactive-rebase-jetbrains:
   script:
     gradle assemble
 
+spotless-interactive-rebase-jetbrains:
+  extends:
+    - .build_cached
+  needs:
+    - gradle_build
+  dependencies:
+    - gradle_build
+  stage: staticAnalysis
+  script:
+    gradle spotlessKotlinCheck
+
 test-interactive-rebase-jetbrains:
   extends:
     - .build_cached
