@@ -1,6 +1,5 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
-import com.diffplug.gradle.spotless.SpotlessExtension
 
 
 fun properties(key: String) = providers.gradleProperty(key)
@@ -14,6 +13,9 @@ plugins {
     alias(libs.plugins.qodana)
     alias(libs.plugins.kover)
     id("com.diffplug.spotless") version "6.25.0"
+    id("jacoco")
+    id("pmd")
+    //id("info.solidsoft.pitest") version "1.15.0"
 }
 
 group = properties("pluginGroup").get()
@@ -26,7 +28,9 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
-//    implementation(libs.annotations)
+    implementation(libs.annotations)
+    implementation("org.mockito:mockito-core:3.12.4")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 }
 
 kotlin {
@@ -47,6 +51,11 @@ intellij {
 changelog {
     groups.empty()
     repositoryUrl = properties("pluginRepositoryUrl")
+}
+
+jacoco {
+    toolVersion = "0.8.7" // Use the desired version of JaCoCo
+    reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
 }
 
 // Configure Gradle Kover Plugin - read more: https://github.com/Kotlin/kotlinx-kover#configuration
@@ -139,5 +148,29 @@ tasks {
             jvmTarget = "17"
         }
     }
-}
 
+    test {
+        useJUnitPlatform()
+        jacoco {
+            enabled = true
+            finalizedBy(jacocoTestCoverageVerification)
+        }
+    }
+
+    jacocoTestCoverageVerification {
+        dependsOn(test)
+        violationRules {
+            rule {
+                enabled = true
+                element = "CLASS"
+                includes = listOf("com.jetbrains.interactiveRebase.*")
+
+                limit {
+                    counter = "BRANCH"
+                    value = "COVEREDRATIO"
+                    minimum = "0.0".toBigDecimal()
+                }
+            }
+        }
+    }
+}
