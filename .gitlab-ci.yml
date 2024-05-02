@@ -24,6 +24,7 @@ stages:
     key: "gradle-build"
     paths:
       - .gradle/
+      - .idea/
       - build/
     policy: pull-push
 
