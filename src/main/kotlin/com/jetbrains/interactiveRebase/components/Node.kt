@@ -5,24 +5,26 @@ import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 
+/**
+ * Visual representation of commit node in the git graph
+ */
 class Node : JBPanel<JBPanel<*>>() {
 
     // Flag to track whether the mouse is currently hovering over the panel
     private var isHovering = false
 
     init {
-        // Add mouse listener to track mouse enter and exit events
         addMouseListener(object : MouseAdapter() {
             override fun mouseEntered(e: MouseEvent?) {
                 super.mouseEntered(e)
                 isHovering = true
-                repaint() // Repaint the panel to update the appearance
+                repaint()
             }
 
             override fun mouseExited(e: MouseEvent?) {
                 super.mouseExited(e)
                 isHovering = false
-                repaint() // Repaint the panel to update the appearance
+                repaint()
             }
         })
     }

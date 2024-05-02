@@ -1,21 +1,14 @@
 package com.jetbrains.interactiveRebase.toolWindow
 
-import Circle
+import com.jetbrains.interactiveRebase.components.BranchPanel
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
-import com.jetbrains.interactiveRebase.MyBundle
-import com.jetbrains.interactiveRebase.components.Node
 import com.jetbrains.interactiveRebase.services.MyProjectService
-import java.awt.BorderLayout
-import java.awt.Color
-import java.awt.Dimension
-import javax.swing.JButton
 
 class MyToolWindowFactory : ToolWindowFactory {
     init {
@@ -41,16 +34,22 @@ class MyToolWindowFactory : ToolWindowFactory {
 
         fun getContent() =
             JBPanel<JBPanel<*>>().apply {
+//                val c = CirclePanel()
+//                c.preferredSize = Dimension(20, 20)
 
-                val node = Node()
-                node.withPreferredSize(200,200)
-                node.withMinimumHeight(100)
-                node.withMinimumWidth(100)
-                val c = Circle()
-                c.preferredSize = Dimension(200, 200)
-
-               // add(node)
-                add(c, BorderLayout.CENTER)
+                // add(node)
+                add(
+                    BranchPanel(
+                        listOf(
+                            "Initial commit",
+                            "Added feature X",
+                            "Fixed issue #123",
+                            "Refactored code",
+                            "Merged branch 'feature-x' into 'main'"
+                        )
+                    )
+                )
+//                add(c, BorderLayout.CENTER)
 //                val label = JBLabel(MyBundle.message("randomLabel", "?"))
 //
 //                add(label)
