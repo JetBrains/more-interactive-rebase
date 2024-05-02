@@ -134,14 +134,14 @@ tasks {
         }
     }
 
-    // Configure UI tests plugin
-    // Read more: https://github.com/JetBrains/intellij-ui-test-robot
-    runIdeForUiTests {
-        systemProperty("robot-server.port", "8082")
-        systemProperty("ide.mac.message.dialogs.as.sheets", "false")
-        systemProperty("jb.privacy.policy.text", "<!--999.999-->")
-        systemProperty("jb.consents.confirmation.enabled", "false")
-    }
+//    // Configure UI tests plugin
+//    // Read more: https://github.com/JetBrains/intellij-ui-test-robot
+//    runIdeForUiTests {
+//        systemProperty("robot-server.port", "8082")
+//        systemProperty("ide.mac.message.dialogs.as.sheets", "false")
+//        systemProperty("jb.privacy.policy.text", "<!--999.999-->")
+//        systemProperty("jb.consents.confirmation.enabled", "false")
+//    }
 
     signPlugin {
         certificateChain = environment("CERTIFICATE_CHAIN")
@@ -171,13 +171,12 @@ tasks {
     }
 
     test {
-        useJUnitPlatform()
+        useJUnit()
         jacoco {
             enabled = true
             finalizedBy(jacocoTestCoverageVerification)
         }
         pitest {
-            junit5PluginVersion.set("1.2.0")
             targetClasses.set(setOf("com.jetbrains.interactiveRebase.*")) //by default "${project.group}.*"
             pitestVersion.set("1.15.0") //not needed when a default PIT version should be used
             threads.set(4)
