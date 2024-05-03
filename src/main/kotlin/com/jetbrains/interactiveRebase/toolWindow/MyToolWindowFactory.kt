@@ -1,6 +1,5 @@
 package com.jetbrains.interactiveRebase.toolWindow
 
-import com.jetbrains.interactiveRebase.components.BranchPanel
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
@@ -8,6 +7,7 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
+import com.jetbrains.interactiveRebase.visuals.*
 import com.jetbrains.interactiveRebase.services.MyProjectService
 
 class MyToolWindowFactory : ToolWindowFactory {
@@ -34,12 +34,9 @@ class MyToolWindowFactory : ToolWindowFactory {
 
         fun getContent() =
             JBPanel<JBPanel<*>>().apply {
-//                val c = CirclePanel()
-//                c.preferredSize = Dimension(20, 20)
-
-                // add(node)
                 add(
-                    BranchPanel(
+                    LabeledBranchPanel(
+                        "MAIN",
                         listOf(
                             "Initial commit",
                             "Added feature X",
@@ -49,17 +46,6 @@ class MyToolWindowFactory : ToolWindowFactory {
                         )
                     )
                 )
-//                add(c, BorderLayout.CENTER)
-//                val label = JBLabel(MyBundle.message("randomLabel", "?"))
-//
-//                add(label)
-//                add(
-//                    JButton(MyBundle.message("shuffle")).apply {
-//                        addActionListener {
-//                            label.text = MyBundle.message("randomLabel", service.getRandomNumber())
-//                        }
-//                    },
-//                )
             }
     }
 }

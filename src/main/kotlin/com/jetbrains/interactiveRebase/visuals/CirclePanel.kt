@@ -1,11 +1,8 @@
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
 import java.awt.*
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import java.awt.event.MouseMotionAdapter
 import java.awt.geom.Ellipse2D
-import kotlin.math.min
 
 
 /**
@@ -14,43 +11,18 @@ import kotlin.math.min
 class CirclePanel(private val diameter: Double, private val border: Float) : JBPanel<JBPanel<*>>() {
 
     // Flag to track whether the mouse is currently hovering over the circle
-    private var isHovering = false
-    private var isSelected = false
+    var isHovering = false
+    var isSelected = false
     private var centerX = 0.0
     private var centerY = 0.0
-    private lateinit var circle: Ellipse2D
+    lateinit var circle: Ellipse2D
 
     init {
-
         isOpaque = false
-        addMouseListener(object : MouseAdapter() {
-            override fun mouseEntered(e: MouseEvent?) {
-                if (e != null && circle.contains(e.x.toDouble(), e.y.toDouble())) {
-                    isHovering = true
-                    repaint()
-                }
-            }
-
-            override fun mouseExited(e: MouseEvent?) {
-                if (e != null && !circle.contains(e.x.toDouble(), e.y.toDouble())) {
-                    isHovering = false
-                    repaint()
-                }
-            }
-
-            override fun mouseClicked(e: MouseEvent?) {
-                super.mouseClicked(e)
-                isSelected = !isSelected
-                repaint()
-            }
-        })
-
-        addMouseMotionListener(object : MouseMotionAdapter() {
-            override fun mouseMoved(e: MouseEvent?) {
-                isHovering = e != null && circle.contains(e.x.toDouble(), e.y.toDouble())
-                repaint()
-            }
-        })
+        preferredSize = minimumSize
+        createCircle()
+        addMouseListener(CircleHoverListener(this))
+        addMouseMotionListener(CircleHoverListener(this))
     }
 
     override fun paintComponent(g: Graphics) {
@@ -86,7 +58,9 @@ class CirclePanel(private val diameter: Double, private val border: Float) : JBP
     private fun createCircle() {
         val width = width.toDouble()
         val height = height.toDouble()
-        // Calculate the diameter of the circle
+
+        // Calculate the diameter of the circle,
+        // so that border is not cropped due to the panel size
         val diameter = diameter - border
 
         // Calculate the x and y coordinates for drawing the circle at the center
