@@ -9,19 +9,19 @@ import junit.framework.TestCase
 import org.assertj.core.api.Assertions.assertThat
 
 class IRFileEditorProviderTest : BasePlatformTestCase() {
-    fun testAccept()  {
+    fun testAccept() {
         val provider = IRFileEditorProvider()
         val virtualFileSystem = IRVirtualFileSystem()
         val virtualFile = virtualFileSystem.findFileByPath("Interactive Rebase")
         assertTrue(provider.accept(project, virtualFile))
     }
 
-    fun testDontAccept()  {
+    fun testDontAccept() {
         val provider = IRFileEditorProvider()
         assertFalse(provider.accept(project, LightVirtualFile("jef")))
     }
 
-    fun testCreateEditor()  {
+    fun testCreateEditor() {
         val provider = IRFileEditorProvider()
         val virtualFileSystem = IRVirtualFileSystem()
         val virtualFile = virtualFileSystem.findFileByPath("Interactive Rebase")
@@ -29,12 +29,12 @@ class IRFileEditorProviderTest : BasePlatformTestCase() {
         assertThat(provider.createEditor(project, virtualFile)).isInstanceOf(IRFileEditorProvider.MyFileEditorBase::class.java)
     }
 
-    fun testGetEditorTypeId()  {
+    fun testGetEditorTypeId() {
         val provider = IRFileEditorProvider()
         assertEquals(provider.getEditorTypeId(), "IRFileEditorProvider")
     }
 
-    fun testGetPolicy()  {
+    fun testGetPolicy() {
         val provider = IRFileEditorProvider()
         assertEquals(provider.getPolicy(), FileEditorPolicy.HIDE_DEFAULT_EDITOR)
     }
