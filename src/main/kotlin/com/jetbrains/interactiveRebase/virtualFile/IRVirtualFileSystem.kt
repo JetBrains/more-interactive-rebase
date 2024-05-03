@@ -85,7 +85,7 @@ class IRVirtualFileSystem : VirtualFileSystem() {
      * This operation is not supported by this implementation. Calling this method
      * will always result in {@link UnsupportedOperationException}.
      */
-    override fun deleteFile(
+    public override fun deleteFile(
         requestor: Any?,
         vFile: VirtualFile,
     ) {
@@ -96,7 +96,7 @@ class IRVirtualFileSystem : VirtualFileSystem() {
      * This operation is not supported by this implementation. Calling this method
      * will always result in {@link UnsupportedOperationException}.
      */
-    override fun moveFile(
+    public override fun moveFile(
         requestor: Any?,
         vFile: VirtualFile,
         newParent: VirtualFile,
@@ -108,7 +108,7 @@ class IRVirtualFileSystem : VirtualFileSystem() {
      * This operation is not supported by this implementation. Calling this method
      * will always result in {@link UnsupportedOperationException}.
      */
-    override fun renameFile(
+    public override fun renameFile(
         requestor: Any?,
         vFile: VirtualFile,
         newName: String,
@@ -120,7 +120,7 @@ class IRVirtualFileSystem : VirtualFileSystem() {
      * This operation is not supported by this implementation. Calling this method
      * will always result in {@link UnsupportedOperationException}.
      */
-    override fun createChildFile(
+    public override fun createChildFile(
         requestor: Any?,
         vDir: VirtualFile,
         fileName: String,
@@ -132,7 +132,7 @@ class IRVirtualFileSystem : VirtualFileSystem() {
      * This operation is not supported by this implementation. Calling this method
      * will always result in {@link UnsupportedOperationException}.
      */
-    override fun createChildDirectory(
+    public override fun createChildDirectory(
         requestor: Any?,
         vDir: VirtualFile,
         dirName: String,
@@ -144,7 +144,7 @@ class IRVirtualFileSystem : VirtualFileSystem() {
      * This operation is not supported by this implementation. Calling this method
      * will always result in {@link UnsupportedOperationException}.
      */
-    override fun copyFile(
+    public override fun copyFile(
         requestor: Any?,
         virtualFile: VirtualFile,
         newParent: VirtualFile,
