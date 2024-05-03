@@ -1,6 +1,7 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import CirclePanel
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
@@ -21,10 +22,11 @@ import javax.swing.SwingConstants
 class LabeledBranchPanel(
     private val branchName: String,
     private val commitMessages: List<String>,
+    private val color: JBColor,
     private val alignment: Int = SwingConstants.LEFT
 ) :
     JBPanel<JBPanel<*>>() {
-    private val branchPanel = BranchPanel(commitMessages)
+    private val branchPanel = BranchPanel(commitMessages, color)
     private val commitLabels: MutableList<JBLabel> = mutableListOf()
     private val branchNameLabel = BoldLabel(branchName)
 

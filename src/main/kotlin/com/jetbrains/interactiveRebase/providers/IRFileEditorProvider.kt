@@ -7,9 +7,16 @@ import com.intellij.openapi.fileEditor.FileEditorProvider
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
+import com.jetbrains.interactiveRebase.visuals.Palette
 import java.awt.Color
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import javax.swing.BoxLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.SwingConstants
 
 /**
  * A FileEditorProvider for the IRVirtualFile. It is used to
@@ -70,9 +77,43 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
          * @return the Swing component for the editor UI
          */
         override fun getComponent(): JComponent {
-            // TODO: Implement the editor UI
-            val panel = JPanel()
-            panel.background = Color.BLACK
+            val panel = JBPanel<JBPanel<*>>()
+            panel.layout = GridBagLayout()
+            val gbc = GridBagConstraints()
+            gbc.gridx = 0
+            gbc.gridy = 0
+            gbc.fill = GridBagConstraints.BOTH
+            panel.add(
+                LabeledBranchPanel(
+                    "MAIN",
+                    listOf(
+                        "Initial commit",
+                        "Added feature X",
+                        "Fixed issue #123",
+                        "Refactored code",
+                        "Merged branch 'feature-x' into 'main'"
+                    ),
+                    Palette.BLUE,
+                    SwingConstants.RIGHT
+                ), gbc
+            )
+
+            gbc.gridx = 1
+            gbc.gridy = 0
+            gbc.fill = GridBagConstraints.BOTH
+            panel.add(
+                    LabeledBranchPanel(
+                        "dev",
+                        listOf(
+                            "Initial commit",
+                            "Added feature X",
+                            "Fixed issue #123",
+                            "Refactored code",
+                            "Merged branch 'feature-x' into 'main'"
+                        ),
+                        Palette.TOMATO
+                    ), gbc
+            )
             return panel
         }
 

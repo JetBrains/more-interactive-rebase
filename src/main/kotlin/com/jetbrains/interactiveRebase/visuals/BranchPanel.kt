@@ -12,7 +12,8 @@ import javax.swing.BoxLayout
  * - a number of commits (circle panels)
  * - lines connecting the commits
  */
-class BranchPanel(private val commitMessages: List<String>) : JBPanel<JBPanel<*>>() {
+class BranchPanel(private val commitMessages:
+                  List<String>, private val color: JBColor) : JBPanel<JBPanel<*>>() {
 
     val DIAMETER = 30
     private val borderSize = 1f
@@ -25,7 +26,7 @@ class BranchPanel(private val commitMessages: List<String>) : JBPanel<JBPanel<*>
         preferredSize = Dimension(DIAMETER, (size * DIAMETER * 1.5).toInt())
 
         for (i in 0 until size) {
-            val circle = CirclePanel(DIAMETER.toDouble(), borderSize)
+            val circle = CirclePanel(DIAMETER.toDouble(), borderSize, color)
             circles.add(circle)
             add(circle)
             if (i < size - 1) {
@@ -59,7 +60,7 @@ class BranchPanel(private val commitMessages: List<String>) : JBPanel<JBPanel<*>
 
                 // Make line brush
                 g2d.stroke = BasicStroke(borderSize)
-                g2d.color = JBColor.BLACK
+                g2d.color = color
 
                 g2d.drawLine(
                     x + DIAMETER / 2,

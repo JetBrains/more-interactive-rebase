@@ -43,7 +43,8 @@ class MyToolWindowFactory : ToolWindowFactory {
                             "Fixed issue #123",
                             "Refactored code",
                             "Merged branch 'feature-x' into 'main'"
-                        )
+                        ),
+                        Palette.LIME
                     )
                 )
             }

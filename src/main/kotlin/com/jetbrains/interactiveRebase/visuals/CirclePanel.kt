@@ -8,7 +8,9 @@ import java.awt.geom.Ellipse2D
 /**
  * Visual representation of commit node in the git graph
  */
-class CirclePanel(private val diameter: Double, private val border: Float) : JBPanel<JBPanel<*>>() {
+class CirclePanel(private val diameter: Double,
+                  private val border: Float,
+                  private val color: JBColor) : JBPanel<JBPanel<*>>() {
 
     // Flag to track whether the mouse is currently hovering over the circle
     var isHovering = false
@@ -37,11 +39,9 @@ class CirclePanel(private val diameter: Double, private val border: Float) : JBP
         createCircle()
 
         if (isSelected) {
-            g2d.color = JBColor(Color(32, 112, 179), Color(21, 88, 155))
+            g2d.color = color.darker()
         } else {
-            g2d.color = JBColor(Color(52, 152, 219), Color(41, 128, 185))
-//            g2d.color = JBColor(Color(234, 217, 76), Color(194, 174, 23))
-//            g2d.color = JBColor(Color(231, 76, 60), Color(192, 57, 43))
+            g2d.color = color
         }
         g2d.fill(circle)
 
@@ -61,7 +61,7 @@ class CirclePanel(private val diameter: Double, private val border: Float) : JBP
 
         // Calculate the diameter of the circle,
         // so that border is not cropped due to the panel size
-        val diameter = diameter - border
+        val diameter = diameter - 2 * border
 
         // Calculate the x and y coordinates for drawing the circle at the center
         centerX = (width - diameter) / 2
