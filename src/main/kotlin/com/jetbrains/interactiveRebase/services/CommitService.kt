@@ -5,6 +5,7 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.jetbrains.interactiveRebase.CommitConsumer
+import com.jetbrains.interactiveRebase.exceptions.IRebaseInaccessibleException
 import git4idea.GitCommit
 import git4idea.GitUtil
 import git4idea.history.GitHistoryUtils
@@ -20,16 +21,16 @@ class CommitService(private val project: Project) {
      */
     fun getCommits() : List<GitCommit> {
         val repo = GitUtil.getRepositoryManager(project).getRepositoryForRoot(project.guessProjectDir())
+            ?: throw IRebaseInaccessibleException("GitRepository cannot be accessed")
 
-        if (repo == null) thisLogger().warn("null repository")
-        var displayableCommits = emptyList<GitCommit>()
+        val displayableCommits: List<GitCommit>
 
-        val branchName = repo?.currentBranchName
+        val branchName = repo.currentBranchName
         if (branchName != null) {
-            displayableCommits =  getDisplayableCommitsOfBranch(branchName, repo)
+            displayableCommits = getDisplayableCommitsOfBranch(branchName, repo)
         } else {
-            // TODO get better handling of this
             thisLogger().warn("branch name is null")
+            throw IRebaseInaccessibleException("cannot access current branch")
         }
         return displayableCommits
     }
