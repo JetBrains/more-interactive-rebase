@@ -40,6 +40,7 @@ repositories {
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
     implementation(libs.annotations)
+
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
     testImplementation("org.mockito:mockito-core:3.12.4")
     testImplementation("org.assertj:assertj-core:3.23.1")
@@ -66,8 +67,8 @@ changelog {
 }
 
 jacoco {
-    toolVersion = "0.8.7" // Use the desired version of JaCoCo
-    reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
+    toolVersion = "0.8.9" // Use the desired version of JaCoCo
+//    reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
 }
 
 pmd {
@@ -185,13 +186,16 @@ tasks {
         }
     }
 
+    jacocoTestReport {
+        dependsOn(test)
+    }
     jacocoTestCoverageVerification {
         dependsOn(test)
         violationRules {
             rule {
                 enabled = true
                 element = "CLASS"
-                includes = listOf("com.jetbrains.interactiveRebase.*")
+                includes =  listOf("com.jetbrains.interactiveRebase.**")
 
                 limit {
                     counter = "BRANCH"
@@ -200,5 +204,12 @@ tasks {
                 }
             }
         }
+    }
+}
+
+tasks.withType(Test::class) {
+    configure<JacocoTaskExtension> {
+        isIncludeNoLocationClasses = true
+        includes = listOf("com.jetbrains.interactiveRebase.*")
     }
 }
