@@ -7,6 +7,7 @@ import com.intellij.vcs.log.Hash
 import com.intellij.vcs.log.VcsUser
 import com.intellij.vcs.log.VcsUserRegistry
 import com.intellij.vcs.log.impl.VcsUserImpl
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import com.jetbrains.interactiveRebase.mockStructs.MockGitRepository
 import com.jetbrains.interactiveRebase.services.CommitService
@@ -29,7 +30,7 @@ class CommitServiceTest : BasePlatformTestCase() {
     override fun setUp() {
         super.setUp()
         service = project.service<CommitService>()
-        thread = CommitInfoThread(project)
+        thread = CommitInfoThread(project, BranchInfo(mutableListOf(), "|"))
     }
 
     fun testGeneralConsumerStopsAtCap() {

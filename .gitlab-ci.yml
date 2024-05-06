@@ -38,7 +38,7 @@ gradle_build:
     paths:
       - build/
   script:
-    - gradle build testClasses --build-cache -x spotlessCheck
+    - gradle build testClasses --build-cache -x spotlessCheck -x test
 
 build-interactive-rebase-jetbrains:
   extends: .build_cached

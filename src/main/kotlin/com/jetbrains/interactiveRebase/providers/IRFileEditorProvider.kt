@@ -8,9 +8,12 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.threads.CommitInfoThread
 import com.jetbrains.interactiveRebase.visuals.Branch
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
+import git4idea.GitCommit
 import java.awt.Color
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -71,58 +74,24 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
      * It is used to create the Editor Tab for the Interactive Rebase feature.
      */
     class MyFileEditorBase(private val project: Project, private val virtualFile: VirtualFile) : FileEditorBase() {
+        private var component: JComponent
+        private var commits: MutableList<GitCommit>
+        private var branchName: String
+
+        init {
+            component = createComponent()
+            commits = mutableListOf()
+            branchName = ""
+        }
+
         /**
          * Returns a component which represents the editor in UI.
          *
          * @return the Swing component for the editor UI
          */
         override fun getComponent(): JComponent {
-            val panel = JBPanel<JBPanel<*>>()
-            panel.layout = GridBagLayout()
-            val gbc = GridBagConstraints()
-            gbc.gridx = 0
-            gbc.gridy = 0
-            gbc.fill = GridBagConstraints.BOTH
-            panel.add(
-                LabeledBranchPanel(
-                    Branch(
-                        true,
-                        "MAIN",
-                        listOf(
-                            "Initial commit",
-                            "Added feature X",
-                            "Fixed issue #123",
-                            "Refactored code",
-                            "Merged branch 'feature-x' into 'main'",
-                        ),
-                    ),
-                    Palette.BLUE,
-                    SwingConstants.RIGHT,
-                ),
-                gbc,
-            )
-
-            gbc.gridx = 1
-            gbc.gridy = 0
-            gbc.fill = GridBagConstraints.BOTH
-            panel.add(
-                LabeledBranchPanel(
-                    Branch(
-                        false,
-                        "dev",
-                        listOf(
-                            "Initial commit",
-                            "Added feature X",
-                            "Fixed issue #123",
-                            "Refactored code",
-                            "Merged branch 'feature-x' into 'main'",
-                        ),
-                    ),
-                    Palette.TOMATO,
-                ),
-                gbc,
-            )
-            return panel
+            updateComponent()
+            return component
         }
 
         /**
@@ -151,6 +120,43 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
          */
         override fun getFile(): VirtualFile {
             return virtualFile
+        }
+
+        private fun createComponent(): JComponent {
+            val component = JBPanel<JBPanel<*>>()
+            component.layout = GridBagLayout()
+
+            return component
+        }
+
+        private fun updateComponent() {
+            val dto = BranchInfo(commits, branchName)
+            val thread = CommitInfoThread(project, dto)
+            thread.start()
+            thread.join()
+
+            commits = dto.commits
+            branchName = dto.branchName
+
+            var commitNames = mutableListOf<String>()
+            commits.forEach { commitNames.add(it.fullMessage) }
+
+            val gbc = GridBagConstraints()
+            gbc.gridx = 0
+            gbc.gridy = 0
+            gbc.fill = GridBagConstraints.BOTH
+            component.add(
+                LabeledBranchPanel(
+                    Branch(
+                        true,
+                        branchName,
+                        commitNames,
+                    ),
+                    Palette.BLUE,
+                    SwingConstants.RIGHT,
+                ),
+                gbc,
+            )
         }
     }
 }

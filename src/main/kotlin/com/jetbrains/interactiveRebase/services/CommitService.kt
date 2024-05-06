@@ -9,8 +9,8 @@ import git4idea.GitCommit
 import git4idea.repo.GitRepository
 
 @Service(Service.Level.PROJECT)
-class CommitService(private val project: Project, private val IRGitUtils: IRGitUtils) {
-    var referenceBranchName = "origin/master"
+class CommitService(private val project: Project, private val gitUtils: IRGitUtils) {
+    var referenceBranchName = "origin/main"
     constructor(project: Project) : this(project, IRGitUtils(project))
 
     /**
@@ -19,7 +19,7 @@ class CommitService(private val project: Project, private val IRGitUtils: IRGitU
      */
     fun getCommits(): List<GitCommit> {
         val repo =
-            IRGitUtils.getRepository()
+            gitUtils.getRepository()
                 ?: throw IRInaccessibleException("GitRepository cannot be accessed")
 
         val branchName = repo.currentBranchName ?: throw IRInaccessibleException("cannot access current branch")
@@ -36,9 +36,9 @@ class CommitService(private val project: Project, private val IRGitUtils: IRGitU
         consumer: CommitConsumer,
     ): List<GitCommit> {
         if (branchName == referenceBranchName) {
-            IRGitUtils.getCommitsOfBranch(repo, consumer)
+            gitUtils.getCommitsOfBranch(repo, consumer)
         } else {
-            IRGitUtils.getCommitDifferenceBetweenBranches(branchName, referenceBranchName, repo, consumer)
+            gitUtils.getCommitDifferenceBetweenBranches(branchName, referenceBranchName, repo, consumer)
         }
         return consumer.commits
     }

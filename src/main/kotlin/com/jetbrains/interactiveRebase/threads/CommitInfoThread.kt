@@ -1,20 +1,17 @@
 package com.jetbrains.interactiveRebase.threads
 
 import com.intellij.openapi.project.Project
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.services.CommitService
-import git4idea.GitCommit
+import com.jetbrains.interactiveRebase.utils.IRGitUtils
 
-/**
- * Quick fix for the EDT problem, could be replaced by coroutines
- */
-class CommitInfoThread(private val project: Project) : Thread() {
-    private var commits: List<GitCommit> = mutableListOf()
-
+class CommitInfoThread(
+    private val project: Project,
+    private var dto: BranchInfo,
+) : Thread() {
     override fun run() {
-        commits = CommitService(project).getCommits()
-    }
-
-    fun getCommits(): List<GitCommit> {
-        return commits
+        dto.branchName = IRGitUtils(project).getRepository()?.currentBranchName.toString()
+        dto.commits.clear()
+        dto.commits.addAll(CommitService(project).getCommits())
     }
 }
