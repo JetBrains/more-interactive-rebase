@@ -6,7 +6,6 @@ import java.awt.event.MouseListener
 import java.awt.event.MouseMotionListener
 
 class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener, MouseMotionListener {
-
     override fun mouseEntered(e: MouseEvent?) {
         if (e != null && circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
             circlePanel.isHovering = true

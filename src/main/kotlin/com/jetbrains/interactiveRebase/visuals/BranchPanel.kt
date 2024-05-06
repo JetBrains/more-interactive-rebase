@@ -3,7 +3,11 @@ package com.jetbrains.interactiveRebase.visuals
 import CirclePanel
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
-import java.awt.*
+import java.awt.BasicStroke
+import java.awt.Dimension
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.RenderingHints
 import javax.swing.Box
 import javax.swing.BoxLayout
 
@@ -12,22 +16,29 @@ import javax.swing.BoxLayout
  * - a number of commits (circle panels)
  * - lines connecting the commits
  */
-class BranchPanel(private val commitMessages:
-                  List<String>, private val color: JBColor) : JBPanel<JBPanel<*>>() {
-
-    val DIAMETER = 30
+class BranchPanel(
+    private val branch: Branch,
+    private val color: JBColor,
+) : JBPanel<JBPanel<*>>() {
+    val diameter = 25
     private val borderSize = 1f
-    private val size = commitMessages.size
+    private val size = branch.commits.size
 
     private val circles: MutableList<CirclePanel> = mutableListOf()
 
     init {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
-        preferredSize = Dimension(DIAMETER, (size * DIAMETER * 1.5).toInt())
+        preferredSize = Dimension(diameter, (size * diameter * 1.5).toInt())
 
         for (i in 0 until size) {
-            val circle = CirclePanel(DIAMETER.toDouble(), borderSize, color)
+            val circle = CirclePanel(diameter.toDouble(), borderSize, color)
             circles.add(circle)
+            if (i > 0) {
+                // Set reference to next circle
+                circles[i - 1].next = circle
+                // Set reference to previous circle
+                circle.previous = circles[i - 1]
+            }
             add(circle)
             if (i < size - 1) {
                 add(Box.createVerticalGlue())
@@ -43,7 +54,7 @@ class BranchPanel(private val commitMessages:
         val g2d = g as Graphics2D
         g2d.setRenderingHint(
             RenderingHints.KEY_ANTIALIASING,
-            RenderingHints.VALUE_ANTIALIAS_ON
+            RenderingHints.VALUE_ANTIALIAS_ON,
         )
 
         for (i in 0 until size) {
@@ -52,21 +63,21 @@ class BranchPanel(private val commitMessages:
                 val nextCircle = circles[i + 1]
 
                 // Calculate line coordinates
-                val x = (width - DIAMETER) / 2
-                val startY = circle.y + DIAMETER / 2
-                val endY = nextCircle.y + DIAMETER / 2
-                val glueHeight = endY - startY - DIAMETER
-                val glueY = startY + DIAMETER / 2 + DIAMETER / 2
+                val x = (width - diameter) / 2
+                val startY = circle.y + diameter / 2
+                val endY = nextCircle.y + diameter / 2
+                val glueHeight = endY - startY - diameter
+                val glueY = startY + diameter / 2 + diameter / 2
 
                 // Make line brush
                 g2d.stroke = BasicStroke(borderSize)
                 g2d.color = color
 
                 g2d.drawLine(
-                    x + DIAMETER / 2,
+                    x + diameter / 2,
                     startY,
-                    x + DIAMETER / 2,
-                    glueY + glueHeight
+                    x + diameter / 2,
+                    glueY + glueHeight,
                 )
             }
         }

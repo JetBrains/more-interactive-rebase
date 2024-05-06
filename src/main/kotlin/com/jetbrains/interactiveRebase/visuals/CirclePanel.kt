@@ -1,17 +1,22 @@
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
-import java.awt.*
+import java.awt.BasicStroke
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.RenderingHints
 import java.awt.geom.Ellipse2D
-
 
 /**
  * Visual representation of commit node in the git graph
  */
-class CirclePanel(private val diameter: Double,
-                  private val border: Float,
-                  private val color: JBColor) : JBPanel<JBPanel<*>>() {
-
+class CirclePanel(
+    private val diameter: Double,
+    private val border: Float,
+    private val color: JBColor,
+    var next: CirclePanel? = null,
+    var previous: CirclePanel? = null,
+) : JBPanel<JBPanel<*>>() {
     // Flag to track whether the mouse is currently hovering over the circle
     var isHovering = false
     var isSelected = false

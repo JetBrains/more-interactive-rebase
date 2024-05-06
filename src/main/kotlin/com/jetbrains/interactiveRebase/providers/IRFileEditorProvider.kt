@@ -8,12 +8,12 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.visuals.Branch
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
 import java.awt.Color
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import javax.swing.BoxLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingConstants
@@ -85,34 +85,42 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
             gbc.fill = GridBagConstraints.BOTH
             panel.add(
                 LabeledBranchPanel(
-                    "MAIN",
-                    listOf(
-                        "Initial commit",
-                        "Added feature X",
-                        "Fixed issue #123",
-                        "Refactored code",
-                        "Merged branch 'feature-x' into 'main'"
+                    Branch(
+                        true,
+                        "MAIN",
+                        listOf(
+                            "Initial commit",
+                            "Added feature X",
+                            "Fixed issue #123",
+                            "Refactored code",
+                            "Merged branch 'feature-x' into 'main'",
+                        ),
                     ),
                     Palette.BLUE,
-                    SwingConstants.RIGHT
-                ), gbc
+                    SwingConstants.RIGHT,
+                ),
+                gbc,
             )
 
             gbc.gridx = 1
             gbc.gridy = 0
             gbc.fill = GridBagConstraints.BOTH
             panel.add(
-                    LabeledBranchPanel(
+                LabeledBranchPanel(
+                    Branch(
+                        false,
                         "dev",
                         listOf(
                             "Initial commit",
                             "Added feature X",
                             "Fixed issue #123",
                             "Refactored code",
-                            "Merged branch 'feature-x' into 'main'"
+                            "Merged branch 'feature-x' into 'main'",
                         ),
-                        Palette.TOMATO
-                    ), gbc
+                    ),
+                    Palette.TOMATO,
+                ),
+                gbc,
             )
             return panel
         }

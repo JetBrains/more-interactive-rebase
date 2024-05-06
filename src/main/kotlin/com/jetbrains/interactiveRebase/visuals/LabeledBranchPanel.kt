@@ -6,7 +6,10 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
 import com.intellij.ui.util.preferredWidth
-import java.awt.*
+import java.awt.Dimension
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import java.awt.Insets
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.SwingConstants
@@ -20,15 +23,14 @@ import javax.swing.SwingConstants
  * - RIGHT means commits appear to the right and names to the left
  */
 class LabeledBranchPanel(
-    private val branchName: String,
-    private val commitMessages: List<String>,
+    private val branch: Branch,
     private val color: JBColor,
-    private val alignment: Int = SwingConstants.LEFT
+    private val alignment: Int = SwingConstants.LEFT,
 ) :
     JBPanel<JBPanel<*>>() {
-    private val branchPanel = BranchPanel(commitMessages, color)
+    private val branchPanel = BranchPanel(branch, color)
     private val commitLabels: MutableList<JBLabel> = mutableListOf()
-    private val branchNameLabel = BoldLabel(branchName)
+    private val branchNameLabel = BoldLabel(branch.name)
 
     init {
         branchNameLabel.horizontalTextPosition = SwingConstants.CENTER
@@ -43,15 +45,21 @@ class LabeledBranchPanel(
      * Sets up the appearance of a commit label
      * and links it to the corresponding commit (circle panel)
      */
-    private fun generateCommitLabel(i: Int, circle: CirclePanel): JBLabel {
-        val commitLabel = JBLabel(commitMessages[i])
+    private fun generateCommitLabel(
+        i: Int,
+        circle: CirclePanel,
+    ): JBLabel {
+        val commitLabel = JBLabel(branch.commits[i])
         commitLabel.labelFor = circle
-        commitLabel.preferredSize = Dimension(commitLabel.preferredWidth, branchPanel.DIAMETER)
+        commitLabel.preferredSize = Dimension(commitLabel.preferredWidth, branchPanel.diameter)
         commitLabel.alignmentX =
-            (if (alignment == SwingConstants.LEFT)
-                LEFT_ALIGNMENT
-            else
-                RIGHT_ALIGNMENT)
+            (
+                if (alignment == SwingConstants.LEFT) {
+                    LEFT_ALIGNMENT
+                } else {
+                    RIGHT_ALIGNMENT
+                }
+            )
         commitLabel.verticalTextPosition = SwingConstants.CENTER
         return commitLabel
     }
