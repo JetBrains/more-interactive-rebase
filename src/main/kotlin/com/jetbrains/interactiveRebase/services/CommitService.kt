@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.jetbrains.interactiveRebase.CommitConsumer
 import com.jetbrains.interactiveRebase.exceptions.IRebaseInaccessibleException
+import com.jetbrains.interactiveRebase.utils.IRGitUtils
 import git4idea.GitCommit
 import git4idea.GitUtil
 import git4idea.history.GitHistoryUtils
@@ -13,51 +14,39 @@ import git4idea.repo.GitRepository
 
 @Service(Service.Level.PROJECT)
 class CommitService(private val project: Project) {
-    private var referenceBranchName = "master" // TODO this should be configurable, setter already exists
-
+    private var referenceBranchName = "origin/master" // TODO this should be configurable, setter already exists
+    private val IRGitUtils = IRGitUtils(project)
     /**
      * Finds the current branch and returns all the commits that are on the current branch and not on the reference branch.
      * If the reference branch is the current branch only the maximum amount of commits are displayed
      */
     fun getCommits() : List<GitCommit> {
-        val repo = GitUtil.getRepositoryManager(project).getRepositoryForRoot(project.guessProjectDir())
+        val repo = IRGitUtils.getRepository()
             ?: throw IRebaseInaccessibleException("GitRepository cannot be accessed")
 
-        val displayableCommits: List<GitCommit>
-
-        val branchName = repo.currentBranchName
-        if (branchName != null) {
-            displayableCommits = getDisplayableCommitsOfBranch(branchName, repo)
-        } else {
-            thisLogger().warn("branch name is null")
-            throw IRebaseInaccessibleException("cannot access current branch")
-        }
-        return displayableCommits
+        val branchName = repo.currentBranchName ?: throw IRebaseInaccessibleException("cannot access current branch")
+        return getDisplayableCommitsOfBranch(branchName, repo)
     }
 
-//    /**
-//     * Gets the commits on a given branch, given a consumer
-//     */
-//    fun getCommitsOfBranch(branchName: String, consumer: CommitConsumer, repo : GitRepository) : List<GitCommit> {
-//        GitHistoryUtils.loadDetails(project, repo.root, consumer)
-//        consumer.commits.forEach{commit -> println("commit: " + commit.subject)}
-//        return consumer.commits
-//    }
 
-    fun getDisplayableCommitsOfBranch(branchName: String, repo : GitRepository) : List<GitCommit> {
+    /**
+     * Setter for the reference branch parameter
+     */
+    fun setReferenceBranch(newReference: String) {
+        referenceBranchName = newReference
+    }
+
+    /**
+     * Gets the commits in the given branch that are not on the reference branch, caps them to the maximum size at the consumer.
+     */
+    private fun getDisplayableCommitsOfBranch(branchName: String, repo : GitRepository) : List<GitCommit> {
         val consumer = GeneralCommitConsumer()
-        GitHistoryUtils.loadDetails(project, repo.root, consumer, branchName, "--not", referenceBranchName)
-        println("in branch $branchName and not $referenceBranchName")
+        if (branchName == referenceBranchName) {
+            IRGitUtils.getCommitsOfBranch(repo, consumer)
+        } else {
+            IRGitUtils.getCommitDifferenceBetweenBranches(branchName, referenceBranchName, repo, consumer)
+        }
         return consumer.commits
-
-//        // get all commits of reference branch to compare
-//        // TODO instead of getting all commits, a cap can be added for optimization
-//        val referenceConsumer = GeneralCommitConsumer()
-//        val referenceCommits : List<GitCommit> =  getCommitsOfBranch(referenceBranchName, referenceConsumer, repo)
-//
-//        // use the reference branch's commits to only consume commits that are not in the reference branch
-//        val displayableConsumer = DisplayableCommitConsumer(referenceCommits.toSet())
-//        return displayableConsumer.commits
     }
 
     /**
@@ -66,27 +55,16 @@ class CommitService(private val project: Project) {
     class GeneralCommitConsumer : CommitConsumer() {
         override var commits: MutableList<GitCommit> = mutableListOf()
         override fun consume(commit: GitCommit?) {
-            if (commitCounter <= commitConsumptionCap) {
+            if (commitCounter < commitConsumptionCap) {
                 commit?.let { commits.add(it) }
                 commitCounter++
-                println("in consumer $commit with counter $commitCounter")
             }
         }
+
+        fun resetCommits() {
+            commits = mutableListOf()
+            commitCounter = 0
+        }
     }
-
-//    /**
-//     *
-//     */
-//    class DisplayableCommitConsumer(private val referenceCommits : Set<GitCommit>) : CommitConsumer() {
-//        override var commits: MutableList<GitCommit> = mutableListOf()
-//        override fun consume(commit: GitCommit?) {
-//            if (commitCounter <= commitConsumptionCap && !referenceCommits.contains(commit) ) {
-//                commit?.let { commits.add(it) }
-//                commitCounter++
-//            }
-//        }
-//    }
-
-
 
 }
