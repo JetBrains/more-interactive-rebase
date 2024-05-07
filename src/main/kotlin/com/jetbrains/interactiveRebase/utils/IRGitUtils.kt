@@ -11,7 +11,7 @@ import git4idea.repo.GitRepository
 /**
  * Isolated interaction with static git utility methods
  */
-class InteractiveRebaseGitUtils(private val project: Project) {
+class IRGitUtils(private val project: Project) {
     /**
      * Gets the GitRepository given the project
      */

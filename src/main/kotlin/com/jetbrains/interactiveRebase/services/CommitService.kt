@@ -2,16 +2,16 @@ package com.jetbrains.interactiveRebase.services
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import com.jetbrains.interactiveRebase.exceptions.IRebaseInaccessibleException
-import com.jetbrains.interactiveRebase.utils.InteractiveRebaseGitUtils
+import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
+import com.jetbrains.interactiveRebase.utils.IRGitUtils
 import com.jetbrains.interactiveRebase.utils.consumers.CommitConsumer
 import git4idea.GitCommit
 import git4idea.repo.GitRepository
 
 @Service(Service.Level.PROJECT)
-class CommitService(private val project: Project, private val InteractiveRebaseGitUtils: InteractiveRebaseGitUtils) {
+class CommitService(private val project: Project, private val IRGitUtils: IRGitUtils) {
     var referenceBranchName = "origin/master"
-    constructor(project: Project) : this(project, InteractiveRebaseGitUtils(project))
+    constructor(project: Project) : this(project, IRGitUtils(project))
 
     /**
      * Finds the current branch and returns all the commits that are on the current branch and not on the reference branch.
@@ -19,10 +19,10 @@ class CommitService(private val project: Project, private val InteractiveRebaseG
      */
     fun getCommits(): List<GitCommit> {
         val repo =
-            InteractiveRebaseGitUtils.getRepository()
-                ?: throw IRebaseInaccessibleException("GitRepository cannot be accessed")
+            IRGitUtils.getRepository()
+                ?: throw IRInaccessibleException("GitRepository cannot be accessed")
 
-        val branchName = repo.currentBranchName ?: throw IRebaseInaccessibleException("cannot access current branch")
+        val branchName = repo.currentBranchName ?: throw IRInaccessibleException("cannot access current branch")
         val consumer = GeneralCommitConsumer()
         return getDisplayableCommitsOfBranch(branchName, repo, consumer)
     }
@@ -36,9 +36,9 @@ class CommitService(private val project: Project, private val InteractiveRebaseG
         consumer: CommitConsumer,
     ): List<GitCommit> {
         if (branchName == referenceBranchName) {
-            InteractiveRebaseGitUtils.getCommitsOfBranch(repo, consumer)
+            IRGitUtils.getCommitsOfBranch(repo, consumer)
         } else {
-            InteractiveRebaseGitUtils.getCommitDifferenceBetweenBranches(branchName, referenceBranchName, repo, consumer)
+            IRGitUtils.getCommitDifferenceBetweenBranches(branchName, referenceBranchName, repo, consumer)
         }
         return consumer.commits
     }

@@ -7,11 +7,11 @@ import com.intellij.vcs.log.Hash
 import com.intellij.vcs.log.VcsUser
 import com.intellij.vcs.log.VcsUserRegistry
 import com.intellij.vcs.log.impl.VcsUserImpl
-import com.jetbrains.interactiveRebase.exceptions.IRebaseInaccessibleException
+import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import com.jetbrains.interactiveRebase.mockStructs.MockGitRepository
 import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.threads.CommitInfoThread
-import com.jetbrains.interactiveRebase.utils.InteractiveRebaseGitUtils
+import com.jetbrains.interactiveRebase.utils.IRGitUtils
 import com.jetbrains.interactiveRebase.utils.consumers.CommitConsumer
 import git4idea.GitCommit
 import git4idea.history.GitCommitRequirements
@@ -63,7 +63,7 @@ class CommitServiceTest : BasePlatformTestCase() {
         val consumer = CommitService.GeneralCommitConsumer()
         val commit = createCommit("added tests")
 
-        val utils = mock(InteractiveRebaseGitUtils::class.java)
+        val utils = mock(IRGitUtils::class.java)
         val serviceWithUtil = CommitService(project, utils)
         serviceWithUtil.referenceBranchName = branchName
 
@@ -82,7 +82,7 @@ class CommitServiceTest : BasePlatformTestCase() {
         val consumer = CommitService.GeneralCommitConsumer()
         val commit = createCommit("added tests")
 
-        val utils = mock(InteractiveRebaseGitUtils::class.java)
+        val utils = mock(IRGitUtils::class.java)
         val serviceWithUtil = CommitService(project, utils)
         serviceWithUtil.referenceBranchName = "main"
 
@@ -97,7 +97,7 @@ class CommitServiceTest : BasePlatformTestCase() {
 
     fun testGetCommitWorksWithoutNull() {
         val repo: GitRepository = MockGitRepository("current")
-        val utils = mock(InteractiveRebaseGitUtils::class.java)
+        val utils = mock(IRGitUtils::class.java)
         val serviceWithUtil = CommitService(project, utils)
 
         val commit1 = createCommit("added tests")
@@ -117,28 +117,28 @@ class CommitServiceTest : BasePlatformTestCase() {
     }
 
     fun testGetCommitChecksIfRepoIsNull() {
-        val utils = mock(InteractiveRebaseGitUtils::class.java)
+        val utils = mock(IRGitUtils::class.java)
         val serviceWithUtil = CommitService(project, utils)
 
         doAnswer {
             null
         }.`when`(utils).getRepository()
 
-        assertThrows<IRebaseInaccessibleException> {
+        assertThrows<IRInaccessibleException> {
             serviceWithUtil.getCommits()
         }
     }
 
     fun testGetCommitChecksIfBranchIsNull() {
         val repo: GitRepository = MockGitRepository(null)
-        val utils = mock(InteractiveRebaseGitUtils::class.java)
+        val utils = mock(IRGitUtils::class.java)
         val serviceWithUtil = CommitService(project, utils)
 
         doAnswer {
             repo
         }.`when`(utils).getRepository()
 
-        assertThrows<IRebaseInaccessibleException> {
+        assertThrows<IRInaccessibleException> {
             serviceWithUtil.getCommits()
         }
     }
