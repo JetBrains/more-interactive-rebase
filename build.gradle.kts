@@ -1,3 +1,4 @@
+import com.diffplug.spotless.LineEnding
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 
@@ -91,6 +92,7 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     // by default the target is every '.kt' and '.kts` file in the java sourcesets
         ktfmt().dropboxStyle()
         ktlint()
+        lineEndings = LineEnding.UNIX
         //diktat()
         //prettier()
     }
