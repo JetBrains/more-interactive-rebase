@@ -26,24 +26,38 @@ class BranchPanel(
 
     private val circles: MutableList<CirclePanel> = mutableListOf()
 
+    /**
+     * Makes a branch panel with vertical orientation
+     * - sets dimensions
+     * - adds commits to the branch (circle panel)
+     */
     init {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
         preferredSize = Dimension(diameter, (size * diameter * 1.5).toInt())
 
         for (i in 0 until size) {
-            val circle = CirclePanel(diameter.toDouble(), borderSize, color)
-            circles.add(circle)
-            if (i > 0) {
-                // Set reference to next circle
-                circles[i - 1].next = circle
-                // Set reference to previous circle
-                circle.previous = circles[i - 1]
-            }
+            val circle = initializeCirclePanel(i)
             add(circle)
             if (i < size - 1) {
                 add(Box.createVerticalGlue())
             }
         }
+    }
+
+    /**
+     * Makes a circle panel and links it
+     * to the next and previous neighbors
+     */
+    private fun initializeCirclePanel(i: Int): CirclePanel {
+        val circle = CirclePanel(diameter.toDouble(), borderSize, color)
+        circles.add(circle)
+        if (i > 0) {
+            // Set reference to next circle
+            circles[i - 1].next = circle
+            // Set reference to previous circle
+            circle.previous = circles[i - 1]
+        }
+        return circle
     }
 
     /**
@@ -59,32 +73,43 @@ class BranchPanel(
 
         for (i in 0 until size) {
             if (i < size - 1) {
-                val circle = circles[i]
-                val nextCircle = circles[i + 1]
-
-                // Calculate line coordinates
-                val x = (width - diameter) / 2
-                val startY = circle.y + diameter / 2
-                val endY = nextCircle.y + diameter / 2
-                val glueHeight = endY - startY - diameter
-                val glueY = startY + diameter / 2 + diameter / 2
-
                 // Make line brush
                 g2d.stroke = BasicStroke(borderSize)
                 g2d.color = color
-
-                g2d.drawLine(
-                    x + diameter / 2,
-                    startY,
-                    x + diameter / 2,
-                    glueY + glueHeight,
-                )
+                drawLineBetweenCommits(i, g2d)
             }
         }
     }
 
     /**
-     * Getter for the circle panels
+     * Draws a line between two subsequent commits
+     * by calculating the start and end position
+     * of the line
+     */
+    private fun drawLineBetweenCommits(
+        i: Int,
+        g2d: Graphics2D,
+    ) {
+        val circle = circles[i]
+        val nextCircle = circles[i + 1]
+
+        // Calculate line coordinates
+        val x = (width - diameter) / 2
+        val startY = circle.y + diameter / 2
+        val endY = nextCircle.y + diameter / 2
+        val glueHeight = endY - startY - diameter
+        val glueY = startY + diameter / 2 + diameter / 2
+
+        g2d.drawLine(
+            x + diameter / 2,
+            startY,
+            x + diameter / 2,
+            glueY + glueHeight,
+        )
+    }
+
+    /**
+     * Getter for the circle panels.
      */
     fun getCirclePanels(): MutableList<CirclePanel> {
         return circles

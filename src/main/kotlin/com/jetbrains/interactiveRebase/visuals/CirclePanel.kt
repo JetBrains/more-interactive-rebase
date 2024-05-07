@@ -24,6 +24,10 @@ class CirclePanel(
     private var centerY = 0.0
     lateinit var circle: Ellipse2D
 
+    /**
+     * Makes a panel where the circle will be drawn and
+     * sets listeners.
+     */
     init {
         isOpaque = false
         preferredSize = minimumSize
@@ -32,6 +36,11 @@ class CirclePanel(
         addMouseMotionListener(CircleHoverListener(this))
     }
 
+    /**
+     * Draws circles within the circle panel
+     * - if hovered put an outline
+     * - if selected make color darker
+     */
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
 
@@ -43,11 +52,12 @@ class CirclePanel(
 
         createCircle()
 
+        g2d.color = color
+
         if (isSelected) {
             g2d.color = color.darker()
-        } else {
-            g2d.color = color
         }
+
         g2d.fill(circle)
 
         if (isHovering) {
@@ -58,7 +68,7 @@ class CirclePanel(
     }
 
     /**
-     * Creates a circle shape
+     * Creates a circle shape to be drawn inside the panel.
      */
     private fun createCircle() {
         val width = width.toDouble()

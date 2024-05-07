@@ -11,7 +11,6 @@ import java.awt.event.MouseMotionListener
  * mouse actions that all reflect different parts of a "hover" action
  */
 class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener, MouseMotionListener {
-
     /**
      * Highlight the circle if the mouse enters the encapsulating rectangle and
      * is within the drawn circle.
