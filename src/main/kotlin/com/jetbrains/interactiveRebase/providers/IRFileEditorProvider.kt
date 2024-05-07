@@ -7,7 +7,6 @@ import com.intellij.openapi.fileEditor.FileEditorProvider
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.jetbrains.interactiveRebase.threads.CommitInfoThread
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.visuals.Branch
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
@@ -16,7 +15,6 @@ import java.awt.Color
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import javax.swing.JComponent
-import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.SwingConstants
 
