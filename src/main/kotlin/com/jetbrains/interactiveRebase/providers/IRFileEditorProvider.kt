@@ -13,7 +13,6 @@ import com.jetbrains.interactiveRebase.threads.CommitInfoThread
 import com.jetbrains.interactiveRebase.visuals.Branch
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
-import git4idea.GitCommit
 import java.awt.Color
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -75,13 +74,11 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
      */
     class MyFileEditorBase(private val project: Project, private val virtualFile: VirtualFile) : FileEditorBase() {
         private var component: JComponent
-        private var commits: MutableList<GitCommit>
-        private var branchName: String
+        private var branchInfo: BranchInfo
 
         init {
             component = createComponent()
-            commits = mutableListOf()
-            branchName = ""
+            branchInfo = BranchInfo(mutableListOf(), "")
         }
 
         /**
@@ -130,16 +127,11 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
         }
 
         private fun updateComponent() {
-            val dto = BranchInfo(commits, branchName)
-            val thread = CommitInfoThread(project, dto)
+            val thread = CommitInfoThread(project, branchInfo)
             thread.start()
             thread.join()
 
-            commits = dto.commits
-            branchName = dto.branchName
-
-            var commitNames = mutableListOf<String>()
-            commits.forEach { commitNames.add(it.fullMessage) }
+            val commitNames = branchInfo.commits.map { it.subject }
 
             val gbc = GridBagConstraints()
             gbc.gridx = 0
@@ -149,7 +141,7 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
                 LabeledBranchPanel(
                     Branch(
                         true,
-                        branchName,
+                        branchInfo.branchName,
                         commitNames,
                     ),
                     Palette.BLUE,

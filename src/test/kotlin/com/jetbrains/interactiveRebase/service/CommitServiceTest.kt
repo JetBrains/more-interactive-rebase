@@ -14,6 +14,7 @@ import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.threads.CommitInfoThread
 import com.jetbrains.interactiveRebase.utils.IRGitUtils
 import com.jetbrains.interactiveRebase.utils.consumers.CommitConsumer
+import com.jetbrains.interactiveRebase.utils.consumers.GeneralCommitConsumer
 import git4idea.GitCommit
 import git4idea.history.GitCommitRequirements
 import git4idea.repo.GitRepository
@@ -36,7 +37,7 @@ class CommitServiceTest : BasePlatformTestCase() {
     fun testGeneralConsumerStopsAtCap() {
         val commit1 = createCommit("add tests")
         val commit2 = createCommit("fix tests")
-        val consumer = CommitService.GeneralCommitConsumer()
+        val consumer = GeneralCommitConsumer()
         consumer.commitConsumptionCap = 1
         consumer.consume(commit1)
         consumer.consume(commit2)
@@ -51,7 +52,7 @@ class CommitServiceTest : BasePlatformTestCase() {
     fun testGeneralConsumerIgnoresNull() {
         val commit1 = null
         val commit2 = createCommit("fix tests")
-        val consumer = CommitService.GeneralCommitConsumer()
+        val consumer = GeneralCommitConsumer()
         consumer.commitConsumptionCap = 5
         consumer.consume(commit1)
         consumer.consume(commit2)
@@ -61,7 +62,7 @@ class CommitServiceTest : BasePlatformTestCase() {
     fun testDisplayableCommitsCanDisplayWithoutReferenceBranch() {
         val branchName = "feature1"
         val repo: GitRepository = MockGitRepository("current")
-        val consumer = CommitService.GeneralCommitConsumer()
+        val consumer = GeneralCommitConsumer()
         val commit = createCommit("added tests")
 
         val utils = mock(IRGitUtils::class.java)
@@ -80,7 +81,7 @@ class CommitServiceTest : BasePlatformTestCase() {
     fun testDisplayableCommitsWithReferenceBranch() {
         val branchName = "feature1"
         val repo: GitRepository = MockGitRepository("current")
-        val consumer = CommitService.GeneralCommitConsumer()
+        val consumer = GeneralCommitConsumer()
         val commit = createCommit("added tests")
 
         val utils = mock(IRGitUtils::class.java)

@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import com.jetbrains.interactiveRebase.utils.IRGitUtils
 import com.jetbrains.interactiveRebase.utils.consumers.CommitConsumer
+import com.jetbrains.interactiveRebase.utils.consumers.GeneralCommitConsumer
 import git4idea.GitCommit
 import git4idea.repo.GitRepository
 
@@ -41,24 +42,5 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
             gitUtils.getCommitDifferenceBetweenBranches(branchName, referenceBranchName, repo, consumer)
         }
         return consumer.commits
-    }
-
-    /**
-     * Consumes all commits and only stops when it reaches the cap of commits you can consume
-     */
-    class GeneralCommitConsumer : CommitConsumer() {
-        override var commits: MutableList<GitCommit> = mutableListOf()
-
-        override fun consume(commit: GitCommit?) {
-            if (commitCounter < commitConsumptionCap) {
-                commit?.let { commits.add(it) }
-                commitCounter++
-            }
-        }
-
-        fun resetCommits() {
-            commits = mutableListOf()
-            commitCounter = 0
-        }
     }
 }

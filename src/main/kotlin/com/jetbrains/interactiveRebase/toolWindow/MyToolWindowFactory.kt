@@ -1,13 +1,11 @@
 package com.jetbrains.interactiveRebase.toolWindow
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
-import com.jetbrains.interactiveRebase.services.MyProjectService
 import com.jetbrains.interactiveRebase.visuals.Branch
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
@@ -31,8 +29,6 @@ class MyToolWindowFactory : ToolWindowFactory {
     override fun shouldBeAvailable(project: Project) = true
 
     class MyToolWindow(toolWindow: ToolWindow) {
-        private val service = toolWindow.project.service<MyProjectService>()
-
         fun getContent() =
             JBPanel<JBPanel<*>>().apply {
                 add(
