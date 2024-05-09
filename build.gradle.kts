@@ -1,10 +1,21 @@
+import com.diffplug.spotless.LineEnding
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
-import com.diffplug.gradle.spotless.SpotlessExtension
 
 
 fun properties(key: String) = providers.gradleProperty(key)
 fun environment(key: String) = providers.environmentVariable(key)
+
+buildscript {
+    repositories {
+        mavenCentral()
+        //Needed only for SNAPSHOT versions
+        //maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+    }
+    dependencies {
+        classpath("info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.15.0")
+    }
+}
 
 plugins {
     id("java")
@@ -14,6 +25,9 @@ plugins {
     alias(libs.plugins.qodana)
     alias(libs.plugins.kover)
     id("com.diffplug.spotless") version "6.25.0"
+    id("jacoco")
+    id("pmd")
+    id("info.solidsoft.pitest") version "1.15.0"
 }
 
 group = properties("pluginGroup").get()
@@ -26,7 +40,14 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
-//    implementation(libs.annotations)
+    implementation(libs.annotations)
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    testImplementation("org.mockito:mockito-core:3.12.4")
+    testImplementation("org.assertj:assertj-core:3.23.1")
+    testImplementation("org.assertj:assertj-swing-junit:3.9.2")
+    //testImplementation("junit:junit:4.12")
+
 }
 
 kotlin {
@@ -38,7 +59,7 @@ intellij {
     pluginName = properties("pluginName")
     version = properties("platformVersion")
     type = properties("platformType")
-
+    instrumentCode = false
     // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
     plugins = properties("platformPlugins").map { it.split(',').map(String::trim).filter(String::isNotEmpty) }
 }
@@ -49,6 +70,17 @@ changelog {
     repositoryUrl = properties("pluginRepositoryUrl")
 }
 
+jacoco {
+    toolVersion = "0.8.9" // Use the desired version of JaCoCo
+//    reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
+}
+
+pmd {
+    isConsoleOutput = true
+    toolVersion = "6.21.0"
+    incrementalAnalysis = true
+}
+
 // Configure Gradle Kover Plugin - read more: https://github.com/Kotlin/kotlinx-kover#configuration
 koverReport {
     defaults {
@@ -57,15 +89,19 @@ koverReport {
         }
     }
 }
+
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     kotlin {
     // by default the target is every '.kt' and '.kts` file in the java sourcesets
         ktfmt().dropboxStyle()
         ktlint()
+        lineEndings = LineEnding.UNIX
         //diktat()
         //prettier()
     }
 }
+
+apply(plugin = "info.solidsoft.pitest")
 
 tasks {
     wrapper {
@@ -104,14 +140,14 @@ tasks {
         }
     }
 
-    // Configure UI tests plugin
-    // Read more: https://github.com/JetBrains/intellij-ui-test-robot
-    runIdeForUiTests {
-        systemProperty("robot-server.port", "8082")
-        systemProperty("ide.mac.message.dialogs.as.sheets", "false")
-        systemProperty("jb.privacy.policy.text", "<!--999.999-->")
-        systemProperty("jb.consents.confirmation.enabled", "false")
-    }
+//    // Configure UI tests plugin
+//    // Read more: https://github.com/JetBrains/intellij-ui-test-robot
+//    runIdeForUiTests {
+//        systemProperty("robot-server.port", "8082")
+//        systemProperty("ide.mac.message.dialogs.as.sheets", "false")
+//        systemProperty("jb.privacy.policy.text", "<!--999.999-->")
+//        systemProperty("jb.consents.confirmation.enabled", "false")
+//    }
 
     signPlugin {
         certificateChain = environment("CERTIFICATE_CHAIN")
@@ -139,5 +175,46 @@ tasks {
             jvmTarget = "17"
         }
     }
+
+    test {
+        useJUnit()
+        jacoco {
+            enabled = true
+            finalizedBy(jacocoTestCoverageVerification)
+        }
+        pitest {
+            targetClasses.set(setOf("com.jetbrains.interactiveRebase.*")) //by default "${project.group}.*"
+            pitestVersion.set("1.15.0") //not needed when a default PIT version should be used
+            threads.set(4)
+            outputFormats.set(setOf("XML", "HTML"))
+            timestampedReports.set(false)
+        }
+    }
+
+    jacocoTestReport {
+        dependsOn(test)
+    }
+    jacocoTestCoverageVerification {
+        dependsOn(test)
+        violationRules {
+            rule {
+                enabled = true
+                element = "CLASS"
+                includes =  listOf("com.jetbrains.interactiveRebase.**")
+
+                limit {
+                    counter = "BRANCH"
+                    value = "COVEREDRATIO"
+                    minimum = "0.0".toBigDecimal()
+                }
+            }
+        }
+    }
 }
 
+tasks.withType(Test::class) {
+    configure<JacocoTaskExtension> {
+        isIncludeNoLocationClasses = true
+        includes = listOf("com.jetbrains.interactiveRebase.*")
+    }
+}

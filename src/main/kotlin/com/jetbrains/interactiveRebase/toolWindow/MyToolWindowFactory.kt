@@ -1,16 +1,14 @@
 package com.jetbrains.interactiveRebase.toolWindow
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
-import com.jetbrains.interactiveRebase.MyBundle
-import com.jetbrains.interactiveRebase.services.MyProjectService
-import javax.swing.JButton
+import com.jetbrains.interactiveRebase.visuals.Branch
+import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
+import com.jetbrains.interactiveRebase.visuals.Palette
 
 class MyToolWindowFactory : ToolWindowFactory {
     init {
@@ -31,19 +29,23 @@ class MyToolWindowFactory : ToolWindowFactory {
     override fun shouldBeAvailable(project: Project) = true
 
     class MyToolWindow(toolWindow: ToolWindow) {
-        private val service = toolWindow.project.service<MyProjectService>()
-
         fun getContent() =
             JBPanel<JBPanel<*>>().apply {
-                val label = JBLabel(MyBundle.message("randomLabel", "?"))
-
-                add(label)
                 add(
-                    JButton(MyBundle.message("shuffle")).apply {
-                        addActionListener {
-                            label.text = MyBundle.message("randomLabel", service.getRandomNumber())
-                        }
-                    },
+                    LabeledBranchPanel(
+                        Branch(
+                            true,
+                            "MAIN",
+                            listOf(
+                                "Initial commit",
+                                "Added feature X",
+                                "Fixed issue #123",
+                                "Refactored code",
+                                "Merged branch 'feature-x' into 'main'",
+                            ),
+                        ),
+                        Palette.LIME,
+                    ),
                 )
             }
     }
