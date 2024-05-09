@@ -7,17 +7,22 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import git4idea.GitCommit
+import org.assertj.core.api.Assertions.assertThat
 import java.awt.event.MouseEvent
 import java.awt.geom.Ellipse2D
 
 class CircleHoverListenerTest : BasePlatformTestCase() {
     private lateinit var circlePanel: CirclePanel
     private lateinit var listener: CircleHoverListener
+    private lateinit var commit1: CommitInfo
 
     override fun setUp() {
         super.setUp()
         circlePanel = mock(CirclePanel::class.java)
         listener = CircleHoverListener(circlePanel)
+        commit1 = CommitInfo(mock(GitCommit::class.java), null)
     }
 
     fun testMouseEnteredInsideCircle() {
@@ -25,11 +30,12 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
         `when`(event.x).thenReturn(10)
         `when`(event.y).thenReturn(10)
         `when`(circlePanel.circle).thenReturn(Ellipse2D.Double(0.0, 0.0, 20.0, 20.0))
+        `when`(circlePanel.commit).thenReturn(commit1)
 
         listener.mouseEntered(event)
 
-        verify(circlePanel).isHovering = true
         verify(circlePanel).repaint()
+        assertThat(circlePanel.commit.isHovered).isTrue()
     }
 
     fun testMouseEnteredOutsideCircle() {
@@ -57,10 +63,11 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
         `when`(event.x).thenReturn(10)
         `when`(event.y).thenReturn(10)
         `when`(circlePanel.circle).thenReturn(Ellipse2D.Double(10.0, 10.0, 20.0, 20.0))
+        `when`(circlePanel.commit).thenReturn(commit1)
 
         listener.mouseExited(event)
 
-        verify(circlePanel).isHovering = false
+        assertThat(circlePanel.commit.isHovered).isFalse()
         verify(circlePanel).repaint()
     }
 
@@ -69,6 +76,7 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
         `when`(event.x).thenReturn(10)
         `when`(event.y).thenReturn(10)
         `when`(circlePanel.circle).thenReturn(Ellipse2D.Double(0.0, 0.0, 20.0, 20.0))
+        `when`(circlePanel.commit).thenReturn(commit1)
         listener.mouseExited(event)
         verify(circlePanel, never()).repaint()
     }
@@ -83,9 +91,9 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
     }
 
     fun testMouseClicked() {
-        `when`(circlePanel.isSelected).thenReturn(false)
+        `when`(circlePanel.commit).thenReturn(commit1)
         listener.mouseClicked(null)
-        verify(circlePanel).isSelected = true
+        assertThat(circlePanel.commit.isSelected).isTrue()
         verify(circlePanel).repaint()
     }
 
@@ -94,9 +102,10 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
         `when`(event.x).thenReturn(10)
         `when`(event.y).thenReturn(10)
         `when`(circlePanel.circle).thenReturn(Ellipse2D.Double(0.0, 0.0, 20.0, 20.0))
+        `when`(circlePanel.commit).thenReturn(commit1)
         listener.mouseMoved(event)
 
-        verify(circlePanel).isHovering = true
+        assertThat(circlePanel.commit.isHovered).isTrue()
         verify(circlePanel).repaint()
     }
 
@@ -105,9 +114,10 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
         `when`(event.x).thenReturn(100)
         `when`(event.y).thenReturn(100)
         `when`(circlePanel.circle).thenReturn(Ellipse2D.Double(10.0, 10.0, 20.0, 20.0))
+        `when`(circlePanel.commit).thenReturn(commit1)
         listener.mouseMoved(event)
 
-        verify(circlePanel).isHovering = false
+        assertThat(circlePanel.commit.isHovered).isFalse()
         verify(circlePanel).repaint()
     }
 

@@ -6,6 +6,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
 import com.intellij.ui.util.preferredWidth
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -23,7 +24,7 @@ import javax.swing.SwingConstants
  * - RIGHT means commits appear to the right and names to the left
  */
 class LabeledBranchPanel(
-    private val branch: Branch,
+    private val branch: BranchInfo,
     private val color: JBColor,
     private val alignment: Int = SwingConstants.LEFT,
 ) :
@@ -49,7 +50,7 @@ class LabeledBranchPanel(
         i: Int,
         circle: CirclePanel,
     ): JBLabel {
-        val commitLabel = JBLabel(branch.commits[i])
+        val commitLabel = JBLabel(branch.commits[i].getSubject())
         commitLabel.labelFor = circle
         commitLabel.preferredSize = Dimension(commitLabel.preferredWidth, branchPanel.diameter)
         commitLabel.alignmentX =

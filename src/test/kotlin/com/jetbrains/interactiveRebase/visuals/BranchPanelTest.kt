@@ -1,14 +1,13 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.ui.JBColor
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import git4idea.GitCommit
 import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito.anyInt
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
+import org.mockito.Mockito.*
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
@@ -17,6 +16,9 @@ import javax.swing.plaf.ComponentUI
 class BranchPanelTest {
     private lateinit var graph: Graphics2D
     private lateinit var graph2: Graphics
+    private lateinit var commit1: CommitInfo
+    private lateinit var commit2: CommitInfo
+    private lateinit var commit3: CommitInfo
     private lateinit var ui: ComponentUI
     private lateinit var branchPanel: BranchPanel
 
@@ -25,7 +27,10 @@ class BranchPanelTest {
         graph = mock(Graphics2D::class.java)
         graph2 = mock(Graphics::class.java)
         ui = mock(ComponentUI::class.java)
-        branchPanel = BranchPanel(Branch(true, "branch", listOf("a", "b", "c")), JBColor.BLUE)
+        commit1 = CommitInfo(mock(GitCommit::class.java), null)
+        commit2 = CommitInfo(mock(GitCommit::class.java), null)
+        commit3 =  CommitInfo(mock(GitCommit::class.java), null)
+        branchPanel = BranchPanel(BranchInfo("branch", mutableListOf(commit1, commit2, commit3)), JBColor.BLUE)
     }
 
     @Test

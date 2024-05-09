@@ -75,7 +75,7 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
 
         init {
             component = createComponent()
-            branchInfo = BranchInfo(mutableListOf(), "")
+            branchInfo = BranchInfo()
             service = ComponentService(component, branchInfo)
         }
 

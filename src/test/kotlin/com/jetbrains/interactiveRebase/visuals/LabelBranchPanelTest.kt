@@ -5,8 +5,12 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import git4idea.GitCommit
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 import java.awt.GridBagConstraints
 import java.awt.Insets
 import javax.swing.SwingConstants
@@ -18,7 +22,13 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
     override fun setUp() {
         super.setUp()
         circle = mock(CirclePanel::class.java)
-        val branch = Branch(true, "branch", listOf("One", "Two", "Three"))
+        val commit1 = CommitInfo(mock(GitCommit::class.java), null)
+        val commit2 = CommitInfo(mock(GitCommit::class.java), null)
+        val commit3 = CommitInfo(mock(GitCommit::class.java), null)
+        `when`(commit1.commit.subject).thenReturn("One")
+        `when`(commit2.commit.subject).thenReturn("Two")
+        `when`(commit3.commit.subject).thenReturn("Three")
+        val branch = BranchInfo("branch", mutableListOf(commit1, commit2, commit3))
         labeledBranch = LabeledBranchPanel(branch, JBColor.BLUE)
     }
 

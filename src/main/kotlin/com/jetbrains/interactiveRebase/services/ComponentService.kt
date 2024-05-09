@@ -3,7 +3,6 @@ package com.jetbrains.interactiveRebase.services
 import HeaderPanel
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
-import com.jetbrains.interactiveRebase.visuals.Branch
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
 import java.awt.BorderLayout
@@ -29,7 +28,6 @@ class ComponentService(val mainComponent: JComponent, val branchInfo: BranchInfo
      * Creates a branch panel with the branch info.
      */
     fun createBranchPanel(): JBPanel<JBPanel<*>> {
-        val commitNames = branchInfo.commits.map { it.subject }
         val branchPanel = JBPanel<JBPanel<*>>()
         branchPanel.layout = GridBagLayout()
         val gbc = GridBagConstraints()
@@ -38,11 +36,7 @@ class ComponentService(val mainComponent: JComponent, val branchInfo: BranchInfo
         gbc.fill = GridBagConstraints.BOTH
         branchPanel.add(
             LabeledBranchPanel(
-                Branch(
-                    true,
-                    branchInfo.branchName,
-                    commitNames,
-                ),
+                branchInfo,
                 Palette.BLUE,
                 SwingConstants.RIGHT,
             ),

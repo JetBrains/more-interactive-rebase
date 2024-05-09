@@ -13,7 +13,7 @@ class ComponentServiceTest : BasePlatformTestCase() {
     override fun setUp() {
         super.setUp()
         mainComponent = JBPanel<JBPanel<*>>()
-        branchInfo = BranchInfo(mutableListOf(), "main")
+        branchInfo = BranchInfo("main", mutableListOf())
     }
 
     fun testUpdateMainPanel() {

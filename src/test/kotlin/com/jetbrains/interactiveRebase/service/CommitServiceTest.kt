@@ -19,10 +19,7 @@ import git4idea.GitCommit
 import git4idea.history.GitCommitRequirements
 import git4idea.repo.GitRepository
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.any
-import org.mockito.Mockito.doAnswer
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
+import org.mockito.Mockito.*
 
 class CommitServiceTest : BasePlatformTestCase() {
     private lateinit var service: CommitService
@@ -31,7 +28,7 @@ class CommitServiceTest : BasePlatformTestCase() {
     override fun setUp() {
         super.setUp()
         service = project.service<CommitService>()
-        thread = CommitInfoThread(project, BranchInfo(mutableListOf(), "|"))
+        thread = CommitInfoThread(project, BranchInfo())
     }
 
     fun testGeneralConsumerStopsAtCap() {
