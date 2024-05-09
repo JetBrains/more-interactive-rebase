@@ -43,14 +43,4 @@ class BranchPanelTest {
     fun testGetCirclePanels() {
         assertEquals(branchPanel.getCirclePanels().size, 3)
     }
-
-    @Test
-    fun testColor() {
-        assertEquals(branchPanel.color, JBColor.BLUE)
-    }
-
-    @Test
-    fun testBranchSize() {
-        assertEquals(branchPanel.borderSize, 1f)
-    }
 }

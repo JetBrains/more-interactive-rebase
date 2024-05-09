@@ -1,8 +1,8 @@
 package com.jetbrains.interactiveRebase.listeners
 
 import CirclePanel
-import org.junit.Before
-import org.junit.Test
+import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import org.junit.Assert
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
@@ -10,17 +10,16 @@ import org.mockito.Mockito.`when`
 import java.awt.event.MouseEvent
 import java.awt.geom.Ellipse2D
 
-class CircleHoverListenerTest {
+class CircleHoverListenerTest : BasePlatformTestCase() {
     private lateinit var circlePanel: CirclePanel
     private lateinit var listener: CircleHoverListener
 
-    @Before
-    fun setUp() {
+    override fun setUp() {
+        super.setUp()
         circlePanel = mock(CirclePanel::class.java)
         listener = CircleHoverListener(circlePanel)
     }
 
-    @Test
     fun testMouseEnteredInsideCircle() {
         val event = mock(MouseEvent::class.java)
         `when`(event.x).thenReturn(10)
@@ -33,7 +32,6 @@ class CircleHoverListenerTest {
         verify(circlePanel).repaint()
     }
 
-    @Test
     fun testMouseEnteredOutsideCircle() {
         val event = mock(MouseEvent::class.java)
         `when`(event.x).thenReturn(10)
@@ -44,7 +42,6 @@ class CircleHoverListenerTest {
         verify(circlePanel, never()).repaint()
     }
 
-    @Test
     fun testMouseEnteredNullEvent() {
         val event = mock(MouseEvent::class.java)
         `when`(event.x).thenReturn(10)
@@ -55,7 +52,6 @@ class CircleHoverListenerTest {
         verify(circlePanel, never()).repaint()
     }
 
-    @Test
     fun testMouseExitedOutsideCircle() {
         val event = mock(MouseEvent::class.java)
         `when`(event.x).thenReturn(10)
@@ -68,7 +64,6 @@ class CircleHoverListenerTest {
         verify(circlePanel).repaint()
     }
 
-    @Test
     fun testMouseExitedInsideCircle() {
         val event = mock(MouseEvent::class.java)
         `when`(event.x).thenReturn(10)
@@ -78,7 +73,6 @@ class CircleHoverListenerTest {
         verify(circlePanel, never()).repaint()
     }
 
-    @Test
     fun testMouseExitedNullEvent() {
         val event = mock(MouseEvent::class.java)
         `when`(event.x).thenReturn(10)
@@ -88,7 +82,6 @@ class CircleHoverListenerTest {
         verify(circlePanel, never()).repaint()
     }
 
-    @Test
     fun testMouseClicked() {
         `when`(circlePanel.isSelected).thenReturn(false)
         listener.mouseClicked(null)
@@ -96,7 +89,6 @@ class CircleHoverListenerTest {
         verify(circlePanel).repaint()
     }
 
-    @Test
     fun testMouseMovedInsideCircle() {
         val event = mock(MouseEvent::class.java)
         `when`(event.x).thenReturn(10)
@@ -108,8 +100,7 @@ class CircleHoverListenerTest {
         verify(circlePanel).repaint()
     }
 
-    @Test
-    fun testMouseMoved_OutsideCircle() {
+    fun testMouseMovedOutsideCircle() {
         val event = mock(MouseEvent::class.java)
         `when`(event.x).thenReturn(100)
         `when`(event.y).thenReturn(100)
@@ -118,5 +109,22 @@ class CircleHoverListenerTest {
 
         verify(circlePanel).isHovering = false
         verify(circlePanel).repaint()
+    }
+
+    fun testUnsupportedOperations() {
+        val event = mock(MouseEvent::class.java)
+
+        listOf(
+            { listener.mousePressed(event) },
+            { listener.mouseReleased(event) },
+            { listener.mouseDragged(event) },
+        ).forEach { testOperation ->
+            try {
+                testOperation.invoke()
+                Assert.fail("Expected UnsupportedOperationException was not thrown")
+            } catch (e: UnsupportedOperationException) {
+                // The expected behavior of these dummy methods is to do nothing other than throw an exception.
+            }
+        }
     }
 }

@@ -53,15 +53,24 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
         circlePanel.repaint()
     }
 
+    /**
+     * mousePressed is not yet implemented
+     */
     override fun mousePressed(e: MouseEvent?) {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("mousePressed is not supported for the CircleHoverListener")
     }
 
+    /**
+     * mouseReleased is not yet implemented
+     */
     override fun mouseReleased(e: MouseEvent?) {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("mouseReleased is not supported for the CircleHoverListener")
     }
 
+    /**
+     * mouseDragged is not yet implemented
+     */
     override fun mouseDragged(e: MouseEvent?) {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("mouseDragged is not supported for the CircleHoverListener")
     }
 }
