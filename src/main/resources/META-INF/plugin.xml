@@ -17,7 +17,6 @@
     </extensions>
 
     <applicationListeners>
-        <listener class="com.jetbrains.interactiveRebase.listeners.MyApplicationActivationListener" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
     </applicationListeners>
     <actions>
         <action class="com.jetbrains.interactiveRebase.actions.CreateEditorTabAction" id="com.jetbrains.interactive_rebase.CreateEditorTabAction"
