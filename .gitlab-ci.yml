@@ -25,7 +25,6 @@ stages:
     paths:
       - .gradle/
       - .idea/
-      - build/
     policy: pull-push
 
 gradle_build:
@@ -41,6 +40,8 @@ gradle_build:
     - gradle clean
     - gradle build testClasses  -x spotlessCheck -x test 
 
+
+
 build-interactive-rebase-jetbrains:
   extends: .build_cached
   needs:
@@ -51,8 +52,9 @@ build-interactive-rebase-jetbrains:
   script:
     gradle assemble 
 
+
 spotless-interactive-rebase-jetbrains:
-#  extends: .build_cached
+  #extends: .build_cached
   needs:
     - gradle_build
   dependencies:
@@ -61,15 +63,16 @@ spotless-interactive-rebase-jetbrains:
   script:
     gradle spotlessKotlinCheck 
 
+
 PMD-interactive-rebase-jetbrains:
-#  extends: .build_cached
+  #extends: .build_cached
   needs:
     - gradle_build
   dependencies:
     - gradle_build
   stage: staticAnalysis
   script:
-    gradle pmdMain pmdTest 
+    gradle pmdMain pmdTest
 
 test-interactive-rebase-jetbrains:
 #  extends: .build_cached
@@ -79,6 +82,6 @@ test-interactive-rebase-jetbrains:
     - gradle_build
   stage: test
   script:
-    - gradle test jacocoTestReport 
+    - gradle test jacocoTestReport
     - cat build/reports/jacoco/test/html/index.html | grep -Po "Total.*?([0-9]{1,3})%"
   coverage: /([0-9]{1,3})%/

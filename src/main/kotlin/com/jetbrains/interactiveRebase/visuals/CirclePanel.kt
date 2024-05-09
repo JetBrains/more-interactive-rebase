@@ -28,6 +28,7 @@ class CirclePanel(
      * Makes a panel where the circle will be drawn and
      * sets listeners.
      */
+
     init {
         isOpaque = false
         preferredSize = minimumSize
@@ -41,7 +42,8 @@ class CirclePanel(
      * - if hovered put an outline
      * - if selected make color darker
      */
-    override fun paintComponent(g: Graphics) {
+
+    public override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
 
         // Cast the Graphics object to Graphics2D for more advanced rendering
@@ -52,10 +54,10 @@ class CirclePanel(
 
         createCircle()
 
-        g2d.color = color
-
         if (isSelected) {
             g2d.color = color.darker()
+        } else {
+            g2d.color = color
         }
 
         g2d.fill(circle)

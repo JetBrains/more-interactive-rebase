@@ -18,10 +18,10 @@ import javax.swing.BoxLayout
  */
 class BranchPanel(
     private val branch: Branch,
-    private val color: JBColor,
+    val color: JBColor,
 ) : JBPanel<JBPanel<*>>() {
     val diameter = 25
-    private val borderSize = 1f
+    val borderSize = 1f
     private val size = branch.commits.size
 
     private val circles: MutableList<CirclePanel> = mutableListOf()
@@ -36,6 +36,7 @@ class BranchPanel(
         preferredSize = Dimension(diameter, (size * diameter * 1.5).toInt())
 
         for (i in 0 until size) {
+
             val circle = initializeCirclePanel(i)
             add(circle)
             if (i < size - 1) {
@@ -63,7 +64,7 @@ class BranchPanel(
     /**
      * Draws the line between the circle nodes.
      */
-    override fun paintComponent(g: Graphics) {
+    public override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
         val g2d = g as Graphics2D
         g2d.setRenderingHint(

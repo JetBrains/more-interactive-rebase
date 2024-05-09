@@ -15,6 +15,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
      * Highlight the circle if the mouse enters the encapsulating rectangle and
      * is within the drawn circle.
      */
+
     override fun mouseEntered(e: MouseEvent?) {
         if (e != null && circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
             circlePanel.isHovering = true
@@ -25,6 +26,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
     /**
      * Remove hovering if the mouse exits the encapsulating rectangle.
      */
+
     override fun mouseExited(e: MouseEvent?) {
         if (e != null && !circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
             circlePanel.isHovering = false
@@ -45,6 +47,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
      * and has subsequently moved within the panel,
      * so that it is now within the circle boundaries.
      */
+
     override fun mouseMoved(e: MouseEvent?) {
         circlePanel.isHovering = e != null && circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())
         circlePanel.repaint()

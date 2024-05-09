@@ -43,7 +43,7 @@ class LabeledBranchPanel(
 
     /**
      * Sets up the appearance of a commit label
-     * and links it to the corresponding commit (circle panel).
+     * and links it to the corresponding commit (circle panel)
      */
     private fun generateCommitLabel(
         i: Int,
@@ -67,11 +67,13 @@ class LabeledBranchPanel(
     /**
      * Draws the branch with the added labels.
      */
+
     override fun addNotify() {
         super.addNotify()
 
         layout = GridBagLayout()
         val gbc = GridBagConstraints()
+
         setBranchNamePosition(gbc)
         add(branchNameLabel, gbc)
 

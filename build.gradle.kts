@@ -45,6 +45,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
     testImplementation("org.mockito:mockito-core:3.12.4")
     testImplementation("org.assertj:assertj-core:3.23.1")
+    testImplementation("org.assertj:assertj-swing-junit:3.9.2")
+    //testImplementation("junit:junit:4.12")
+
 }
 
 kotlin {
@@ -57,7 +60,6 @@ intellij {
     version = properties("platformVersion")
     type = properties("platformType")
     instrumentCode = false
-
     // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
     plugins = properties("platformPlugins").map { it.split(',').map(String::trim).filter(String::isNotEmpty) }
 }
