@@ -22,14 +22,14 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         labeledBranch = LabeledBranchPanel(branch, JBColor.BLUE)
     }
 
-    fun testGenerateCommitLabel()  {
+    fun testGenerateCommitLabel() {
         assertThat(labeledBranch.generateCommitLabel(1, circle).text).isEqualTo("Two")
         assertThat(labeledBranch.generateCommitLabel(1, circle).labelFor).isEqualTo(circle)
         assertThat(labeledBranch.generateCommitLabel(1, circle).verticalTextPosition).isEqualTo(SwingConstants.CENTER)
         assertThat(labeledBranch.generateCommitLabel(1, circle).alignmentX).isEqualTo(JBPanel.LEFT_ALIGNMENT)
     }
 
-    fun testSetBranchNamePosition()  {
+    fun testSetBranchNamePosition() {
         val gbc = GridBagConstraints()
         labeledBranch.setBranchNamePosition(gbc)
         assertThat(gbc.gridx).isEqualTo(0)
@@ -40,7 +40,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         assertThat(gbc.insets).isEqualTo(Insets(5, 5, 5, 5))
     }
 
-    fun testSetBranchPosition()  {
+    fun testSetBranchPosition() {
         val gbc = GridBagConstraints()
         labeledBranch.setBranchPosition(gbc)
         assertThat(gbc.gridx).isEqualTo(0)
@@ -51,7 +51,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         assertThat(gbc.insets).isEqualTo(Insets(5, 5, 5, 5))
     }
 
-    fun testSetCommitNamesPosition()  {
+    fun testSetCommitNamesPosition() {
         val gbc = GridBagConstraints()
         labeledBranch.setCommitNamesPosition(gbc)
         assertThat(gbc.gridx).isEqualTo(1)
@@ -62,7 +62,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         assertThat(gbc.insets).isEqualTo(Insets(5, 5, 5, 5))
     }
 
-    fun testWrapCommitLabels()  {
+    fun testWrapCommitLabels() {
         val labelPanelWrapper = JBPanel<JBPanel<*>>()
         labeledBranch.wrapCommitLabels(labelPanelWrapper)
         val label0: JBLabel = labelPanelWrapper.getComponent(0) as JBLabel
