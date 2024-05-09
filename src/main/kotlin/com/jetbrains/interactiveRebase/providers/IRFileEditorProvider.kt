@@ -9,16 +9,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.services.ComponentService
 import com.jetbrains.interactiveRebase.threads.CommitInfoThread
-import com.jetbrains.interactiveRebase.visuals.Branch
-import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
-import com.jetbrains.interactiveRebase.visuals.Palette
+import java.awt.BorderLayout
 import java.awt.Color
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
-import javax.swing.SwingConstants
 
 /**
  * A FileEditorProvider for the IRVirtualFile. It is used to
@@ -75,10 +71,12 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
     class MyFileEditorBase(private val project: Project, private val virtualFile: VirtualFile) : FileEditorBase() {
         private var component: JComponent
         private var branchInfo: BranchInfo
+        private val service: ComponentService
 
         init {
             component = createComponent()
             branchInfo = BranchInfo(mutableListOf(), "")
+            service = ComponentService(component, branchInfo)
         }
 
         /**
@@ -119,36 +117,23 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
             return virtualFile
         }
 
+        /**
+         *  Creates the main swing component for the editor.
+         */
         private fun createComponent(): JComponent {
             val component = JBPanel<JBPanel<*>>()
-            component.layout = GridBagLayout()
-
+            component.layout = BorderLayout()
             return component
         }
 
+        /**
+         * Updates the main panel with the branch info.
+         */
         private fun updateComponent() {
             val thread = CommitInfoThread(project, branchInfo)
             thread.start()
             thread.join()
-
-            val commitNames = branchInfo.commits.map { it.subject }
-
-            val gbc = GridBagConstraints()
-            gbc.gridx = 0
-            gbc.gridy = 0
-            gbc.fill = GridBagConstraints.BOTH
-            component.add(
-                LabeledBranchPanel(
-                    Branch(
-                        true,
-                        branchInfo.branchName,
-                        commitNames,
-                    ),
-                    Palette.BLUE,
-                    SwingConstants.RIGHT,
-                ),
-                gbc,
-            )
+            service.updateMainPanel()
         }
     }
 }
