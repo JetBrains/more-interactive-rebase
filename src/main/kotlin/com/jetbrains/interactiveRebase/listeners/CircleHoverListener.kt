@@ -1,6 +1,8 @@
 package com.jetbrains.interactiveRebase.listeners
 
 import CirclePanel
+import com.intellij.openapi.components.service
+import com.jetbrains.interactiveRebase.services.ComponentService
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import java.awt.event.MouseMotionListener
@@ -11,6 +13,7 @@ import java.awt.event.MouseMotionListener
  * mouse actions that all reflect different parts of a "hover" action
  */
 class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener, MouseMotionListener {
+    private val componentService = circlePanel.commit.project.service<ComponentService>()
     /**
      * Highlight the circle if the mouse enters the encapsulating rectangle and
      * is within the drawn circle.
@@ -39,9 +42,9 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
      */
     override fun mouseClicked(e: MouseEvent?) {
         circlePanel.commit.isSelected = !circlePanel.commit.isSelected
-//        selectionManager.toggleCommitSelection(circlePanel.commit)
+        componentService.toggleCommitSelection(circlePanel.commit)
         circlePanel.repaint()
-//        println("Selected commits: ${selectionManager.getSelectedCommits()}")
+        println("Selected commits: ${componentService.getSelectedCommits()}")
     }
 
     /**

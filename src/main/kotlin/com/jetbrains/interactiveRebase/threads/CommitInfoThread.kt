@@ -23,7 +23,7 @@ class CommitInfoThread(
     fun getCommitInfoForBranch(): List<CommitInfo> {
         val commits = CommitService(project).getCommits()
         return commits.map { commit ->
-            CommitInfo(commit, null)
+            CommitInfo(commit, project,null)
         }
     }
 

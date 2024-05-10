@@ -25,7 +25,8 @@ class ComponentService(val project: Project) {
         mainComponent = createMainComponent()
         branchInfo = BranchInfo()
         selectedCommits = mutableListOf()
-        }
+    }
+
     fun createMainComponent(): JComponent {
         val component = JBPanel<JBPanel<*>>()
         component.layout = BorderLayout()
