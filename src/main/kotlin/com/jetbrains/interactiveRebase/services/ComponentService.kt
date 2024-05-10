@@ -33,7 +33,7 @@ class ComponentService(val project: Project) {
         return component
     }
 
-    fun updateMainComponentThread(): JComponent{
+    fun updateMainComponentThread(): JComponent {
         val thread = CommitInfoThread(project, branchInfo)
         thread.start()
         thread.join()

@@ -13,7 +13,8 @@ import java.awt.event.MouseMotionListener
  * mouse actions that all reflect different parts of a "hover" action
  */
 class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener, MouseMotionListener {
-    private val componentService = circlePanel.commit.project.service<ComponentService>()
+    private lateinit var componentService: ComponentService
+
     /**
      * Highlight the circle if the mouse enters the encapsulating rectangle and
      * is within the drawn circle.
@@ -41,6 +42,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
      * Select a commit upon a click.
      */
     override fun mouseClicked(e: MouseEvent?) {
+        componentService = circlePanel.commit.project.service<ComponentService>()
         circlePanel.commit.isSelected = !circlePanel.commit.isSelected
         componentService.toggleCommitSelection(circlePanel.commit)
         circlePanel.repaint()

@@ -1,3 +1,4 @@
+
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
@@ -17,7 +18,7 @@ class CirclePanel(
     private val color: JBColor,
     var commit: CommitInfo,
     var next: CirclePanel? = null,
-    var previous: CirclePanel? = null
+    var previous: CirclePanel? = null,
 ) : JBPanel<JBPanel<*>>() {
     private var centerX = 0.0
     private var centerY = 0.0

@@ -26,7 +26,6 @@ class MyToolWindowFactory : ToolWindowFactory {
     override fun shouldBeAvailable(project: Project) = true
 
     class MyToolWindow(toolWindow: ToolWindow) {
-        fun getContent() =
-            JBPanel<JBPanel<*>>()
+        fun getContent() = JBPanel<JBPanel<*>>()
     }
 }

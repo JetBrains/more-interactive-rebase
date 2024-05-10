@@ -19,7 +19,10 @@ import git4idea.GitCommit
 import git4idea.history.GitCommitRequirements
 import git4idea.repo.GitRepository
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.*
+import org.mockito.Mockito.any
+import org.mockito.Mockito.doAnswer
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
 
 class CommitServiceTest : BasePlatformTestCase() {
     private lateinit var service: CommitService

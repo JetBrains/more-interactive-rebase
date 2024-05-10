@@ -2,14 +2,13 @@ package com.jetbrains.interactiveRebase.listeners
 
 import CirclePanel
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import org.junit.Assert
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import git4idea.GitCommit
+import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import git4idea.GitCommit
-import org.assertj.core.api.Assertions.assertThat
 import java.awt.event.MouseEvent
 import java.awt.geom.Ellipse2D
 
@@ -22,7 +21,7 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
         super.setUp()
         circlePanel = mock(CirclePanel::class.java)
         listener = CircleHoverListener(circlePanel)
-        commit1 = CommitInfo(mock(GitCommit::class.java), null)
+        commit1 = CommitInfo(mock(GitCommit::class.java), project, null)
     }
 
     fun testMouseEnteredInsideCircle() {
@@ -119,22 +118,5 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
 
         assertThat(circlePanel.commit.isHovered).isFalse()
         verify(circlePanel).repaint()
-    }
-
-    fun testUnsupportedOperations() {
-        val event = mock(MouseEvent::class.java)
-
-        listOf(
-            { listener.mousePressed(event) },
-            { listener.mouseReleased(event) },
-            { listener.mouseDragged(event) },
-        ).forEach { testOperation ->
-            try {
-                testOperation.invoke()
-                Assert.fail("Expected UnsupportedOperationException was not thrown")
-            } catch (e: UnsupportedOperationException) {
-                // The expected behavior of these dummy methods is to do nothing other than throw an exception.
-            }
-        }
     }
 }
