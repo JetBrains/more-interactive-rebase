@@ -19,12 +19,10 @@ import javax.swing.SwingConstants
 class ComponentService(val project: Project) {
     private var mainComponent: JComponent
     private var branchInfo: BranchInfo
-    private val selectedCommits: MutableList<CommitInfo>
 
     init {
         mainComponent = createMainComponent()
         branchInfo = BranchInfo()
-        selectedCommits = mutableListOf()
     }
 
     fun createMainComponent(): JComponent {
@@ -76,13 +74,24 @@ class ComponentService(val project: Project) {
 
     fun toggleCommitSelection(commit: CommitInfo) {
         if (commit.isSelected) {
-            selectedCommits.add(commit)
+            branchInfo.selectedCommits.add(commit)
         } else {
-            selectedCommits.remove(commit)
+            branchInfo.selectedCommits.remove(commit)
         }
     }
 
     fun getSelectedCommits(): List<CommitInfo> {
-        return selectedCommits.toList()
+        return branchInfo.selectedCommits.toList()
+    }
+
+    companion object {
+        @Volatile
+        private var instance: ComponentService? = null
+
+        fun getInstance(project: Project): ComponentService {
+            return instance ?: synchronized(this) {
+                instance ?: ComponentService(project).also { instance = it }
+            }
+        }
     }
 }

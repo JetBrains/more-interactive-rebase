@@ -65,7 +65,7 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
      * It is used to create the Editor Tab for the Interactive Rebase feature.
      */
     class MyFileEditorBase(project: Project, private val virtualFile: VirtualFile) : FileEditorBase() {
-        private val service: ComponentService = ComponentService(project)
+        private val service: ComponentService = ComponentService.getInstance(project)
 
         /**
          * Returns a component which represents the editor in UI.
