@@ -12,5 +12,4 @@ class CommitInfo(
       fun getSubject(): String {
         return commit.subject
       }
-
 }

@@ -39,7 +39,9 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
      */
     override fun mouseClicked(e: MouseEvent?) {
         circlePanel.commit.isSelected = !circlePanel.commit.isSelected
+//        selectionManager.toggleCommitSelection(circlePanel.commit)
         circlePanel.repaint()
+//        println("Selected commits: ${selectionManager.getSelectedCommits()}")
     }
 
     /**

@@ -7,11 +7,7 @@ import com.intellij.openapi.fileEditor.FileEditorProvider
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.ui.components.JBPanel
-import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.services.ComponentService
-import com.jetbrains.interactiveRebase.threads.CommitInfoThread
-import java.awt.BorderLayout
 import java.awt.Color
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -69,14 +65,10 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
      * It is used to create the Editor Tab for the Interactive Rebase feature.
      */
     class MyFileEditorBase(private val project: Project, private val virtualFile: VirtualFile) : FileEditorBase() {
-        private var component: JComponent
-        private var branchInfo: BranchInfo
         private val service: ComponentService
 
         init {
-            component = createComponent()
-            branchInfo = BranchInfo()
-            service = ComponentService(component, branchInfo)
+            service = ComponentService(project)
         }
 
         /**
@@ -85,8 +77,7 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
          * @return the Swing component for the editor UI
          */
         override fun getComponent(): JComponent {
-            updateComponent()
-            return component
+            return service.updateMainComponentThread()
         }
 
         /**
@@ -115,25 +106,6 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
          */
         override fun getFile(): VirtualFile {
             return virtualFile
-        }
-
-        /**
-         *  Creates the main swing component for the editor.
-         */
-        private fun createComponent(): JComponent {
-            val component = JBPanel<JBPanel<*>>()
-            component.layout = BorderLayout()
-            return component
-        }
-
-        /**
-         * Updates the main panel with the branch info.
-         */
-        private fun updateComponent() {
-            val thread = CommitInfoThread(project, branchInfo)
-            thread.start()
-            thread.join()
-            service.updateMainPanel()
         }
     }
 }
