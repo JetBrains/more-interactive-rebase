@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import ai.grazie.detector.ngram.main
 import com.intellij.openapi.project.Project
+import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
@@ -55,14 +56,25 @@ class ComponentService(val project: Project) {
     fun updateMainPanelVisuals() {
         mainComponent.removeAll()
         val headerPanel = HeaderPanel(mainComponent)
-        mainComponent.add(headerPanel, BorderLayout.NORTH)
 
         val branchPanel = createBranchPanel()
-        mainComponent.add(branchPanel, BorderLayout.CENTER)
 
-        val commitInfoPanel = branchInfo.repo?.let { CommitInfoPanel(project, it) }
-        commitInfoPanel?.commitsSelected(listOf(branchInfo.commits[0])) //This will be the list of selecetd commits
-        mainComponent.add(commitInfoPanel, BorderLayout.EAST)
+        val commitInfoPanel = CommitInfoPanel(project)
+        commitInfoPanel.commitsSelected(branchInfo.commits) // This will be the list of selected commits
+
+        val firstDivider =
+            OnePixelSplitter(false, 0.7f).apply {
+                firstComponent = branchPanel
+                secondComponent = commitInfoPanel
+            }
+
+        val secondDivider =
+            OnePixelSplitter(true, 0.05f).apply {
+                firstComponent = headerPanel
+                secondComponent = firstDivider
+            }
+
+        mainComponent.add(secondDivider, BorderLayout.CENTER)
     }
 
     /**

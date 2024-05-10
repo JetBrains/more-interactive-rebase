@@ -1,7 +1,7 @@
 package com.jetbrains.interactiveRebase.service
 
-import HeaderPanel
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.services.ComponentService
@@ -74,6 +74,9 @@ class ComponentServiceTest : BasePlatformTestCase() {
         doNothing().`when`(mockThread).join()
         doNothing().`when`(mockThread).start()
 
+        assertEquals(1, mainComponent.componentCount)
+        val x = mainComponent.getComponent(0)
+        assertTrue(mainComponent.getComponent(0) is OnePixelSplitter)
         assertEquals(0, componentService.mainComponent.componentCount)
 
         val updated = componentService.updateMainComponentThread()
