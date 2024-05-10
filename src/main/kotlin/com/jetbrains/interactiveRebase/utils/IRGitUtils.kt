@@ -5,6 +5,9 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.util.Consumer
 import git4idea.GitCommit
 import git4idea.GitUtil
+import git4idea.commands.Git
+import git4idea.commands.GitCommandResult
+import git4idea.commands.GitLineHandler
 import git4idea.history.GitHistoryUtils
 import git4idea.repo.GitRepository
 
@@ -39,5 +42,12 @@ class IRGitUtils(private val project: Project) {
         consumer: Consumer<GitCommit>,
     ) {
         GitHistoryUtils.loadDetails(project, repo.root, consumer)
+    }
+
+    /**
+     * Runs the specified git command
+     */
+    fun runCommand(lineHandler : GitLineHandler) : GitCommandResult {
+        return Git.getInstance().runCommand(lineHandler)
     }
 }
