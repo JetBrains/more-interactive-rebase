@@ -2,6 +2,7 @@ package com.jetbrains.interactiveRebase.utils
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.Consumer
 import git4idea.GitCommit
 import git4idea.GitUtil
@@ -19,7 +20,14 @@ class IRGitUtils(private val project: Project) {
      * Gets the GitRepository given the project
      */
     fun getRepository(): GitRepository? {
-        return GitUtil.getRepositoryManager(project).getRepositoryForRoot(project.guessProjectDir())
+        return GitUtil.getRepositoryManager(project).getRepositoryForRoot(getRoot())
+    }
+
+    /**
+     *  Gets the root of project by guessing directory
+     */
+    fun getRoot(): VirtualFile? {
+        return project.guessProjectDir()
     }
 
     /**

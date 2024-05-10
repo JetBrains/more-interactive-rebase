@@ -1,3 +1,5 @@
 package com.jetbrains.interactiveRebase.exceptions
 
-class IRInaccessibleException(s: String) : Exception()
+import com.intellij.openapi.vcs.VcsException
+
+class IRInaccessibleException(s: String) : VcsException(s)

@@ -2,6 +2,7 @@ package com.jetbrains.interactiveRebase.service
 
 import com.intellij.mock.MockVirtualFile
 import com.intellij.openapi.components.service
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.vcs.log.Hash
 import com.intellij.vcs.log.VcsUser
@@ -10,12 +11,14 @@ import com.intellij.vcs.log.impl.VcsUserImpl
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import com.jetbrains.interactiveRebase.mockStructs.MockGitRepository
+import com.jetbrains.interactiveRebase.services.BranchService
 import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.threads.BranchInfoThread
 import com.jetbrains.interactiveRebase.utils.IRGitUtils
 import com.jetbrains.interactiveRebase.utils.consumers.CommitConsumer
 import com.jetbrains.interactiveRebase.utils.consumers.GeneralCommitConsumer
 import git4idea.GitCommit
+import git4idea.commands.GitCommandResult
 import git4idea.history.GitCommitRequirements
 import git4idea.repo.GitRepository
 import org.junit.jupiter.api.assertThrows
@@ -26,12 +29,26 @@ import org.mockito.Mockito.verify
 
 class CommitServiceTest : BasePlatformTestCase() {
     private lateinit var service: CommitService
+    private lateinit var controlledService: CommitService
+    private lateinit var utils: IRGitUtils
+    private lateinit var branchSer: BranchService
     private lateinit var thread: BranchInfoThread
 
     override fun setUp() {
         super.setUp()
         service = project.service<CommitService>()
         thread = BranchInfoThread(project, BranchInfo())
+        branchSer = project.service<BranchService>()
+        utils = mock(IRGitUtils::class.java)
+        val branchService = BranchService(project, utils)
+        controlledService = CommitService(project, utils, branchService)
+
+        doAnswer {
+            project.guessProjectDir()
+        }.`when`(utils).getRoot()
+        doAnswer {
+            GitCommandResult(false, 0, listOf(), listOf("master"))
+        }.`when`(utils).runCommand(anyCustom())
     }
 
     fun testGeneralConsumerStopsAtCap() {
@@ -65,15 +82,13 @@ class CommitServiceTest : BasePlatformTestCase() {
         val consumer = GeneralCommitConsumer()
         val commit = createCommit("added tests")
 
-        val utils = mock(IRGitUtils::class.java)
-        val serviceWithUtil = CommitService(project, utils)
-        serviceWithUtil.referenceBranchName = branchName
+        controlledService.referenceBranchName = branchName
 
         doAnswer {
             consumer.accept(commit)
         }.`when`(utils).getCommitsOfBranch(anyCustom(), anyCustom())
 
-        val res = serviceWithUtil.getDisplayableCommitsOfBranch(branchName, repo, consumer)
+        val res = controlledService.getDisplayableCommitsOfBranch(branchName, repo, consumer)
         verify(utils).getCommitsOfBranch(anyCustom(), anyCustom())
         assertEquals(res, listOf(commit))
     }
@@ -83,24 +98,24 @@ class CommitServiceTest : BasePlatformTestCase() {
         val repo: GitRepository = MockGitRepository("current")
         val consumer = GeneralCommitConsumer()
         val commit = createCommit("added tests")
-
-        val utils = mock(IRGitUtils::class.java)
-        val serviceWithUtil = CommitService(project, utils)
-        serviceWithUtil.referenceBranchName = "main"
+        controlledService.referenceBranchName = "main"
 
         doAnswer {
             consumer.accept(commit)
         }.`when`(utils).getCommitDifferenceBetweenBranches(anyCustom(), anyCustom(), anyCustom(), anyCustom())
 
-        val res = serviceWithUtil.getDisplayableCommitsOfBranch(branchName, repo, consumer)
+
+        doAnswer {
+            GitCommandResult(false, 0, listOf(), listOf("master"))
+        }.`when`(utils).runCommand(anyCustom())
+
+        val res = controlledService.getDisplayableCommitsOfBranch(branchName, repo, consumer)
         verify(utils).getCommitDifferenceBetweenBranches(anyCustom(), anyCustom(), anyCustom(), anyCustom())
         assertEquals(res, listOf(commit))
     }
 
     fun testGetCommitWorksWithoutNull() {
         val repo: GitRepository = MockGitRepository("current")
-        val utils = mock(IRGitUtils::class.java)
-        val serviceWithUtil = CommitService(project, utils)
 
         val commit1 = createCommit("added tests")
         val commit2 = createCommit("fix tests")
@@ -114,41 +129,38 @@ class CommitServiceTest : BasePlatformTestCase() {
             consumerInside.accept(commit2)
         }.`when`(utils).getCommitDifferenceBetweenBranches(anyCustom(), anyCustom(), anyCustom(), anyCustom())
 
-        val res = serviceWithUtil.getCommits()
+        val res = controlledService.getCommits()
         assertEquals(res, listOf(commit1, commit2))
     }
 
     fun testGetCommitChecksIfRepoIsNull() {
-        val utils = mock(IRGitUtils::class.java)
-        val serviceWithUtil = CommitService(project, utils)
 
         doAnswer {
             null
         }.`when`(utils).getRepository()
 
-        assertThrows<IRInaccessibleException> {
-            serviceWithUtil.getCommits()
-        }
+        val exception =
+            assertThrows<IRInaccessibleException> {
+                controlledService.getCommits()
+            }
+        assertEquals(exception.message, "Repository cannot be accessed")
     }
 
     fun testGetCommitChecksIfBranchIsNull() {
         val repo: GitRepository = MockGitRepository(null)
-        val utils = mock(IRGitUtils::class.java)
-        val serviceWithUtil = CommitService(project, utils)
-
         doAnswer {
             repo
         }.`when`(utils).getRepository()
 
-        assertThrows<IRInaccessibleException> {
-            serviceWithUtil.getCommits()
-        }
+        val exception =
+            assertThrows<IRInaccessibleException> {
+                controlledService.getCommits()
+            }
+        assertEquals(exception.message, "Branch cannot be accessed")
     }
 
     fun testGetCommitInfoForBranch() {
         val repo: GitRepository = MockGitRepository("current")
-        val utils = mock(IRGitUtils::class.java)
-        val serviceWithUtil = CommitService(project, utils)
 
         val commit1 = createCommit("added tests")
         val commit2 = createCommit("fix tests")
@@ -162,7 +174,7 @@ class CommitServiceTest : BasePlatformTestCase() {
             consumerInside.accept(commit2)
         }.`when`(utils).getCommitDifferenceBetweenBranches(anyCustom(), anyCustom(), anyCustom(), anyCustom())
 
-        val res = serviceWithUtil.getCommitInfoForBranch(listOf(commit1, commit2))
+        val res = controlledService.getCommitInfoForBranch(listOf(commit1, commit2))
         assertEquals(res.size, 2)
         assertEquals(res[0].commit, commit1)
         assertEquals(res[1].commit, commit2)

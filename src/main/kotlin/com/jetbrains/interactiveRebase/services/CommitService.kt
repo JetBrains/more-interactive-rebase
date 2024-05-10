@@ -17,9 +17,12 @@ import git4idea.commands.GitLineHandler
 import git4idea.repo.GitRepository
 
 @Service(Service.Level.PROJECT)
-class CommitService(private val project: Project, private val gitUtils: IRGitUtils) {
+class CommitService(private val project: Project, private val gitUtils: IRGitUtils, private val branchSer: BranchService) {
+    /**
+     * Usually the primary branch master or main, can be configured
+     */
     var referenceBranchName = "main"
-    constructor(project: Project) : this(project, IRGitUtils(project))
+    constructor(project: Project) : this(project, IRGitUtils(project), BranchService(project))
 
     /**
      * Finds the current branch and returns all the commits that are on the current branch and not on the reference branch.
@@ -27,36 +30,26 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
      * Reference branch is dynamically set to master or main according to the repo
      */
     fun getCommits(): List<GitCommit> {
-        referenceBranchName = getDefaultReferenceBranchName()
+        referenceBranchName = branchSer.getDefaultReferenceBranchName()
         val repo =
             gitUtils.getRepository()
-                ?: throw IRInaccessibleException("GitRepository cannot be accessed")
+                ?: throw IRInaccessibleException("Repository cannot be accessed")
 
-        val branchName = repo.currentBranchName ?: throw IRInaccessibleException("cannot access current branch")
+        val branchName = repo.currentBranchName ?: throw IRInaccessibleException("Branch cannot be accessed")
         val consumer = GeneralCommitConsumer()
         return getDisplayableCommitsOfBranch(branchName, repo, consumer)
     }
 
-    fun getDefaultReferenceBranchName(): String {
-        val branchCommand: GitCommand = GitCommand.BRANCH
-        val root: VirtualFile = project.guessProjectDir() ?: throw IRInaccessibleException("project root cannot be found")
-        val params = listOf("-l", "main", "master", "--format=%(refname:short)")
-        val lineHandler = GitLineHandler(project, root, branchCommand)
-        lineHandler.addParameters(params)
-        val result: GitCommandResult = gitUtils.runCommand(lineHandler)
-
-        return result.getOutputOrThrow()
-    }
-
     /**
      * Gets the commits in the given branch that are not on the reference branch, caps them to the maximum size at the consumer.
+     * If the current branch is the reference branch or has been merged to the reference branch, gets all commits until reaching the cap
      */
     fun getDisplayableCommitsOfBranch(
         branchName: String,
         repo: GitRepository,
         consumer: CommitConsumer,
     ): List<GitCommit> {
-        if (branchName == referenceBranchName) {
+        if (branchName == referenceBranchName || branchSer.isBranchMerged(branchName)) {
             gitUtils.getCommitsOfBranch(repo, consumer)
         } else {
             gitUtils.getCommitDifferenceBetweenBranches(branchName, referenceBranchName, repo, consumer)
