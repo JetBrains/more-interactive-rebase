@@ -25,6 +25,7 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.any
 import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 
 class CommitServiceTest : BasePlatformTestCase() {
@@ -131,6 +132,27 @@ class CommitServiceTest : BasePlatformTestCase() {
 
         val res = controlledService.getCommits()
         assertEquals(res, listOf(commit1, commit2))
+    }
+
+    fun testMergedBranchHandlingConsidersEmptyDiff() {
+        val repo: GitRepository = MockGitRepository("current")
+        val cons = GeneralCommitConsumer()
+        cons.consume(createCommit("fix tests"))
+        controlledService.handleMergedBranch(cons, "branch", repo)
+        verify(utils, never()).getCommitsOfBranch(repo, cons)
+    }
+
+    fun testMergedBranchHandlingConsidersMerged() {
+        val repo: GitRepository = MockGitRepository("current")
+        val cons = GeneralCommitConsumer()
+        doAnswer {
+            project.guessProjectDir()
+        }.`when`(utils).getRoot()
+        doAnswer {
+            GitCommandResult(false, 0, listOf(), listOf("merged"))
+        }.`when`(utils).runCommand(anyCustom())
+        controlledService.handleMergedBranch(cons, "merged", repo)
+        verify(utils).getCommitsOfBranch(repo, cons)
     }
 
     fun testGetCommitChecksIfRepoIsNull() {

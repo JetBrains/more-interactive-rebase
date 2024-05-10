@@ -49,12 +49,27 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
         repo: GitRepository,
         consumer: CommitConsumer,
     ): List<GitCommit> {
-        if (branchName == referenceBranchName || branchSer.isBranchMerged(branchName)) {
+        if (branchName == referenceBranchName) {
             gitUtils.getCommitsOfBranch(repo, consumer)
         } else {
             gitUtils.getCommitDifferenceBetweenBranches(branchName, referenceBranchName, repo, consumer)
+            handleMergedBranch(consumer, branchName, repo)
         }
         return consumer.commits
+    }
+
+    /**
+     * Handles the case where there are no commits to be displayed since the branch is merged.
+     * Gets the commits on the branch until the cap. These commits are also on the reference branch
+     * **/
+    fun handleMergedBranch(
+        consumer: CommitConsumer,
+        branchName: String,
+        repo: GitRepository,
+    ) {
+        if (consumer.commits.isEmpty() && branchSer.isBranchMerged(branchName)) {
+            gitUtils.getCommitsOfBranch(repo, consumer)
+        }
     }
 
     /**
