@@ -1,5 +1,6 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import CircleDragAndDropListener
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
@@ -47,6 +48,9 @@ class BranchPanel(
     fun initializeCirclePanel(i: Int): CirclePanel {
         val commit = branch.commits[i]
         var circle = CirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
+        val dragAndDropListener = CircleDragAndDropListener(circle, circles, this)
+        circle.addMouseListener(dragAndDropListener)
+        circle.addMouseMotionListener(dragAndDropListener)
 
         if (commit.changes.any { it is DropCommand } == true) {
             circle = DropCirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])

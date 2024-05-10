@@ -17,13 +17,13 @@ import java.awt.geom.Ellipse2D
 open class CirclePanel(
     private val diameter: Double,
     private val border: Float,
-    private val color: JBColor,
+    var color: JBColor,
     open var commit: CommitInfo,
     open var next: CirclePanel? = null,
     open var previous: CirclePanel? = null,
 ) : JBPanel<JBPanel<*>>() {
-    private var centerX = 0.0
-    private var centerY = 0.0
+    var centerX = 0.0
+    var centerY = 0.0
     lateinit var circle: Ellipse2D.Double
 
     /**
@@ -77,12 +77,15 @@ open class CirclePanel(
 
         // Calculate the diameter of the circle,
         // so that border is not cropped due to the panel size
-        val diameter = Math.min(width, height) - 2 * (border + 1)
+        val diameter = diameter - 2 * (border + 0.5)
 
         // Calculate the x and y coordinates for drawing the circle at the center
-        val centerX = (width - diameter) / 2
-        val centerY = (height - diameter) / 2
-        circle = Ellipse2D.Double(centerX, centerY, diameter, diameter)
+        val originX = (width - diameter) / 2
+        val originY = (height - diameter) / 2
+
+        centerX = this.x + diameter / 2
+        centerY = this.y + diameter / 2
+        circle = Ellipse2D.Double(originX, originY, diameter, diameter)
     }
 
     /**
