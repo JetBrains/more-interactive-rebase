@@ -5,6 +5,7 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4idea.GitCommit
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Assert
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
@@ -118,5 +119,22 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
 
         assertThat(circlePanel.commit.isHovered).isFalse()
         verify(circlePanel).repaint()
+    }
+
+    fun testUnsupportedOperations() {
+        val event = mock(MouseEvent::class.java)
+
+        listOf(
+            { listener.mousePressed(event) },
+            { listener.mouseReleased(event) },
+            { listener.mouseDragged(event) },
+        ).forEach { testOperation ->
+            try {
+                testOperation.invoke()
+                Assert.fail("Expected UnsupportedOperationException was not thrown")
+            } catch (e: UnsupportedOperationException) {
+                // The expected behavior of these dummy methods is to do nothing other than throw an exception.
+            }
+        }
     }
 }

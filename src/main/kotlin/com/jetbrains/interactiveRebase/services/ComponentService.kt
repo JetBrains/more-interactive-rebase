@@ -17,20 +17,26 @@ import javax.swing.SwingConstants
 
 @Service(Service.Level.PROJECT)
 class ComponentService(val project: Project) {
-    private var mainComponent: JComponent
-    private var branchInfo: BranchInfo
+    var mainComponent: JComponent
+    var branchInfo: BranchInfo
 
     init {
         mainComponent = createMainComponent()
         branchInfo = BranchInfo()
     }
 
+    /**
+     * Initializes the main component.
+     */
     fun createMainComponent(): JComponent {
         val component = JBPanel<JBPanel<*>>()
         component.layout = BorderLayout()
         return component
     }
 
+    /**
+     * Calls the CommitInfoThread to update the branch info.
+     */
     fun updateMainComponentThread(): JComponent {
         val thread = CommitInfoThread(project, branchInfo)
         thread.start()
@@ -40,7 +46,7 @@ class ComponentService(val project: Project) {
     }
 
     /**
-     * Updates the main panel with the branch info.
+     * Updates the main panel visual elements with the updated branch info.
      */
     fun updateMainPanelVisuals() {
         mainComponent.removeAll()
@@ -52,7 +58,7 @@ class ComponentService(val project: Project) {
     }
 
     /**
-     * Creates a branch panel with the branch info.
+     * Creates a branch panel with the given branch info.
      */
     fun createBranchPanel(): JBPanel<JBPanel<*>> {
         val branchPanel = JBPanel<JBPanel<*>>()
@@ -72,6 +78,9 @@ class ComponentService(val project: Project) {
         return branchPanel
     }
 
+    /**
+     * Adds/removes the given commit to the selected commits list.
+     */
     fun toggleCommitSelection(commit: CommitInfo) {
         if (commit.isSelected) {
             branchInfo.selectedCommits.add(commit)
@@ -80,6 +89,9 @@ class ComponentService(val project: Project) {
         }
     }
 
+    /**
+     * Returns the selected commits.
+     */
     fun getSelectedCommits(): List<CommitInfo> {
         return branchInfo.selectedCommits.toList()
     }
