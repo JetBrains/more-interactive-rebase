@@ -3,10 +3,14 @@ package com.jetbrains.interactiveRebase.services
 import HeaderPanel
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import ai.grazie.detector.ngram.main
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.threads.CommitInfoThread
+import com.jetbrains.interactiveRebase.visuals.Branch
+import com.jetbrains.interactiveRebase.visuals.CommitInfoPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
 import java.awt.BorderLayout
@@ -55,6 +59,10 @@ class ComponentService(val project: Project) {
 
         val branchPanel = createBranchPanel()
         mainComponent.add(branchPanel, BorderLayout.CENTER)
+
+        val commitInfoPanel = branchInfo.repo?.let { CommitInfoPanel(project, it) }
+        commitInfoPanel?.commitsSelected(listOf(branchInfo.commits[0])) //This will be the list of selecetd commits
+        mainComponent.add(commitInfoPanel, BorderLayout.EAST)
     }
 
     /**
