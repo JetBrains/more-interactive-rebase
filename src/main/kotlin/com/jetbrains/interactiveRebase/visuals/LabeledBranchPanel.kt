@@ -1,5 +1,7 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import com.jetbrains.interactiveRebase.listeners.CircleDragAndDropListener
+import CirclePanel
 import com.intellij.openapi.Disposable
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -41,13 +43,14 @@ class LabeledBranchPanel(
     private val alignment: Int = SwingConstants.LEFT,
 ) :
     JBPanel<JBPanel<*>>(), Disposable {
-    private val branchPanel = BranchPanel(branch, color)
-    private val commitLabels: MutableList<JBLabel> = mutableListOf()
+    val branchPanel = BranchPanel(branch, color)
+    val commitLabels: MutableList<JBLabel> = mutableListOf()
     private val branchNameLabel = BoldLabel(branch.name)
     internal val labelPanelWrapper = JBPanel<JBPanel<*>>()
 
     init {
         branchNameLabel.horizontalTextPosition = SwingConstants.CENTER
+        val circles = branchPanel.getCirclePanels()
     }
 
     /**
@@ -113,6 +116,9 @@ class LabeledBranchPanel(
         labelPanelWrapper.layout = GridLayout(0, 1)
         val circles = branchPanel.circles
         for ((i, circle) in circles.withIndex()) {
+            val dragAndDropListener = CircleDragAndDropListener(circle, circles, this)
+            circle.addMouseListener(dragAndDropListener)
+            circle.addMouseMotionListener(dragAndDropListener)
             val commitLabel = generateCommitLabel(i, circle)
             val wrappedLabel = wrapLabelWithTextField(commitLabel, branch.commits[i])
             labelPanelWrapper.add(wrappedLabel)

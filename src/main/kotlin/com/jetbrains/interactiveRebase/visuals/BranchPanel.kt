@@ -1,5 +1,6 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import CirclePanel
 import CircleDragAndDropListener
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
