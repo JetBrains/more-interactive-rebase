@@ -2,8 +2,8 @@ package com.jetbrains.interactiveRebase.listeners
 
 import java.awt.event.MouseAdapter
 import com.intellij.openapi.components.service
-import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
+import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.event.MouseEvent
 
 /**

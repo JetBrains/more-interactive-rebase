@@ -1,11 +1,11 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.ui.JBColor
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
 import java.awt.BasicStroke
+import java.awt.Cursor
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -16,7 +16,7 @@ import java.awt.geom.Ellipse2D
  * Visual representation of commit node in the git graph
  */
 open class CirclePanel(
-    private val diameter: Double,
+    val diameter: Double,
     private val border: Float,
     var color: JBColor,
     open var commit: CommitInfo,
@@ -35,7 +35,7 @@ open class CirclePanel(
     init {
         isOpaque = false
         preferredSize = minimumSize
-        createCircle()
+        createCircle(diameter)
         addMouseListener(CircleHoverListener(this))
         addMouseMotionListener(CircleHoverListener(this))
     }
@@ -57,36 +57,39 @@ open class CirclePanel(
         // Set rendering hints for smoother rendering
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
-        createCircle()
+        createCircle(diameter)
         val circleColor = if (commit.isSelected) color.darker() else color
         val borderColor = if (commit.isSelected) Palette.BLUEBORDER.darker() else Palette.DARKBLUE
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
 
         if (commit.isHovered) {
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))
             g2d.color = JBColor.BLACK
             g2d.stroke = BasicStroke(border)
             g2d.draw(circle)
+        } else {
+            setCursor(Cursor.getDefaultCursor())
         }
     }
 
     /**
      * Creates a circle shape to be drawn inside the panel.
      */
-    fun createCircle() {
+    fun createCircle(diameter: Double) {
         val width = width.toDouble()
         val height = height.toDouble()
 
         // Calculate the diameter of the circle,
         // so that border is not cropped due to the panel size
-        val diameter = diameter - 2 * (border + 0.5)
+        val adjustedDiameter = diameter - 2 * (border + 0.5)
 
         // Calculate the x and y coordinates for drawing the circle at the center
-        val originX = (width - diameter) / 2
-        val originY = (height - diameter) / 2
+        val originX = (width - adjustedDiameter) / 2
+        val originY = (height - adjustedDiameter) / 2
 
-        centerX = this.x + diameter / 2
-        centerY = this.y + diameter / 2
-        circle = Ellipse2D.Double(originX, originY, diameter, diameter)
+        centerX = this.x + adjustedDiameter / 2
+        centerY = this.y + adjustedDiameter / 2
+        circle = Ellipse2D.Double(originX, originY, adjustedDiameter, adjustedDiameter)
     }
 
     /**

@@ -26,7 +26,7 @@ class BranchPanel(
 ) : JBPanel<JBPanel<*>>() {
     val diameter = 25
     val borderSize = 1f
-    private var size = branch.commits.size
+    private var size = branch.currentCommits.size
 
     val circles: MutableList<CirclePanel> = mutableListOf()
 
@@ -47,14 +47,14 @@ class BranchPanel(
      * to the next and previous neighbors
      */
     fun initializeCirclePanel(i: Int): CirclePanel {
-        val commit = branch.commits[i]
-        var circle = CirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
+        val commit = branch.currentCommits[i]
+        var circle = CirclePanel(diameter.toDouble(), borderSize, color, branch.currentCommits[i])
         val dragAndDropListener = CircleDragAndDropListener(circle, circles, this)
         circle.addMouseListener(dragAndDropListener)
         circle.addMouseMotionListener(dragAndDropListener)
 
         if (commit.changes.any { it is DropCommand } == true) {
-            circle = DropCirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
+            circle = DropCirclePanel(diameter.toDouble(), borderSize, color, branch.currentCommits[i])
         }
 
         if (commit.changes.any { it is StopToEditCommand } == true) {
@@ -145,7 +145,7 @@ class BranchPanel(
         removeAll()
         circles.clear()
 
-        size = branch.commits.size
+        size = branch.currentCommits.size
 
         for (i in 0 until size) {
             val circle = initializeCirclePanel(i)

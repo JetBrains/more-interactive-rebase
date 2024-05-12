@@ -1,6 +1,5 @@
 package com.jetbrains.interactiveRebase.visuals
 
-import com.jetbrains.interactiveRebase.listeners.CircleDragAndDropListener
 import CirclePanel
 import com.intellij.openapi.Disposable
 import com.intellij.ui.JBColor
@@ -10,6 +9,7 @@ import com.intellij.ui.components.labels.BoldLabel
 import com.intellij.ui.util.maximumHeight
 import com.intellij.ui.util.preferredWidth
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.listeners.CircleDragAndDropListener
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
@@ -38,7 +38,7 @@ import javax.swing.SwingConstants
  */
 class LabeledBranchPanel(
     private val invoker: RebaseInvoker,
-    private val branch: BranchInfo,
+    val branch: BranchInfo,
     private val color: JBColor,
     private val alignment: Int = SwingConstants.LEFT,
 ) :
@@ -62,9 +62,9 @@ class LabeledBranchPanel(
         i: Int,
         circle: CirclePanel,
     ): JBLabel {
-        val commitLabel = JBLabel(branch.commits[i].commit.subject)
+        val commitLabel = JBLabel(branch.currentCommits[i].commit.subject)
 
-        branch.commits[i].changes.forEach {
+        branch.currentCommits[i].changes.forEach {
             if (it is RewordCommand) {
                 commitLabel.text = TextStyle.addStyling(it.newMessage, TextStyle.ITALIC)
             }
@@ -77,7 +77,7 @@ class LabeledBranchPanel(
             }
         }
 
-        if (branch.commits[i].isSelected) {
+        if (branch.currentCommits[i].isSelected) {
             commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.BOLD)
         }
         commitLabel.labelFor = circle
@@ -120,7 +120,7 @@ class LabeledBranchPanel(
             circle.addMouseListener(dragAndDropListener)
             circle.addMouseMotionListener(dragAndDropListener)
             val commitLabel = generateCommitLabel(i, circle)
-            val wrappedLabel = wrapLabelWithTextField(commitLabel, branch.commits[i])
+            val wrappedLabel = wrapLabelWithTextField(commitLabel, branch.currentCommits[i])
             labelPanelWrapper.add(wrappedLabel)
             commitLabels.add(commitLabel)
         }

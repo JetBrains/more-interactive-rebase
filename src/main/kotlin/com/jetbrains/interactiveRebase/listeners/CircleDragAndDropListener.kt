@@ -2,6 +2,7 @@ package com.jetbrains.interactiveRebase.listeners
 
 import CirclePanel
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.util.preferredHeight
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
@@ -13,33 +14,38 @@ import kotlin.math.abs
 class CircleDragAndDropListener(
     private val circle: CirclePanel,
     private val circles: MutableList<CirclePanel>,
-    private val parent: LabeledBranchPanel
+    private val parent: LabeledBranchPanel,
 ) : MouseAdapter() {
     private var labels = parent.commitLabels
     private var label = getLabel(circle, labels)
-//    private val initialCirclePos = Point(circle.x, circle.y)
-//    private val initialLabelPos = Point(label.x, label.y)
     private var currCirclePos = Point(circle.x, circle.y)
-//    private var initialIndex = circles.indexOf(circle)
-    private var currentIndex = circles.indexOf(circle)
     private var circlesPositions = mutableListOf<CirclePosition>()
     private var labelsPositions = mutableListOf<Point>()
     private val initialCircleColor = circle.color
     private val initialFontColor = label.fontColor
     private var hasMoved = false
-    private val MIN_Y = 0
-    private val MAX_Y = 200
+    private val minY = 0
+    private val maxY = parent.branchPanel.preferredHeight - circle.diameter.toInt()
+
+    /**
+     * NEW: UPDATES CommitInfo
+     */
+    private val commit = circle.commit
+    private val commits = parent.branch.currentCommits
+    private var currentIndex = commits.indexOf(commit)
 
     override fun mousePressed(e: MouseEvent) {
         hasMoved = false
         currCirclePos.x = e.xOnScreen
         currCirclePos.y = e.yOnScreen
-        circlesPositions = circles.map { c ->
-            CirclePosition(c.centerX.toInt(), c.centerY.toInt(), c.x, c.y)
-        }.toMutableList()
-        labelsPositions = labels.map { l ->
-            Point(l.x, l.y)
-        }.toMutableList()
+        circlesPositions =
+            circles.map { c ->
+                CirclePosition(c.centerX.toInt(), c.centerY.toInt(), c.x, c.y)
+            }.toMutableList()
+        labelsPositions =
+            labels.map { l ->
+                Point(l.x, l.y)
+            }.toMutableList()
     }
 
     override fun mouseDragged(e: MouseEvent) {
@@ -50,7 +56,7 @@ class CircleDragAndDropListener(
         val newCircleY = circle.y + deltaY
 
         // Check if the new position exceeds the upper or lower limit
-        val newCircleYBounded = newCircleY.coerceIn(MIN_Y, MAX_Y)
+        val newCircleYBounded = newCircleY.coerceIn(minY, maxY)
 
         // Update the circle and label positions
         circle.setLocation(circle.x, newCircleYBounded)
@@ -60,7 +66,7 @@ class CircleDragAndDropListener(
         currCirclePos.y = e.yOnScreen
 
         val newIndex = findNewPosition()
-        if(newIndex != currentIndex) {
+        if (newIndex != currentIndex) {
             updateIndices(newIndex, currentIndex)
             repositionOnDrag()
             parent.repaint()
@@ -68,11 +74,11 @@ class CircleDragAndDropListener(
         }
 
         // Handle visual indication of movement limits
-        handleMovementLimits(newCircleY)
+        indicateLimitedVerticalMovement(newCircleY)
     }
 
     override fun mouseReleased(e: MouseEvent) {
-        if(hasMoved) {
+        if (hasMoved) {
             circle.color = Palette.LIME_GREEN
             label.fontColor = initialFontColor
             repositionOnDrop()
@@ -80,11 +86,38 @@ class CircleDragAndDropListener(
         }
     }
 
-    private fun updateIndices(newIndex: Int, oldIndex: Int) {
+    private fun updateIndices(
+        newIndex: Int,
+        oldIndex: Int,
+    ) {
         circles.removeAt(oldIndex)
         circles.add(newIndex, circle)
         labels.removeAt(oldIndex)
         labels.add(newIndex, label)
+
+        /**
+         * NEW: Updates CommitInfo
+         */
+        commits.removeAt(oldIndex)
+        commits.add(newIndex, commit)
+
+        updateNeighbors(oldIndex)
+        updateNeighbors(newIndex)
+    }
+
+    private fun updateNeighbors(index: Int) {
+        if (index < circles.size - 1) {
+            circles[index].next = circles[index + 1]
+        } else {
+            // Set next to null for the last circle
+            circles[index].next = null
+        }
+        if (index > 0) {
+            circles[index].previous = circles[index - 1]
+        } else {
+            // Set previous to null for the first circle
+            circles[index].previous = null
+        }
     }
 
     private fun findNewPosition(): Int {
@@ -107,22 +140,25 @@ class CircleDragAndDropListener(
             val circle = circles[i]
             val label = labels[i]
             circle.setLocation(circlesPositions[i].x, circlesPositions[i].y)
-            label.setLocation(labelsPositions[i].x, labelsPositions[i].y)
+            label.setLocation(label.x, labelsPositions[i].y)
         }
     }
 
     private fun repositionOnDrag() {
         for ((i, other) in circles.withIndex()) {
-            if(circle != other) {
+            if (circle != other) {
                 val circle = circles[i]
                 val label = labels[i]
                 circle.setLocation(circlesPositions[i].x, circlesPositions[i].y)
-                label.setLocation(labelsPositions[i].x, labelsPositions[i].y)
+                label.setLocation(label.x, labelsPositions[i].y)
             }
         }
     }
 
-    private fun getLabel(circle: CirclePanel, labels: List<JBLabel>): JBLabel {
+    private fun getLabel(
+        circle: CirclePanel,
+        labels: List<JBLabel>,
+    ): JBLabel {
         for (l in labels) {
             if (l.labelFor == circle) {
                 return l
@@ -131,16 +167,17 @@ class CircleDragAndDropListener(
         return JBLabel()
     }
 
-    private fun handleMovementLimits(newCircleY: Int) {
-        if (newCircleY <= MIN_Y || newCircleY >= MAX_Y) {
+    private fun indicateLimitedVerticalMovement(newCircleY: Int) {
+        if (newCircleY <= minY || newCircleY >= maxY) {
             // If the circle reaches the upper or lower limit, adjust positions of all circles
-            val deltaAllCircles = if (newCircleY <= MIN_Y) {
-                // If the circle reaches the upper limit, move all circles down
-                MIN_Y - newCircleY
-            } else {
-                // If the circle reaches the lower limit, move all circles up
-                MAX_Y - newCircleY
-            }
+            val deltaAllCircles =
+                if (newCircleY <= minY) {
+                    // If the circle reaches the upper limit, move all circles down
+                    minY - newCircleY
+                } else {
+                    // If the circle reaches the lower limit, move all circles up
+                    maxY - newCircleY
+                }
 
             // Move all circles accordingly to maintain the visual indication
             moveAllCircles(deltaAllCircles)
@@ -164,5 +201,5 @@ data class CirclePosition(
     val centerX: Int,
     val centerY: Int,
     val x: Int,
-    val y: Int
+    val y: Int,
 )
