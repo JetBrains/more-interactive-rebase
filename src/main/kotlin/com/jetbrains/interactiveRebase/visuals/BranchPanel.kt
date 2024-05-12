@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.visuals
 import CirclePanel
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import java.awt.BasicStroke
 import java.awt.Dimension
 import java.awt.Graphics
@@ -17,7 +18,7 @@ import javax.swing.BoxLayout
  * - lines connecting the commits
  */
 class BranchPanel(
-    private val branch: Branch,
+    private val branch: BranchInfo,
     val color: JBColor,
 ) : JBPanel<JBPanel<*>>() {
     val diameter = 25
@@ -50,7 +51,7 @@ class BranchPanel(
      * to the next and previous neighbors
      */
     private fun initializeCirclePanel(i: Int): CirclePanel {
-        val circle = CirclePanel(diameter.toDouble(), borderSize, color)
+        val circle = CirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
         circles.add(circle)
         if (i > 0) {
             // Set reference to next circle

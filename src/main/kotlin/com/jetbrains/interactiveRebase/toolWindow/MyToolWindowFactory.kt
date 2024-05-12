@@ -6,9 +6,6 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
-import com.jetbrains.interactiveRebase.visuals.Branch
-import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
-import com.jetbrains.interactiveRebase.visuals.Palette
 
 class MyToolWindowFactory : ToolWindowFactory {
     init {
@@ -29,24 +26,6 @@ class MyToolWindowFactory : ToolWindowFactory {
     override fun shouldBeAvailable(project: Project) = true
 
     class MyToolWindow(toolWindow: ToolWindow) {
-        fun getContent() =
-            JBPanel<JBPanel<*>>().apply {
-                add(
-                    LabeledBranchPanel(
-                        Branch(
-                            true,
-                            "MAIN",
-                            listOf(
-                                "Initial commit",
-                                "Added feature X",
-                                "Fixed issue #123",
-                                "Refactored code",
-                                "Merged branch 'feature-x' into 'main'",
-                            ),
-                        ),
-                        Palette.LIME,
-                    ),
-                )
-            }
+        fun getContent() = JBPanel<JBPanel<*>>()
     }
 }

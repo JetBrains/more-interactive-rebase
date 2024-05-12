@@ -1,9 +1,10 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import CirclePanel
+import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.JBColor
-import org.junit.Before
-import org.junit.Test
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import git4idea.GitCommit
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -13,21 +14,22 @@ import java.awt.Graphics2D
 import java.awt.RenderingHints
 import javax.swing.plaf.ComponentUI
 
-class CirclePanelTest {
+class CirclePanelTest : BasePlatformTestCase() {
     private lateinit var graph: Graphics2D
     private lateinit var graph2: Graphics
     private lateinit var ui: ComponentUI
+    private lateinit var commit: CommitInfo
 
-    @Before
-    fun setUp() {
+    override fun setUp() {
+        super.setUp()
         graph = mock(Graphics2D::class.java)
         graph2 = mock(Graphics::class.java)
         ui = mock(ComponentUI::class.java)
+        commit = CommitInfo(mock(GitCommit::class.java), project, null)
     }
 
-    @Test
     fun testPaintComponent() {
-        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE)
+        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
         `when`(graph.create()).thenReturn(graph2)
 
         circlePanel.paintComponent(graph)
@@ -37,12 +39,11 @@ class CirclePanelTest {
         verify(graph).fill(circlePanel.circle)
     }
 
-    @Test
     fun testPaintComponentIsSelected() {
-        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE)
+        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
         `when`(graph.create()).thenReturn(graph2)
-        circlePanel.isSelected = true
-        circlePanel.isHovering = true
+        circlePanel.commit.isSelected = true
+        circlePanel.commit.isHovered = true
         circlePanel.paintComponent(graph)
 
         verify(graph2).dispose()
