@@ -81,7 +81,7 @@ class ComponentService(val project: Project) {
     /**
      * Adds/removes the given commit to the selected commits list.
      */
-    fun toggleCommitSelection(commit: CommitInfo) {
+    fun addOrRemoveCommitSelection(commit: CommitInfo) {
         if (commit.isSelected) {
             branchInfo.selectedCommits.add(commit)
         } else {

@@ -43,20 +43,20 @@ class ComponentServiceTest : BasePlatformTestCase() {
         assertTrue(branchPanel.getComponent(0) is LabeledBranchPanel)
     }
 
-    fun testToggleCommitSelectionCommitIsSelected() {
+    fun testAddOrRemoveCommitSelection() {
         val commit1 = mock(CommitInfo::class.java)
         `when`(commit1.isSelected).thenReturn(true)
 
-        val res = componentService.toggleCommitSelection(commit1)
+        val res = componentService.addOrRemoveCommitSelection(commit1)
         assertEquals(componentService.branchInfo.selectedCommits, listOf(commit1))
     }
 
-    fun testToggleCommitSelectionCommitIsNotSelected() {
+    fun testAddOrRemoveCommitSelectionCommitIsNotSelected() {
         val commit1 = mock(CommitInfo::class.java)
         `when`(commit1.isSelected).thenReturn(false)
         componentService.branchInfo.selectedCommits = mutableListOf(commit1)
 
-        val res = componentService.toggleCommitSelection(commit1)
+        val res = componentService.addOrRemoveCommitSelection(commit1)
         assertEquals(componentService.branchInfo.selectedCommits.size, 0)
     }
 
