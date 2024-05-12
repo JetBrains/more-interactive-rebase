@@ -14,7 +14,7 @@ import com.jetbrains.interactiveRebase.mockStructs.MockGitRepository
 import com.jetbrains.interactiveRebase.services.BranchService
 import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.threads.BranchInfoThread
-import com.jetbrains.interactiveRebase.utils.IRGitUtils
+import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
 import com.jetbrains.interactiveRebase.utils.consumers.CommitConsumer
 import com.jetbrains.interactiveRebase.utils.consumers.GeneralCommitConsumer
 import git4idea.GitCommit

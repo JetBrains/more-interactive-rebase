@@ -1,3 +1,4 @@
+
 import com.intellij.ui.components.JBPanel
 import java.awt.BorderLayout
 import java.awt.Graphics
@@ -5,7 +6,7 @@ import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 
-class HeaderPanel(private val mainPanel: JComponent) : JBPanel<JBPanel<*>>() {
+class HeaderPanel( private val mainPanel: JComponent) : JBPanel<JBPanel<*>>() {
     val gitActionsPanel = JBPanel<JBPanel<*>>()
     val changeActionsPanel = JBPanel<JBPanel<*>>()
 
@@ -38,6 +39,9 @@ class HeaderPanel(private val mainPanel: JComponent) : JBPanel<JBPanel<*>>() {
         buttonPanel.add(fixupButton)
         buttonPanel.add(rewordButton)
         buttonPanel.add(dropButton)
+
+       // rewordButton.addActionListener{ IRGitRebaseUtils(project).interactivelyRebaseUsingLog()}
+
     }
 
     /**
