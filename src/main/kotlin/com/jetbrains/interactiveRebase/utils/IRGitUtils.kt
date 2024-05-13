@@ -47,7 +47,7 @@ class IRGitUtils(private val project: Project) {
     /**
      * Runs the specified git command
      */
-    fun runCommand(lineHandler : GitLineHandler) : GitCommandResult {
+    fun runCommand(lineHandler: GitLineHandler): GitCommandResult {
         return Git.getInstance().runCommand(lineHandler)
     }
 }

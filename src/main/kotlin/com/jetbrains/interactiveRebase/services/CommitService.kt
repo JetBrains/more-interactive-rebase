@@ -11,7 +11,6 @@ import com.jetbrains.interactiveRebase.utils.IRGitUtils
 import com.jetbrains.interactiveRebase.utils.consumers.CommitConsumer
 import com.jetbrains.interactiveRebase.utils.consumers.GeneralCommitConsumer
 import git4idea.GitCommit
-import git4idea.commands.Git
 import git4idea.commands.GitCommand
 import git4idea.commands.GitCommandResult
 import git4idea.commands.GitLineHandler
@@ -38,13 +37,13 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
         return getDisplayableCommitsOfBranch(branchName, repo, consumer)
     }
 
-    fun getDefaultReferenceBranchName() : String {
-        val branchCommand : GitCommand = GitCommand.BRANCH
-        val root : VirtualFile = project.guessProjectDir() ?: throw IRInaccessibleException("project root cannot be found")
-        val params  = listOf("-l", "main", "master", "--format=%(refname:short)")
+    fun getDefaultReferenceBranchName(): String {
+        val branchCommand: GitCommand = GitCommand.BRANCH
+        val root: VirtualFile = project.guessProjectDir() ?: throw IRInaccessibleException("project root cannot be found")
+        val params = listOf("-l", "main", "master", "--format=%(refname:short)")
         val lineHandler = GitLineHandler(project, root, branchCommand)
         lineHandler.addParameters(params)
-        val result : GitCommandResult = gitUtils.runCommand(lineHandler)
+        val result: GitCommandResult = gitUtils.runCommand(lineHandler)
 
         return result.getOutputOrThrow()
     }
