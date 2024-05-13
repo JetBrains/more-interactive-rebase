@@ -54,6 +54,12 @@ class ComponentService(val project: Project) {
      */
 
     fun getComponent(): JComponent {
+        val name = branchInfo.name
+        updateBranchInfo()
+        if (name != branchInfo.name)
+            {
+                updateMainPanelVisuals()
+            }
         return mainComponent
     }
 
