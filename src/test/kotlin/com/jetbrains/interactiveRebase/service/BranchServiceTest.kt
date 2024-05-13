@@ -8,6 +8,7 @@ import com.jetbrains.interactiveRebase.services.BranchService
 import com.jetbrains.interactiveRebase.utils.IRGitUtils
 import git4idea.commands.GitCommandResult
 import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 
 class BranchServiceTest : BasePlatformTestCase() {
@@ -93,7 +94,7 @@ class BranchServiceTest : BasePlatformTestCase() {
         }.`when`(utils).getRoot()
 
         val exception =
-            org.junit.jupiter.api.assertThrows<IRInaccessibleException> {
+            assertThrows<IRInaccessibleException> {
                 controlledService.getDefaultReferenceBranchName()
             }
         assertEquals(exception.message, "Project root cannot be found")
@@ -153,7 +154,7 @@ class BranchServiceTest : BasePlatformTestCase() {
             commandResult
         }.`when`(utils).runCommand(anyCustom())
 
-        org.junit.jupiter.api.assertThrows<VcsException> {
+        assertThrows<VcsException> {
             controlledService.isBranchMerged(b1)
         }
     }
@@ -173,10 +174,26 @@ class BranchServiceTest : BasePlatformTestCase() {
         }.`when`(utils).runCommand(anyCustom())
 
         val exception =
-            org.junit.jupiter.api.assertThrows<VcsException> {
+            assertThrows<VcsException> {
                 controlledService.isBranchMerged(b1)
             }
         Assertions.assertThat(exception.message).isEqualTo("fatal error...")
+    }
+
+    fun testRefBranchValidationChecksEmpty() {
+        val exc =
+            assertThrows<IRInaccessibleException> {
+                service.validateReferenceBranchOutput("")
+            }
+        assertEquals(exc.message, "No local main or master branch found")
+    }
+
+    fun testRefBranchValidationChecksBoth() {
+        val exc =
+            assertThrows<IRInaccessibleException> {
+                service.validateReferenceBranchOutput("master\\nmain")
+            }
+        assertEquals(exc.message, "Both main and master branch found")
     }
 
     private inline fun <reified T> anyCustom(): T = Mockito.any(T::class.java)

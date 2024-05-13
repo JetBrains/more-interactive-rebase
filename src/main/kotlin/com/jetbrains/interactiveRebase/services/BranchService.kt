@@ -17,30 +17,47 @@ class BranchService(private val project: Project, private val gitUtils: IRGitUti
      * Gets the primary branch name in the project. Return main or master
      */
     fun getDefaultReferenceBranchName(): String {
-        val branchCommand: GitCommand = GitCommand.BRANCH
-        val root: VirtualFile = gitUtils.getRoot() ?: throw IRInaccessibleException("Project root cannot be found")
         val params = listOf("-l", "main", "master", "--format=%(refname:short)")
-        val lineHandler = GitLineHandler(project, root, branchCommand)
-        lineHandler.addParameters(params)
-        val result: GitCommandResult = gitUtils.runCommand(lineHandler)
+        val result = executeGitBranchCommand(params)
+        return validateReferenceBranchOutput(result.getOutputOrThrow())
+    }
 
-        return result.getOutputOrThrow().trimMargin("*").trim()
+    /**
+     * Checks the terminal output to determine if the reference branch is main or master. If there is no output,
+     * there is not a local instance of master or main and the process is stopped. If both master and main have local branches
+     */
+    fun validateReferenceBranchOutput(result: String): String {
+        if (result.isEmpty()) {
+            throw IRInaccessibleException("No local main or master branch found")
+        }
+        if (result.contains("master") && result.contains("main")) {
+            throw IRInaccessibleException("Both main and master branch found")
+        }
+
+        return result.trimMargin("*").trim()
     }
 
     /**
      * Checks if a branch has already been merged to the reference branch
      */
     fun isBranchMerged(branchName: String): Boolean {
-        val branchCommand: GitCommand = GitCommand.BRANCH
-        val root: VirtualFile = gitUtils.getRoot() ?: throw IRInaccessibleException("Project root cannot be found")
         val params = listOf("--merged")
-        val lineHandler = GitLineHandler(project, root, branchCommand)
-        lineHandler.addParameters(params)
-        val result: GitCommandResult = gitUtils.runCommand(lineHandler)
+        val result = executeGitBranchCommand(params)
         val branches: List<String> = result.getOutputOrThrow().split("\n")
 
         val mergedBranches: List<String> = branches.map { it.trimMargin("*").trim() }
 
         return mergedBranches.contains(branchName)
+    }
+
+    /**
+     * Executes git branch command with the given parameters
+     */
+    fun executeGitBranchCommand(params: List<String>): GitCommandResult {
+        val branchCommand: GitCommand = GitCommand.BRANCH
+        val root: VirtualFile = gitUtils.getRoot() ?: throw IRInaccessibleException("Project root cannot be found")
+        val lineHandler = GitLineHandler(project, root, branchCommand)
+        lineHandler.addParameters(params)
+        return gitUtils.runCommand(lineHandler)
     }
 }
