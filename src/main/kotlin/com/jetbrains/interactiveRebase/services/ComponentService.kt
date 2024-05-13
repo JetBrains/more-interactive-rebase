@@ -3,14 +3,11 @@ package com.jetbrains.interactiveRebase.services
 import HeaderPanel
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import ai.grazie.detector.ngram.main
-import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.threads.CommitInfoThread
-import com.jetbrains.interactiveRebase.visuals.Branch
 import com.jetbrains.interactiveRebase.visuals.CommitInfoPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
@@ -54,13 +51,13 @@ class ComponentService(val project: Project) {
      * Updates the main panel visual elements with the updated branch info.
      */
     fun updateMainPanelVisuals() {
-        mainComponent.removeAll()
+        // mainComponent.removeAll()
         val headerPanel = HeaderPanel(mainComponent)
 
         val branchPanel = createBranchPanel()
 
         val commitInfoPanel = CommitInfoPanel(project)
-        commitInfoPanel.commitsSelected(branchInfo.commits) // This will be the list of selected commits
+        commitInfoPanel.commitsSelected(branchInfo.selectedCommits.map { it.commit }) // This will be the list of selected commits
 
         val firstDivider =
             OnePixelSplitter(false, 0.7f).apply {
@@ -69,7 +66,7 @@ class ComponentService(val project: Project) {
             }
 
         val secondDivider =
-            OnePixelSplitter(true, 0.05f).apply {
+            OnePixelSplitter(true, 0.03f, 0.03f, 0.03f).apply {
                 firstComponent = headerPanel
                 secondComponent = firstDivider
             }

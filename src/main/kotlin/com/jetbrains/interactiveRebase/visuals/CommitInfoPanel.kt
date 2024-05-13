@@ -8,17 +8,17 @@ import com.intellij.openapi.vcs.changes.committed.CommittedChangesTreeBrowser
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.vcs.log.VcsCommitMetadata
 import com.intellij.vcs.log.ui.details.FullCommitDetailsListPanel
+import com.jetbrains.interactiveRebase.utils.IRGitUtils
 import git4idea.GitDisposable
 import git4idea.history.GitCommitRequirements
 import git4idea.history.GitLogUtil
-import git4idea.repo.GitRepository
 
 /*
 Creates the panel that displays all the files
 changed by a commit as well as all the commit info
  */
 
-class CommitInfoPanel(private val project: Project, private val repo: GitRepository) : FullCommitDetailsListPanel(
+class CommitInfoPanel(private val project: Project) : FullCommitDetailsListPanel(
     project,
     GitDisposable.getInstance(project),
     ModalityState.current(),
@@ -27,7 +27,7 @@ class CommitInfoPanel(private val project: Project, private val repo: GitReposit
     @Throws(VcsException::class)
     public override fun loadChanges(commits: List<VcsCommitMetadata>): List<Change> {
         val changes = mutableListOf<Change>()
-        repo.let {
+        IRGitUtils(project).getRepository()?.let {
             GitLogUtil.readFullDetailsForHashes(
                 project,
                 it.root,
