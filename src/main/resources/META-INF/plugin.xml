@@ -15,7 +15,6 @@
         <toolWindow factoryClass="com.jetbrains.interactiveRebase.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
         <fileEditorProvider implementation="com.jetbrains.interactiveRebase.providers.IRFileEditorProvider"/>
     </extensions>
-
     <applicationListeners>
     </applicationListeners>
     <actions>
