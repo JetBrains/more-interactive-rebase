@@ -8,7 +8,7 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import com.jetbrains.interactiveRebase.threads.CommitInfoThread
+import com.jetbrains.interactiveRebase.threads.BranchInfoThread
 import com.jetbrains.interactiveRebase.visuals.CommitInfoPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
@@ -40,7 +40,7 @@ class ComponentService(val project: Project) {
     }
 
     /**
-     * Calls the CommitInfoThread to update the branch info.
+     * Calls the BranchInfoThread to update the branch info.
      */
 
     fun refresh(): JComponent {
@@ -135,7 +135,7 @@ class ComponentService(val project: Project) {
 
     @RequiresBackgroundThread
     fun updateBranchInfo()  {
-        val thread = CommitInfoThread(project, branchInfo)
+        val thread = BranchInfoThread(project, branchInfo)
         thread.start()
         thread.join()
     }

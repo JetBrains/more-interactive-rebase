@@ -5,7 +5,7 @@ import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.utils.IRGitUtils
 
-class CommitInfoThread(
+class BranchInfoThread(
     private val project: Project,
     private var branchInfo: BranchInfo,
     private var service: CommitService,
