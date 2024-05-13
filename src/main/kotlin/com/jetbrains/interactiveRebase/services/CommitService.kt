@@ -53,4 +53,8 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
             CommitInfo(commit, project, null)
         }
     }
+
+    fun getBranchName(): String {
+        return gitUtils.getRepository()?.currentBranchName.toString()
+    }
 }

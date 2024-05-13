@@ -3,7 +3,6 @@ package com.jetbrains.interactiveRebase.threads
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.services.CommitService
-import com.jetbrains.interactiveRebase.utils.IRGitUtils
 
 class BranchInfoThread(
     private val project: Project,
@@ -13,7 +12,8 @@ class BranchInfoThread(
     constructor(project: Project, branchInfo: BranchInfo) : this(project, branchInfo, CommitService(project))
 
     override fun run() {
-        branchInfo.name = IRGitUtils(project).getRepository()?.currentBranchName.toString()
+        branchInfo.name = service.getBranchName()
         branchInfo.commits = service.getCommitInfoForBranch(service.getCommits())
+        branchInfo.selectedCommits.clear()
     }
 }

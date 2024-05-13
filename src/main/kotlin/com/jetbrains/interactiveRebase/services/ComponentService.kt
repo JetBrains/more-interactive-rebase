@@ -134,7 +134,7 @@ class ComponentService(val project: Project) {
     }
 
     @RequiresBackgroundThread
-    fun updateBranchInfo()  {
+    fun updateBranchInfo() {
         val thread = BranchInfoThread(project, branchInfo)
         thread.start()
         thread.join()
