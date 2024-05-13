@@ -16,24 +16,20 @@ class BranchService(private val project: Project, private val gitUtils: IRGitUti
     /**
      * Gets the primary branch name in the project. Return main or master
      */
-    fun getDefaultReferenceBranchName(): String {
+    fun getDefaultReferenceBranchName(): String? {
         val params = listOf("-l", "main", "master", "--format=%(refname:short)")
         val result = executeGitBranchCommand(params)
         return validateReferenceBranchOutput(result.getOutputOrThrow())
     }
 
     /**
-     * Checks the terminal output to determine if the reference branch is main or master. If there is no output,
-     * there is not a local instance of master or main and the process is stopped. If both master and main have local branches
+     * Checks the terminal output to determine if the reference branch is main or master. Returns null
+     * if there is no main or master or there is both
      */
-    fun validateReferenceBranchOutput(result: String): String {
-        if (result.isEmpty()) {
-            throw IRInaccessibleException("No local main or master branch found")
+    fun validateReferenceBranchOutput(result: String): String? {
+        if (result.isEmpty() || result.contains("master") && result.contains("main")) {
+            return null
         }
-        if (result.contains("master") && result.contains("main")) {
-            throw IRInaccessibleException("Both main and master branch found")
-        }
-
         return result.trimMargin("*").trim()
     }
 

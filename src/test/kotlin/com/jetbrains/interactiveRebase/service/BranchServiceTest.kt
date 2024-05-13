@@ -180,20 +180,12 @@ class BranchServiceTest : BasePlatformTestCase() {
         Assertions.assertThat(exception.message).isEqualTo("fatal error...")
     }
 
-    fun testRefBranchValidationChecksEmpty() {
-        val exc =
-            assertThrows<IRInaccessibleException> {
-                service.validateReferenceBranchOutput("")
-            }
-        assertEquals(exc.message, "No local main or master branch found")
+    fun testValidateRefBranchChecksEmpty() {
+        assertNull(service.validateReferenceBranchOutput(""))
     }
 
-    fun testRefBranchValidationChecksBoth() {
-        val exc =
-            assertThrows<IRInaccessibleException> {
-                service.validateReferenceBranchOutput("master\\nmain")
-            }
-        assertEquals(exc.message, "Both main and master branch found")
+    fun testRefBranchValidationChecksBothMainMaster() {
+        assertNull(service.validateReferenceBranchOutput("master\\nmain"))
     }
 
     private inline fun <reified T> anyCustom(): T = Mockito.any(T::class.java)

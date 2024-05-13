@@ -105,7 +105,6 @@ class CommitServiceTest : BasePlatformTestCase() {
             consumer.accept(commit)
         }.`when`(utils).getCommitDifferenceBetweenBranches(anyCustom(), anyCustom(), anyCustom(), anyCustom())
 
-
         doAnswer {
             GitCommandResult(false, 0, listOf(), listOf("master"))
         }.`when`(utils).runCommand(anyCustom())
@@ -134,6 +133,31 @@ class CommitServiceTest : BasePlatformTestCase() {
         assertEquals(res, listOf(commit1, commit2))
     }
 
+    fun testGetCommitWorksWithNoDefaultRefBranch() {
+        val repo: GitRepository = MockGitRepository("current")
+
+        val commit1 = createCommit("added tests")
+        val commit2 = createCommit("fix tests")
+        doAnswer {
+            repo
+        }.`when`(utils).getRepository()
+
+        doAnswer {
+            GitCommandResult(false, 0, listOf(), listOf(""))
+        }.`when`(utils).runCommand(anyCustom())
+
+        doAnswer {
+            val consumerInside = it.arguments[1] as CommitConsumer
+            consumerInside.accept(commit1)
+            consumerInside.accept(commit2)
+        }.`when`(utils).getCommitsOfBranch(anyCustom(), anyCustom())
+
+        val res = controlledService.getCommits()
+
+        assertEquals(res, listOf(commit1, commit2))
+        assertEquals("current", controlledService.referenceBranchName)
+    }
+
     fun testMergedBranchHandlingConsidersEmptyDiff() {
         val repo: GitRepository = MockGitRepository("current")
         val cons = GeneralCommitConsumer()
@@ -145,18 +169,11 @@ class CommitServiceTest : BasePlatformTestCase() {
     fun testMergedBranchHandlingConsidersMerged() {
         val repo: GitRepository = MockGitRepository("current")
         val cons = GeneralCommitConsumer()
-        doAnswer {
-            project.guessProjectDir()
-        }.`when`(utils).getRoot()
-        doAnswer {
-            GitCommandResult(false, 0, listOf(), listOf("merged"))
-        }.`when`(utils).runCommand(anyCustom())
         controlledService.handleMergedBranch(cons, "merged", repo)
         verify(utils).getCommitsOfBranch(repo, cons)
     }
 
     fun testGetCommitChecksIfRepoIsNull() {
-
         doAnswer {
             null
         }.`when`(utils).getRepository()
