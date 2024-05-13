@@ -23,6 +23,11 @@ class CommitInfoPanel(private val project: Project) : FullCommitDetailsListPanel
     GitDisposable.getInstance(project),
     ModalityState.current(),
 ) {
+    /**
+     * Loads changes of the
+     * passed commits into the
+     * CommitInfoPanel
+     */
     @RequiresBackgroundThread
     @Throws(VcsException::class)
     public override fun loadChanges(commits: List<VcsCommitMetadata>): List<Change> {

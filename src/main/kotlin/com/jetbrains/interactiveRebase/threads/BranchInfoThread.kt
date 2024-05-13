@@ -11,6 +11,10 @@ class BranchInfoThread(
 ) : Thread() {
     constructor(project: Project, branchInfo: BranchInfo) : this(project, branchInfo, CommitService(project))
 
+    /**
+     * Updates the branchInfo
+     */
+
     override fun run() {
         branchInfo.name = service.getBranchName()
         branchInfo.commits = service.getCommitInfoForBranch(service.getCommits())

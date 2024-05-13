@@ -56,10 +56,9 @@ class ComponentService(val project: Project) {
     fun getComponent(): JComponent {
         val name = branchInfo.name
         updateBranchInfo()
-        if (name != branchInfo.name)
-            {
-                updateMainPanelVisuals()
-            }
+        if (name != branchInfo.name) {
+            updateMainPanelVisuals()
+        }
         return mainComponent
     }
 
@@ -138,6 +137,10 @@ class ComponentService(val project: Project) {
             }
         }
     }
+
+    /**
+     * Calls thread to update branch info
+     */
 
     @RequiresBackgroundThread
     fun updateBranchInfo() {
