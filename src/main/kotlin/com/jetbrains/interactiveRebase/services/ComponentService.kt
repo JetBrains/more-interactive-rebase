@@ -67,8 +67,8 @@ class ComponentService(val project: Project) {
      */
     fun updateMainPanelVisuals() {
         mainComponent.removeAll()
-        val headerPanel = HeaderPanel(mainComponent)
 
+        val headerPanel = HeaderPanel(mainComponent)
         val branchPanel = createBranchPanel()
 
         val firstDivider =

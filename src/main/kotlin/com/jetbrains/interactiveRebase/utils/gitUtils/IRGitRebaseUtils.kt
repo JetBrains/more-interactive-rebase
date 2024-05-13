@@ -2,86 +2,99 @@ package com.jetbrains.interactiveRebase.utils.gitUtils
 
 import com.google.common.annotations.VisibleForTesting
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vcs.VcsException
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.vcs.log.VcsCommitMetadata
 import com.intellij.vcs.log.VcsShortCommitDetails
 import com.intellij.vcs.log.data.VcsLogData
+import com.intellij.vcs.log.impl.VcsCommitMetadataImpl
 import com.jetbrains.interactiveRebase.*
 import com.jetbrains.interactiveRebase.GitRebaseEntryGeneratedUsingLog
 import com.jetbrains.interactiveRebase.IRCommitsTable
 import com.jetbrains.interactiveRebase.IRGitModel
+import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
+import git4idea.GitUtil
 import git4idea.branch.GitRebaseParams
+import git4idea.config.GitConfigUtil
 import git4idea.history.GitHistoryTraverser
 import git4idea.i18n.GitBundle
-import git4idea.rebase.GitInteractiveRebaseEditorHandler
-import git4idea.rebase.GitRebaseEditorHandler
-import git4idea.rebase.GitRebaseUtils
+import git4idea.rebase.*
 import git4idea.repo.GitRepository
+import java.io.File
 
 
 class IRGitRebaseUtils (private val project : Project) {
     private val gitUtils = IRGitUtils(project)
-    private val repo = gitUtils.getRepository()
+
+    private val repo = GitUtil.getRepositoryManager(project).getRepositoryForRootQuick(project.guessProjectDir())
+
+
 
     private val LOG = Logger.getInstance("Git.Interactive.Rebase.Using.Log")
 
 
-    @VisibleForTesting
-    //@Throws(CantRebaseUsingLogException::class)
-    internal fun getEntriesUsingLog(
-            commit: VcsShortCommitDetails,
-            logData: VcsLogData
-    ): List<GitRebaseEntryGeneratedUsingLog> {
-        val traverser: GitHistoryTraverser = IRHistoryTraverser(project, logData)
-        val details = mutableListOf<VcsCommitMetadata>()
-        try {
-            repo?.let {
-                traverser.traverse(it.root) { (commitId, parents) ->
-                    // commit is not root or merge
-                    if (parents.size == 1) {
-                        loadMetadataLater(commitId) { metadata ->
-                            details.add(metadata)
-                        }
-                        val hash = traverser.toHash(commitId)
-                        hash != commit.id
-                    } else {
-                        //TODO(actually throw exception)
-                        throw Exception("something")
-                        //throw CantRebaseUsingLogException(CantRebaseUsingLogException.Reason.MERGE)
-                    }
-                }
-            }
-        }
-        catch (e: VcsException) {
-            //TODO(actually throw exception)
-            //throw CantRebaseUsingLogException(CantRebaseUsingLogException.Reason.UNRESOLVED_HASH)
-        }
+//    @VisibleForTesting
+//    //@Throws(CantRebaseUsingLogException::class)
+//    internal fun getEntriesUsingLog(
+//            commit: VcsShortCommitDetails,
+//            logData: VcsLogData
+//    ): List<GitRebaseEntryGeneratedUsingLog> {
+//        val traverser: GitHistoryTraverser = IRHistoryTraverser(project, logData)
+//        val details = mutableListOf<VcsCommitMetadata>()
+//        try {
+//            repo?.let {
+//                traverser.traverse(it.root) { (commitId, parents) ->
+//                    // commit is not root or merge
+//                    if (parents.size == 1) {
+//                        loadMetadataLater(commitId) { metadata ->
+//                            details.add(metadata)
+//                        }
+//                        val hash = traverser.toHash(commitId)
+//                        hash != commit.id
+//                    } else {
+//                        //TODO(actually throw exception)
+//                        throw Exception("something")
+//                        //throw CantRebaseUsingLogException(CantRebaseUsingLogException.Reason.MERGE)
+//                    }
+//                }
+//            }
+//        }
+//        catch (e: VcsException) {
+//            //TODO(actually throw exception)
+//            //throw CantRebaseUsingLogException(CantRebaseUsingLogException.Reason.UNRESOLVED_HASH)
+//        }
+//
+//        if (details.last().id != commit.id) {
+//            //TODO(actually throw exception)
+//            //throw CantRebaseUsingLogException(CantRebaseUsingLogException.Reason.UNEXPECTED_HASH)
+//        }
+//
+//        if (details.any { it.subject.startsWith("fixup!") || it.subject.startsWith("squash!") }) {
+//            //TODO(actually throw exception)
+//            //throw CantRebaseUsingLogException(CantRebaseUsingLogException.Reason.FIXUP_SQUASH)
+//        }
+//
+//        return details.map { GitRebaseEntryGeneratedUsingLog(it) }.reversed()
+//    }
 
-        if (details.last().id != commit.id) {
-            //TODO(actually throw exception)
-            //throw CantRebaseUsingLogException(CantRebaseUsingLogException.Reason.UNEXPECTED_HASH)
-        }
-
-        if (details.any { it.subject.startsWith("fixup!") || it.subject.startsWith("squash!") }) {
-            //TODO(actually throw exception)
-            //throw CantRebaseUsingLogException(CantRebaseUsingLogException.Reason.FIXUP_SQUASH)
-        }
-
-        return details.map { GitRebaseEntryGeneratedUsingLog(it) }.reversed()
-    }
-
-    internal fun interactivelyRebaseUsingLog(commit: VcsShortCommitDetails, logData: VcsLogData) {
-        val root = repo?.root
+    internal fun interactivelyRebaseUsingLog(commit: VcsShortCommitDetails) {
+        //val root = repo?.root
 
         object : Task.Backgroundable(project, GitBundle.message("rebase.progress.indicator.preparing.title")) {
             private var generatedEntries: List<GitRebaseEntryGeneratedUsingLog>? = null
 
             override fun run(indicator: ProgressIndicator) {
                 try {
-                    generatedEntries = getEntriesUsingLog(commit, logData)
+                    generatedEntries = listOf(GitRebaseEntryGeneratedUsingLog(VcsCommitMetadataImpl(
+                            commit.id, commit.parents, commit.commitTime, commit.root, commit.subject,
+                            commit.author, "reworded message", commit.committer, commit.authorTime)))
+                //getEntriesUsingLog(commit, logData)
                 }
                 catch (e: Exception) {
                     LOG.warn("Couldn't use log for rebasing: ${e.message}")
@@ -132,3 +145,36 @@ private class IRGitEditorHandler(
         private val entriesGeneratedUsingLog: List<GitRebaseEntryGeneratedUsingLog>,
         private val rebaseTodoModel: IRGitModel<GitRebaseEntryGeneratedUsingLog>
 )  : GitInteractiveRebaseEditorHandler(repository.project, repository.root)
+
+internal class GitAutomaticRebaseEditor(private val project: Project,
+                                        private val root: VirtualFile,
+                                        private val entriesEditor: (List<IRGitEntry>) -> List<IRGitEntry>,
+                                        private val plainTextEditor: (String) -> String
+) : GitInteractiveRebaseEditorHandler(project, root) {
+    companion object {
+        private val LOG = logger<GitAutomaticRebaseEditor>()
+    }
+
+    override fun editCommits(file: File): Int {
+        try {
+            if (!myRebaseEditorShown) {
+                myRebaseEditorShown = true
+
+                val rebaseFile = IrGitRebaseFile(project, root, file)
+                val entries = rebaseFile.load()
+                rebaseFile.save(entriesEditor(entries))
+            }
+            else {
+                val encoding = GitConfigUtil.getCommitEncoding(project, root)
+                val originalMessage = FileUtil.loadFile(file, encoding)
+                val modifiedMessage = plainTextEditor(originalMessage)
+                FileUtil.writeToFile(file, modifiedMessage.toByteArray(charset(encoding)))
+            }
+            return 0
+        }
+        catch (ex: Exception) {
+            LOG.error("Editor failed: ", ex)
+            return ERROR_EXIT_CODE
+        }
+    }
+}
