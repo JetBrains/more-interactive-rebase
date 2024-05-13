@@ -1,6 +1,8 @@
 package com.jetbrains.interactiveRebase.utils.gitUtils
 
 import com.google.common.annotations.VisibleForTesting
+import com.intellij.application.options.CodeStyle.LOG
+import com.intellij.openapi.diagnostic.Attachment
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
@@ -25,6 +27,7 @@ import git4idea.config.GitConfigUtil
 import git4idea.history.GitHistoryTraverser
 import git4idea.i18n.GitBundle
 import git4idea.rebase.*
+import git4idea.rebase.interactive.convertToEntries
 import git4idea.repo.GitRepository
 import java.io.File
 
@@ -91,6 +94,7 @@ class IRGitRebaseUtils (private val project : Project) {
 
             override fun run(indicator: ProgressIndicator) {
                 try {
+
                     generatedEntries = listOf(GitRebaseEntryGeneratedUsingLog(VcsCommitMetadataImpl(
                             commit.id, commit.parents, commit.commitTime, commit.root, commit.subject,
                             commit.author, "reworded message", commit.committer, commit.authorTime)))
@@ -119,9 +123,10 @@ class IRGitRebaseUtils (private val project : Project) {
     ) {
         object : Task.Backgroundable(project, GitBundle.message("rebase.progress.indicator.title")) {
             override fun run(indicator: ProgressIndicator) {
+                val indicator =
                 val params = repo?.vcs?.let { GitRebaseParams.editCommits(it.version, commit.parents.first().asString(), editorHandler, false) }
                 if (params != null) {
-                    GitRebaseUtils.rebase(project, listOf(repo), params, indicator)
+                    GitRebaseUtils.rebase(project, listOf(repo), params, indicato)
                 }
             }
         }.queue()
@@ -144,7 +149,30 @@ private class IRGitEditorHandler(
         repository: GitRepository,
         private val entriesGeneratedUsingLog: List<GitRebaseEntryGeneratedUsingLog>,
         private val rebaseTodoModel: IRGitModel<GitRebaseEntryGeneratedUsingLog>
-)  : GitInteractiveRebaseEditorHandler(repository.project, repository.root)
+)  : GitInteractiveRebaseEditorHandler(repository.project, repository.root) {
+    private var rebaseFailed = false
+
+    override fun collectNewEntries(entries: List<IRGitEntry>): List<IRGitEntry>? {
+        if (rebaseFailed) {
+            return super.collectNewEntries(entries)
+        }
+        entriesGeneratedUsingLog.forEachIndexed { i, generatedEntry ->
+            val realEntry = entries[i]
+            if (!generatedEntry.equalsWithReal(realEntry)) {
+                myRebaseEditorShown = false
+                rebaseFailed = true
+                LOG.error(
+                        "Incorrect git-rebase-todo file was generated",
+                        Attachment("generated.txt", entriesGeneratedUsingLog.joinToString("\n")),
+                        Attachment("expected.txt", entries.joinToString("\n"))
+                )
+                throw VcsException(GitBundle.message("rebase.using.log.couldnt.start.error"))
+            }
+        }
+        processModel(rebaseTodoModel)
+        return rebaseTodoModel.convertToEntries()
+    }
+}
 
 internal class GitAutomaticRebaseEditor(private val project: Project,
                                         private val root: VirtualFile,
