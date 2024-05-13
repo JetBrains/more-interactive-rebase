@@ -73,7 +73,7 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
          * @return the Swing component for the editor UI
          */
         override fun getComponent(): JComponent {
-            return service.updateMainComponentThread()
+            return service.getComponent()
         }
 
         /**

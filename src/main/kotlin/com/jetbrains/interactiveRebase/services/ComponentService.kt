@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBPanel
+import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.threads.CommitInfoThread
@@ -21,10 +22,12 @@ import javax.swing.SwingConstants
 class ComponentService(val project: Project) {
     var mainComponent: JComponent
     var branchInfo: BranchInfo
+    var commitInfoPanel = CommitInfoPanel(project)
 
     init {
         mainComponent = createMainComponent()
         branchInfo = BranchInfo()
+        refresh()
     }
 
     /**
@@ -39,11 +42,18 @@ class ComponentService(val project: Project) {
     /**
      * Calls the CommitInfoThread to update the branch info.
      */
-    fun updateMainComponentThread(): JComponent {
-        val thread = CommitInfoThread(project, branchInfo)
-        thread.start()
-        thread.join()
+
+    fun refresh(): JComponent {
+        updateBranchInfo()
         updateMainPanelVisuals()
+        return mainComponent
+    }
+
+    /**
+     * Gets mainComponent
+     */
+
+    fun getComponent(): JComponent {
         return mainComponent
     }
 
@@ -51,13 +61,10 @@ class ComponentService(val project: Project) {
      * Updates the main panel visual elements with the updated branch info.
      */
     fun updateMainPanelVisuals() {
-        // mainComponent.removeAll()
+        mainComponent.removeAll()
         val headerPanel = HeaderPanel(mainComponent)
 
         val branchPanel = createBranchPanel()
-
-        val commitInfoPanel = CommitInfoPanel(project)
-        commitInfoPanel.commitsSelected(branchInfo.selectedCommits.map { it.commit }) // This will be the list of selected commits
 
         val firstDivider =
             OnePixelSplitter(false, 0.7f).apply {
@@ -104,6 +111,8 @@ class ComponentService(val project: Project) {
         } else {
             branchInfo.selectedCommits.remove(commit)
         }
+        this.commitInfoPanel.commitsSelected(branchInfo.selectedCommits.map { it.commit })
+        commitInfoPanel.repaint()
     }
 
     /**
@@ -122,5 +131,12 @@ class ComponentService(val project: Project) {
                 instance ?: ComponentService(project).also { instance = it }
             }
         }
+    }
+
+    @RequiresBackgroundThread
+    fun updateBranchInfo()  {
+        val thread = CommitInfoThread(project, branchInfo)
+        thread.start()
+        thread.join()
     }
 }
