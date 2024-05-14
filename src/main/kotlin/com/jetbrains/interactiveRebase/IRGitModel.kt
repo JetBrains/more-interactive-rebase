@@ -4,11 +4,17 @@ package com.jetbrains.interactiveRebase
 import kotlin.math.max
 import kotlin.math.min
 //TODO("whatever is happening here, a problem for later")
-internal class IRGitModel<T : IRGitEntry>(initialState: List<Element<T>>) {
+ class IRGitModel<T : IRGitEntry>(initialState: List<Element<T>>) {
     private val rows = ElementList(initialState)
 
     val elements: List<Element<T>>
         get() = rows.elements
+
+
+    internal fun convertToEntries(): List<IRGitEntry> = elements.map { element ->
+        val entry = element.entry
+        IRGitEntry(element.type.command, entry.commit, entry.subject)
+    }
 
     fun canPick(indices: List<Int>) = anyOfType(indices) { it !is Type.NonUnite.KeepCommit.Pick && it !is Type.NonUnite.UpdateRef }
 

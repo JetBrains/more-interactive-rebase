@@ -1,6 +1,5 @@
 package com.jetbrains.interactiveRebase.utils.gitUtils
 
-import com.google.common.annotations.VisibleForTesting
 import com.intellij.application.options.CodeStyle.LOG
 import com.intellij.openapi.diagnostic.Attachment
 import com.intellij.openapi.diagnostic.Logger
@@ -12,22 +11,17 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vcs.VcsException
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.vcs.log.VcsCommitMetadata
 import com.intellij.vcs.log.VcsShortCommitDetails
-import com.intellij.vcs.log.data.VcsLogData
 import com.intellij.vcs.log.impl.VcsCommitMetadataImpl
 import com.jetbrains.interactiveRebase.*
 import com.jetbrains.interactiveRebase.GitRebaseEntryGeneratedUsingLog
 import com.jetbrains.interactiveRebase.IRCommitsTable
 import com.jetbrains.interactiveRebase.IRGitModel
-import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import git4idea.GitUtil
 import git4idea.branch.GitRebaseParams
 import git4idea.config.GitConfigUtil
-import git4idea.history.GitHistoryTraverser
 import git4idea.i18n.GitBundle
 import git4idea.rebase.*
-import git4idea.rebase.interactive.convertToEntries
 import git4idea.repo.GitRepository
 import java.io.File
 
@@ -86,7 +80,7 @@ class IRGitRebaseUtils (private val project : Project) {
 //        return details.map { GitRebaseEntryGeneratedUsingLog(it) }.reversed()
 //    }
 
-    internal fun interactivelyRebaseUsingLog(commit: VcsShortCommitDetails) {
+    internal fun interactivelyRebaseUsingLog(commit: VcsCommitMetadataImpl) {
         //val root = repo?.root
 
         object : Task.Backgroundable(project, GitBundle.message("rebase.progress.indicator.preparing.title")) {
@@ -95,9 +89,7 @@ class IRGitRebaseUtils (private val project : Project) {
             override fun run(indicator: ProgressIndicator) {
                 try {
 
-                    generatedEntries = listOf(GitRebaseEntryGeneratedUsingLog(VcsCommitMetadataImpl(
-                            commit.id, commit.parents, commit.commitTime, commit.root, commit.subject,
-                            commit.author, "reworded message", commit.committer, commit.authorTime)))
+                    generatedEntries = listOf(GitRebaseEntryGeneratedUsingLog(commit))
                 //getEntriesUsingLog(commit, logData)
                 }
                 catch (e: Exception) {
@@ -123,10 +115,10 @@ class IRGitRebaseUtils (private val project : Project) {
     ) {
         object : Task.Backgroundable(project, GitBundle.message("rebase.progress.indicator.title")) {
             override fun run(indicator: ProgressIndicator) {
-                val indicator =
+
                 val params = repo?.vcs?.let { GitRebaseParams.editCommits(it.version, commit.parents.first().asString(), editorHandler, false) }
                 if (params != null) {
-                    GitRebaseUtils.rebase(project, listOf(repo), params, indicato)
+                    GitRebaseUtils.rebase(project, listOf(repo), params, indicator)
                 }
             }
         }.queue()
@@ -149,7 +141,7 @@ private class IRGitEditorHandler(
         repository: GitRepository,
         private val entriesGeneratedUsingLog: List<GitRebaseEntryGeneratedUsingLog>,
         private val rebaseTodoModel: IRGitModel<GitRebaseEntryGeneratedUsingLog>
-)  : GitInteractiveRebaseEditorHandler(repository.project, repository.root) {
+)  : IREditorHandler(repository.project, repository.root) {
     private var rebaseFailed = false
 
     override fun collectNewEntries(entries: List<IRGitEntry>): List<IRGitEntry>? {
@@ -172,6 +164,7 @@ private class IRGitEditorHandler(
         processModel(rebaseTodoModel)
         return rebaseTodoModel.convertToEntries()
     }
+
 }
 
 internal class GitAutomaticRebaseEditor(private val project: Project,
@@ -188,7 +181,7 @@ internal class GitAutomaticRebaseEditor(private val project: Project,
             if (!myRebaseEditorShown) {
                 myRebaseEditorShown = true
 
-                val rebaseFile = IrGitRebaseFile(project, root, file)
+                val rebaseFile = IRGitRebaseFile(project, root, file)
                 val entries = rebaseFile.load()
                 rebaseFile.save(entriesEditor(entries))
             }

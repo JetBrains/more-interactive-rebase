@@ -3,7 +3,7 @@ package com.jetbrains.interactiveRebase
 import com.intellij.util.ui.EditableModel
 import javax.swing.table.AbstractTableModel
 
-internal class IRCommitsTable<T : IRGitEntry>(private val initialEntries: List<T>) : AbstractTableModel(), EditableModel {
+ class IRCommitsTable<T : IRGitEntry>(private val initialEntries: List<T>) : AbstractTableModel(), EditableModel {
     companion object {
         const val COMMIT_ICON_COLUMN = 0
         const val SUBJECT_COLUMN = 1
@@ -72,10 +72,9 @@ internal class IRCommitsTable<T : IRGitEntry>(private val initialEntries: List<T
     }
 
 
-    internal fun <T : IRGitEntry> IRGitModel<out T>.convertToEntries(): List<IRGitEntry> = elements.map { element ->
-        val entry = element.entry
-        IRGitEntry(element.type.command, entry.commit, entry.subject)
-    }
+
+
+
 
     fun updateModel(f: (IRGitModel<T>) -> Unit) {
         f(rebaseTodoModel)

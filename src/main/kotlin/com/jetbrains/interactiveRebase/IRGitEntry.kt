@@ -8,7 +8,7 @@ import org.jetbrains.annotations.PropertyKey
 import java.awt.event.KeyEvent
 import java.util.function.Supplier
 
- internal open class IRGitEntry(val action: Action, val commit: String, val subject: String)  {
+ open class IRGitEntry(val action: Action, val commit: String, val subject: String)  {
 
     override fun toString() = "$action $commit $subject"
 
@@ -34,20 +34,20 @@ import java.util.function.Supplier
     sealed class KnownAction(command: String,
                               vararg val synonyms: String,
                               isCommit: Boolean = true,
-                              nameKey: @PropertyKey(resourceBundle = "messages.GitBundle") String) : IRGitEntry.Action(command, isCommit, nameKey) {
+                              nameKey: @PropertyKey(resourceBundle = "messages.GitBundle") String) : Action(command, isCommit, nameKey) {
         val mnemonic: Int get() = KeyEvent.getExtendedKeyCodeForChar(command.first().code)
     }
 
     companion object {
         @JvmStatic
-        fun parseAction(action: String): IRGitEntry.Action {
-            val knownActions = listOf(IRGitEntry.Action.PICK, IRGitEntry.Action.EDIT, IRGitEntry.Action.DROP, IRGitEntry.Action.REWORD, IRGitEntry.Action.SQUASH, IRGitEntry.Action.FIXUP, IRGitEntry.Action.UPDATE_REF)
-            return knownActions.find { it.command == action || it.synonyms.contains(action) } ?: IRGitEntry.Action.Other(action)
+        fun parseAction(action: String): Action {
+            val knownActions = listOf(Action.PICK, Action.EDIT, Action.DROP, Action.REWORD, Action.SQUASH, Action.FIXUP, Action.UPDATE_REF)
+            return knownActions.find { it.command == action || it.synonyms.contains(action) } ?: Action.Other(action)
         }
     }
 }
 
-//TODO("Maybe we can get rid of IRGitEntryDetails but for nwo let it be so as to see whether it works")
+//TODO("Maybe we can get rid of IRGitEntryDetails but for now let it be so as to see whether it works")
 internal open class IRGitEntryDetails(val entry: IRGitEntry, val commitDetails: VcsCommitMetadata) :
         IRGitEntry(entry.action, entry.commit, entry.subject)
 
