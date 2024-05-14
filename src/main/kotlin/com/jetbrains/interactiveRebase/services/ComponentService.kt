@@ -3,10 +3,13 @@ package com.jetbrains.interactiveRebase.services
 import HeaderPanel
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBPanel
+import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import com.jetbrains.interactiveRebase.threads.CommitInfoThread
+import com.jetbrains.interactiveRebase.threads.BranchInfoThread
+import com.jetbrains.interactiveRebase.visuals.CommitInfoPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
 import java.awt.BorderLayout
@@ -19,10 +22,12 @@ import javax.swing.SwingConstants
 class ComponentService(val project: Project) {
     var mainComponent: JComponent
     var branchInfo: BranchInfo
+    var commitInfoPanel = CommitInfoPanel(project)
 
     init {
         mainComponent = createMainComponent()
         branchInfo = BranchInfo()
+        refresh()
     }
 
     /**
@@ -35,13 +40,25 @@ class ComponentService(val project: Project) {
     }
 
     /**
-     * Calls the CommitInfoThread to update the branch info.
+     * Calls the BranchInfoThread to update the branch info.
      */
-    fun updateMainComponentThread(): JComponent {
-        val thread = CommitInfoThread(project, branchInfo)
-        thread.start()
-        thread.join()
+
+    fun refresh(): JComponent {
+        updateBranchInfo()
         updateMainPanelVisuals()
+        return mainComponent
+    }
+
+    /**
+     * Gets mainComponent
+     */
+
+    fun getComponent(): JComponent {
+        val name = branchInfo.name
+        updateBranchInfo()
+        if (name != branchInfo.name) {
+            updateMainPanelVisuals()
+        }
         return mainComponent
     }
 
@@ -51,10 +68,22 @@ class ComponentService(val project: Project) {
     fun updateMainPanelVisuals() {
         mainComponent.removeAll()
         val headerPanel = HeaderPanel(mainComponent)
-        mainComponent.add(headerPanel, BorderLayout.NORTH)
 
         val branchPanel = createBranchPanel()
-        mainComponent.add(branchPanel, BorderLayout.CENTER)
+
+        val firstDivider =
+            OnePixelSplitter(false, 0.7f).apply {
+                firstComponent = branchPanel
+                secondComponent = commitInfoPanel
+            }
+
+        val secondDivider =
+            OnePixelSplitter(true, 0.03f, 0.03f, 0.03f).apply {
+                firstComponent = headerPanel
+                secondComponent = firstDivider
+            }
+
+        mainComponent.add(secondDivider, BorderLayout.CENTER)
     }
 
     /**
@@ -87,6 +116,8 @@ class ComponentService(val project: Project) {
         } else {
             branchInfo.selectedCommits.remove(commit)
         }
+        this.commitInfoPanel.commitsSelected(branchInfo.selectedCommits.map { it.commit })
+        commitInfoPanel.repaint()
     }
 
     /**
@@ -105,5 +136,16 @@ class ComponentService(val project: Project) {
                 instance ?: ComponentService(project).also { instance = it }
             }
         }
+    }
+
+    /**
+     * Calls thread to update branch info
+     */
+
+    @RequiresBackgroundThread
+    fun updateBranchInfo() {
+        val thread = BranchInfoThread(project, branchInfo)
+        thread.start()
+        thread.join()
     }
 }

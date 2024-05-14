@@ -1,9 +1,15 @@
 package com.jetbrains.interactiveRebase.listeners
 
 import CirclePanel
+import com.intellij.mock.MockVirtualFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.vcs.log.Hash
+import com.intellij.vcs.log.VcsUser
+import com.intellij.vcs.log.VcsUserRegistry
+import com.intellij.vcs.log.impl.VcsUserImpl
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4idea.GitCommit
+import git4idea.history.GitCommitRequirements
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert
 import org.mockito.Mockito.mock
@@ -22,7 +28,7 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
         super.setUp()
         circlePanel = mock(CirclePanel::class.java)
         listener = CircleHoverListener(circlePanel)
-        commit1 = CommitInfo(mock(GitCommit::class.java), project, null)
+        commit1 = CommitInfo(createCommit("my commit"), project, null)
     }
 
     fun testMouseEnteredInsideCircle() {
@@ -135,6 +141,41 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
             } catch (e: UnsupportedOperationException) {
                 // The expected behavior of these dummy methods is to do nothing other than throw an exception.
             }
+        }
+    }
+
+    private fun createCommit(subject: String): GitCommit {
+        val author = MockVcsUserRegistry().users.first()
+        val hash = MockHash()
+        val root = MockVirtualFile("mock name")
+        val message = "example long commit message"
+        val commitRequirements = GitCommitRequirements()
+        return GitCommit(project, hash, listOf(), 1000L, root, subject, author, message, author, 1000L, listOf(), commitRequirements)
+    }
+
+    private class MockVcsUserRegistry : VcsUserRegistry {
+        override fun getUsers(): MutableSet<VcsUser> {
+            return mutableSetOf(
+                createUser("abc", "abc@goodmail.com"),
+                createUser("aaa", "aaa@badmail.com"),
+            )
+        }
+
+        override fun createUser(
+            name: String,
+            email: String,
+        ): VcsUser {
+            return VcsUserImpl(name, email)
+        }
+    }
+
+    private class MockHash : Hash {
+        override fun asString(): String {
+            return "exampleHash"
+        }
+
+        override fun toShortString(): String {
+            return "exampleShortHash"
         }
     }
 }
