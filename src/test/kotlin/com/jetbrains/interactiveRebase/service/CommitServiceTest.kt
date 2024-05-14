@@ -169,6 +169,9 @@ class CommitServiceTest : BasePlatformTestCase() {
     fun testMergedBranchHandlingConsidersMerged() {
         val repo: GitRepository = MockGitRepository("current")
         val cons = GeneralCommitConsumer()
+        doAnswer {
+            GitCommandResult(false, 0, listOf(), listOf("merged"))
+        }.`when`(utils).runCommand(anyCustom())
         controlledService.handleMergedBranch(cons, "merged", repo)
         verify(utils).getCommitsOfBranch(repo, cons)
     }
