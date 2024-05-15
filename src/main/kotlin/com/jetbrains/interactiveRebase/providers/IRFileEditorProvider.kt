@@ -1,6 +1,7 @@
 package com.jetbrains.interactiveRebase.providers
 
 import com.intellij.diff.util.FileEditorBase
+import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorPolicy
 import com.intellij.openapi.fileEditor.FileEditorProvider
@@ -65,7 +66,7 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
      * It is used to create the Editor Tab for the Interactive Rebase feature.
      */
     class MyFileEditorBase(project: Project, private val virtualFile: VirtualFile) : FileEditorBase() {
-        private val service: ComponentService = ComponentService.getInstance(project)
+        private val service: ComponentService = project.service<ComponentService>()
 
         /**
          * Returns a component which represents the editor in UI.

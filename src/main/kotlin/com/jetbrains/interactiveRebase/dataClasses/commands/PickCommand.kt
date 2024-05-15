@@ -2,7 +2,7 @@ package com.jetbrains.interactiveRebase.dataClasses.commands
 
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 
-data class RewordCommand(private val commit: CommitInfo, private var newMessage: String) : RebaseCommand(commit) {
+class PickCommand(val commit: CommitInfo) : RebaseCommand(commit) {
     /**
      * This method is to set-up connection with the
      * Interactive Rebase mechanism.

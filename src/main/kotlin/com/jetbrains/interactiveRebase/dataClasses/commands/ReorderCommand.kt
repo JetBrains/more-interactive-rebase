@@ -2,7 +2,7 @@ package com.jetbrains.interactiveRebase.dataClasses.commands
 
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 
-class ReorderCommand(private val commit: CommitInfo ) : RebaseCommand(commit) {
+class ReorderCommand(private val commit: CommitInfo) : RebaseCommand(commit) {
     override fun execute() {
         TODO("Not yet implemented")
     }

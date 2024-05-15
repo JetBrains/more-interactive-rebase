@@ -2,6 +2,15 @@ package com.jetbrains.interactiveRebase.dataClasses.commands
 
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 
+/**
+ * This is the abstract class for all the commands
+ * that will be executed during the rebase process.
+ *
+ * This class is the base class for all the commands
+ * that will be executed during the rebase process.
+ *
+ * @param commit The commit that the command will be executed on.
+ */
 sealed class RebaseCommand(private val commit: CommitInfo) {
     /**
      * This method is to set-up connection with the
@@ -13,8 +22,8 @@ sealed class RebaseCommand(private val commit: CommitInfo) {
     abstract fun execute()
 
     /**
-    Usually in a command you would need an undo() method,
-    this is to be discussed if needed in the future.
+     Usually in a command you would need an undo() method,
+     this is to be discussed if needed in the future.
 
      TODO: Discuss if undo() method is needed.
      **/
