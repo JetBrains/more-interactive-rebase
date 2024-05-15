@@ -1,10 +1,6 @@
 package com.jetbrains.interactiveRebase.listeners
 
-<<<<<<< HEAD
-import CirclePanel
 import com.intellij.mock.MockVirtualFile
-=======
->>>>>>> efcefae (Rebase connection established)
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.vcs.log.Hash
 import com.intellij.vcs.log.VcsUser

@@ -13,12 +13,7 @@ import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import com.jetbrains.interactiveRebase.mockStructs.MockGitRepository
 import com.jetbrains.interactiveRebase.services.BranchService
 import com.jetbrains.interactiveRebase.services.CommitService
-<<<<<<< HEAD
 import com.jetbrains.interactiveRebase.threads.BranchInfoThread
-import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
-=======
-import com.jetbrains.interactiveRebase.threads.CommitInfoThread
->>>>>>> efcefae (Rebase connection established)
 import com.jetbrains.interactiveRebase.utils.consumers.CommitConsumer
 import com.jetbrains.interactiveRebase.utils.consumers.GeneralCommitConsumer
 import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils

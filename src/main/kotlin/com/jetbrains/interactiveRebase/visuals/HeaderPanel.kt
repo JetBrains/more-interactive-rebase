@@ -7,9 +7,7 @@ import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 
-
-class HeaderPanel( mainPanel: JComponent) : JBPanel<JBPanel<*>>() {
-
+class HeaderPanel(mainPanel: JComponent) : JBPanel<JBPanel<*>>() {
     val gitActionsPanel = JBPanel<JBPanel<*>>()
     val changeActionsPanel = JBPanel<JBPanel<*>>()
 
@@ -42,7 +40,6 @@ class HeaderPanel( mainPanel: JComponent) : JBPanel<JBPanel<*>>() {
         buttonPanel.add(fixupButton)
         buttonPanel.add(rewordButton)
         buttonPanel.add(dropButton)
-
     }
 
     /**
