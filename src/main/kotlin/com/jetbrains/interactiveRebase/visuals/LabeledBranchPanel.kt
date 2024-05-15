@@ -28,7 +28,7 @@ class LabeledBranchPanel(
     private val alignment: Int = SwingConstants.LEFT,
 ) :
     JBPanel<JBPanel<*>>() {
-    private val branchPanel = BranchPanel(branch, color)
+    val branchPanel = BranchPanel(branch, color)
     private val commitLabels: MutableList<JBLabel> = mutableListOf()
     private val branchNameLabel = BoldLabel(branch.name)
 

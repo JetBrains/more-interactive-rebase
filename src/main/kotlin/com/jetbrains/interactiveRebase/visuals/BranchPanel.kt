@@ -3,11 +3,7 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
-import java.awt.BasicStroke
-import java.awt.Dimension
-import java.awt.Graphics
-import java.awt.Graphics2D
-import java.awt.RenderingHints
+import java.awt.*
 import javax.swing.Box
 import javax.swing.BoxLayout
 
@@ -24,7 +20,7 @@ class BranchPanel(
     val borderSize = 1f
     private val size = branch.commits.size
 
-    private val circles: MutableList<CirclePanel> = mutableListOf()
+    val circles: MutableList<CirclePanel> = mutableListOf()
 
     /**
      * Makes a branch panel with vertical orientation

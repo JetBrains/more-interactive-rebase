@@ -13,13 +13,13 @@ import java.awt.geom.Ellipse2D
 /**
  * Visual representation of commit node in the git graph
  */
-class CirclePanel(
-    private val diameter: Double,
-    private val border: Float,
-    private val color: JBColor,
-    var commit: CommitInfo,
-    var next: CirclePanel? = null,
-    var previous: CirclePanel? = null,
+open class CirclePanel(
+        private val diameter: Double,
+        private val border: Float,
+        private val color: JBColor,
+        open var commit: CommitInfo,
+        open var next: CirclePanel? = null,
+        open var previous: CirclePanel? = null,
 ) : JBPanel<JBPanel<*>>() {
     private var centerX = 0.0
     private var centerY = 0.0
@@ -73,7 +73,7 @@ class CirclePanel(
     /**
      * Creates a circle shape to be drawn inside the panel.
      */
-    private fun createCircle() {
+    fun createCircle() {
         val width = width.toDouble()
         val height = height.toDouble()
 
