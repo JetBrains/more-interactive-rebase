@@ -1,6 +1,7 @@
 package com.jetbrains.interactiveRebase.threads
 
 import com.intellij.mock.MockVirtualFile
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.vcs.log.Hash
 import com.intellij.vcs.log.VcsUser
@@ -9,10 +10,12 @@ import com.intellij.vcs.log.impl.VcsUserImpl
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.mockStructs.MockGitRepository
+import com.jetbrains.interactiveRebase.services.BranchService
 import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.utils.IRGitUtils
 import com.jetbrains.interactiveRebase.utils.consumers.CommitConsumer
 import git4idea.GitCommit
+import git4idea.commands.GitCommandResult
 import git4idea.history.GitCommitRequirements
 import git4idea.repo.GitRepository
 import org.mockito.Mockito.any
@@ -20,10 +23,26 @@ import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.mock
 
 class BranchInfoThreadTest : BasePlatformTestCase() {
+    private lateinit var service: CommitService
+    private lateinit var utils: IRGitUtils
+    private lateinit var branchSer: BranchService
+
+    override fun setUp() {
+        super.setUp()
+        MockGitRepository("my branch")
+        utils = mock(IRGitUtils::class.java)
+        doAnswer {
+            project.guessProjectDir()
+        }.`when`(utils).getRoot()
+        doAnswer {
+            GitCommandResult(false, 0, listOf(), listOf("master"))
+        }.`when`(utils).runCommand(anyCustom())
+        branchSer = BranchService(project, utils)
+        service = CommitService(project, utils, branchSer)
+    }
+
     fun testUpdateBranchInfoEmptyName() {
         val repo = MockGitRepository("my branch")
-        val utils = mock(IRGitUtils::class.java)
-        val service = CommitService(project, utils)
 
         val commit1 = createCommit("added tests")
         val commit2 = createCommit("fix tests")
@@ -51,9 +70,6 @@ class BranchInfoThreadTest : BasePlatformTestCase() {
 
     fun testUpdateBranchInfoDifferentBranch() {
         val repo: GitRepository = MockGitRepository("my branch")
-        val utils = mock(IRGitUtils::class.java)
-        val service = CommitService(project, utils)
-
         val commit1 = createCommit("added tests")
         val commit2 = createCommit("fix tests")
 
@@ -84,8 +100,6 @@ class BranchInfoThreadTest : BasePlatformTestCase() {
 
     fun testUpdateBranchInfoNoUpdate() {
         val repo: GitRepository = MockGitRepository("my branch")
-        val utils = mock(IRGitUtils::class.java)
-        val service = CommitService(project, utils)
 
         val commit1 = createCommit("added tests")
         val commit2 = createCommit("fix tests")
