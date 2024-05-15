@@ -6,11 +6,13 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
 import java.awt.BasicStroke
 import java.awt.Cursor
+import java.awt.Dimension
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.geom.Ellipse2D
+import javax.swing.BorderFactory
 
 /**
  * Visual representation of commit node in the git graph
@@ -34,7 +36,7 @@ open class CirclePanel(
 
     init {
         isOpaque = false
-        preferredSize = minimumSize
+        minimumSize = Dimension(diameter.toInt(), diameter.toInt())
         createCircle(diameter)
         addMouseListener(CircleHoverListener(this))
         addMouseMotionListener(CircleHoverListener(this))

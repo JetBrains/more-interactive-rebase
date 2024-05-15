@@ -24,6 +24,9 @@ import java.awt.GridLayout
 import java.awt.Insets
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.BorderFactory
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import javax.swing.JComponent
 import javax.swing.OverlayLayout
 import javax.swing.SwingConstants
@@ -49,8 +52,34 @@ class LabeledBranchPanel(
     internal val labelPanelWrapper = JBPanel<JBPanel<*>>()
 
     init {
-        branchNameLabel.horizontalTextPosition = SwingConstants.CENTER
+        branchNameLabel.horizontalAlignment = SwingConstants.CENTER
+        branchNameLabel.border = BorderFactory.createLineBorder(JBColor.BLACK)
         val circles = branchPanel.getCirclePanels()
+    }
+
+    /**
+     * Updates the width of commit labels.
+     */
+    private fun formatLabel(
+        label: JBLabel,
+        text: String,
+    ) {
+        val alignmentStyle =
+            when (alignment) {
+                SwingConstants.LEFT -> {
+                    "text-align: left;"
+                }
+
+                SwingConstants.RIGHT -> {
+                    "text-align: right;"
+                }
+
+                else -> {
+                    ""
+                }
+            }
+
+        label.text = "<html><body style='$alignmentStyle'>$text</body></html>"
     }
 
     /**
@@ -62,7 +91,9 @@ class LabeledBranchPanel(
         i: Int,
         circle: CirclePanel,
     ): JBLabel {
-        val commitLabel = JBLabel(branch.currentCommits[i].commit.subject)
+        val truncatedMessage = truncateMessage(i)
+
+        val commitLabel = JBLabel(truncatedMessage)
 
         branch.currentCommits[i].changes.forEach {
             if (it is RewordCommand) {
@@ -72,7 +103,7 @@ class LabeledBranchPanel(
                 commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.CROSSED)
                 // TODO: when drag-and-drop is implemented, this will probably break because
                 // TODO: the alignment setting logic was changed
-                commitLabel.horizontalAlignment = SwingConstants.RIGHT
+                commitLabel.horizontalAlignment = alignment
                 commitLabel.alignmentX = RIGHT_ALIGNMENT
             }
         }
@@ -85,7 +116,39 @@ class LabeledBranchPanel(
         commitLabel.preferredSize = Dimension(commitLabel.preferredWidth, branchPanel.diameter)
         commitLabel.verticalTextPosition = SwingConstants.CENTER
 
+
+        addCommitLabelListeners(commitLabel, i)
+
         return commitLabel
+    }
+
+    private fun addCommitLabelListeners(
+        commitLabel: JBLabel,
+        i: Int,
+    ) {
+        commitLabel.addMouseListener(
+            object : MouseAdapter() {
+                override fun mouseEntered(e: MouseEvent?) {
+                    formatLabel(commitLabel, commitLabel.text)
+                }
+
+                override fun mouseExited(e: MouseEvent?) {
+                    commitLabel.text = truncateMessage(i)
+                }
+            },
+        )
+    }
+
+    private fun truncateMessage(i: Int): String {
+        val maxCharacters = 500
+        val commitMessage = branch.currentCommits[i].commit.subject
+        val truncatedMessage =
+            if (commitMessage.length > maxCharacters) {
+                "${commitMessage.substring(0, maxCharacters)}..."
+            } else {
+                commitMessage
+            }
+        return truncatedMessage
     }
 
     /**
@@ -214,8 +277,9 @@ class LabeledBranchPanel(
         gbc.gridx = if (alignment == SwingConstants.LEFT) 1 else 0
         gbc.gridy = 1
         gbc.weightx = 1.0
-        gbc.weighty = 1.0
+        gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.BOTH
+        gbc.anchor = GridBagConstraints.CENTER
         gbc.insets = Insets(5, 5, 5, 5)
     }
 
@@ -226,7 +290,7 @@ class LabeledBranchPanel(
     fun setBranchPosition(gbc: GridBagConstraints) {
         gbc.gridx = if (alignment == SwingConstants.LEFT) 0 else 1
         gbc.gridy = 1
-        gbc.weightx = 1.0
+        gbc.weightx = 0.0
         gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
         gbc.insets = Insets(5, 5, 5, 5)
@@ -239,8 +303,8 @@ class LabeledBranchPanel(
     fun setBranchNamePosition(gbc: GridBagConstraints) {
         gbc.gridx = if (alignment == SwingConstants.LEFT) 0 else 1
         gbc.gridy = 0
-        gbc.weightx = 1.0
-        gbc.weighty = 0.0
+        gbc.weightx = 0.0
+        gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.HORIZONTAL
         gbc.insets = Insets(5, 5, 5, 5)
     }

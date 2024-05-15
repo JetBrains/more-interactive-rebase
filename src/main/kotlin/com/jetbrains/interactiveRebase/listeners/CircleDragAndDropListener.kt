@@ -9,6 +9,7 @@ import com.jetbrains.interactiveRebase.visuals.Palette
 import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.SwingUtilities
 import kotlin.math.abs
 
 class CircleDragAndDropListener(
@@ -25,7 +26,7 @@ class CircleDragAndDropListener(
     private val initialFontColor = label.fontColor
     private var hasMoved = false
     private val minY = 0
-    private val maxY = parent.branchPanel.preferredHeight - circle.diameter.toInt()
+    private var maxY = parent.branchPanel.preferredHeight - circle.diameter.toInt()
 
     /**
      * NEW: UPDATES CommitInfo
@@ -33,6 +34,12 @@ class CircleDragAndDropListener(
     private val commit = circle.commit
     private val commits = parent.branch.currentCommits
     private var currentIndex = commits.indexOf(commit)
+
+    init {
+        SwingUtilities.invokeLater {
+            maxY = parent.branchPanel.preferredHeight - circle.height
+        }
+    }
 
     override fun mousePressed(e: MouseEvent) {
         hasMoved = false

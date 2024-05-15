@@ -11,9 +11,8 @@ import java.awt.BasicStroke
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
+import java.awt.GridLayout
 import java.awt.RenderingHints
-import javax.swing.Box
-import javax.swing.BoxLayout
 
 /**
  * A panel encapsulating a branch:
@@ -36,8 +35,9 @@ class BranchPanel(
      * - adds commits to the branch (circle panel)
      */
     init {
-        layout = BoxLayout(this, BoxLayout.Y_AXIS)
-        preferredSize = Dimension(diameter, (size * diameter * 1.5).toInt())
+        minimumSize = Dimension(diameter, (size * diameter * 1.5).toInt())
+        preferredSize = minimumSize
+        layout = GridLayout(0, 1)
 
         updateCommits()
     }
@@ -106,8 +106,8 @@ class BranchPanel(
 
         // Calculate line coordinates
         val x = (width - diameter) / 2
-        val startY = circle.y + diameter / 2
-        val endY = nextCircle.y + diameter / 2
+        val startY = circle.y + circle.height / 2 + diameter / 2
+        val endY = nextCircle.y + circle.height / 2 + diameter / 2
         val glueHeight = endY - startY - diameter
         val glueY = startY + diameter / 2 + diameter / 2
 
@@ -150,9 +150,6 @@ class BranchPanel(
         for (i in 0 until size) {
             val circle = initializeCirclePanel(i)
             add(circle)
-            if (i < size - 1) {
-                add(Box.createVerticalGlue())
-            }
         }
         super.revalidate()
         revalidate()
