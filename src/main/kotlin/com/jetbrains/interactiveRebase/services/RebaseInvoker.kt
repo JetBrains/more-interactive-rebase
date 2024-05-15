@@ -10,7 +10,7 @@ class RebaseInvoker(project: Project) {
      * Global (project-level) list of rebase commands
      * that will be executed, once the rebase is initiated.
      */
-    private var commands = mutableListOf<RebaseCommand>()
+    var commands = mutableListOf<RebaseCommand>()
 
     /**
      * Adds a command to the list of commands to be executed.

@@ -11,7 +11,7 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
  *
  * @param commit The commit that the command will be executed on.
  */
-sealed class RebaseCommand(private val commit: CommitInfo) {
+sealed class RebaseCommand(open var commit: CommitInfo) {
     /**
      * This method is to set-up connection with the
      * Interactive Rebase mechanism.
