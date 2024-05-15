@@ -1,6 +1,5 @@
 package com.jetbrains.interactiveRebase.services
 
-import HeaderPanel
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
@@ -8,8 +7,13 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+<<<<<<< HEAD
 import com.jetbrains.interactiveRebase.threads.BranchInfoThread
 import com.jetbrains.interactiveRebase.visuals.CommitInfoPanel
+=======
+import com.jetbrains.interactiveRebase.threads.CommitInfoThread
+import com.jetbrains.interactiveRebase.visuals.HeaderPanel
+>>>>>>> efcefae (Rebase connection established)
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
 import java.awt.BorderLayout
@@ -67,6 +71,11 @@ class ComponentService(val project: Project) {
      */
     fun updateMainPanelVisuals() {
         mainComponent.removeAll()
+<<<<<<< HEAD
+=======
+        val headerPanel = HeaderPanel(mainComponent)
+        mainComponent.add(headerPanel, BorderLayout.NORTH)
+>>>>>>> efcefae (Rebase connection established)
 
         val headerPanel = HeaderPanel(mainComponent)
         val branchPanel = createBranchPanel()

@@ -1,13 +1,17 @@
 package com.jetbrains.interactiveRebase.listeners
 
+<<<<<<< HEAD
 import CirclePanel
 import com.intellij.mock.MockVirtualFile
+=======
+>>>>>>> efcefae (Rebase connection established)
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.vcs.log.Hash
 import com.intellij.vcs.log.VcsUser
 import com.intellij.vcs.log.VcsUserRegistry
 import com.intellij.vcs.log.impl.VcsUserImpl
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import git4idea.GitCommit
 import git4idea.history.GitCommitRequirements
 import org.assertj.core.api.Assertions.assertThat

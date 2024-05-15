@@ -1,5 +1,5 @@
-package com.jetbrains.interactiveRebase
-
+// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package git4ideaClasses
 import com.intellij.CommonBundle
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
@@ -20,8 +20,9 @@ import java.io.IOException
 import java.nio.charset.Charset
 import java.util.function.Predicate
 
-
-
+/**
+ * Handler for the rebasing
+ */
 open class IREditorHandler(private val myProject: Project, private val myRoot: VirtualFile) : GitRebaseEditorHandler {
     /**
      * If interactive rebase editor (with the list of commits) was shown, this is true.
@@ -30,14 +31,19 @@ open class IREditorHandler(private val myProject: Project, private val myRoot: V
     protected var myRebaseEditorShown = false
     private var myCommitListCancelled = false
     private var myUnstructuredEditorCancelled = false
-    private val myRewordedCommitMessageProvider: IRRewordedCommitMessageProvider = IRRewordedCommitMessageProvider.getInstance(myProject)
+    private val myRewordedCommitMessageProvider: IRRewordedCommitMessageProvider =
+        IRRewordedCommitMessageProvider.getInstance(myProject)
 
+    /**
+     * Makes the rebase change
+     */
     override fun editCommits(file: File): Int {
         return try {
             if (myRebaseEditorShown) {
                 val encoding = GitConfigUtil.getCommitEncoding(myProject, myRoot)
                 val originalMessage = FileUtil.loadFile(file, encoding)
-                val newMessage = myRewordedCommitMessageProvider.getRewordedCommitMessage(myProject, myRoot, originalMessage)
+                val newMessage =
+                    myRewordedCommitMessageProvider.getRewordedCommitMessage(myProject, myRoot, originalMessage)
                 if (newMessage == null) {
                     myUnstructuredEditorCancelled = !handleUnstructuredEditor(file)
                     return if (myUnstructuredEditorCancelled) GitRebaseEditorHandler.ERROR_EXIT_CODE else 0
@@ -55,10 +61,10 @@ open class IREditorHandler(private val myProject: Project, private val myRoot: V
                 }
             }
         } catch (e: VcsException) {
-            IREditorHandler.Companion.LOG.error("Failed to load commit details for commits from git rebase file: $file", e)
+            LOG.error("Failed to load commit details for commits from git rebase file: $file", e)
             GitRebaseEditorHandler.ERROR_EXIT_CODE
         } catch (e: Exception) {
-            IREditorHandler.Companion.LOG.error("Failed to edit git rebase file: $file", e)
+            LOG.error("Failed to edit git rebase file: $file", e)
             GitRebaseEditorHandler.ERROR_EXIT_CODE
         }
     }
@@ -66,11 +72,11 @@ open class IREditorHandler(private val myProject: Project, private val myRoot: V
     @Throws(IOException::class)
     protected fun handleUnstructuredEditor(file: File): Boolean {
         return GitImplBase.loadFileAndShowInSimpleEditor(
-                myProject,
-                myRoot,
-                file,
-                GitBundle.message("rebase.interactive.edit.commit.message.dialog.title"),
-                GitBundle.message("rebase.interactive.edit.commit.message.ok.action.title")
+            myProject,
+            myRoot,
+            file,
+            GitBundle.message("rebase.interactive.edit.commit.message.dialog.title"),
+            GitBundle.message("rebase.interactive.edit.commit.message.ok.action.title"),
         )
     }
 
@@ -79,7 +85,10 @@ open class IREditorHandler(private val myProject: Project, private val myRoot: V
         val rebaseFile = IRGitRebaseFile(myProject, myRoot, file)
         return try {
             val entries = rebaseFile.load()
-//            if (ContainerUtil.findInstance<Action, IRGitEntry.Action.Other>(ContainerUtil.map<IRGitEntry, Action>(entries, com.intellij.util.Function<IRGitEntry, IRGitEntry.Action> { it: IRGitEntry -> it.action }), IRGitEntry.Action.Other::class.java) != null) {
+//            if (ContainerUtil.findInstance<Action,
+//            IRGitEntry.Action.Other>(ContainerUtil
+//            .map<IRGitEntry, Action>(entries, com.intellij.util.Function<IRGitEntry, IRGitEntry.Action>
+//            { it: IRGitEntry -> it.action }), IRGitEntry.Action.Other::class.java) != null) {
 //                return handleUnstructuredEditor(file)
 //            } it used to be this but couldn't make it work
             if (entries.map { it.action }.any { it is IRGitEntry.Action.Other }) {
@@ -103,36 +112,42 @@ open class IREditorHandler(private val myProject: Project, private val myRoot: V
     internal open fun collectNewEntries(entries: List<IRGitEntry>): List<IRGitEntry>? {
         val newText = Ref.create<List<IRGitEntry>?>()
         val entriesWithDetails = loadDetailsForEntries(entries)
-        ApplicationManager.getApplication().invokeAndWait { newText.set(showInteractiveRebaseDialog(entriesWithDetails)) }
+        ApplicationManager.getApplication().invokeAndWait {
+            newText.set(showInteractiveRebaseDialog(entriesWithDetails))
+        }
         return newText.get()
     }
 
     private fun showInteractiveRebaseDialog(entries: List<IRGitEntry>): List<IRGitEntry>? {
-        //val editor = GitInteractiveRebaseDialog(myProject, myRoot, entries)
-        //DialogManager.show(editor)
-        //if (editor.isOK()) {
-            val table = IRCommitsTable(entries)
-            val rebaseTodoModel = table.rebaseTodoModel
-            processModel(rebaseTodoModel)
-            return rebaseTodoModel.convertToEntries() // it used to be but i changed it  internal fun <T : IRGitEntry> convertToEntries(): List<IRGitEntry>
-       // }
-        //return null
+        // val editor = GitInteractiveRebaseDialog(myProject, myRoot, entries)
+        // DialogManager.show(editor)
+        // if (editor.isOK()) {
+        val table = IRCommitsTable(entries)
+        val rebaseTodoModel = table.rebaseTodoModel
+        processModel(rebaseTodoModel)
+        return rebaseTodoModel.convertToEntries()
+        // it used to be but i changed it  internal fun <T : IRGitEntry> convertToEntries(): List<IRGitEntry>
+        // }
+        // return null
     }
 
     protected fun <T : IRGitEntry> processModel(rebaseTodoModel: IRGitModel<T>) {
         processModel(rebaseTodoModel) { entry: IRGitEntry -> (entry as IRGitEntryDetails).commitDetails.fullMessage }
     }
 
-
-    protected fun <T : IRGitEntry> processModel(rebaseTodoModel: IRGitModel<T>,
-                                               fullMessageGetter: (T) -> String) {
+    protected fun <T : IRGitEntry> processModel(
+        rebaseTodoModel: IRGitModel<T>,
+        fullMessageGetter: (T) -> String,
+    ) {
         val messages: MutableList<RewordedCommitMessageMapping> = ArrayList()
         for (element in rebaseTodoModel.elements) {
             if (element.type is IRGitModel.Type.NonUnite.KeepCommit.Reword) {
-                messages.add(RewordedCommitMessageMapping.fromMapping(
+                messages.add(
+                    RewordedCommitMessageMapping.fromMapping(
                         fullMessageGetter.invoke(element.entry),
-                        (element.type as IRGitModel.Type.NonUnite.KeepCommit.Reword).newMessage
-                ))
+                        (element.type as IRGitModel.Type.NonUnite.KeepCommit.Reword).newMessage,
+                    ),
+                )
             }
         }
         myRewordedCommitMessageProvider.save(myProject, myRoot, messages)
@@ -140,7 +155,13 @@ open class IREditorHandler(private val myProject: Project, private val myRoot: V
 
     @Throws(VcsException::class)
     private fun loadDetailsForEntries(entries: List<IRGitEntry>): List<IRGitEntry> {
-        val commitList = entries.stream().filter(Predicate<IRGitEntry> { entry: IRGitEntry -> entry.action.isCommit }).map<String>{entry: IRGitEntry  -> entry.commit}.toList()
+        val commitList =
+            entries.stream().filter(
+                Predicate<IRGitEntry> {
+                        entry: IRGitEntry ->
+                    entry.action.isCommit
+                },
+            ).map<String> { entry: IRGitEntry -> entry.commit }.toList()
         val details = GitLogUtil.collectMetadata(myProject, myRoot, commitList)
         val entriesWithDetails: MutableList<IRGitEntry> = ArrayList()
         var detailsIndex = 0
@@ -153,20 +174,21 @@ open class IREditorHandler(private val myProject: Project, private val myRoot: V
         }
         return entriesWithDetails
     }
-//Questionable
+
     private fun confirmNoopRebase(): Boolean {
-        IREditorHandler.Companion.LOG.info("Noop situation while rebasing $myRoot")
+        LOG.info("Noop situation while rebasing $myRoot")
         val result = Ref.create(false)
         ApplicationManager.getApplication().invokeAndWait {
             result.set(
-                    Messages.OK == DialogManager.showOkCancelDialog(
-                            myProject,
-                            GitBundle.message("rebase.interactive.noop.dialog.text"),
-                            GitBundle.message("rebase.interactive.noop.dialog.title"),
-                            CommonBundle.getOkButtonText(),
-                            CommonBundle.getCancelButtonText(),
-                            Messages.getQuestionIcon()
-                    )
+                Messages.OK ==
+                    DialogManager.showOkCancelDialog(
+                        myProject,
+                        GitBundle.message("rebase.interactive.noop.dialog.text"),
+                        GitBundle.message("rebase.interactive.noop.dialog.title"),
+                        CommonBundle.getOkButtonText(),
+                        CommonBundle.getCancelButtonText(),
+                        Messages.getQuestionIcon(),
+                    ),
             )
         }
         return result.get()

@@ -1,6 +1,9 @@
 package com.jetbrains.interactiveRebase.service
 
+<<<<<<< HEAD
 import com.intellij.mock.MockVirtualFile
+=======
+>>>>>>> efcefae (Rebase connection established)
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.vcs.log.Hash
@@ -9,7 +12,12 @@ import com.intellij.vcs.log.VcsUserRegistry
 import com.intellij.vcs.log.impl.VcsUserImpl
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.services.ComponentService
+<<<<<<< HEAD
 import com.jetbrains.interactiveRebase.threads.BranchInfoThread
+=======
+import com.jetbrains.interactiveRebase.threads.CommitInfoThread
+import com.jetbrains.interactiveRebase.visuals.HeaderPanel
+>>>>>>> efcefae (Rebase connection established)
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import git4idea.GitCommit
 import git4idea.history.GitCommitRequirements

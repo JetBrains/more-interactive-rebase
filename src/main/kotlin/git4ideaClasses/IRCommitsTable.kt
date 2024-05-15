@@ -1,9 +1,11 @@
-package com.jetbrains.interactiveRebase
+// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package git4ideaClasses
 
 import com.intellij.util.ui.EditableModel
 import javax.swing.table.AbstractTableModel
 
- class IRCommitsTable<T : IRGitEntry>(private val initialEntries: List<T>) : AbstractTableModel(), EditableModel {
+// TODO(Maybe this class is not needed because we will have our own structure to keep track of changes but will leave it for now)
+class IRCommitsTable<T : IRGitEntry>(private val initialEntries: List<T>) : AbstractTableModel(), EditableModel {
     companion object {
         const val COMMIT_ICON_COLUMN = 0
         const val SUBJECT_COLUMN = 1
@@ -12,11 +14,13 @@ import javax.swing.table.AbstractTableModel
     var rebaseTodoModel = createRebaseTodoModel()
         private set
 
-
     private fun createRebaseTodoModel(): IRGitModel<T> = convertToModel(initialEntries)
 
     private val savedStates = SavedStates(rebaseTodoModel.elements)
 
+    /**
+     * Converts the entries to a model
+     */
     internal fun <T : IRGitEntry> convertToModel(entries: List<T>): IRGitModel<T> {
         val result = mutableListOf<IRGitModel.Element<T>>()
         // consider auto-squash
@@ -36,27 +40,28 @@ import javax.swing.table.AbstractTableModel
                 }
                 IRGitEntry.Action.FIXUP, IRGitEntry.Action.SQUASH -> {
                     val lastElement = result.lastOrNull() ?: throw IllegalArgumentException("Couldn't unite with non-existed commit")
-                    val root = when (lastElement) {
-                        is IRGitModel.Element.UniteChild<T> -> lastElement.root
-                        is IRGitModel.Element.UniteRoot<T> -> lastElement
-                        is IRGitModel.Element.Simple<T> -> {
-                            when (val rootType = lastElement.type) {
-                                is IRGitModel.Type.NonUnite.KeepCommit -> {
-                                    val newRoot = IRGitModel.Element.UniteRoot(lastElement.index, rootType, lastElement.entry)
-                                    result[newRoot.index] = newRoot
-                                    newRoot
-                                }
-                                is IRGitModel.Type.NonUnite.Drop, is IRGitModel.Type.NonUnite.UpdateRef -> {
-                                    throw IllegalStateException()
+                    val root =
+                        when (lastElement) {
+                            is IRGitModel.Element.UniteChild<T> -> lastElement.root
+                            is IRGitModel.Element.UniteRoot<T> -> lastElement
+                            is IRGitModel.Element.Simple<T> -> {
+                                when (val rootType = lastElement.type) {
+                                    is IRGitModel.Type.NonUnite.KeepCommit -> {
+                                        val newRoot = IRGitModel.Element.UniteRoot(lastElement.index, rootType, lastElement.entry)
+                                        result[newRoot.index] = newRoot
+                                        newRoot
+                                    }
+                                    is IRGitModel.Type.NonUnite.Drop, is IRGitModel.Type.NonUnite.UpdateRef -> {
+                                        throw IllegalStateException()
+                                    }
                                 }
                             }
                         }
-                    }
                     val element = IRGitModel.Element.UniteChild(index, entry, root)
                     root.addChild(element)
                     result.add(element)
                 }
-                IRGitEntry.Action.UPDATE_REF -> {
+                IRGitEntry.Action.UPDATEREF -> {
                     val type = IRGitModel.Type.NonUnite.UpdateRef
                     val element = IRGitModel.Element.Simple(index, type, entry)
                     result.add(element)
@@ -71,11 +76,9 @@ import javax.swing.table.AbstractTableModel
         return IRGitModel(result)
     }
 
-
-
-
-
-
+    /**
+     * Update the model
+     */
     fun updateModel(f: (IRGitModel<T>) -> Unit) {
         f(rebaseTodoModel)
         savedStates.addState(rebaseTodoModel.elements)
@@ -92,15 +95,24 @@ import javax.swing.table.AbstractTableModel
 
     override fun getColumnCount() = SUBJECT_COLUMN + 1
 
-    override fun getValueAt(rowIndex: Int, columnIndex: Int): T = getEntry(rowIndex)
+    override fun getValueAt(
+        rowIndex: Int,
+        columnIndex: Int,
+    ): T = getEntry(rowIndex)
 
-    override fun exchangeRows(oldIndex: Int, newIndex: Int) {
+    override fun exchangeRows(
+        oldIndex: Int,
+        newIndex: Int,
+    ) {
         updateModel { rebaseTodoModel ->
             rebaseTodoModel.exchangeIndices(oldIndex, newIndex)
         }
     }
 
-    override fun canExchangeRows(oldIndex: Int, newIndex: Int) = true
+    override fun canExchangeRows(
+        oldIndex: Int,
+        newIndex: Int,
+    ) = true
 
     override fun removeRow(idx: Int) {
         throw UnsupportedOperationException()
@@ -110,13 +122,16 @@ import javax.swing.table.AbstractTableModel
         throw UnsupportedOperationException()
     }
 
-    override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) {
+    override fun setValueAt(
+        aValue: Any?,
+        rowIndex: Int,
+        columnIndex: Int,
+    ) {
         if (aValue is String) {
             val commitMessage = getEntry(rowIndex).getFullCommitMessage() ?: throw IllegalStateException()
             if (aValue == commitMessage) {
                 rebaseTodoModel.pick(listOf(rowIndex))
-            }
-            else {
+            } else {
                 rebaseTodoModel.reword(rowIndex, aValue)
             }
         }
@@ -124,7 +139,10 @@ import javax.swing.table.AbstractTableModel
 
     fun getEntry(row: Int): T = rebaseTodoModel.elements[row].entry
 
-    override fun isCellEditable(rowIndex: Int, columnIndex: Int) = columnIndex == SUBJECT_COLUMN && rebaseTodoModel.canReword(rowIndex)
+    override fun isCellEditable(
+        rowIndex: Int,
+        columnIndex: Int,
+    ) = columnIndex == SUBJECT_COLUMN && rebaseTodoModel.canReword(rowIndex)
 
     fun getElement(row: Int): IRGitModel.Element<T> = rebaseTodoModel.elements[row]
 
@@ -136,8 +154,7 @@ import javax.swing.table.AbstractTableModel
         val elementType = getElement(row).type
         return if (elementType is IRGitModel.Type.NonUnite.KeepCommit.Reword) {
             elementType.newMessage
-        }
-        else {
+        } else {
             getEntry(row).getFullCommitMessage() ?: throw IllegalStateException()
         }
     }
@@ -146,8 +163,7 @@ import javax.swing.table.AbstractTableModel
         val elementType = getElement(row).type
         return if (elementType is IRGitModel.Type.NonUnite.KeepCommit.Reword) {
             elementType.newMessage
-        }
-        else {
+        } else {
             val entry = getEntry(row)
             entry.getFullCommitMessage() ?: "${entry.action.command} ${entry.commit}"
         }
@@ -167,6 +183,9 @@ import javax.swing.table.AbstractTableModel
         fireTableRowsUpdated(0, rowCount)
     }
 
+    /**
+     * Class for saving all changes that were made
+     */
     private class SavedStates<T : IRGitEntry>(initialState: List<IRGitModel.Element<T>>) {
         companion object {
             private const val MAX_SIZE = 10

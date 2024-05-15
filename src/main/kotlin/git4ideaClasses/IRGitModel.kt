@@ -1,41 +1,74 @@
-package com.jetbrains.interactiveRebase
-
+// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package git4ideaClasses
 
 import kotlin.math.max
 import kotlin.math.min
-//TODO("whatever is happening here, a problem for later")
- class IRGitModel<T : IRGitEntry>(initialState: List<Element<T>>) {
+
+/**
+ * The model that handles interactive rebasing actions and changes
+ */
+class IRGitModel<T : IRGitEntry>(initialState: List<Element<T>>) {
     private val rows = ElementList(initialState)
 
     val elements: List<Element<T>>
         get() = rows.elements
 
+    /**
+     * Converts the model to a list of entries
+     */
+    internal fun convertToEntries(): List<IRGitEntry> =
+        elements.map { element ->
+            val entry = element.entry
+            IRGitEntry(element.type.command, entry.commit, entry.subject)
+        }
 
-    internal fun convertToEntries(): List<IRGitEntry> = elements.map { element ->
-        val entry = element.entry
-        IRGitEntry(element.type.command, entry.commit, entry.subject)
-    }
-
+    /**
+     * Checks if the Pick action is allowed
+     */
     fun canPick(indices: List<Int>) = anyOfType(indices) { it !is Type.NonUnite.KeepCommit.Pick && it !is Type.NonUnite.UpdateRef }
 
+    /**
+     * Adds pick action for the indicated commits
+     */
     fun pick(indices: List<Int>) {
         keepCommitAction(indices, Type.NonUnite.KeepCommit.Pick)
     }
 
+    /**
+     * Checks if editing is possible
+     */
     fun canEdit(indices: List<Int>) = anyOfType(indices) { it !is Type.NonUnite.KeepCommit.Edit && it !is Type.NonUnite.UpdateRef }
 
+    /**
+     * Adds editing action for the selected commits
+     */
     fun edit(indices: List<Int>) {
         keepCommitAction(indices, Type.NonUnite.KeepCommit.Edit)
     }
 
+    /**
+     * Checks if the reword action is possible
+     */
     fun canReword(index: Int): Boolean = rows[index] !is Element.UniteChild && rows[index].type !is Type.NonUnite.UpdateRef
 
-    fun reword(index: Int, message: String) {
+    /**
+     * Adds rewording action for the selected commit with the given message
+     */
+    fun reword(
+        index: Int,
+        message: String,
+    ) {
         keepCommitAction(listOf(index), Type.NonUnite.KeepCommit.Reword(message))
     }
 
+    /**
+     * Checks if the drop action is possible
+     */
     fun canDrop(indices: List<Int>) = anyOfType(indices) { it !is Type.NonUnite.Drop && it !is Type.NonUnite.UpdateRef }
 
+    /**
+     * Adds dropping action for the selected commits
+     */
     fun drop(indices: List<Int>) {
         val elements = indices.map { rows[it] }.filter { it.type != Type.NonUnite.UpdateRef }
         elements.filterIsInstance<Element.Simple<T>>().forEach { element ->
@@ -46,7 +79,7 @@ import kotlin.math.min
                 convertUniteGroupToSimple(root, Type.NonUnite.Drop)
             }
         }
-        // some UniteChildren could be dropped, but indices have not been changed. We should move them away from UniteGroup
+
         val uniteChildren = indices.sortedDescending().map { rows[it] }.filterIsInstance<Element.UniteChild<T>>()
         rows.modifyList {
             uniteChildren.forEach { child ->
@@ -55,16 +88,20 @@ import kotlin.math.min
         }
     }
 
+    /**
+     * Possibly can be deleted
+     */
     fun canUnite(indices: List<Int>): Boolean {
         if (indices.size < 2) {
             return false
         }
         if (indices.any { rows[it].type == Type.NonUnite.UpdateRef }) return false
-        val root = when (val element = rows[indices.first()]) {
-            is Element.Simple -> return true
-            is Element.UniteRoot -> element
-            is Element.UniteChild -> element.root
-        }
+        val root =
+            when (val element = rows[indices.first()]) {
+                is Element.Simple -> return true
+                is Element.UniteRoot -> element
+                is Element.UniteChild -> element.root
+            }
         indices.drop(1).forEach { index ->
             val element = rows[index] as? Element.UniteChild ?: return true
             if (element.root !== root) {
@@ -74,11 +111,15 @@ import kotlin.math.min
         return false
     }
 
+    /**
+     * Possibly can be deleted
+     */
     fun unite(indices: List<Int>): Element.UniteRoot<T> {
         lateinit var root: Element.UniteRoot<T>
         rows.modifyList {
             root = convertToRoot(indices.first())
-            val newChildren = indices.asSequence().drop(1).map { rows[it] }
+            val newChildren =
+                indices.asSequence().drop(1).map { rows[it] }
                     .filter { it !is Element.UniteChild || it.root !== root }
                     .map { if (it is Element.UniteRoot) it.uniteGroup else listOf(it) }
                     .flatten()
@@ -92,28 +133,37 @@ import kotlin.math.min
         return root
     }
 
-    fun exchangeIndices(oldIndex: Int, newIndex: Int) {
+    /**
+     * Reorder action
+     */
+    fun exchangeIndices(
+        oldIndex: Int,
+        newIndex: Int,
+    ) {
         rows.modifyList {
-            val elementsToMove: List<Element<T>> = when (val element = rows[oldIndex]) {
-                is Element.UniteRoot -> element.uniteGroup
-                is Element.Simple -> listOf(element)
-                is Element.UniteChild -> {
-                    val newElement = removeAndMoveUniteChild(element, Type.NonUnite.KeepCommit.Pick)
-                    if (newElement.index == newIndex) {
-                        // moved to the last position of current UniteGroup
-                        addToUniteGroup(newElement.index, element.root)
-                        listOf()
-                    }
-                    else {
-                        listOf(newElement)
+            val elementsToMove: List<Element<T>> =
+                when (val element = rows[oldIndex]) {
+                    is Element.UniteRoot -> element.uniteGroup
+                    is Element.Simple -> listOf(element)
+                    is Element.UniteChild -> {
+                        val newElement = removeAndMoveUniteChild(element, Type.NonUnite.KeepCommit.Pick)
+                        if (newElement.index == newIndex) {
+                            // moved to the last position of current UniteGroup
+                            addToUniteGroup(newElement.index, element.root)
+                            listOf()
+                        } else {
+                            listOf(newElement)
+                        }
                     }
                 }
-            }
             moveElements(elementsToMove, newIndex)
             addToUniteGroupIfNeeded(elementsToMove)
         }
     }
 
+    /**
+     * Used for reordering
+     */
     private fun MutableElementList<T>.addToUniteGroupIfNeeded(elements: List<Element<T>>) {
         if (elements.isEmpty()) {
             return
@@ -127,13 +177,22 @@ import kotlin.math.min
         }
     }
 
-    private fun MutableElementList<T>.convertUniteGroupToSimple(root: Element.UniteRoot<T>, newType: Type.NonUnite) {
+    /**
+     * Used for drop
+     */
+    private fun MutableElementList<T>.convertUniteGroupToSimple(
+        root: Element.UniteRoot<T>,
+        newType: Type.NonUnite,
+    ) {
         root.uniteGroup.forEach { element ->
             forceChangeElement(element, Element.Simple(element.index, newType, element.entry))
         }
     }
 
-    private fun MutableElementList<T>.changeUniteChild(child: Element.UniteChild<T>, newElement: Element<T>) {
+    private fun MutableElementList<T>.changeUniteChild(
+        child: Element.UniteChild<T>,
+        newElement: Element<T>,
+    ) {
         val root = child.root
         root.removeChild(child)
         if (root.children.isEmpty()) {
@@ -142,14 +201,23 @@ import kotlin.math.min
         forceChangeElement(child, newElement)
     }
 
-    private fun MutableElementList<T>.changeUniteRoot(element: Element.UniteRoot<T>, newElement: Element<T>) {
+    private fun MutableElementList<T>.changeUniteRoot(
+        element: Element.UniteRoot<T>,
+        newElement: Element<T>,
+    ) {
         convertUniteGroupToSimple(element, Type.NonUnite.KeepCommit.Pick)
         forceChangeElement(element, newElement)
     }
 
+    /**
+     * Retrieves the next element
+     */
     private fun getNextElement(element: Element<T>) = (element.index + 1).takeIf { it < rows.size }?.let { rows[it] }
 
-    private fun MutableElementList<T>.addToUniteGroup(index: Int, root: Element.UniteRoot<T>) {
+    private fun MutableElementList<T>.addToUniteGroup(
+        index: Int,
+        root: Element.UniteRoot<T>,
+    ) {
         val element = elements[index]
         val newChildElement = Element.UniteChild(index, element.entry, root)
         root.addChild(newChildElement)
@@ -161,24 +229,30 @@ import kotlin.math.min
     }
 
     private fun MutableElementList<T>.convertToRoot(rootIndex: Int): Element.UniteRoot<T> =
-            when (val element = rows[rootIndex]) {
-                is Element.UniteRoot -> element
-                is Element.UniteChild -> element.root
-                is Element.Simple -> {
-                    val currentType = element.type
-                    val newType = if (currentType is Type.NonUnite.KeepCommit) {
+        when (val element = rows[rootIndex]) {
+            is Element.UniteRoot -> element
+            is Element.UniteChild -> element.root
+            is Element.Simple -> {
+                val currentType = element.type
+                val newType =
+                    if (currentType is Type.NonUnite.KeepCommit) {
                         currentType
-                    }
-                    else {
+                    } else {
                         Type.NonUnite.KeepCommit.Pick
                     }
-                    Element.UniteRoot(rootIndex, newType, element.entry).also { root ->
-                        changeSimple(element, root)
-                    }
+                Element.UniteRoot(rootIndex, newType, element.entry).also { root ->
+                    changeSimple(element, root)
                 }
             }
+        }
 
-    private fun keepCommitAction(indices: List<Int>, type: Type.NonUnite.KeepCommit) {
+    /**
+     * Used for every interactive rebase action
+     */
+    private fun keepCommitAction(
+        indices: List<Int>,
+        type: Type.NonUnite.KeepCommit,
+    ) {
         rows.modifyList {
             indices.sortedDescending().forEach { index ->
                 when (val element = rows[index]) {
@@ -194,7 +268,10 @@ import kotlin.math.min
         }
     }
 
-    private fun MutableElementList<T>.removeAndMoveUniteChild(child: Element.UniteChild<T>, newType: Type.NonUnite): Element<T> {
+    private fun MutableElementList<T>.removeAndMoveUniteChild(
+        child: Element.UniteChild<T>,
+        newType: Type.NonUnite,
+    ): Element<T> {
         val root = child.root
         val newIndex = root.lastChildIndex()
         val element = Element.Simple(child.index, newType, child.entry)
@@ -203,8 +280,14 @@ import kotlin.math.min
         return element
     }
 
-    private fun anyOfType(indices: List<Int>, condition: (Type) -> Boolean): Boolean = indices.any { condition(rows[it].type) }
+    private fun anyOfType(
+        indices: List<Int>,
+        condition: (Type) -> Boolean,
+    ): Boolean = indices.any { condition(rows[it].type) }
 
+    /**
+     * List for the initial states
+     */
     private class ElementList<T : IRGitEntry>(initialState: List<Element<T>>) {
         private val mutableElementList = MutableElementList(initialState)
 
@@ -254,16 +337,25 @@ import kotlin.math.min
 
         operator fun get(index: Int): Element<T> = _elements[index]
 
-        fun forceChangeElement(element: Element<T>, newElement: Element<T>) {
+        fun forceChangeElement(
+            element: Element<T>,
+            newElement: Element<T>,
+        ) {
             check(element.index == newElement.index)
             _elements[element.index] = newElement
         }
 
-        fun changeSimple(element: Element.Simple<T>, newElement: Element<T>) {
+        fun changeSimple(
+            element: Element.Simple<T>,
+            newElement: Element<T>,
+        ) {
             forceChangeElement(element, newElement)
         }
 
-        fun moveElements(moveGroup: List<Element<T>>, position: Int) {
+        fun moveElements(
+            moveGroup: List<Element<T>>,
+            position: Int,
+        ) {
             if (moveGroup.isEmpty()) {
                 return
             }
@@ -289,26 +381,27 @@ import kotlin.math.min
             }
 
             changedElementsInterval
-                    .map { element -> if (element is Element.UniteChild) element.root else element }
-                    .filterIsInstance<Element.UniteRoot<T>>()
-                    .distinct()
-                    .forEach { root ->
-                        root.childrenIndicesChanged()
-                    }
+                .map { element -> if (element is Element.UniteChild) element.root else element }
+                .filterIsInstance<Element.UniteRoot<T>>()
+                .distinct()
+                .forEach { root ->
+                    root.childrenIndicesChanged()
+                }
         }
 
-        //Shift index for "update-ref" entries, to not to add them into squashed groups
-        private fun shiftIndexIfNeeded(moveGroup: List<Element<T>>,
-                                       position: Int,
-                                       elementAtNewPosition: Element<T>,
-                                       moveGroupNewFirstIndex: Int): Int {
+        // Shift index for "update-ref" entries, to not to add them into squashed groups
+        private fun shiftIndexIfNeeded(
+            moveGroup: List<Element<T>>,
+            position: Int,
+            elementAtNewPosition: Element<T>,
+            moveGroupNewFirstIndex: Int,
+        ): Int {
             val isGroupContainsUpdateRef = moveGroup.any { it.type == Type.NonUnite.UpdateRef }
             if (isGroupContainsUpdateRef) {
                 val isMovingUp = moveGroup.first().index > position
                 if (elementAtNewPosition is Element.UniteChild && isMovingUp) {
                     return elementAtNewPosition.root.index
-                }
-                else if (elementAtNewPosition is Element.UniteRoot && !isMovingUp) {
+                } else if (elementAtNewPosition is Element.UniteRoot && !isMovingUp) {
                     return elementAtNewPosition.lastChildIndex()
                 }
             }
@@ -316,15 +409,21 @@ import kotlin.math.min
         }
     }
 
+    /**
+     * Type of action
+     */
     sealed class Type(val command: IRGitEntry.KnownAction) {
         sealed class NonUnite(command: IRGitEntry.KnownAction) : Type(command) {
             sealed class KeepCommit(command: IRGitEntry.KnownAction) : NonUnite(command) {
                 object Pick : KeepCommit(IRGitEntry.Action.PICK)
+
                 object Edit : KeepCommit(IRGitEntry.Action.EDIT)
+
                 class Reword(val newMessage: String) : KeepCommit(IRGitEntry.Action.REWORD)
             }
 
-            object UpdateRef : NonUnite(IRGitEntry.Action.UPDATE_REF)
+            object UpdateRef : NonUnite(IRGitEntry.Action.UPDATEREF)
+
             object Drop : NonUnite(IRGitEntry.Action.DROP)
         }
 
@@ -335,9 +434,9 @@ import kotlin.math.min
         class Simple<T : IRGitEntry>(index: Int, override var type: Type.NonUnite, entry: T) : Element<T>(index, type, entry)
 
         class UniteRoot<T : IRGitEntry>(
-                index: Int,
-                override var type: Type.NonUnite.KeepCommit,
-                entry: T
+            index: Int,
+            override var type: Type.NonUnite.KeepCommit,
+            entry: T,
         ) : Element<T>(index, type, entry) {
             private val _children = mutableListOf<UniteChild<T>>()
             val children: List<UniteChild<T>>
@@ -350,8 +449,7 @@ import kotlin.math.min
                 check(child.index in this.index + 1..newChildIndex())
                 if (child.index == newChildIndex()) {
                     _children.add(child)
-                }
-                else {
+                } else {
                     _children.add(child.index - index - 1, child)
                 }
             }
