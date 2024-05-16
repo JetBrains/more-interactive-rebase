@@ -28,20 +28,20 @@ class ComponentServiceTest : BasePlatformTestCase() {
     }
 
     fun testUpdateMainPanelVisuals() {
-        componentService.updateMainPanelVisuals()
+        componentService.updateMainPanel()
 
-        assertEquals(1, componentService.mainComponent.componentCount)
-        assertTrue(componentService.mainComponent.getComponent(0) is OnePixelSplitter)
+        assertEquals(1, componentService.mainPanel.componentCount)
+        assertTrue(componentService.mainPanel.getComponent(0) is OnePixelSplitter)
     }
 
     fun testCreateMainComponent() {
-        val mainComponent = componentService.createMainComponent()
+        val mainComponent = componentService.mainPanel
 
         assertTrue(mainComponent.layout is BorderLayout)
     }
 
     fun testCreateBranchPanel() {
-        val branchPanel = componentService.createBranchPanel()
+        val branchPanel = componentService.createContentPanel()
 
         assertTrue(branchPanel.layout is GridBagLayout)
         assertEquals(1, branchPanel.componentCount)
@@ -79,7 +79,8 @@ class ComponentServiceTest : BasePlatformTestCase() {
         doNothing().`when`(mockThread).join()
         doNothing().`when`(mockThread).start()
 
-        val updated = componentService.refresh()
+        componentService.updateMainPanel()
+        val updated = componentService.mainPanel
 
         assertEquals(1, updated.componentCount)
         assertEquals(OnePixelSplitter::class.java, updated.getComponent(0).javaClass)

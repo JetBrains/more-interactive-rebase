@@ -1,6 +1,7 @@
 package com.jetbrains.interactiveRebase.threads
 
 import com.intellij.mock.MockVirtualFile
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.vcs.log.Hash
@@ -12,6 +13,7 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.mockStructs.MockGitRepository
 import com.jetbrains.interactiveRebase.services.BranchService
 import com.jetbrains.interactiveRebase.services.CommitService
+import com.jetbrains.interactiveRebase.services.ComponentService
 import com.jetbrains.interactiveRebase.utils.consumers.CommitConsumer
 import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
 import git4idea.GitCommit
@@ -24,21 +26,25 @@ import org.mockito.Mockito.mock
 
 class BranchInfoThreadTest : BasePlatformTestCase() {
     private lateinit var service: CommitService
+    private lateinit var commitService: CommitService
     private lateinit var utils: IRGitUtils
-    private lateinit var branchSer: BranchService
+    private lateinit var branchService: BranchService
+    private lateinit var componentService: ComponentService
 
     override fun setUp() {
         super.setUp()
-        MockGitRepository("my branch")
+        service = project.service<CommitService>()
         utils = mock(IRGitUtils::class.java)
+        branchService = BranchService(project, utils)
+        commitService = CommitService(project, utils, branchService)
+        componentService = project.service<ComponentService>()
+
         doAnswer {
             project.guessProjectDir()
         }.`when`(utils).getRoot()
         doAnswer {
             GitCommandResult(false, 0, listOf(), listOf("master"))
         }.`when`(utils).runCommand(anyCustom())
-        branchSer = BranchService(project, utils)
-        service = CommitService(project, utils, branchSer)
     }
 
     fun testUpdateBranchInfoEmptyName() {
@@ -52,7 +58,7 @@ class BranchInfoThreadTest : BasePlatformTestCase() {
             repo
         }.`when`(utils).getRepository()
 
-        val thread = BranchInfoThread(project, testBranchInfo, service)
+        val thread = BranchInfoThread(project, testBranchInfo, commitService, componentService)
 
         doAnswer {
             val consumerInside = it.arguments[3] as CommitConsumer
@@ -70,6 +76,7 @@ class BranchInfoThreadTest : BasePlatformTestCase() {
 
     fun testUpdateBranchInfoDifferentBranch() {
         val repo: GitRepository = MockGitRepository("my branch")
+
         val commit1 = createCommit("added tests")
         val commit2 = createCommit("fix tests")
 
@@ -78,7 +85,7 @@ class BranchInfoThreadTest : BasePlatformTestCase() {
         val testBranchInfo = BranchInfo("bug-fix", commits = listOf(oldCommit), false)
         testBranchInfo.selectedCommits.add(oldCommit)
 
-        val thread = BranchInfoThread(project, testBranchInfo, service)
+        val thread = BranchInfoThread(project, testBranchInfo, commitService, componentService)
 
         doAnswer {
             repo
@@ -100,6 +107,9 @@ class BranchInfoThreadTest : BasePlatformTestCase() {
 
     fun testUpdateBranchInfoNoUpdate() {
         val repo: GitRepository = MockGitRepository("my branch")
+        val utils = mock(IRGitUtils::class.java)
+        val commitService = CommitService(project, utils, project.service<BranchService>())
+        val componentService = project.service<ComponentService>()
 
         val commit1 = createCommit("added tests")
         val commit2 = createCommit("fix tests")
@@ -110,7 +120,7 @@ class BranchInfoThreadTest : BasePlatformTestCase() {
         val testBranchInfo = BranchInfo("my branch", commits = listOf(commitInfo1, commitInfo2), false)
         testBranchInfo.selectedCommits.add(commitInfo1)
 
-        val thread = BranchInfoThread(project, testBranchInfo, service)
+        val thread = BranchInfoThread(project, testBranchInfo, commitService, componentService)
 
         doAnswer {
             repo
@@ -128,7 +138,7 @@ class BranchInfoThreadTest : BasePlatformTestCase() {
         assertEquals("my branch", testBranchInfo.name)
         assertEquals(commit1, testBranchInfo.commits[0].commit)
         assertEquals(commit2, testBranchInfo.commits[1].commit)
-        assertEquals(listOf<CommitInfo>(), testBranchInfo.selectedCommits)
+        assertEquals(listOf(commitInfo1), testBranchInfo.selectedCommits)
     }
 
     private inline fun <reified T> anyCustom(): T = any(T::class.java)
