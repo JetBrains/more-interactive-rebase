@@ -1,5 +1,6 @@
 package com.jetbrains.interactiveRebase.listeners
 
+import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.services.ComponentService
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import java.awt.event.MouseEvent
@@ -41,7 +42,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
      * Select a commit upon a click.
      */
     override fun mouseClicked(e: MouseEvent?) {
-        componentService = ComponentService.getInstance(circlePanel.commit.project)
+        componentService = circlePanel.commit.project.service<ComponentService>()
         circlePanel.commit.isSelected = !circlePanel.commit.isSelected
         componentService.addOrRemoveCommitSelection(circlePanel.commit)
         circlePanel.repaint()

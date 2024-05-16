@@ -127,17 +127,6 @@ class ComponentService(val project: Project) {
         return branchInfo.selectedCommits.toList()
     }
 
-    companion object {
-        @Volatile
-        private var instance: ComponentService? = null
-
-        fun getInstance(project: Project): ComponentService {
-            return instance ?: synchronized(this) {
-                instance ?: ComponentService(project).also { instance = it }
-            }
-        }
-    }
-
     /**
      * Calls thread to update branch info
      */
