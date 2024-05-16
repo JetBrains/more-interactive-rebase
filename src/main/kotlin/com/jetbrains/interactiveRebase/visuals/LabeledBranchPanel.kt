@@ -8,12 +8,13 @@ import com.intellij.ui.util.preferredWidth
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import java.awt.Dimension
+import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.awt.GridLayout
 import java.awt.Insets
-import javax.swing.Box
-import javax.swing.BoxLayout
-import javax.swing.SwingConstants
+import javax.swing.*
+
 
 /**
  * Panel encapsulating a branch and corresponding labels
@@ -62,16 +63,15 @@ class LabeledBranchPanel(
         }
         commitLabel.labelFor = circle
         commitLabel.preferredSize = Dimension(commitLabel.preferredWidth, branchPanel.diameter)
-        commitLabel.alignmentX =
-            (
-                if (alignment == SwingConstants.LEFT) {
-                    LEFT_ALIGNMENT
-                } else {
-                    RIGHT_ALIGNMENT
-                }
-            )
+        commitLabel.horizontalAlignment = alignment
+//            (
+//                if (alignment == SwingConstants.LEFT) {
+//                    LEFT_ALIGNMENT
+//                } else {
+//                    RIGHT_ALIGNMENT
+//                }
+//            )
         commitLabel.verticalTextPosition = SwingConstants.CENTER
-
         return commitLabel
     }
 
@@ -98,18 +98,52 @@ class LabeledBranchPanel(
         add(labelPanelWrapper, gbc)
     }
 
+    fun checkChanges() {
+        branch.commits.forEach {
+            it.changes?.forEach {
+                // if it is reworded
+
+            }
+        }
+    }
+
     /**
      * Puts all commit labels in a panel that
      * serves as a wrapper.
      */
     fun wrapCommitLabels(labelPanelWrapper: JBPanel<JBPanel<*>>) {
-        labelPanelWrapper.layout = BoxLayout(labelPanelWrapper, BoxLayout.Y_AXIS)
+        labelPanelWrapper.layout = GridLayout(0, 1)
         for (i in commitLabels.indices) {
-            labelPanelWrapper.add(commitLabels[i])
-            if (i < commitLabels.size - 1) {
-                labelPanelWrapper.add(Box.createVerticalGlue())
-            }
+            val commit = commitLabels[i]
+            commit.horizontalAlignment = alignment
+            val textLabelWrapper = wrapLabelsWithTextFields(commit)
+            labelPanelWrapper.add(textLabelWrapper)
         }
+    }
+
+    fun wrapLabelsWithTextFields(commit : JBLabel) : JComponent {
+        val textLabelWrapper = JBPanel<JBPanel<*>>()
+        textLabelWrapper.layout = OverlayLayout(textLabelWrapper)
+
+        val textWrapper = JBPanel<JBPanel<*>>()
+        textWrapper.layout = FlowLayout(alignment)
+        val textField = JTextField(commit.text)
+        textField.maximumSize = commit.maximumSize
+        textField.horizontalAlignment = alignment
+
+        textWrapper.add(textField)
+
+        val labelWrapper = JBPanel<JBPanel<*>>()
+        labelWrapper.layout = FlowLayout(alignment)
+        labelWrapper.add(commit)
+
+//            labelWrapper.isVisible = false
+            textWrapper.isVisible = false
+
+        textLabelWrapper.add(labelWrapper)
+        textLabelWrapper.add(textWrapper)
+
+        return textLabelWrapper
     }
 
     /**
