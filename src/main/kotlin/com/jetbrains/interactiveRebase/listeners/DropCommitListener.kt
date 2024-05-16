@@ -1,11 +1,10 @@
 package com.jetbrains.interactiveRebase.listeners
 
-import CirclePanel
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.services.ComponentService
-import com.jetbrains.interactiveRebase.visuals.DropCirclePanel
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import javax.swing.BorderFactory
@@ -17,21 +16,27 @@ class DropCommitListener(val button: JButton, val project: Project): MouseListen
     private val originalBackground = button.foreground
     private val clickedBackground = button.foreground.brighter()
     private val clickedBorder: Border = BorderFactory.createLineBorder(JBColor.BLACK, 1, true)
-    private val labeledBranchPanel = project.service<ComponentService>().getLabeledBranchPanel()
-    val selectedCircles: MutableList<CirclePanel> =  project.service<ComponentService>().getSelectedCirclePanels(labeledBranchPanel)
+//    private val labeledBranchPanel = project.service<ComponentService>().getLabeledBranchPanel()
+//    val selectedCircles: MutableList<CirclePanel> =  project.service<ComponentService>().getSelectedCirclePanels(labeledBranchPanel)
 
     override fun mouseClicked(e: MouseEvent?) {
         button.border = clickedBorder
         button.foreground = clickedBackground
         button.isOpaque = true
-
-        for (i in selectedCircles.indices) {
-            val circle = selectedCircles[i]
-
-            val dropCirclePanel = circle as DropCirclePanel
-            selectedCircles[i] = dropCirclePanel
-
+        project.service<ComponentService>().getSelectedCommits().forEach {
+            commitInfo ->
+            commitInfo.changes?.add(DropCommand(commitInfo))
+            println("lolza")
         }
+        project.service<ComponentService>().isDirty = true
+
+//        for (i in selectedCircles.indices) {
+//            val circle = selectedCircles[i]
+//
+//            val dropCirclePanel = circle as DropCirclePanel
+//            selectedCircles[i] = dropCirclePanel
+//
+//        }
 
         println("mouse clicked")
     }
@@ -40,6 +45,12 @@ class DropCommitListener(val button: JButton, val project: Project): MouseListen
         button.border = clickedBorder
         button.foreground = clickedBackground
         button.isOpaque = true
+        project.service<ComponentService>().getSelectedCommits().forEach {
+            commitInfo ->
+            commitInfo.changes?.add(DropCommand(commitInfo))
+            println("kkkkkkadfkjbefshjgka")
+        }
+        project.service<ComponentService>().isDirty = true
 
         println("mouse pressed")
     }

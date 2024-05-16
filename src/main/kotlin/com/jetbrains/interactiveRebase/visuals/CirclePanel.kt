@@ -47,7 +47,31 @@ open class CirclePanel(
     public override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
 
-        // Cast the Graphics object to Graphics2D for more advanced rendering
+//        // Cast the Graphics object to Graphics2D for more advanced rendering
+//        val g2d = g as Graphics2D
+//
+//        // Set rendering hints for smoother rendering
+//        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+//
+//        createCircle()
+//
+//        if (commit.isSelected) {
+//            g2d.color = color.darker()
+//        } else {
+//            g2d.color = color
+//        }
+//
+//        g2d.fill(circle)
+//
+//        if (commit.isHovered) {
+//            g2d.color = JBColor.BLACK
+//            g2d.stroke = BasicStroke(border)
+//            g2d.draw(circle)
+//        }
+        paintCircle(g)
+    }
+
+    public open fun paintCircle(g: Graphics) {
         val g2d = g as Graphics2D
 
         // Set rendering hints for smoother rendering
@@ -85,5 +109,9 @@ open class CirclePanel(
         centerX = (width - diameter) / 2
         centerY = (height - diameter) / 2
         circle = Ellipse2D.Double(centerX, centerY, diameter, diameter)
+    }
+
+    fun paintSuper(g: Graphics){
+        super.paintComponent(g)
     }
 }

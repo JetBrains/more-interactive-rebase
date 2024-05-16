@@ -6,6 +6,7 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
 import com.intellij.ui.util.preferredWidth
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -50,6 +51,11 @@ class LabeledBranchPanel(
         circle: CirclePanel,
     ): JBLabel {
         val commitLabel = JBLabel(branch.commits[i].getSubject())
+        branch.commits[i].changes.forEach {
+            if (it is DropCommand) {
+                commitLabel.text = "<html><strike>${it.commit.getSubject()}</strike></html>"
+            }
+        }
         commitLabel.labelFor = circle
         commitLabel.preferredSize = Dimension(commitLabel.preferredWidth, branchPanel.diameter)
         commitLabel.alignmentX =
@@ -61,6 +67,7 @@ class LabeledBranchPanel(
                 }
             )
         commitLabel.verticalTextPosition = SwingConstants.CENTER
+
         return commitLabel
     }
 

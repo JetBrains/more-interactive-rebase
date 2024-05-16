@@ -72,7 +72,7 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
      */
     fun getCommitInfoForBranch(commits: List<GitCommit>): List<CommitInfo> {
         return commits.map { commit ->
-            CommitInfo(commit, project, null)
+            CommitInfo(commit, project, mutableListOf())
         }
     }
 

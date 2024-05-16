@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import java.awt.*
 import javax.swing.Box
 import javax.swing.BoxLayout
@@ -46,7 +47,14 @@ class BranchPanel(
      * to the next and previous neighbors
      */
     private fun initializeCirclePanel(i: Int): CirclePanel {
-        val circle = CirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
+        val commit = branch.commits[i]
+        var circle = CirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
+
+        if (commit.changes.any { it is DropCommand } == true) {
+            println("does it get here?")
+             circle = DropCirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
+        }
+
         circles.add(circle)
         if (i > 0) {
             // Set reference to next circle
