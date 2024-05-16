@@ -4,7 +4,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
-import com.jetbrains.interactiveRebase.utils.IRGitUtils
+import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
 import git4idea.commands.GitCommand
 import git4idea.commands.GitCommandResult
 import git4idea.commands.GitLineHandler

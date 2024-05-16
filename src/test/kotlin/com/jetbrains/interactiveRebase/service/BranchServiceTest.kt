@@ -5,7 +5,7 @@ import com.intellij.openapi.vcs.VcsException
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import com.jetbrains.interactiveRebase.services.BranchService
-import com.jetbrains.interactiveRebase.utils.IRGitUtils
+import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
 import git4idea.commands.GitCommandResult
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.assertThrows
