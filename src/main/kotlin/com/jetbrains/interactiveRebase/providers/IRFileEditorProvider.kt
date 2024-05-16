@@ -7,18 +7,10 @@ import com.intellij.openapi.fileEditor.FileEditorProvider
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.ui.components.JBPanel
-import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
-import com.jetbrains.interactiveRebase.threads.CommitInfoThread
-import com.jetbrains.interactiveRebase.visuals.Branch
-import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
-import com.jetbrains.interactiveRebase.visuals.Palette
+import com.jetbrains.interactiveRebase.services.ComponentService
 import java.awt.Color
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
-import javax.swing.SwingConstants
 
 /**
  * A FileEditorProvider for the IRVirtualFile. It is used to
@@ -72,14 +64,8 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
      * A FileEditorBase for the IRVirtualFile.
      * It is used to create the Editor Tab for the Interactive Rebase feature.
      */
-    class MyFileEditorBase(private val project: Project, private val virtualFile: VirtualFile) : FileEditorBase() {
-        private var component: JComponent
-        private var branchInfo: BranchInfo
-
-        init {
-            component = createComponent()
-            branchInfo = BranchInfo(mutableListOf(), "")
-        }
+    class MyFileEditorBase(project: Project, private val virtualFile: VirtualFile) : FileEditorBase() {
+        private val service: ComponentService = ComponentService.getInstance(project)
 
         /**
          * Returns a component which represents the editor in UI.
@@ -87,8 +73,7 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
          * @return the Swing component for the editor UI
          */
         override fun getComponent(): JComponent {
-            updateComponent()
-            return component
+            return service.getComponent()
         }
 
         /**
@@ -117,38 +102,6 @@ class IRFileEditorProvider : FileEditorProvider, DumbAware {
          */
         override fun getFile(): VirtualFile {
             return virtualFile
-        }
-
-        private fun createComponent(): JComponent {
-            val component = JBPanel<JBPanel<*>>()
-            component.layout = GridBagLayout()
-
-            return component
-        }
-
-        private fun updateComponent() {
-            val thread = CommitInfoThread(project, branchInfo)
-            thread.start()
-            thread.join()
-
-            val commitNames = branchInfo.commits.map { it.subject }
-
-            val gbc = GridBagConstraints()
-            gbc.gridx = 0
-            gbc.gridy = 0
-            gbc.fill = GridBagConstraints.BOTH
-            component.add(
-                LabeledBranchPanel(
-                    Branch(
-                        true,
-                        branchInfo.branchName,
-                        commitNames,
-                    ),
-                    Palette.BLUE,
-                    SwingConstants.RIGHT,
-                ),
-                gbc,
-            )
         }
     }
 }

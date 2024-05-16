@@ -1,5 +1,8 @@
+package com.jetbrains.interactiveRebase.visuals
+
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
 import java.awt.BasicStroke
 import java.awt.Graphics
@@ -14,12 +17,10 @@ class CirclePanel(
     private val diameter: Double,
     private val border: Float,
     private val color: JBColor,
+    var commit: CommitInfo,
     var next: CirclePanel? = null,
     var previous: CirclePanel? = null,
 ) : JBPanel<JBPanel<*>>() {
-    // Flag to track whether the mouse is currently hovering over the circle
-    var isHovering = false
-    var isSelected = false
     private var centerX = 0.0
     private var centerY = 0.0
     lateinit var circle: Ellipse2D
@@ -54,7 +55,7 @@ class CirclePanel(
 
         createCircle()
 
-        if (isSelected) {
+        if (commit.isSelected) {
             g2d.color = color.darker()
         } else {
             g2d.color = color
@@ -62,7 +63,7 @@ class CirclePanel(
 
         g2d.fill(circle)
 
-        if (isHovering) {
+        if (commit.isHovered) {
             g2d.color = JBColor.BLACK
             g2d.stroke = BasicStroke(border)
             g2d.draw(circle)

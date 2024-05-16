@@ -1,11 +1,11 @@
 package com.jetbrains.interactiveRebase.visuals
 
-import CirclePanel
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
 import com.intellij.ui.util.preferredWidth
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -23,7 +23,7 @@ import javax.swing.SwingConstants
  * - RIGHT means commits appear to the right and names to the left
  */
 class LabeledBranchPanel(
-    private val branch: Branch,
+    private val branch: BranchInfo,
     private val color: JBColor,
     private val alignment: Int = SwingConstants.LEFT,
 ) :
@@ -45,11 +45,11 @@ class LabeledBranchPanel(
      * Sets up the appearance of a commit label
      * and links it to the corresponding commit (circle panel)
      */
-    private fun generateCommitLabel(
+    fun generateCommitLabel(
         i: Int,
         circle: CirclePanel,
     ): JBLabel {
-        val commitLabel = JBLabel(branch.commits[i])
+        val commitLabel = JBLabel(branch.commits[i].getSubject())
         commitLabel.labelFor = circle
         commitLabel.preferredSize = Dimension(commitLabel.preferredWidth, branchPanel.diameter)
         commitLabel.alignmentX =
@@ -91,7 +91,7 @@ class LabeledBranchPanel(
      * Puts all commit labels in a panel that
      * serves as a wrapper.
      */
-    private fun wrapCommitLabels(labelPanelWrapper: JBPanel<JBPanel<*>>) {
+    fun wrapCommitLabels(labelPanelWrapper: JBPanel<JBPanel<*>>) {
         labelPanelWrapper.layout = BoxLayout(labelPanelWrapper, BoxLayout.Y_AXIS)
         for (i in commitLabels.indices) {
             labelPanelWrapper.add(commitLabels[i])
@@ -105,7 +105,7 @@ class LabeledBranchPanel(
      * Sets the position of the commit names
      * on the grid.
      */
-    private fun setCommitNamesPosition(gbc: GridBagConstraints) {
+    fun setCommitNamesPosition(gbc: GridBagConstraints) {
         gbc.gridx = if (alignment == SwingConstants.LEFT) 1 else 0
         gbc.gridy = 1
         gbc.weightx = 1.0
@@ -118,7 +118,7 @@ class LabeledBranchPanel(
      * Sets the position of the branch
      * on the grid.
      */
-    private fun setBranchPosition(gbc: GridBagConstraints) {
+    fun setBranchPosition(gbc: GridBagConstraints) {
         gbc.gridx = if (alignment == SwingConstants.LEFT) 0 else 1
         gbc.gridy = 1
         gbc.weightx = 1.0
@@ -131,7 +131,7 @@ class LabeledBranchPanel(
      * Sets the position of the branch name label
      * on the grid.
      */
-    private fun setBranchNamePosition(gbc: GridBagConstraints) {
+    fun setBranchNamePosition(gbc: GridBagConstraints) {
         gbc.gridx = if (alignment == SwingConstants.LEFT) 0 else 1
         gbc.gridy = 0
         gbc.weightx = 1.0

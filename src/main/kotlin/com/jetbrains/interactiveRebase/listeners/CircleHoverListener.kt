@@ -1,6 +1,7 @@
 package com.jetbrains.interactiveRebase.listeners
 
-import CirclePanel
+import com.jetbrains.interactiveRebase.services.ComponentService
+import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import java.awt.event.MouseMotionListener
@@ -11,6 +12,8 @@ import java.awt.event.MouseMotionListener
  * mouse actions that all reflect different parts of a "hover" action
  */
 class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener, MouseMotionListener {
+    private lateinit var componentService: ComponentService
+
     /**
      * Highlight the circle if the mouse enters the encapsulating rectangle and
      * is within the drawn circle.
@@ -18,7 +21,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
 
     override fun mouseEntered(e: MouseEvent?) {
         if (e != null && circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
-            circlePanel.isHovering = true
+            circlePanel.commit.isHovered = true
             circlePanel.repaint()
         }
     }
@@ -29,7 +32,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
 
     override fun mouseExited(e: MouseEvent?) {
         if (e != null && !circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
-            circlePanel.isHovering = false
+            circlePanel.commit.isHovered = false
             circlePanel.repaint()
         }
     }
@@ -38,8 +41,11 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
      * Select a commit upon a click.
      */
     override fun mouseClicked(e: MouseEvent?) {
-        circlePanel.isSelected = !circlePanel.isSelected
+        componentService = ComponentService.getInstance(circlePanel.commit.project)
+        circlePanel.commit.isSelected = !circlePanel.commit.isSelected
+        componentService.addOrRemoveCommitSelection(circlePanel.commit)
         circlePanel.repaint()
+        println("Selected commits: ${componentService.getSelectedCommits()}")
     }
 
     /**
@@ -49,19 +55,28 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
      */
 
     override fun mouseMoved(e: MouseEvent?) {
-        circlePanel.isHovering = e != null && circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())
+        circlePanel.commit.isHovered = e != null && circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())
         circlePanel.repaint()
     }
 
+    /**
+     * mousePressed is not yet implemented
+     */
     override fun mousePressed(e: MouseEvent?) {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("mousePressed is not supported for the CircleHoverListener")
     }
 
+    /**
+     * mouseReleased is not yet implemented
+     */
     override fun mouseReleased(e: MouseEvent?) {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("mouseReleased is not supported for the CircleHoverListener")
     }
 
+    /**
+     * mouseDragged is not yet implemented
+     */
     override fun mouseDragged(e: MouseEvent?) {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("mouseDragged is not supported for the CircleHoverListener")
     }
 }
