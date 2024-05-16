@@ -1,6 +1,5 @@
 package com.jetbrains.interactiveRebase.services
 
-import HeaderPanel
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
@@ -10,6 +9,7 @@ import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.threads.BranchInfoThread
 import com.jetbrains.interactiveRebase.visuals.CommitInfoPanel
+import com.jetbrains.interactiveRebase.visuals.HeaderPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
 import java.awt.BorderLayout
@@ -67,8 +67,8 @@ class ComponentService(val project: Project) {
      */
     fun updateMainPanelVisuals() {
         mainComponent.removeAll()
-        val headerPanel = HeaderPanel(mainComponent)
 
+        val headerPanel = HeaderPanel(mainComponent)
         val branchPanel = createBranchPanel()
 
         val firstDivider =

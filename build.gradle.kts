@@ -2,7 +2,6 @@ import com.diffplug.spotless.LineEnding
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 
-
 fun properties(key: String) = providers.gradleProperty(key)
 fun environment(key: String) = providers.environmentVariable(key)
 
@@ -181,6 +180,7 @@ tasks {
         jacoco {
             enabled = true
             finalizedBy(jacocoTestCoverageVerification)
+
         }
         pitest {
             targetClasses.set(setOf("com.jetbrains.interactiveRebase.*")) //by default "${project.group}.*"
@@ -193,6 +193,8 @@ tasks {
 
     jacocoTestReport {
         dependsOn(test)
+
+
     }
     jacocoTestCoverageVerification {
         dependsOn(test)
@@ -201,6 +203,8 @@ tasks {
                 enabled = true
                 element = "CLASS"
                 includes =  listOf("com.jetbrains.interactiveRebase.**")
+                excludes = listOf("git4ideaClasses.**")
+
 
                 limit {
                     counter = "BRANCH"
@@ -215,6 +219,37 @@ tasks {
 tasks.withType(Test::class) {
     configure<JacocoTaskExtension> {
         isIncludeNoLocationClasses = true
-        includes = listOf("com.jetbrains.interactiveRebase.*")
+        includes = listOf("com.jetbrains.interactiveRebase.**")
+        excludes = listOf("git4ideaClasses.**")
+
+
+    }
+
+    tasks.withType<JacocoCoverageVerification> {
+        violationRules {
+            rule {
+                limit {
+                    minimum = BigDecimal(0.62)
+                }
+            }
+        }
+
+        afterEvaluate {
+            classDirectories.setFrom(files(classDirectories.files.map {
+                fileTree(it).apply {
+                    exclude("git4ideaClasses/**")
+                }
+            }))
+        }
+    }
+
+    tasks.withType<JacocoReport> {
+        afterEvaluate {
+            classDirectories.setFrom(files(classDirectories.files.map {
+                fileTree(it).apply {
+                    exclude("git4ideaClasses/**")
+                }
+            }))
+        }
     }
 }

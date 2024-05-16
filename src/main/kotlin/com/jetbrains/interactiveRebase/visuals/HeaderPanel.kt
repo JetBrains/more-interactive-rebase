@@ -1,3 +1,5 @@
+package com.jetbrains.interactiveRebase.visuals
+
 import com.intellij.ui.components.JBPanel
 import java.awt.BorderLayout
 import java.awt.Graphics
@@ -5,7 +7,7 @@ import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 
-class HeaderPanel(private val mainPanel: JComponent) : JBPanel<JBPanel<*>>() {
+class HeaderPanel(mainPanel: JComponent) : JBPanel<JBPanel<*>>() {
     val gitActionsPanel = JBPanel<JBPanel<*>>()
     val changeActionsPanel = JBPanel<JBPanel<*>>()
 

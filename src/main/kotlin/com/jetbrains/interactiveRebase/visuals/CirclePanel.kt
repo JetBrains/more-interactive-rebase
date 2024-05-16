@@ -1,3 +1,4 @@
+package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel

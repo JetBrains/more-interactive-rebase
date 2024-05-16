@@ -1,6 +1,5 @@
 package com.jetbrains.interactiveRebase.visuals
 
-import HeaderPanel
 import com.intellij.ui.components.JBPanel
 import org.junit.Test
 import org.junit.jupiter.api.Assertions

@@ -8,7 +8,7 @@ import com.intellij.openapi.vcs.changes.committed.CommittedChangesTreeBrowser
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.vcs.log.VcsCommitMetadata
 import com.intellij.vcs.log.ui.details.FullCommitDetailsListPanel
-import com.jetbrains.interactiveRebase.utils.IRGitUtils
+import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
 import git4idea.GitDisposable
 import git4idea.history.GitCommitRequirements
 import git4idea.history.GitLogUtil

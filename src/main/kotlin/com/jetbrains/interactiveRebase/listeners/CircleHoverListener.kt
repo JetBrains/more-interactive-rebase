@@ -1,7 +1,7 @@
 package com.jetbrains.interactiveRebase.listeners
 
-import CirclePanel
 import com.jetbrains.interactiveRebase.services.ComponentService
+import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import java.awt.event.MouseMotionListener
