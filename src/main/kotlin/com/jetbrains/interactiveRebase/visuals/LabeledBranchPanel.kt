@@ -8,6 +8,7 @@ import com.intellij.ui.util.maximumHeight
 import com.intellij.ui.util.preferredWidth
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.listeners.LabelListener
@@ -23,6 +24,7 @@ import java.awt.event.MouseEvent
 import javax.swing.JComponent
 import javax.swing.OverlayLayout
 import javax.swing.SwingConstants
+import javax.swing.SwingUtilities
 
 /**
  * Panel encapsulating a branch and corresponding labels
@@ -234,5 +236,20 @@ class LabeledBranchPanel(
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
         gbc.insets = Insets(5, 5, 5, 5)
+    }
+
+    /**
+     * Sets commits to be shown in branch
+     */
+
+    fun showCommits(commits: List<CommitInfo>) {
+        branchPanel.showCommits(commits)
+    }
+
+    override fun repaint() {
+        super.repaint()
+        SwingUtilities.invokeLater {
+            branchPanel.repaint()
+        }
     }
 }

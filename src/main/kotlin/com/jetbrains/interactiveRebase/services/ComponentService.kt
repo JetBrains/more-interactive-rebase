@@ -143,8 +143,9 @@ class ComponentService(val project: Project) {
      */
 
     fun updateBranchPanel() {
-        branchPanel = createBranchPanel()
-        contentPanel = createContentPanel()
+        println("Updating branch")
+        branchPanel.showCommits(branchInfo.commits)
+        branchPanel.repaint()
     }
 
     /**
