@@ -2,6 +2,7 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.listeners.reword.RewordButtonListener
 import com.jetbrains.interactiveRebase.listeners.RewordClickListener
 import com.jetbrains.interactiveRebase.listeners.DropCommitListener
 import java.awt.BorderLayout
@@ -10,7 +11,7 @@ import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 
-class HeaderPanel(private val mainPanel: JComponent, private val project: Project) : JBPanel<JBPanel<*>>() {
+class HeaderPanel(private val mainPanel: JComponent, private val project : Project) : JBPanel<JBPanel<*>>() {
     val gitActionsPanel = JBPanel<JBPanel<*>>()
     val changeActionsPanel = JBPanel<JBPanel<*>>()
 
@@ -37,7 +38,7 @@ class HeaderPanel(private val mainPanel: JComponent, private val project: Projec
         val squashButton = JButton("Squash")
         val fixupButton = JButton("Stop to edit")
         val rewordButton = JButton("Reword")
-//        rewordButton.addActionListener(RewordClickListener(mainPanel))
+        rewordButton.addActionListener(RewordButtonListener(project))
         val dropButton = JButton("Drop")
         dropButton.addMouseListener(DropCommitListener(dropButton, project))
 

@@ -10,6 +10,7 @@ data class CommitInfo(
     val changes: MutableList<RebaseCommand> = mutableListOf(),
     var isSelected: Boolean = false,
     var isHovered: Boolean = false,
+    var isDoubleClicked: Boolean = false
 ) {
     fun getSubject(): String {
         return commit.subject
