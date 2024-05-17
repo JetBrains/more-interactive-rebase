@@ -140,6 +140,7 @@ class ComponentService(val project: Project) {
 
     fun repaintBranchPanel() {
         branchPanel.showCommits(branchInfo.commits)
+        branchPanel.revalidate()
         branchPanel.repaint()
     }
 
