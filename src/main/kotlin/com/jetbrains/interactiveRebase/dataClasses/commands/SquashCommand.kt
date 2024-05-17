@@ -1,6 +1,9 @@
 package com.jetbrains.interactiveRebase.dataClasses.commands
 
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
+import git4ideaClasses.IRGitModel
 
 data class SquashCommand(
     val parentCommit: CommitInfo,
@@ -8,11 +11,7 @@ data class SquashCommand(
     val newMessage: String,
 ) :
     RebaseCommand(parentCommit) {
-    override fun execute() {
-        TODO("Not yet implemented")
-    }
-
-    override fun undo() {
+    override fun execute(model: IRGitModel<GitRebaseEntryGeneratedUsingLog>, branchInfo : BranchInfo) {
         TODO("Not yet implemented")
     }
 }
