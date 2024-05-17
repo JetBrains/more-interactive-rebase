@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.threads
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.services.ComponentService
 
@@ -24,12 +25,19 @@ class BranchInfoThread(
     override fun run() {
         val name = commitService.getBranchName()
         val commits = commitService.getCommitInfoForBranch(commitService.getCommits())
-        if (branchInfo.name != name) {
+        if (branchChange(name, commits)) {
             branchInfo.name = name
             branchInfo.commits = commits
             branchInfo.selectedCommits.clear()
 
             componentService.isDirty = true
         }
+    }
+
+    private fun branchChange(newName: String, newCommits: List<CommitInfo>): Boolean {
+        val commitsIds = branchInfo.commits.map{it.commit.id}.toSet()
+        val newCommitsIds = newCommits.map{it.commit.id}.toSet()
+
+        return branchInfo.name != newName || commitsIds != newCommitsIds
     }
 }
