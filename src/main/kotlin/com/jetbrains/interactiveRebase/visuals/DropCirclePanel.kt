@@ -15,31 +15,31 @@ class DropCirclePanel(private val diameter: Double,
 
     override fun paintCircle(g: Graphics) {
         val g2d = g as Graphics2D
-        g2d.color = JBColor.DARK_GRAY
         // Set rendering hints for smoother rendering
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
         createCircle()
-        g2d.fill(circle)
 
-        g2d.stroke = BasicStroke(border)
-        val shadowColor = Color(0, 0, 0, 50)
-        val shadowOffset = 5
 
-        val borderColor = Color.BLACK
-
-        circle.let {
-            g2d.color = shadowColor
-            g2d.fill(Ellipse2D.Double(it.x , it.y, it.width + shadowOffset, it.height + shadowOffset))
-
-            // Draw circle
-            g2d.fill(it)
-
-            // Draw dotted border
-            val dashPattern = floatArrayOf(3f, 3f)
-            g2d.stroke = BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, dashPattern, 0f)
-            g2d.color = borderColor
-            g2d.draw(it)
+        g2d.color = Palette.OPAQUE
+        if (commit.isSelected) {
+            selectedCommitAppearance(g2d,true,Palette.OPAQUE, Palette.SELECTEDBRIGHT, Palette.BORDER)
+        } else {
+            selectedCommitAppearance(g2d,false,Palette.OPAQUE,Palette.DARKSHADOW, Palette.DARKBLUE)
         }
+        if (commit.isHovered) {
+            g2d.color = JBColor.BLACK
+            g2d.stroke = BasicStroke(border)
+            g2d.draw(circle)
+        }
+    }
+
+    override fun drawBorder(g2d: Graphics2D, circle: Ellipse2D.Double, borderColor: Color) {
+        g2d.fill(circle)
+        g2d.color = borderColor
+
+        val dashPattern = floatArrayOf(3f, 3f)
+        g2d.stroke = BasicStroke(1.5f*border, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, dashPattern, 0f)
+        g2d.draw(circle)
     }
 }

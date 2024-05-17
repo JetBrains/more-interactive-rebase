@@ -105,11 +105,21 @@ class BranchPanel(
         val glueHeight = endY - startY - diameter
         val glueY = startY + diameter / 2 + diameter / 2
 
+        g2d.color = Palette.BLU
         g2d.drawLine(
             x + diameter / 2,
             startY,
             x + diameter / 2,
             glueY + glueHeight,
+        )
+
+        val shadowOffset = 1
+        g2d.color = Palette.BLU
+        g2d.drawLine(
+                x + diameter / 2 + shadowOffset,
+                startY + shadowOffset,
+                x + diameter / 2 + shadowOffset,
+                glueY + glueHeight + shadowOffset,
         )
     }
 

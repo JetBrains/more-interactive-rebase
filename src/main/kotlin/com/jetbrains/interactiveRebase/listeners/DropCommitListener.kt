@@ -16,43 +16,25 @@ class DropCommitListener(val button: JButton, val project: Project): MouseListen
     private val originalBackground = button.foreground
     private val clickedBackground = button.foreground.brighter()
     private val clickedBorder: Border = BorderFactory.createLineBorder(JBColor.BLACK, 1, true)
-//    private val labeledBranchPanel = project.service<ComponentService>().getLabeledBranchPanel()
-//    val selectedCircles: MutableList<CirclePanel> =  project.service<ComponentService>().getSelectedCirclePanels(labeledBranchPanel)
 
     override fun mouseClicked(e: MouseEvent?) {
+        val service = project.service<ComponentService>()
         button.border = clickedBorder
         button.foreground = clickedBackground
         button.isOpaque = true
-        project.service<ComponentService>().getSelectedCommits().forEach {
+        service.getSelectedCommits().forEach {
             commitInfo ->
-            commitInfo.changes?.add(DropCommand(commitInfo))
-            println("lolza")
+            commitInfo.changes.add(DropCommand(commitInfo))
+
+            commitInfo.isSelected = false
+            service.branchInfo.selectedCommits.remove(commitInfo)
         }
-        project.service<ComponentService>().isDirty = true
 
-//        for (i in selectedCircles.indices) {
-//            val circle = selectedCircles[i]
-//
-//            val dropCirclePanel = circle as DropCirclePanel
-//            selectedCircles[i] = dropCirclePanel
-//
-//        }
-
-        println("mouse clicked")
+        service.isDirty = true
     }
 
     override fun mousePressed(e: MouseEvent?) {
-        button.border = clickedBorder
-        button.foreground = clickedBackground
-        button.isOpaque = true
-        project.service<ComponentService>().getSelectedCommits().forEach {
-            commitInfo ->
-            commitInfo.changes?.add(DropCommand(commitInfo))
-            println("kkkkkkadfkjbefshjgka")
-        }
-        project.service<ComponentService>().isDirty = true
-
-        println("mouse pressed")
+        mouseClicked(e)
     }
 
     override fun mouseReleased(e: MouseEvent?) {
