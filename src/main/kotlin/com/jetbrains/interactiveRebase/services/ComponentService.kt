@@ -24,7 +24,6 @@ class ComponentService(val project: Project) {
     var commitInfoPanel = CommitInfoPanel(project)
     private var contentPanel: JBPanel<JBPanel<*>>
     private var branchPanel: LabeledBranchPanel
-    var isDirty = false
 
     init {
         branchPanel = createBranchPanel()
@@ -95,9 +94,6 @@ class ComponentService(val project: Project) {
      */
     fun getComponent(): JComponent {
         fetchBranchInfo()
-        if (this.isDirty) {
-            updateMainPanel()
-        }
         return mainPanel
     }
 
@@ -110,7 +106,7 @@ class ComponentService(val project: Project) {
         } else {
             branchInfo.selectedCommits.remove(commit)
         }
-        updateCommitInfoPanel()
+        repaintCommitInfoPanel()
     }
 
     /**
@@ -133,8 +129,8 @@ class ComponentService(val project: Project) {
      * Updates and repaints the commit info panel
      */
 
-    fun updateCommitInfoPanel() {
-        this.commitInfoPanel.commitsSelected(branchInfo.selectedCommits.map { it.commit })
+    fun repaintCommitInfoPanel() {
+        commitInfoPanel.commitsSelected(branchInfo.selectedCommits.map { it.commit })
         commitInfoPanel.repaint()
     }
 
@@ -142,8 +138,7 @@ class ComponentService(val project: Project) {
      * Repaints the branch panel
      */
 
-    fun updateBranchPanel() {
-        println("Updating branch")
+    fun repaintBranchPanel() {
         branchPanel.showCommits(branchInfo.commits)
         branchPanel.repaint()
     }
@@ -152,10 +147,8 @@ class ComponentService(val project: Project) {
      * Updates the main component
      */
 
-    fun updateMainPanel() {
-        updateBranchPanel()
-        updateCommitInfoPanel()
-        renderMainPanel()
-        isDirty = false
+    fun repaintMainPanel() {
+        repaintBranchPanel()
+        repaintCommitInfoPanel()
     }
 }

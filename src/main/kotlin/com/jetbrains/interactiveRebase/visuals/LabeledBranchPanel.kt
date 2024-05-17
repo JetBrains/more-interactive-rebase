@@ -46,6 +46,7 @@ class LabeledBranchPanel(
 
     init {
         branchNameLabel.horizontalTextPosition = SwingConstants.CENTER
+        showCommits(branch.commits)
     }
 
     /**
@@ -243,12 +244,20 @@ class LabeledBranchPanel(
      */
 
     fun showCommits(commits: List<CommitInfo>) {
+        commitLabels.clear()
         branchPanel.showCommits(commits)
+        val circles = branchPanel.getCirclePanels()
+        for ((i, circle) in circles.withIndex()) {
+            val commitLabel = generateCommitLabel(i, circle)
+            commitLabels.add(commitLabel)
+        }
     }
 
     override fun repaint() {
         super.repaint()
         SwingUtilities.invokeLater {
+            branchNameLabel.text = branch.name
+            branchNameLabel.repaint()
             branchPanel.repaint()
         }
     }

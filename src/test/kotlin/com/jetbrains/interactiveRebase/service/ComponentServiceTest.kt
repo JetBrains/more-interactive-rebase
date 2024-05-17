@@ -28,7 +28,7 @@ class ComponentServiceTest : BasePlatformTestCase() {
     }
 
     fun testUpdateMainPanelVisuals() {
-        componentService.updateMainPanel()
+        componentService.repaintMainPanel()
 
         assertEquals(1, componentService.mainPanel.componentCount)
         assertTrue(componentService.mainPanel.getComponent(0) is OnePixelSplitter)
@@ -79,7 +79,7 @@ class ComponentServiceTest : BasePlatformTestCase() {
         doNothing().`when`(mockThread).join()
         doNothing().`when`(mockThread).start()
 
-        componentService.updateMainPanel()
+        componentService.repaintMainPanel()
         val updated = componentService.mainPanel
 
         assertEquals(1, updated.componentCount)

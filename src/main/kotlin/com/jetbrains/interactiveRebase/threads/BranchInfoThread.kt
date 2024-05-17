@@ -30,13 +30,16 @@ class BranchInfoThread(
             branchInfo.commits = commits
             branchInfo.selectedCommits.clear()
 
-            componentService.isDirty = true
+            componentService.repaintMainPanel()
         }
     }
 
-    private fun branchChange(newName: String, newCommits: List<CommitInfo>): Boolean {
-        val commitsIds = branchInfo.commits.map{it.commit.id}.toSet()
-        val newCommitsIds = newCommits.map{it.commit.id}.toSet()
+    private fun branchChange(
+        newName: String,
+        newCommits: List<CommitInfo>,
+    ): Boolean {
+        val commitsIds = branchInfo.commits.map { it.commit.id }.toSet()
+        val newCommitsIds = newCommits.map { it.commit.id }.toSet()
 
         return branchInfo.name != newName || commitsIds != newCommitsIds
     }

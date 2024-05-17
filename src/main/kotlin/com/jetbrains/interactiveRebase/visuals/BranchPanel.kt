@@ -134,14 +134,12 @@ class BranchPanel(
      */
 
     fun showCommits(commits: List<CommitInfo>) {
-        println("showing ${commits.map { it.commit.subject + "\n" }} commits")
         removeAll()
         circles.clear()
 
         size = commits.size
 
         for (i in 0 until size) {
-
             val circle = initializeCirclePanel(i)
             add(circle)
             if (i < size - 1) {
