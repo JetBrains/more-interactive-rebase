@@ -18,7 +18,7 @@ class BranchInfoThread(
         branchInfo: BranchInfo,
         invoker: RebaseInvoker
     ) : this(project, branchInfo, project.service<CommitService>(),
-            project.service<ComponentService>(),project.service<RebaseInvoker>() )
+            project.service<ComponentService>(), project.service<RebaseInvoker>())
 
     /**
      * Updates the branchInfo
@@ -32,7 +32,7 @@ class BranchInfoThread(
             branchInfo.commits = commits
             branchInfo.selectedCommits.clear()
             if(componentService.first){
-                invoker.createModel()
+                invoker.branchInfo = branchInfo
                 componentService.first = false
             }
 
