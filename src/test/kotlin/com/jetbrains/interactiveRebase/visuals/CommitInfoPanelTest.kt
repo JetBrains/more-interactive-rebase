@@ -23,9 +23,9 @@ class CommitInfoPanelTest : BasePlatformTestCase() {
 
     override fun setUp() {
         super.setUp()
-        commit1 = CommitInfo(createCommit("my commit"), project, null)
-        commit2 = CommitInfo(createCommit("my other commit"), project, null)
-        commit3 = CommitInfo(createCommit("my last commit"), project, null)
+        commit1 = CommitInfo(createCommit("my commit"), project, mutableListOf())
+        commit2 = CommitInfo(createCommit("my other commit"), project, mutableListOf())
+        commit3 = CommitInfo(createCommit("my last commit"), project, mutableListOf())
 
         branchInfo = BranchInfo(commits = listOf(commit1, commit2, commit3))
         thread = BranchInfoThread(project, branchInfo)

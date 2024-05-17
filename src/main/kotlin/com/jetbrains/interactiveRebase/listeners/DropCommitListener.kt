@@ -2,28 +2,20 @@ package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.ui.JBColor
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.services.ComponentService
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
-import javax.swing.BorderFactory
 import javax.swing.JButton
-import javax.swing.border.Border
 
-class DropCommitListener(val button: JButton, val project: Project): MouseListener{
-    private val originalBorder: Border = button.border
-    private val originalBackground = button.foreground
-    private val clickedBackground = button.foreground.brighter()
-    private val clickedBorder: Border = BorderFactory.createLineBorder(JBColor.BLACK, 1, true)
-
+class DropCommitListener(val button: JButton, val project: Project) : MouseListener {
+    /**
+     * When the button is clicked, the selected commits are dropped.
+     */
     override fun mouseClicked(e: MouseEvent?) {
         val service = project.service<ComponentService>()
-        button.border = clickedBorder
-        button.foreground = clickedBackground
-        button.isOpaque = true
         service.getSelectedCommits().forEach {
-            commitInfo ->
+                commitInfo ->
             commitInfo.changes.add(DropCommand(commitInfo))
 
             commitInfo.isSelected = false
@@ -33,27 +25,29 @@ class DropCommitListener(val button: JButton, val project: Project): MouseListen
         service.isDirty = true
     }
 
+    /**
+     * When the button is pressed, the selected commits are dropped.
+     * (same behavior as mouseClicked)
+     **/
     override fun mousePressed(e: MouseEvent?) {
         mouseClicked(e)
     }
 
+    /**
+     * Does nothing when the mouse is released.
+     */
     override fun mouseReleased(e: MouseEvent?) {
-        button.border = originalBorder
-        button.foreground = originalBackground
-        button.isOpaque = false
     }
 
+    /**
+     * Does nothing when the mouse enters the button.
+     */
     override fun mouseEntered(e: MouseEvent?) {
-        button.border = clickedBorder
-        button.foreground = clickedBackground
-        button.isOpaque = true
-        println("mouse entered")
     }
 
+    /**
+     * Does nothing when the mouse exits the button.
+     */
     override fun mouseExited(e: MouseEvent?) {
-        button.border = originalBorder
-        button.foreground = originalBackground
-        button.isOpaque = false
     }
-
 }

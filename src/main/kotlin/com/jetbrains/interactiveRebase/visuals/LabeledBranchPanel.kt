@@ -54,6 +54,10 @@ class LabeledBranchPanel(
         branch.commits[i].changes.forEach {
             if (it is DropCommand) {
                 commitLabel.text = "<html><strike>${it.commit.getSubject()}</strike></html>"
+                // TODO: when drag-and-drop is implemented, this will probably break because
+                // TODO: the alignment setting logic was changed
+                commitLabel.horizontalAlignment = SwingConstants.RIGHT
+                commitLabel.alignmentX = RIGHT_ALIGNMENT
             }
         }
         commitLabel.labelFor = circle

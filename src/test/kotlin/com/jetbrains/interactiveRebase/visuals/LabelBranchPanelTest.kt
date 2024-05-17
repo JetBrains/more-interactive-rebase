@@ -21,9 +21,9 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
     override fun setUp() {
         super.setUp()
         circle = mock(CirclePanel::class.java)
-        val commit1 = CommitInfo(mock(GitCommit::class.java), project, null)
-        val commit2 = CommitInfo(mock(GitCommit::class.java), project, null)
-        val commit3 = CommitInfo(mock(GitCommit::class.java), project, null)
+        val commit1 = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
+        val commit2 = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
+        val commit3 = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
         `when`(commit1.commit.subject).thenReturn("One")
         `when`(commit2.commit.subject).thenReturn("Two")
         `when`(commit3.commit.subject).thenReturn("Three")

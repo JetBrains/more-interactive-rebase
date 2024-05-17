@@ -1,15 +1,16 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.components.JBPanel
 import org.junit.Test
 import org.junit.jupiter.api.Assertions
 import javax.swing.JButton
 
-class HeaderPanelTest {
+class HeaderPanelTest : BasePlatformTestCase() {
     @Test
     fun testAddGitButtons() {
         val mainPanel = JBPanel<JBPanel<*>>()
-        val headerPanel = HeaderPanel(mainPanel)
+        val headerPanel = HeaderPanel(mainPanel, project)
 
         val gitActionsPanel = headerPanel.gitActionsPanel
 
@@ -23,7 +24,7 @@ class HeaderPanelTest {
     @Test
     fun testAddChangeButtons() {
         val mainPanel = JBPanel<JBPanel<*>>()
-        val headerPanel = HeaderPanel(mainPanel)
+        val headerPanel = HeaderPanel(mainPanel, project)
 
         val changeActionsPanel = headerPanel.changeActionsPanel
 

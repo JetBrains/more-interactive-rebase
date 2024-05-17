@@ -49,7 +49,7 @@ class ComponentServiceTest : BasePlatformTestCase() {
     }
 
     fun testAddOrRemoveCommitSelection() {
-        val commit1 = CommitInfo(createCommit("my commit"), project, null)
+        val commit1 = CommitInfo(createCommit("my commit"), project, mutableListOf())
         commit1.isSelected = true
 
         val res = componentService.addOrRemoveCommitSelection(commit1)

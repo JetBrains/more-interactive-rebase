@@ -120,34 +120,6 @@ class ComponentService(val project: Project) {
         return branchInfo.selectedCommits.toList()
     }
 
-    fun clearAllSelectedCommits(){
-        branchInfo.selectedCommits.forEach {
-            it.isSelected = false
-        }
-        branchInfo.selectedCommits.clear()
-        this.commitInfoPanel.commitsSelected(listOf())
-        commitInfoPanel.repaint()
-    }
-
-//    fun getSelectedCirclePanels(labeledBranchPanel: LabeledBranchPanel): MutableList<CirclePanel> {
-//        val circles = labeledBranchPanel.branchPanel.circles
-//        val list : MutableList<CirclePanel> = mutableListOf()
-//        for(circle in circles) {
-//            if (circle.commit.isSelected) {
-//                list.add(circle)
-//                println(circle.commit.getSubject())
-//            }
-//        }
-//        return list
-//    }
-//
-//    fun getLabeledBranchPanel(): LabeledBranchPanel {
-//        val secondDivider = mainComponent.getComponent(0) as OnePixelSplitter
-//        val branchPanelSplitter = secondDivider.secondComponent as OnePixelSplitter
-//        val branchPanel = branchPanelSplitter.firstComponent
-//        return branchPanel.getComponent(0) as LabeledBranchPanel
-//    }
-
     /**
      * Calls thread to update branch info
      */

@@ -4,7 +4,11 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
-import java.awt.*
+import java.awt.BasicStroke
+import java.awt.Dimension
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.RenderingHints
 import javax.swing.Box
 import javax.swing.BoxLayout
 
@@ -52,7 +56,7 @@ class BranchPanel(
 
         if (commit.changes.any { it is DropCommand } == true) {
             println("does it get here?")
-             circle = DropCirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
+            circle = DropCirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
         }
 
         circles.add(circle)
@@ -105,7 +109,7 @@ class BranchPanel(
         val glueHeight = endY - startY - diameter
         val glueY = startY + diameter / 2 + diameter / 2
 
-        g2d.color = Palette.BLU
+        g2d.color = color
         g2d.drawLine(
             x + diameter / 2,
             startY,
@@ -113,13 +117,14 @@ class BranchPanel(
             glueY + glueHeight,
         )
 
+        // Make line thicker
         val shadowOffset = 1
-        g2d.color = Palette.BLU
+        g2d.color = color
         g2d.drawLine(
-                x + diameter / 2 + shadowOffset,
-                startY + shadowOffset,
-                x + diameter / 2 + shadowOffset,
-                glueY + glueHeight + shadowOffset,
+            x + diameter / 2 + shadowOffset,
+            startY + shadowOffset,
+            x + diameter / 2 + shadowOffset,
+            glueY + glueHeight + shadowOffset,
         )
     }
 

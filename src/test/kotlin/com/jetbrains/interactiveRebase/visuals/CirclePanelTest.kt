@@ -24,7 +24,7 @@ class CirclePanelTest : BasePlatformTestCase() {
         graph = mock(Graphics2D::class.java)
         graph2 = mock(Graphics::class.java)
         ui = mock(ComponentUI::class.java)
-        commit = CommitInfo(mock(GitCommit::class.java), project, null)
+        commit = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
     }
 
     fun testPaintComponent() {
@@ -35,7 +35,7 @@ class CirclePanelTest : BasePlatformTestCase() {
 
         verify(graph2).dispose()
         verify(graph, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        verify(graph).fill(circlePanel.circle)
+        verify(graph, times(3)).fill(circlePanel.circle)
     }
 
     fun testPaintComponentIsSelected() {
@@ -47,7 +47,7 @@ class CirclePanelTest : BasePlatformTestCase() {
 
         verify(graph2).dispose()
         verify(graph, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        verify(graph).draw(circlePanel.circle)
-        verify(graph).fill(circlePanel.circle)
+        verify(graph, times(3)).draw(circlePanel.circle)
+        verify(graph, times(3)).fill(circlePanel.circle)
     }
 }

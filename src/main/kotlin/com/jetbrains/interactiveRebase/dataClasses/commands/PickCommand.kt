@@ -2,7 +2,6 @@ package com.jetbrains.interactiveRebase.dataClasses.commands
 
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 
-
 data class PickCommand(override var commit: CommitInfo) : RebaseCommand(commit) {
     /**
      * This method is to set-up connection with the

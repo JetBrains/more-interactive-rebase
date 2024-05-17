@@ -4,19 +4,23 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
-import java.awt.*
+import java.awt.BasicStroke
+import java.awt.Color
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.RenderingHints
 import java.awt.geom.Ellipse2D
 
 /**
  * Visual representation of commit node in the git graph
  */
 open class CirclePanel(
-        private val diameter: Double,
-        private val border: Float,
-        private val color: JBColor,
-        open var commit: CommitInfo,
-        open var next: CirclePanel? = null,
-        open var previous: CirclePanel? = null,
+    private val diameter: Double,
+    private val border: Float,
+    private val color: JBColor,
+    open var commit: CommitInfo,
+    open var next: CirclePanel? = null,
+    open var previous: CirclePanel? = null,
 ) : JBPanel<JBPanel<*>>() {
     private var centerX = 0.0
     private var centerY = 0.0
@@ -53,12 +57,10 @@ open class CirclePanel(
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
         createCircle()
-
-        if (commit.isSelected) {
-            selectedCommitAppearance(g2d, true,color, Palette.SELECTEDBRIGHT, Palette.BORDER)
-        } else {
-            selectedCommitAppearance(g2d, false,color,Palette.DARKSHADOW, Palette.DARKBLUE)
-        }
+        val circleColor = if (commit.isSelected) color.darker() else color
+        val shadowColor = if (commit.isSelected) Palette.SELECTEDBRIGHT else Palette.DARKSHADOW
+        val borderColor = if (commit.isSelected) Palette.BORDER.darker() else Palette.DARKBLUE
+        selectedCommitAppearance(g2d, commit.isSelected, circleColor, shadowColor, borderColor)
 
         if (commit.isHovered) {
             g2d.color = JBColor.BLACK
@@ -84,20 +86,43 @@ open class CirclePanel(
         circle = Ellipse2D.Double(centerX, centerY, diameter, diameter)
     }
 
-    open fun selectedCommitAppearance(g2d: Graphics2D, isSelected: Boolean, circleColor: Color, shadowColor: Color, borderColor: Color) {
+    /**
+     * Draws the circle with a shadow and border.
+     */
+    open fun selectedCommitAppearance(
+        g2d: Graphics2D,
+        isSelected: Boolean,
+        circleColor: Color,
+        shadowColor: Color,
+        borderColor: Color,
+    ) {
         drawShadow(g2d, circle, shadowColor)
         g2d.color = if (isSelected) circleColor.darker() else circleColor
         drawBorder(g2d, circle, borderColor)
     }
 
-    open fun drawBorder(g2d: Graphics2D, circle: Ellipse2D.Double, borderColor: Color) {
+    /**
+     * Draws the border of the circle.
+     */
+    open fun drawBorder(
+        g2d: Graphics2D,
+        circle: Ellipse2D.Double,
+        borderColor: Color,
+    ) {
         g2d.fill(circle)
         g2d.color = borderColor
         g2d.stroke = BasicStroke(border)
         g2d.draw(circle)
     }
 
-    open fun drawShadow(g2d: Graphics2D, circle: Ellipse2D.Double, color: Color) {
+    /**
+     * Draws a shadow around the circle.
+     */
+    open fun drawShadow(
+        g2d: Graphics2D,
+        circle: Ellipse2D.Double,
+        color: Color,
+    ) {
         val shadowLayers = 5
         val maxShadowOffset = 3.5
         for (i in 0 until shadowLayers) {
@@ -111,8 +136,10 @@ open class CirclePanel(
         g2d.fill(circle)
     }
 
-
-    fun paintSuper(g: Graphics){
+    /**
+     * Draws the circle with a shadow and border.
+     */
+    fun paintSuper(g: Graphics) {
         super.paintComponent(g)
     }
 }
