@@ -7,7 +7,7 @@ import git4ideaClasses.IRGitModel
 
 data class RewordCommand(override var commit: CommitInfo, var newMessage: String) : RebaseCommand(commit) {
     override fun execute(model: IRGitModel<GitRebaseEntryGeneratedUsingLog>, branchInfo : BranchInfo) {
-        model.reword(0,newMessage)
+        model.pick(listOf(0))
     }
 
 <<<<<<< HEAD

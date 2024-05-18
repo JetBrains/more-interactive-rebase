@@ -7,7 +7,7 @@ import git4ideaClasses.IRGitModel
 
 data class DropCommand(override var commit: CommitInfo) : RebaseCommand(commit) {
     override fun execute(model: IRGitModel<GitRebaseEntryGeneratedUsingLog>, branchInfo : BranchInfo) {
-
+        model.drop(listOf(0))
     }
 
 

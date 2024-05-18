@@ -63,6 +63,7 @@ class HeaderPanel(private val mainPanel: JComponent, private val project: Projec
         buttonPanel.add(rewordButton)
         buttonPanel.add(dropButton)
 
+
     }
 
     /**
