@@ -4,19 +4,17 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
+import com.intellij.ui.util.maximumHeight
 import com.intellij.ui.util.preferredWidth
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.listeners.reword.RewordClickListener
+import com.jetbrains.interactiveRebase.listeners.reword.RewordFocusListener
 import com.jetbrains.interactiveRebase.listeners.reword.TextFieldListener
-import java.awt.Dimension
-import java.awt.FlowLayout
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
-import java.awt.GridLayout
-import java.awt.Insets
+import com.jetbrains.interactiveRebase.visuals.borders.RoundedBorder
+import java.awt.*
 import javax.swing.*
 
 
@@ -40,9 +38,6 @@ class LabeledBranchPanel(
 
     init {
         branchNameLabel.horizontalTextPosition = SwingConstants.CENTER
-
-        //DELETE THIS LATER
-//        branch.commits[0].changes = mutableListOf(RewordCommand(branch.commits[0], "new message"))
     }
 
     /**
@@ -67,12 +62,9 @@ class LabeledBranchPanel(
             }
         }
         commitLabel.labelFor = circle
-        commitLabel.preferredSize = Dimension(commitLabel.preferredWidth, branchPanel.diameter)
         commitLabel.horizontalAlignment = alignment
-//
+        commitLabel.preferredSize = Dimension(commitLabel.preferredWidth, branchPanel.diameter)
         commitLabel.verticalTextPosition = SwingConstants.CENTER
-
-
 
         return commitLabel
     }
@@ -80,7 +72,6 @@ class LabeledBranchPanel(
     /**
      * Draws the branch with the added labels.
      */
-
     override fun addNotify() {
         super.addNotify()
 
@@ -113,29 +104,26 @@ class LabeledBranchPanel(
         }
     }
 
-    /**
-     * Puts all commit labels in a panel that
-     * serves as a wrapper.
-     */
-//    fun wrapCommitLabels(labelPanelWrapper: JBPanel<JBPanel<*>>) {
-//        labelPanelWrapper.layout = GridLayout(0, 1)
-//        for (i in commitLabels.indices) {
-//            val commitSubject = commitLabels[i]
-//            commitSubject.horizontalAlignment = alignment
-//            val textLabelWrapper = wrapLabelWithTextField(commitSubject)
-//            labelPanelWrapper.add(textLabelWrapper)
-//        }
-//    }
-
     fun wrapLabelWithTextField(commitLabel : JBLabel, commitInfo: CommitInfo) : JComponent {
         val textLabelWrapper = JBPanel<JBPanel<*>>()
+        textLabelWrapper.withMaximumHeight(commitLabel.maximumHeight)
         textLabelWrapper.layout = OverlayLayout(textLabelWrapper)
 
         val textWrapper = JBPanel<JBPanel<*>>()
         textWrapper.layout = FlowLayout(alignment)
-        val textField = JTextField(commitLabel.text)
+        val textField = JTextField(commitLabel.text, 20)
+        val extraPadding = 1
+        val emptyBorder = BorderFactory.createEmptyBorder(extraPadding, 0, extraPadding, 0)
+
         textField.maximumSize = commitLabel.maximumSize
+        textField.isFocusable = true
         textField.horizontalAlignment = alignment
+
+//        println("BACKGROUND COLOR ${textField.background}")
+//        textField.background = Palette.BACKGROUNDBLUE
+        val roundBorder = RoundedBorder(color)
+        textField.border = roundBorder
+//        textField.border = BorderFactory.createCompoundBorder(roundBorder, emptyBorder)
 
         textWrapper.add(textField)
 
@@ -147,18 +135,16 @@ class LabeledBranchPanel(
         labelWrapper.isVisible = true
 
         if (commitInfo.isDoubleClicked) {
+            textField.background = textField.background.darker()
+            println(textField.background)
             textWrapper.isVisible = true
             labelWrapper.isVisible = false
         }
         textLabelWrapper.add(labelWrapper)
         textLabelWrapper.add(textWrapper)
 
-//        textLabelWrapper.addMouseListener(RewordClickListener(commitInfo))
         commitLabel.addMouseListener(RewordClickListener(commitInfo))
         textField.addKeyListener(TextFieldListener(commitInfo, textField))
-
-        textLabelWrapper.border = BorderFactory.createLineBorder(JBColor.MAGENTA)
-
         return textLabelWrapper
     }
 

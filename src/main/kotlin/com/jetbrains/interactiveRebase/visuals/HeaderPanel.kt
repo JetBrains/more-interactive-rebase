@@ -7,6 +7,7 @@ import com.jetbrains.interactiveRebase.listeners.RewordClickListener
 import com.jetbrains.interactiveRebase.listeners.DropCommitListener
 import java.awt.BorderLayout
 import java.awt.Graphics
+import java.awt.*
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent

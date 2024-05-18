@@ -13,9 +13,13 @@ class RewordButtonListener(private val project : Project) : ActionListener {
     override fun actionPerformed(e: ActionEvent?) {
         val componentService : ComponentService = project.service<ComponentService>()
         componentService.branchInfo.selectedCommits.forEach {
-            println("in loop $it")
+//            println("in loop $it")
             it.isDoubleClicked = true
         }
-        componentService.isDirty = true
+        if (componentService.branchInfo.selectedCommits.isNotEmpty()) {
+            componentService.isDirty = true
+//            componentService.mainPanel.repaint()
+        }
+
     }
 }

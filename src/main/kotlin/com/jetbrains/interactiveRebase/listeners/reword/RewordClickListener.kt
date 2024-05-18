@@ -14,38 +14,38 @@ import javax.swing.JComponent
 
 class RewordClickListener(private val commitInfo : CommitInfo) : MouseListener {
     private val project = commitInfo.project
-    private val compSer = project.service<ComponentService>()
+    private val componentService = project.service<ComponentService>()
 
     override fun mouseClicked(e: MouseEvent?) {
-        println("ENTERED")
         if (e != null) {
             if (e.clickCount >= 2) {
-                println("ooh 2 clicks")
+//                println("ooh 2 clicks")
                 commitInfo.isDoubleClicked = true
                 commitInfo.isSelected = true
-                compSer.isDirty = true
+                componentService.isDirty = true
+//                componentService.mainPanel.repaint()
             }
         }
     }
 
     override fun mousePressed(e: MouseEvent?) {
-        println("PRESSED")
+//        println("PRESSED")
 //        wrappedLabel.border = BorderFactory.createLineBorder(JBColor.GREEN)
 //        throw UnsupportedOperationException("mousePressed is not supported for the RewordListener")
     }
 
     override fun mouseReleased(e: MouseEvent?) {
-        println("released")
+//        println("released")
 //        throw UnsupportedOperationException("mouseR is not supported for the RewordListener")
     }
 
     override fun mouseEntered(e: MouseEvent?) {
-        println("entered")
+//        println("entered")
 //        throw UnsupportedOperationException("mouseEntered is not supported for the RewordListener $commitInfo sfbsg")
     }
 
     override fun mouseExited(e: MouseEvent?) {
-        println("exit")
-//        throw UnsupportedOperationException("mousePressed is not supported for the RewordListener sfbsg")
+//        println("exit")
+//        throw Unsu pportedOperationException("mousePressed is not supported for the RewordListener sfbsg")
     }
 }
