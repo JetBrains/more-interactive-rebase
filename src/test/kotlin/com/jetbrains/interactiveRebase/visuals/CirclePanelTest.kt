@@ -50,4 +50,33 @@ class CirclePanelTest : BasePlatformTestCase() {
         verify(graph, times(3)).draw(circlePanel.circle)
         verify(graph, times(3)).fill(circlePanel.circle)
     }
+
+    fun testDrawBorder() {
+        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
+        val circle = circlePanel.circle
+        val borderColor = JBColor.BLACK
+        circlePanel.drawBorder(graph, circle, borderColor)
+        verify(graph).fill(circle)
+        verify(graph).color = borderColor
+        verify(graph).draw(circle)
+    }
+
+    fun testDrawShadow() {
+        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
+        val circle = circlePanel.circle
+        val shadowColor = JBColor.BLACK
+        circlePanel.drawShadow(graph, circle, shadowColor)
+        verify(graph, times(2)).fill(circle)
+        verify(graph).draw(circle)
+        // TODO: figure out different colors on a more general case
+    }
+
+    fun testSelectedCommitAppearance() {
+        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
+        val circleColor = JBColor.BLACK
+        val shadowColor = JBColor.BLACK
+        val borderColor = JBColor.BLACK
+        circlePanel.selectedCommitAppearance(graph, true, circleColor, shadowColor, borderColor)
+        verify(graph, times(3)).fill(circlePanel.circle)
+    }
 }
