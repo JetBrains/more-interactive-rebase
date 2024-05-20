@@ -40,7 +40,7 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener {
      * and true if it was not selected initially
      */
     private fun selectCommitIfNotSelected(): Boolean {
-        if (!commitInfo.isSelected) {
+        if (!commitInfo.isSelected && !componentService.branchInfo.selectedCommits.contains(commitInfo)) {
             componentService.branchInfo.selectedCommits.add(commitInfo)
             commitInfo.isSelected = true
             return false

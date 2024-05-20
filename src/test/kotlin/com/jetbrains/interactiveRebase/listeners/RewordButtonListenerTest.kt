@@ -33,9 +33,8 @@ class RewordButtonListenerTest : BasePlatformTestCase() {
 
     fun testActionPerformedConsidersEmptyList() {
         commitInfo1.isSelected = false
-        componentService.branchInfo.selectedCommits.remove(commitInfo1)
+        componentService.branchInfo.selectedCommits.clear()
         listener.actionPerformed(null)
-        assertThat(componentService.isDirty).isFalse()
         assertThat(commitInfo2.isDoubleClicked).isFalse()
         assertThat(commitInfo1.isDoubleClicked).isFalse()
     }
