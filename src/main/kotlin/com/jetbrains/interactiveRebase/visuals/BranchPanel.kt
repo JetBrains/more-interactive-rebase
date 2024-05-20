@@ -126,11 +126,4 @@ class BranchPanel(
             glueY + glueHeight + shadowOffset,
         )
     }
-
-    /**
-     * Getter for the circle panels.
-     */
-    fun getCirclePanels(): MutableList<CirclePanel> {
-        return circles
-    }
 }

@@ -10,13 +10,19 @@ import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
-import com.jetbrains.interactiveRebase.listeners.reword.RewordClickListener
-import com.jetbrains.interactiveRebase.listeners.reword.RewordFocusListener
-import com.jetbrains.interactiveRebase.listeners.reword.TextFieldListener
-import com.jetbrains.interactiveRebase.visuals.borders.RoundedBorder
-import java.awt.*
-import javax.swing.*
-
+import com.jetbrains.interactiveRebase.listeners.LabelListener
+import com.jetbrains.interactiveRebase.listeners.TextFieldListener
+import java.awt.Dimension
+import java.awt.FlowLayout
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import java.awt.GridLayout
+import java.awt.Insets
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import javax.swing.JComponent
+import javax.swing.OverlayLayout
+import javax.swing.SwingConstants
 
 /**
  * Panel encapsulating a branch and corresponding labels
@@ -91,40 +97,37 @@ class LabeledBranchPanel(
         add(labelPanelWrapper, gbc)
     }
 
-    fun setLabelPanelWrapper(labelPanelWrapper : JBPanel<JBPanel<*>>) {
+    /**
+     * Generates the panel in which commit labels are wrapped with invisible text fields
+     */
+    fun setLabelPanelWrapper(labelPanelWrapper: JBPanel<JBPanel<*>>) {
         labelPanelWrapper.layout = GridLayout(0, 1)
-//        labelPanelWrapper.addMouseListener(RewordClickListener(branch.commits[0]))
-        val circles = branchPanel.getCirclePanels()
+        val circles = branchPanel.circles
         for ((i, circle) in circles.withIndex()) {
             val commitLabel = generateCommitLabel(i, circle)
-//            commitLabel.horizontalAlignment = alignment
             val wrappedLabel = wrapLabelWithTextField(commitLabel, branch.commits[i])
             labelPanelWrapper.add(wrappedLabel)
             commitLabels.add(commitLabel)
         }
     }
 
-    fun wrapLabelWithTextField(commitLabel : JBLabel, commitInfo: CommitInfo) : JComponent {
+    /**
+     * Wraps the given label together with a text field that is only made visible if it is triggered.
+     * There is one panel (textLabelWrapper) that wraps a textFieldWrapper with a labelWrapper, each being panels
+     * that contain a text field and a label respectively in order to properly align them.
+     */
+    fun wrapLabelWithTextField(
+        commitLabel: JBLabel,
+        commitInfo: CommitInfo,
+    ): JComponent {
         val textLabelWrapper = JBPanel<JBPanel<*>>()
         textLabelWrapper.withMaximumHeight(commitLabel.maximumHeight)
         textLabelWrapper.layout = OverlayLayout(textLabelWrapper)
 
         val textWrapper = JBPanel<JBPanel<*>>()
         textWrapper.layout = FlowLayout(alignment)
-        val textField = JTextField(commitLabel.text, 20)
-        val extraPadding = 1
-        val emptyBorder = BorderFactory.createEmptyBorder(extraPadding, 0, extraPadding, 0)
 
-        textField.maximumSize = commitLabel.maximumSize
-        textField.isFocusable = true
-        textField.horizontalAlignment = alignment
-
-//        println("BACKGROUND COLOR ${textField.background}")
-//        textField.background = Palette.BACKGROUNDBLUE
-        val roundBorder = RoundedBorder(color)
-        textField.border = roundBorder
-//        textField.border = BorderFactory.createCompoundBorder(roundBorder, emptyBorder)
-
+        val textField = createTextBox(commitLabel, commitInfo)
         textWrapper.add(textField)
 
         val labelWrapper = JBPanel<JBPanel<*>>()
@@ -135,17 +138,57 @@ class LabeledBranchPanel(
         labelWrapper.isVisible = true
 
         if (commitInfo.isDoubleClicked) {
-            textField.background = textField.background.darker()
-            println(textField.background)
-            textWrapper.isVisible = true
-            labelWrapper.isVisible = false
+            enableTextField(textField, textWrapper, labelWrapper)
         }
         textLabelWrapper.add(labelWrapper)
         textLabelWrapper.add(textWrapper)
 
-        commitLabel.addMouseListener(RewordClickListener(commitInfo))
+        commitLabel.addMouseListener(LabelListener(commitInfo))
         textField.addKeyListener(TextFieldListener(commitInfo, textField))
         return textLabelWrapper
+    }
+
+    /**
+     * Sets the text field to be visible, called after a double-click or button click for rewording
+     */
+    fun enableTextField(
+        textField: RoundedTextField,
+        textWrapper: JBPanel<JBPanel<*>>,
+        labelWrapper: JBPanel<JBPanel<*>>,
+    ) {
+        textField.background = textField.background.darker()
+        textWrapper.isVisible = true
+        labelWrapper.isVisible = false
+        textField.requestFocusInWindow()
+        listenForClickOutside(textField)
+    }
+
+    /**
+     * Instantiates a listener that exits the reword textbox when somewhere else on the component is clicked
+     */
+    fun listenForClickOutside(textField: RoundedTextField) {
+        this.addMouseListener(
+            object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent) {
+                    if (textField.isVisible && e.component !== textField) {
+                        textField.exitTextBox()
+                    }
+                }
+            },
+        )
+    }
+
+    /**
+     * Instantiates a round cornered textbox for rewording
+     */
+    fun createTextBox(
+        commitLabel: JBLabel,
+        commitInfo: CommitInfo,
+    ): RoundedTextField {
+        val textField = RoundedTextField(commitInfo, commitLabel.text, color)
+        textField.maximumSize = commitLabel.maximumSize
+        textField.horizontalAlignment = alignment
+        return textField
     }
 
     /**

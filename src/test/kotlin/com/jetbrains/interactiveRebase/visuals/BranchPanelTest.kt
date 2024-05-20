@@ -46,7 +46,7 @@ class BranchPanelTest : BasePlatformTestCase() {
     }
 
     fun testGetCirclePanels() {
-        assertEquals(branchPanel.getCirclePanels().size, 3)
+        assertEquals(branchPanel.circles.size, 3)
     }
 
     fun testColor() {
