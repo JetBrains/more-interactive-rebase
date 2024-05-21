@@ -7,8 +7,8 @@ import com.intellij.ui.components.labels.BoldLabel
 import com.intellij.ui.util.maximumHeight
 import com.intellij.ui.util.preferredWidth
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
-import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.listeners.LabelListener
 import com.jetbrains.interactiveRebase.listeners.TextFieldListener
@@ -49,23 +49,29 @@ class LabeledBranchPanel(
     /**
      * Sets up the appearance of a commit label
      * and links it to the corresponding commit (circle panel)
+     * If a commit is selected, the text is bold, italic if it is reworded, and crossed if it is dropped
      */
     fun generateCommitLabel(
         i: Int,
         circle: CirclePanel,
     ): JBLabel {
         val commitLabel = JBLabel(branch.commits[i].getSubject())
+
         branch.commits[i].changes.forEach {
             if (it is RewordCommand) {
-                commitLabel.text = it.newMessage
+                commitLabel.text = TextStyle.addStyling(it.newMessage, TextStyle.ITALIC)
             }
             if (it is DropCommand) {
-                commitLabel.text = "<html><strike>${it.commit.getSubject()}</strike></html>"
+                commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.CROSSED)
                 // TODO: when drag-and-drop is implemented, this will probably break because
                 // TODO: the alignment setting logic was changed
                 commitLabel.horizontalAlignment = SwingConstants.RIGHT
                 commitLabel.alignmentX = RIGHT_ALIGNMENT
             }
+        }
+
+        if (branch.commits[i].isSelected) {
+            commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.BOLD)
         }
         commitLabel.labelFor = circle
         commitLabel.horizontalAlignment = alignment
@@ -151,7 +157,7 @@ class LabeledBranchPanel(
     /**
      * Sets the text field to be visible, called after a double-click or button click for rewording
      */
-    fun enableTextField(
+    private fun enableTextField(
         textField: RoundedTextField,
         textWrapper: JBPanel<JBPanel<*>>,
         labelWrapper: JBPanel<JBPanel<*>>,
@@ -166,7 +172,7 @@ class LabeledBranchPanel(
     /**
      * Instantiates a listener that exits the reword textbox when somewhere else on the component is clicked
      */
-    fun listenForClickOutside(textField: RoundedTextField) {
+    private fun listenForClickOutside(textField: RoundedTextField) {
         this.addMouseListener(
             object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent) {
@@ -185,7 +191,7 @@ class LabeledBranchPanel(
         commitLabel: JBLabel,
         commitInfo: CommitInfo,
     ): RoundedTextField {
-        val textField = RoundedTextField(commitInfo, commitLabel.text, color)
+        val textField = RoundedTextField(commitInfo, TextStyle.stripTextFromStyling(commitLabel.text), color)
         textField.maximumSize = commitLabel.maximumSize
         textField.horizontalAlignment = alignment
         return textField

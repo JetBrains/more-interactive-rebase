@@ -2,15 +2,10 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.listeners.DropCommitListener
 import com.jetbrains.interactiveRebase.listeners.RewordButtonListener
 import java.awt.BorderLayout
 import java.awt.Graphics
-import com.jetbrains.interactiveRebase.listeners.reword.RewordButtonListener
-import com.jetbrains.interactiveRebase.listeners.RewordClickListener
-import com.jetbrains.interactiveRebase.listeners.DropCommitListener
-import java.awt.BorderLayout
-import java.awt.Graphics
-import java.awt.*
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent

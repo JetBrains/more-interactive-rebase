@@ -82,9 +82,9 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         val rewordChange = RewordCommand(commit1, "new message")
         branch.commits[0].changes.add(rewordChange)
         val label1 = labeledBranch.generateCommitLabel(0, circle)
-        assertThat(label1.text).isEqualTo("new message")
+        assertThat(TextStyle.stripTextFromStyling(label1.text)).isEqualTo("new message")
         val label2 = labeledBranch.generateCommitLabel(1, circle)
-        assertThat(label2.text).isEqualTo("Two")
+        assertThat(TextStyle.stripTextFromStyling(label2.text)).isEqualTo("Two")
     }
 
     fun testWrapsLabelWithTextField() {
@@ -144,15 +144,4 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         assertThat(labeledBranch.getComponent(1)).isInstanceOf(BranchPanel::class.java)
         assertThat(labeledBranch.getComponent(2)).isInstanceOf(JBPanel::class.java)
     }
-
-//    fun testWrapCommitLabels() {
-//        val labelPanelWrapper = JBPanel<JBPanel<*>>()
-//        labeledBranch.wrapCommitLabels(labelPanelWrapper)
-//        val label0: JBLabel = labelPanelWrapper.getComponent(0) as JBLabel
-//        val label1: JBLabel = labelPanelWrapper.getComponent(2) as JBLabel
-//        val label2: JBLabel = labelPanelWrapper.getComponent(4) as JBLabel
-//        assertThat(label0.text).isEqualTo("One")
-//        assertThat(label1.text).isEqualTo("Two")
-//        assertThat(label2.text).isEqualTo("Three")
-//    }
 }
