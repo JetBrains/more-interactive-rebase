@@ -58,8 +58,8 @@ open class CirclePanel(
 
         createCircle()
         val circleColor = if (commit.isSelected) color.darker() else color
-        val shadowColor = if (commit.isSelected) Palette.SELECTEDBRIGHT else Palette.DARKSHADOW
-        val borderColor = if (commit.isSelected) Palette.BORDER.darker() else Palette.DARKBLUE
+        val shadowColor = if (commit.isSelected) Palette.SELECTEDHIGHLIGHT else Palette.DARKSHADOW
+        val borderColor = if (commit.isSelected) Palette.BLUEBORDER.darker() else Palette.DARKBLUE
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, shadowColor, borderColor)
 
         if (commit.isHovered) {

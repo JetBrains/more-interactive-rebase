@@ -26,9 +26,9 @@ class DropCirclePanel(
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
         createCircle()
-        val circleColor = if (commit.isSelected) Palette.OPAQUE.darker() else Palette.OPAQUE
-        val shadowColor = if (commit.isSelected) Palette.SELECTEDBRIGHT else Palette.DARKSHADOW
-        val borderColor = if (commit.isSelected) Palette.BORDER.darker() else Palette.BORDER
+        val circleColor = if (commit.isSelected) Palette.GRAY.darker() else Palette.GRAY
+        val shadowColor = if (commit.isSelected) Palette.SELECTEDHIGHLIGHT else Palette.DARKSHADOW
+        val borderColor = if (commit.isSelected) Palette.BLUEBORDER.darker() else Palette.BLUEBORDER
 
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, shadowColor, borderColor)
         if (commit.isHovered) {

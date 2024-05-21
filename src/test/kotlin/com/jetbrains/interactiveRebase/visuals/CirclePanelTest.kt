@@ -68,7 +68,6 @@ class CirclePanelTest : BasePlatformTestCase() {
         circlePanel.drawShadow(graph, circle, shadowColor)
         verify(graph, times(2)).fill(circle)
         verify(graph).draw(circle)
-        // TODO: figure out different colors on a more general case
     }
 
     fun testSelectedCommitAppearance() {

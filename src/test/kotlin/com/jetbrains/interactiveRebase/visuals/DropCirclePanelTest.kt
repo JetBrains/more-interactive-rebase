@@ -55,11 +55,11 @@ class DropCirclePanelTest : BasePlatformTestCase() {
         verify(g, times(7)).color = colorCaptor.capture()
 
         assertEquals(7, colorCaptor.allValues.size)
-        colorEquals(Palette.SELECTEDBRIGHT, colorCaptor.allValues[0])
-        colorEquals(Palette.SELECTEDBRIGHT, colorCaptor.allValues[1])
-        colorEquals(Palette.SELECTEDBRIGHT, colorCaptor.allValues[2])
-        colorEquals(Palette.SELECTEDBRIGHT, colorCaptor.allValues[3])
-        colorEquals(Palette.SELECTEDBRIGHT, colorCaptor.allValues[4])
+        colorEquals(Palette.SELECTEDHIGHLIGHT, colorCaptor.allValues[0])
+        colorEquals(Palette.SELECTEDHIGHLIGHT, colorCaptor.allValues[1])
+        colorEquals(Palette.SELECTEDHIGHLIGHT, colorCaptor.allValues[2])
+        colorEquals(Palette.SELECTEDHIGHLIGHT, colorCaptor.allValues[3])
+        colorEquals(Palette.SELECTEDHIGHLIGHT, colorCaptor.allValues[4])
     }
 
     fun testPaintCircleHovered() {
@@ -78,8 +78,8 @@ class DropCirclePanelTest : BasePlatformTestCase() {
         colorEquals(Palette.DARKSHADOW, colorCaptor.allValues[2])
         colorEquals(Palette.DARKSHADOW, colorCaptor.allValues[3])
         colorEquals(Palette.DARKSHADOW, colorCaptor.allValues[4])
-        colorEquals(Palette.OPAQUE, colorCaptor.allValues[5])
-        colorEquals(Palette.BORDER, colorCaptor.allValues[6])
+        colorEquals(Palette.GRAY, colorCaptor.allValues[5])
+        colorEquals(Palette.BLUEBORDER, colorCaptor.allValues[6])
     }
 
     fun testDrawBorder() {

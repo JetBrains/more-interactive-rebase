@@ -20,6 +20,7 @@ class DropCommitListenerTest : BasePlatformTestCase() {
     private lateinit var listener: DropCommitListener
     private lateinit var commitInfo: CommitInfo
     private lateinit var branchInfo: BranchInfo
+    private lateinit var event: MouseEvent
 
     override fun setUp() {
         super.setUp()
@@ -33,11 +34,10 @@ class DropCommitListenerTest : BasePlatformTestCase() {
         service.branchInfo = branchInfo
         service.addOrRemoveCommitSelection(commitInfo)
         listener = DropCommitListener(button, project)
+        event = MouseEvent(button, 0, 0, 0, 0, 0, 0, false)
     }
 
     fun testMouseClicked() {
-        val event = mock(MouseEvent::class.java)
-
         listener.mouseClicked(event)
 
         assertTrue(service.isDirty)
@@ -49,8 +49,6 @@ class DropCommitListenerTest : BasePlatformTestCase() {
     }
 
     fun testMousePressed() {
-        val event = mock(MouseEvent::class.java)
-
         listener.mousePressed(event)
 
         assertTrue(service.isDirty)
@@ -62,7 +60,6 @@ class DropCommitListenerTest : BasePlatformTestCase() {
     }
 
     fun testMouseReleasedDoesNothing() {
-        val event = mock(MouseEvent::class.java)
         listener.mouseReleased(event)
         assertNotEmpty(service.branchInfo.selectedCommits)
         assertFalse(service.isDirty)
@@ -70,14 +67,12 @@ class DropCommitListenerTest : BasePlatformTestCase() {
     }
 
     fun testMouseEnteredDoesNothing() {
-        val event = mock(MouseEvent::class.java)
         listener.mouseReleased(event)
         assertNotEmpty(service.branchInfo.selectedCommits)
         assertTrue(commitInfo.changes.isEmpty())
     }
 
     fun testMouseExitedDoesNothing() {
-        val event = mock(MouseEvent::class.java)
         listener.mouseReleased(event)
         assertNotEmpty(service.branchInfo.selectedCommits)
         assertTrue(commitInfo.changes.isEmpty())

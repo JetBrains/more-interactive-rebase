@@ -55,7 +55,6 @@ class BranchPanel(
         var circle = CirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
 
         if (commit.changes.any { it is DropCommand } == true) {
-            println("does it get here?")
             circle = DropCirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
         }
 
