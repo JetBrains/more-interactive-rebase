@@ -28,7 +28,7 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
         super.setUp()
         circlePanel = mock(CirclePanel::class.java)
         listener = CircleHoverListener(circlePanel)
-        commit1 = CommitInfo(createCommit("my commit"), project, null)
+        commit1 = CommitInfo(createCommit("my commit"), project, mutableListOf())
     }
 
     fun testMouseEnteredInsideCircle() {

@@ -80,7 +80,7 @@ class BranchInfoThreadTest : BasePlatformTestCase() {
         val commit1 = createCommit("added tests")
         val commit2 = createCommit("fix tests")
 
-        val oldCommit = CommitInfo(createCommit("old commit"), project, null)
+        val oldCommit = CommitInfo(createCommit("old commit"), project, mutableListOf())
 
         val testBranchInfo = BranchInfo("bug-fix", commits = listOf(oldCommit), false)
         testBranchInfo.selectedCommits.add(oldCommit)
@@ -114,8 +114,8 @@ class BranchInfoThreadTest : BasePlatformTestCase() {
         val commit1 = createCommit("added tests")
         val commit2 = createCommit("fix tests")
 
-        val commitInfo1 = CommitInfo(commit1, project, null)
-        val commitInfo2 = CommitInfo(commit2, project, null)
+        val commitInfo1 = CommitInfo(commit1, project, mutableListOf())
+        val commitInfo2 = CommitInfo(commit2, project, mutableListOf())
 
         val testBranchInfo = BranchInfo("my branch", commits = listOf(commitInfo1, commitInfo2), false)
         testBranchInfo.selectedCommits.add(commitInfo1)

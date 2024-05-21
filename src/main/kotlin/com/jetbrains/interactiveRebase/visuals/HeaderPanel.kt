@@ -1,13 +1,16 @@
+
 package com.jetbrains.interactiveRebase.visuals
 
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.listeners.DropCommitListener
 import java.awt.BorderLayout
 import java.awt.Graphics
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 
-class HeaderPanel(mainPanel: JComponent) : JBPanel<JBPanel<*>>() {
+class HeaderPanel(private val mainPanel: JComponent, private val project: Project) : JBPanel<JBPanel<*>>() {
     val gitActionsPanel = JBPanel<JBPanel<*>>()
     val changeActionsPanel = JBPanel<JBPanel<*>>()
 
@@ -35,6 +38,7 @@ class HeaderPanel(mainPanel: JComponent) : JBPanel<JBPanel<*>>() {
         val fixupButton = JButton("Stop to edit")
         val rewordButton = JButton("Reword")
         val dropButton = JButton("Drop")
+        dropButton.addMouseListener(DropCommitListener(dropButton, project))
 
         buttonPanel.add(squashButton)
         buttonPanel.add(fixupButton)

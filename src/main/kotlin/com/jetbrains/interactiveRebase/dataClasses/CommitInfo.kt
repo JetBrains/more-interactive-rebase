@@ -7,7 +7,7 @@ import git4idea.GitCommit
 data class CommitInfo(
     val commit: GitCommit,
     val project: Project,
-    val changes: List<RebaseCommand>?,
+    val changes: MutableList<RebaseCommand> = mutableListOf(),
     var isSelected: Boolean = false,
     var isHovered: Boolean = false,
 ) {

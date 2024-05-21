@@ -6,6 +6,7 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
 import com.intellij.ui.util.preferredWidth
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -28,7 +29,7 @@ class LabeledBranchPanel(
     private val alignment: Int = SwingConstants.LEFT,
 ) :
     JBPanel<JBPanel<*>>() {
-    private val branchPanel = BranchPanel(branch, color)
+    val branchPanel = BranchPanel(branch, color)
     private val commitLabels: MutableList<JBLabel> = mutableListOf()
     private val branchNameLabel = BoldLabel(branch.name)
 
@@ -50,6 +51,15 @@ class LabeledBranchPanel(
         circle: CirclePanel,
     ): JBLabel {
         val commitLabel = JBLabel(branch.commits[i].getSubject())
+        branch.commits[i].changes.forEach {
+            if (it is DropCommand) {
+                commitLabel.text = "<html><strike>${it.commit.getSubject()}</strike></html>"
+                // TODO: when drag-and-drop is implemented, this will probably break because
+                // TODO: the alignment setting logic was changed
+                commitLabel.horizontalAlignment = SwingConstants.RIGHT
+                commitLabel.alignmentX = RIGHT_ALIGNMENT
+            }
+        }
         commitLabel.labelFor = circle
         commitLabel.preferredSize = Dimension(commitLabel.preferredWidth, branchPanel.diameter)
         commitLabel.alignmentX =
@@ -61,6 +71,7 @@ class LabeledBranchPanel(
                 }
             )
         commitLabel.verticalTextPosition = SwingConstants.CENTER
+
         return commitLabel
     }
 

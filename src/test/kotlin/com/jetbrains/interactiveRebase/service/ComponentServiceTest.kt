@@ -49,10 +49,10 @@ class ComponentServiceTest : BasePlatformTestCase() {
     }
 
     fun testAddOrRemoveCommitSelection() {
-        val commit1 = CommitInfo(createCommit("my commit"), project, null)
+        val commit1 = CommitInfo(createCommit("my commit"), project, mutableListOf())
         commit1.isSelected = true
 
-        val res = componentService.addOrRemoveCommitSelection(commit1)
+        componentService.addOrRemoveCommitSelection(commit1)
         assertEquals(componentService.branchInfo.selectedCommits, listOf(commit1))
     }
 
@@ -61,7 +61,7 @@ class ComponentServiceTest : BasePlatformTestCase() {
         `when`(commit1.isSelected).thenReturn(false)
         componentService.branchInfo.selectedCommits = mutableListOf(commit1)
 
-        val res = componentService.addOrRemoveCommitSelection(commit1)
+        componentService.addOrRemoveCommitSelection(commit1)
         assertEquals(componentService.branchInfo.selectedCommits.size, 0)
     }
 

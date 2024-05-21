@@ -40,7 +40,6 @@ class CommitInfoPanel(private val project: Project) : FullCommitDetailsListPanel
                 GitCommitRequirements.DEFAULT,
             ) { gitCommit ->
                 changes.addAll(gitCommit.changes)
-                println(gitCommit.changes)
             }
         }
         return CommittedChangesTreeBrowser.zipChanges(changes)

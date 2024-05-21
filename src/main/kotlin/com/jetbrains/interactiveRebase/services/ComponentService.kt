@@ -21,7 +21,7 @@ import javax.swing.SwingConstants
 class ComponentService(val project: Project) {
     var branchInfo = BranchInfo()
     var mainPanel = JBPanel<JBPanel<*>>()
-    private var commitInfoPanel = CommitInfoPanel(project)
+    var commitInfoPanel = CommitInfoPanel(project)
     private var contentPanel: JBPanel<JBPanel<*>>
     private var branchPanel: LabeledBranchPanel
     var isDirty = false
@@ -39,7 +39,7 @@ class ComponentService(val project: Project) {
      */
     fun renderMainPanel(): JComponent {
         mainPanel.removeAll()
-        val headerPanel = HeaderPanel(mainPanel)
+        val headerPanel = HeaderPanel(mainPanel, project)
 
         val firstDivider =
             OnePixelSplitter(false, 0.7f).apply {
@@ -51,6 +51,7 @@ class ComponentService(val project: Project) {
             OnePixelSplitter(true, 0.03f, 0.03f, 0.03f).apply {
                 firstComponent = headerPanel
                 secondComponent = firstDivider
+                setResizeEnabled(false)
             }
 
         mainPanel.add(secondDivider, BorderLayout.CENTER)

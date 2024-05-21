@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import java.awt.BasicStroke
 import java.awt.Dimension
 import java.awt.Graphics
@@ -24,7 +25,7 @@ class BranchPanel(
     val borderSize = 1f
     private val size = branch.commits.size
 
-    private val circles: MutableList<CirclePanel> = mutableListOf()
+    val circles: MutableList<CirclePanel> = mutableListOf()
 
     /**
      * Makes a branch panel with vertical orientation
@@ -50,7 +51,13 @@ class BranchPanel(
      * to the next and previous neighbors
      */
     private fun initializeCirclePanel(i: Int): CirclePanel {
-        val circle = CirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
+        val commit = branch.commits[i]
+        var circle = CirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
+
+        if (commit.changes.any { it is DropCommand } == true) {
+            circle = DropCirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
+        }
+
         circles.add(circle)
         if (i > 0) {
             // Set reference to next circle
@@ -101,11 +108,22 @@ class BranchPanel(
         val glueHeight = endY - startY - diameter
         val glueY = startY + diameter / 2 + diameter / 2
 
+        g2d.color = color
         g2d.drawLine(
             x + diameter / 2,
             startY,
             x + diameter / 2,
             glueY + glueHeight,
+        )
+
+        // Make line thicker
+        val shadowOffset = 1
+        g2d.color = color
+        g2d.drawLine(
+            x + diameter / 2 + shadowOffset,
+            startY + shadowOffset,
+            x + diameter / 2 + shadowOffset,
+            glueY + glueHeight + shadowOffset,
         )
     }
 
