@@ -1,16 +1,18 @@
 package com.jetbrains.interactiveRebase.services
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import com.jetbrains.interactiveRebase.threads.BranchInfoThread
 import com.jetbrains.interactiveRebase.visuals.CommitInfoPanel
 import com.jetbrains.interactiveRebase.visuals.HeaderPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -18,7 +20,8 @@ import javax.swing.JComponent
 import javax.swing.SwingConstants
 
 @Service(Service.Level.PROJECT)
-class ComponentService(val project: Project) {
+class ComponentService(private val project: Project, private val coroutineScope: CoroutineScope) {
+    private val commitService = project.service<CommitService>()
     var branchInfo = BranchInfo()
     var mainPanel = JBPanel<JBPanel<*>>()
     var commitInfoPanel = CommitInfoPanel(project)
@@ -121,8 +124,18 @@ class ComponentService(val project: Project) {
      */
 
     fun fetchBranchInfo() {
-        val thread = BranchInfoThread(project, branchInfo)
-        thread.start()
+        coroutineScope.launch {
+            val name = commitService.getBranchName()
+            val commits = commitService.getCommitInfoForBranch(commitService.getCommits())
+            if (branchChange(name, commits)) {
+                branchInfo.name = name
+                branchInfo.commits = commits
+                branchInfo.selectedCommits.clear()
+
+                repaintMainPanel()
+            } }
+//        val thread = BranchInfoThread(project, branchInfo)
+//        thread.start()
     }
 
     /**
@@ -139,7 +152,7 @@ class ComponentService(val project: Project) {
      */
 
     fun repaintBranchPanel() {
-        branchPanel.showCommits(branchInfo.commits)
+        branchPanel.showCommits()
         branchPanel.revalidate()
         branchPanel.repaint()
     }
@@ -151,5 +164,20 @@ class ComponentService(val project: Project) {
     fun repaintMainPanel() {
         repaintBranchPanel()
         repaintCommitInfoPanel()
+    }
+
+    /**
+     * Checks if a different branch
+     * has been checked out
+     */
+
+    private fun branchChange(
+        newName: String,
+        newCommits: List<CommitInfo>,
+    ): Boolean {
+        val commitsIds = branchInfo.commits.map { it.commit.id }.toSet()
+        val newCommitsIds = newCommits.map { it.commit.id }.toSet()
+
+        return branchInfo.name != newName || commitsIds != newCommitsIds
     }
 }

@@ -37,7 +37,7 @@ class BranchPanel(
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
         preferredSize = Dimension(diameter, (size * diameter * 1.5).toInt())
 
-        showCommits(branch.commits)
+        showCommits()
     }
 
     /**
@@ -133,11 +133,11 @@ class BranchPanel(
      * Sets commits to be shown in branch
      */
 
-    fun showCommits(commits: List<CommitInfo>) {
+    fun showCommits() {
         removeAll()
         circles.clear()
 
-        size = commits.size
+        size = branch.commits.size
 
         for (i in 0 until size) {
             val circle = initializeCirclePanel(i)
@@ -146,5 +146,7 @@ class BranchPanel(
                 add(Box.createVerticalGlue())
             }
         }
+        super.revalidate()
+        revalidate()
     }
 }

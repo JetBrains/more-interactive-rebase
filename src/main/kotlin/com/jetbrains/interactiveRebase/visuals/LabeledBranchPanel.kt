@@ -1,5 +1,6 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import com.intellij.openapi.Disposable
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
@@ -39,14 +40,29 @@ class LabeledBranchPanel(
     private val color: JBColor,
     private val alignment: Int = SwingConstants.LEFT,
 ) :
-    JBPanel<JBPanel<*>>() {
+    JBPanel<JBPanel<*>>(), Disposable {
     val branchPanel = BranchPanel(branch, color)
     private val commitLabels: MutableList<JBLabel> = mutableListOf()
     private val branchNameLabel = BoldLabel(branch.name)
 
     init {
         branchNameLabel.horizontalTextPosition = SwingConstants.CENTER
-        showCommits(branch.commits)
+        showCommits()
+
+        val listener = object : BranchInfo.Listener {
+            override fun onNameChange(newName: String) {
+                branchNameLabel.text = newName
+            }
+
+            override fun onCommitChange(commits: List<CommitInfo>) {
+                showCommits()
+            }
+
+            override fun onSelectedCommitChange(selectedCommits: MutableList<CommitInfo>) {
+            }
+        }
+
+        branch.addListener(listener)
     }
 
     /**
@@ -242,10 +258,9 @@ class LabeledBranchPanel(
     /**
      * Sets commits to be shown in branch
      */
-
-    fun showCommits(commits: List<CommitInfo>) {
+    fun showCommits() {
         commitLabels.clear()
-        branchPanel.showCommits(commits)
+        branchPanel.showCommits()
         val circles = branchPanel.getCirclePanels()
         for ((i, circle) in circles.withIndex()) {
             val commitLabel = generateCommitLabel(i, circle)
@@ -253,12 +268,9 @@ class LabeledBranchPanel(
         }
     }
 
-    override fun repaint() {
-        super.repaint()
-        SwingUtilities.invokeLater {
-            branchNameLabel.text = branch.name
-            branchNameLabel.repaint()
-            branchPanel.repaint()
-        }
+    /**
+     * Dispose routine
+     */
+    override fun dispose() {
     }
 }

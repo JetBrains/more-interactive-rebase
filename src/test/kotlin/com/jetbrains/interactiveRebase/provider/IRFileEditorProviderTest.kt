@@ -26,7 +26,7 @@ class IRFileEditorProviderTest : BasePlatformTestCase() {
         val virtualFileSystem = IRVirtualFileSystem()
         val virtualFile = virtualFileSystem.findFileByPath("Interactive Rebase")
         TestCase.assertNotNull(provider.createEditor(project, virtualFile))
-        assertThat(provider.createEditor(project, virtualFile)).isInstanceOf(IRFileEditorProvider.MyFileEditorBase::class.java)
+        assertThat(provider.createEditor(project, virtualFile)).isInstanceOf(IRFileEditorProvider.IRFileEditorBase::class.java)
     }
 
     fun testGetEditorTypeId() {
