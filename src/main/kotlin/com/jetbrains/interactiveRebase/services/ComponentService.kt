@@ -133,7 +133,8 @@ class ComponentService(private val project: Project, private val coroutineScope:
                 branchInfo.selectedCommits.clear()
 
                 repaintMainPanel()
-            } }
+            }
+        }
 //        val thread = BranchInfoThread(project, branchInfo)
 //        thread.start()
     }

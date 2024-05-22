@@ -2,8 +2,14 @@ package com.jetbrains.interactiveRebase.dataClasses
 
 import com.intellij.openapi.Disposable
 
-class BranchInfo(var name: String = "", var commits: List<CommitInfo> = listOf(), var selectedCommits: MutableList<CommitInfo> = mutableListOf(), val isCheckedOut: Boolean = false) {
+class BranchInfo(
+    var name: String = "",
+    var commits: List<CommitInfo> = listOf(),
+    var selectedCommits: MutableList<CommitInfo> = mutableListOf(),
+    val isCheckedOut: Boolean = false,
+) {
     private val listeners: MutableList<Listener> = mutableListOf()
+
     fun addListener(listener: Listener) = listeners.add(listener)
 
     /**
@@ -33,7 +39,7 @@ class BranchInfo(var name: String = "", var commits: List<CommitInfo> = listOf()
      */
     internal fun addSelectedCommits(commit: CommitInfo) {
         selectedCommits.add(commit)
-        listeners.forEach{ it.onSelectedCommitChange(selectedCommits) }
+        listeners.forEach { it.onSelectedCommitChange(selectedCommits) }
     }
 
     /**
@@ -43,7 +49,7 @@ class BranchInfo(var name: String = "", var commits: List<CommitInfo> = listOf()
      */
     internal fun removeSelectedCommits(commit: CommitInfo) {
         selectedCommits.remove(commit)
-        listeners.forEach{ it.onSelectedCommitChange(selectedCommits) }
+        listeners.forEach { it.onSelectedCommitChange(selectedCommits) }
     }
 
     /**
@@ -53,7 +59,7 @@ class BranchInfo(var name: String = "", var commits: List<CommitInfo> = listOf()
      */
     internal fun clearSelectedCommits() {
         selectedCommits.clear()
-        listeners.forEach{ it.onSelectedCommitChange(selectedCommits) }
+        listeners.forEach { it.onSelectedCommitChange(selectedCommits) }
     }
 
     /**
@@ -62,8 +68,11 @@ class BranchInfo(var name: String = "", var commits: List<CommitInfo> = listOf()
      */
     interface Listener : Disposable {
         fun onNameChange(newName: String)
+
         fun onCommitChange(commits: List<CommitInfo>)
+
         fun onSelectedCommitChange(selectedCommits: MutableList<CommitInfo>)
+
         override fun dispose() {}
     }
 }

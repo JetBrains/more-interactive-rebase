@@ -17,24 +17,25 @@ class MainPanel(private val project: Project, private val branchInfo: BranchInfo
     private var contentPanel: JBPanel<JBPanel<*>>
     internal var branchPanel: LabeledBranchPanel
 
-    init{
+    init {
         branchPanel = createBranchPanel()
         contentPanel = createContentPanel()
 
         this.layout = BorderLayout()
         createMainPanel()
 
-        val listener = object : BranchInfo.Listener {
-            override fun onNameChange(newName: String) {
-            }
+        val listener =
+            object : BranchInfo.Listener {
+                override fun onNameChange(newName: String) {
+                }
 
-            override fun onCommitChange(commits: List<CommitInfo>) {
-            }
+                override fun onCommitChange(commits: List<CommitInfo>) {
+                }
 
-            override fun onSelectedCommitChange(selectedCommits: MutableList<CommitInfo>) {
-                commitInfoPanel.commitsSelected(selectedCommits.map{it.commit})
+                override fun onSelectedCommitChange(selectedCommits: MutableList<CommitInfo>) {
+                    commitInfoPanel.commitsSelected(selectedCommits.map { it.commit })
+                }
             }
-        }
 
         branchInfo.addListener(listener)
         Disposer.register(this, listener)

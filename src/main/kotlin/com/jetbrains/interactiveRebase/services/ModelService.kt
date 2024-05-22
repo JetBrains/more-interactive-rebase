@@ -21,7 +21,7 @@ class ModelService(private val project: Project, private val coroutineScope: Cor
      * on creation and subscribes
      * to the GitRefreshListener
      */
-    init{
+    init {
         fetchBranchInfo()
         project.messageBus.connect(this).subscribe(GitRefreshListener.TOPIC, IRGitRefreshListener(project))
     }
@@ -44,7 +44,7 @@ class ModelService(private val project: Project, private val coroutineScope: Cor
      * info inside a
      * coroutine
      */
-    fun fetchBranchInfo(){
+    fun fetchBranchInfo()  {
         coroutineScope.launch {
             val name = commitService.getBranchName()
             val commits = commitService.getCommitInfoForBranch(commitService.getCommits())
@@ -52,7 +52,8 @@ class ModelService(private val project: Project, private val coroutineScope: Cor
                 branchInfo.setName(name)
                 branchInfo.setCommits(commits)
                 branchInfo.clearSelectedCommits()
-            } }
+            }
+        }
     }
 
     /**

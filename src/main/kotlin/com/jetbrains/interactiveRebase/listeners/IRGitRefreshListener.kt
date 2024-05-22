@@ -7,7 +7,6 @@ import git4idea.repo.GitRepository
 import git4idea.status.GitRefreshListener
 
 class IRGitRefreshListener(private val project: Project) : GitRefreshListener {
-
     /**
      * Fetches the branch info
      * when the repository is updated
@@ -15,5 +14,4 @@ class IRGitRefreshListener(private val project: Project) : GitRefreshListener {
     override fun repositoryUpdated(repository: GitRepository) {
         project.service<ModelService>().fetchBranchInfo()
     }
-
 }

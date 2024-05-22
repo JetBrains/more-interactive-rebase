@@ -25,7 +25,6 @@ import java.awt.event.MouseEvent
 import javax.swing.JComponent
 import javax.swing.OverlayLayout
 import javax.swing.SwingConstants
-import javax.swing.SwingUtilities
 
 /**
  * Panel encapsulating a branch and corresponding labels
@@ -49,18 +48,19 @@ class LabeledBranchPanel(
         branchNameLabel.horizontalTextPosition = SwingConstants.CENTER
         showCommits()
 
-        val listener = object : BranchInfo.Listener {
-            override fun onNameChange(newName: String) {
-                branchNameLabel.text = newName
-            }
+        val listener =
+            object : BranchInfo.Listener {
+                override fun onNameChange(newName: String) {
+                    branchNameLabel.text = newName
+                }
 
-            override fun onCommitChange(commits: List<CommitInfo>) {
-                showCommits()
-            }
+                override fun onCommitChange(commits: List<CommitInfo>) {
+                    showCommits()
+                }
 
-            override fun onSelectedCommitChange(selectedCommits: MutableList<CommitInfo>) {
+                override fun onSelectedCommitChange(selectedCommits: MutableList<CommitInfo>) {
+                }
             }
-        }
 
         branch.addListener(listener)
     }
