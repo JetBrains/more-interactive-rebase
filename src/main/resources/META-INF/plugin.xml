@@ -22,6 +22,43 @@
                 text="Interactive Rebase Current Branch">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
+        <group id="com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup"
+               class="com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup" text="RebaseActionsGroup" description="Interactive rebase actions">
+            <action id="com.jetbrains.interactiveRebase.actions.ChangePanel.AddBranchAction"
+                    class="com.jetbrains.interactiveRebase.actions.ChangePanel.AddBranchAction" text="AddBranchAction"
+                    description="Add another branch to the view">
+                <add-to-group group-id="com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup"/>
+            </action>
+            <action id="com.jetbrains.interactiveRebase.actions.ChangePanel.PickAction"
+                    class="com.jetbrains.interactiveRebase.actions.ChangePanel.PickAction" text="PickAction">
+                <add-to-group group-id="com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup"/>
+            </action>
+
+            <separator/>
+
+            <action id="com.jetbrains.interactiveRebase.actions.GitPanel.SquashAction"
+                    class="com.jetbrains.interactiveRebase.actions.GitPanel.SquashAction" text="SquashAction" description="Combine commits here" icon="AllIcons.Actions.DynamicUsages">
+                <add-to-group group-id="com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup"/>
+            </action>
+            <action id="com.jetbrains.interactiveRebase.actions.GitPanel.RewordAction"
+                    class="com.jetbrains.interactiveRebase.actions.GitPanel.RewordAction" text="RewordAction" description="Reword a commit">
+                <add-to-group group-id="com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup"/>
+            </action>
+            <action id="com.jetbrains.interactiveRebase.actions.GitPanel.DropAction"
+                    class="com.jetbrains.interactiveRebase.actions.GitPanel.DropAction" text="DropAction" description="Drop a commit">
+                <add-to-group group-id="com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup"/>
+            </action>
+            <action id="com.jetbrains.interactiveRebase.actions.GitPanel.StopToEditAction"
+                    class="com.jetbrains.interactiveRebase.actions.GitPanel.StopToEditAction" text="StopToEditAction">
+                <add-to-group group-id="com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup"/>
+            </action>
+            <action id="com.jetbrains.interactiveRebase.actions.GitPanel.FixupAction"
+                    class="com.jetbrains.interactiveRebase.actions.GitPanel.FixupAction" text="FixupAction">
+                <add-to-group group-id="com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup"/>
+            </action>
+        </group>
+
+
     </actions>
 
 </idea-plugin>
