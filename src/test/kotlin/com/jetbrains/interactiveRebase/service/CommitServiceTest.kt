@@ -3,13 +3,11 @@ package com.jetbrains.interactiveRebase.service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import com.jetbrains.interactiveRebase.mockStructs.MockGitRepository
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.BranchService
 import com.jetbrains.interactiveRebase.services.CommitService
-import com.jetbrains.interactiveRebase.threads.BranchInfoThread
 import com.jetbrains.interactiveRebase.utils.consumers.CommitConsumer
 import com.jetbrains.interactiveRebase.utils.consumers.GeneralCommitConsumer
 import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
@@ -23,22 +21,20 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 
 class CommitServiceTest : BasePlatformTestCase() {
-    private lateinit var service: CommitService
-    private lateinit var controlledService: CommitService
+    private lateinit var commitService: CommitService
+    private lateinit var controlledCommitService: CommitService
     private lateinit var utils: IRGitUtils
-    private lateinit var branchSer: BranchService
-    private lateinit var thread: BranchInfoThread
+    private lateinit var branchService: BranchService
     private lateinit var commitProvider: TestGitCommitProvider
 
     override fun setUp() {
         super.setUp()
-        service = project.service<CommitService>()
+        commitService = project.service<CommitService>()
         commitProvider = TestGitCommitProvider(project)
-        thread = BranchInfoThread(project, BranchInfo())
-        branchSer = project.service<BranchService>()
+        branchService = project.service<BranchService>()
         utils = mock(IRGitUtils::class.java)
         val branchService = BranchService(project, utils)
-        controlledService = CommitService(project, utils, branchService)
+        controlledCommitService = CommitService(project, utils, branchService)
 
         doAnswer {
             project.guessProjectDir()
@@ -79,13 +75,13 @@ class CommitServiceTest : BasePlatformTestCase() {
         val consumer = GeneralCommitConsumer()
         val commit = commitProvider.createCommit("added tests")
 
-        controlledService.referenceBranchName = branchName
+        controlledCommitService.referenceBranchName = branchName
 
         doAnswer {
             consumer.accept(commit)
         }.`when`(utils).getCommitsOfBranch(anyCustom(), anyCustom())
 
-        val res = controlledService.getDisplayableCommitsOfBranch(branchName, repo, consumer)
+        val res = controlledCommitService.getDisplayableCommitsOfBranch(branchName, repo, consumer)
         verify(utils).getCommitsOfBranch(anyCustom(), anyCustom())
         assertEquals(res, listOf(commit))
     }
@@ -95,7 +91,7 @@ class CommitServiceTest : BasePlatformTestCase() {
         val repo: GitRepository = MockGitRepository("current")
         val consumer = GeneralCommitConsumer()
         val commit = commitProvider.createCommit("added tests")
-        controlledService.referenceBranchName = "main"
+        controlledCommitService.referenceBranchName = "main"
 
         doAnswer {
             consumer.accept(commit)
@@ -105,7 +101,7 @@ class CommitServiceTest : BasePlatformTestCase() {
             GitCommandResult(false, 0, listOf(), listOf("master"))
         }.`when`(utils).runCommand(anyCustom())
 
-        val res = controlledService.getDisplayableCommitsOfBranch(branchName, repo, consumer)
+        val res = controlledCommitService.getDisplayableCommitsOfBranch(branchName, repo, consumer)
         verify(utils).getCommitDifferenceBetweenBranches(anyCustom(), anyCustom(), anyCustom(), anyCustom())
         assertEquals(res, listOf(commit))
     }
@@ -125,7 +121,7 @@ class CommitServiceTest : BasePlatformTestCase() {
             consumerInside.accept(commit2)
         }.`when`(utils).getCommitDifferenceBetweenBranches(anyCustom(), anyCustom(), anyCustom(), anyCustom())
 
-        val res = controlledService.getCommits()
+        val res = controlledCommitService.getCommits()
         assertEquals(res, listOf(commit1, commit2))
     }
 
@@ -148,17 +144,17 @@ class CommitServiceTest : BasePlatformTestCase() {
             consumerInside.accept(commit2)
         }.`when`(utils).getCommitsOfBranch(anyCustom(), anyCustom())
 
-        val res = controlledService.getCommits()
+        val res = controlledCommitService.getCommits()
 
         assertEquals(res, listOf(commit1, commit2))
-        assertEquals("current", controlledService.referenceBranchName)
+        assertEquals("current", controlledCommitService.referenceBranchName)
     }
 
     fun testMergedBranchHandlingConsidersEmptyDiff() {
         val repo: GitRepository = MockGitRepository("current")
         val cons = GeneralCommitConsumer()
         cons.consume(commitProvider.createCommit("fix tests"))
-        controlledService.handleMergedBranch(cons, "branch", repo)
+        controlledCommitService.handleMergedBranch(cons, "branch", repo)
         verify(utils, never()).getCommitsOfBranch(repo, cons)
     }
 
@@ -168,7 +164,7 @@ class CommitServiceTest : BasePlatformTestCase() {
         doAnswer {
             GitCommandResult(false, 0, listOf(), listOf("merged"))
         }.`when`(utils).runCommand(anyCustom())
-        controlledService.handleMergedBranch(cons, "merged", repo)
+        controlledCommitService.handleMergedBranch(cons, "merged", repo)
         verify(utils).getCommitsOfBranch(repo, cons)
     }
 
@@ -179,7 +175,7 @@ class CommitServiceTest : BasePlatformTestCase() {
 
         val exception =
             assertThrows<IRInaccessibleException> {
-                controlledService.getCommits()
+                controlledCommitService.getCommits()
             }
         assertEquals(exception.message, "Repository cannot be accessed")
     }
@@ -192,7 +188,7 @@ class CommitServiceTest : BasePlatformTestCase() {
 
         val exception =
             assertThrows<IRInaccessibleException> {
-                controlledService.getCommits()
+                controlledCommitService.getCommits()
             }
         assertEquals(exception.message, "Branch cannot be accessed")
     }
@@ -212,7 +208,7 @@ class CommitServiceTest : BasePlatformTestCase() {
             consumerInside.accept(commit2)
         }.`when`(utils).getCommitDifferenceBetweenBranches(anyCustom(), anyCustom(), anyCustom(), anyCustom())
 
-        val res = controlledService.getCommitInfoForBranch(listOf(commit1, commit2))
+        val res = controlledCommitService.getCommitInfoForBranch(listOf(commit1, commit2))
         assertEquals(res.size, 2)
         assertEquals(res[0].commit, commit1)
         assertEquals(res[1].commit, commit2)

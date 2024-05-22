@@ -3,11 +3,12 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.JBColor
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import git4idea.GitCommit
+import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Captor
+import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
@@ -29,19 +30,24 @@ class DropCirclePanelTest : BasePlatformTestCase() {
 
     override fun setUp() {
         super.setUp()
-        commit = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
+        val commitProvider = TestGitCommitProvider(project)
+        commit = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf())
         g = mock(Graphics2D::class.java)
 
         dropCirclePanel =
             spy(
                 DropCirclePanel(
-                    diameter = 50.0,
-                    border = 2.0f,
-                    color = JBColor.BLACK,
-                    commit = commit,
+                    50.0,
+                    2.0f,
+                    JBColor.BLACK,
+                    commit,
                 ),
             )
         openMocks(this)
+
+        doAnswer {
+            commit
+        }.`when`(dropCirclePanel).commit
     }
 
     fun testPaintCircleSelected() {

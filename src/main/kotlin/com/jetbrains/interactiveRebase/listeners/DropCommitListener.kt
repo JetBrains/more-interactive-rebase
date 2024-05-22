@@ -8,17 +8,18 @@ import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import javax.swing.JButton
 
-class DropCommitListener(val button: JButton, val project: Project) : MouseListener {
+class DropCommitListener(val modelService: ModelService, button: JButton, val project: Project) : MouseListener {
+    constructor(button: JButton, project: Project) : this(project.service<ModelService>(), button, project)
+
     /**
      * When the button is clicked, the selected commits are dropped.
      */
     override fun mouseClicked(e: MouseEvent?) {
-        val service = project.service<ModelService>()
-        service.getSelectedCommits().forEach {
+        modelService.getSelectedCommits().forEach {
                 commitInfo ->
             commitInfo.addChange(DropCommand(commitInfo))
         }
-        service.branchInfo.clearSelectedCommits()
+        modelService.branchInfo.clearSelectedCommits()
     }
 
     /**

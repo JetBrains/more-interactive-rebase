@@ -14,7 +14,7 @@ data class CommitInfo(
     var isHovered: Boolean = false,
     var isDoubleClicked: Boolean = false,
 ) {
-    private val listeners: MutableList<Listener> = mutableListOf()
+    internal val listeners: MutableList<Listener> = mutableListOf()
 
     /**
      * Adds a subscriber
@@ -23,33 +23,33 @@ data class CommitInfo(
 
     fun addListener(listener: Listener) = listeners.add(listener)
 
-    fun addChange(change: RebaseCommand){
+    fun addChange(change: RebaseCommand) {
         changes.add(change)
         listeners.forEach { it.onCommitChange() }
     }
 
-    fun setSelectedTo(value: Boolean){
+    fun setSelectedTo(value: Boolean) {
         isSelected = value
     }
 
-    fun setHoveredTo(value: Boolean){
+    fun setHoveredTo(value: Boolean) {
         isHovered = value
     }
 
-    fun setDoubleClickedTo(value: Boolean){
+    fun setDoubleClickedTo(value: Boolean) {
         isDoubleClicked = value
         listeners.forEach { it.onCommitChange() }
     }
 
-    fun flipSelected(){
+    fun flipSelected() {
         isSelected = !isSelected
     }
 
-    fun flipHovered(){
+    fun flipHovered() {
         isHovered = !isHovered
     }
 
-    fun flipDoubleClicked(){
+    fun flipDoubleClicked() {
         isDoubleClicked = !isDoubleClicked
         listeners.forEach { it.onCommitChange() }
     }

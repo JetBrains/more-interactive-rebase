@@ -3,7 +3,6 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
-import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import java.awt.BasicStroke
 import java.awt.Dimension
@@ -127,7 +126,6 @@ class BranchPanel(
     fun getCirclePanels(): MutableList<CirclePanel> {
         return circles
     }
-
 
     /**
      * Sets commits to be shown in branch

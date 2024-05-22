@@ -42,7 +42,7 @@ class LabeledBranchPanel(
     private val branchPanel = BranchPanel(branch, color)
     private val commitLabels: MutableList<JBLabel> = mutableListOf()
     private val branchNameLabel = BoldLabel(branch.name)
-    private val labelPanelWrapper = JBPanel<JBPanel<*>>()
+    internal val labelPanelWrapper = JBPanel<JBPanel<*>>()
 
     init {
         branchNameLabel.horizontalTextPosition = SwingConstants.CENTER

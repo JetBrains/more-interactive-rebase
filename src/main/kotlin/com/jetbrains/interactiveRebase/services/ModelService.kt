@@ -12,9 +12,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Service(Service.Level.PROJECT)
-class ModelService(private val project: Project, private val coroutineScope: CoroutineScope) : Disposable {
+class ModelService(
+    private val project: Project,
+    private val coroutineScope: CoroutineScope,
+    private val commitService: CommitService,
+) : Disposable {
+    constructor(project: Project, coroutineScope: CoroutineScope) : this(project, coroutineScope, project.service<CommitService>())
+
     val branchInfo = BranchInfo()
-    private val commitService = project.service<CommitService>()
 
     /**
      * Fetches current branch info
@@ -52,7 +57,7 @@ class ModelService(private val project: Project, private val coroutineScope: Cor
      * info inside a
      * coroutine
      */
-    fun fetchBranchInfo()  {
+    fun fetchBranchInfo() {
         coroutineScope.launch {
             val name = commitService.getBranchName()
             val commits = commitService.getCommitInfoForBranch(commitService.getCommits())

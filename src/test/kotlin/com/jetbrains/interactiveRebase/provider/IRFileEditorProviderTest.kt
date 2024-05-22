@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.provider
 import com.intellij.openapi.fileEditor.FileEditorPolicy
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.jetbrains.interactiveRebase.editors.IRFileEditorBase
 import com.jetbrains.interactiveRebase.providers.IRFileEditorProvider
 import com.jetbrains.interactiveRebase.virtualFile.IRVirtualFileSystem
 import junit.framework.TestCase
@@ -26,7 +27,7 @@ class IRFileEditorProviderTest : BasePlatformTestCase() {
         val virtualFileSystem = IRVirtualFileSystem()
         val virtualFile = virtualFileSystem.findFileByPath("Interactive Rebase")
         TestCase.assertNotNull(provider.createEditor(project, virtualFile))
-        assertThat(provider.createEditor(project, virtualFile)).isInstanceOf(IRFileEditorProvider.IRFileEditorBase::class.java)
+        assertThat(provider.createEditor(project, virtualFile)).isInstanceOf(IRFileEditorBase::class.java)
     }
 
     fun testGetEditorTypeId() {

@@ -13,7 +13,7 @@ import java.awt.GridBagLayout
 import javax.swing.SwingConstants
 
 class MainPanel(private val project: Project, private val branchInfo: BranchInfo) : JBPanel<JBPanel<*>>(), Disposable {
-    private var commitInfoPanel = CommitInfoPanel(project)
+    internal var commitInfoPanel = CommitInfoPanel(project)
     private var contentPanel: JBPanel<JBPanel<*>>
     internal var branchPanel: LabeledBranchPanel
     private val branchInfoListener: BranchInfo.Listener
@@ -48,7 +48,6 @@ class MainPanel(private val project: Project, private val branchInfo: BranchInfo
                 override fun onCommitChange() {
                     branchPanel.updateCommits()
                 }
-
             }
 
         branchInfo.addListener(branchInfoListener)
