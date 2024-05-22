@@ -45,7 +45,7 @@ class HeaderPanel(private val mainPanel: JComponent, private val project: Projec
         rewordButton.addActionListener(RewordButtonListener(project))
         val dropButton = JButton("Drop")
         dropButton.addMouseListener(DropCommitListener(dropButton, project, invoker))
-        fixupButton.addMouseListener(invoker.executeCommands())
+        fixupButton.addActionListener{invoker.executeCommands()}
         buttonPanel.add(squashButton)
         buttonPanel.add(fixupButton)
         buttonPanel.add(rewordButton)
