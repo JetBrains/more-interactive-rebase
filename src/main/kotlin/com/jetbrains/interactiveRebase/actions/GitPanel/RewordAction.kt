@@ -13,6 +13,7 @@ class RewordAction : DumbAwareAction("Reword", "Reword a commit", AllIcons.Actio
         val project = e.project
         if(project != null) {
             val modelService = project.service<ModelService>()
+            println("selected commits inside reword are ${modelService.branchInfo.selectedCommits}")
             modelService.branchInfo.selectedCommits.forEach {
                 it.setDoubleClickedTo(true)
             }
@@ -24,10 +25,12 @@ class RewordAction : DumbAwareAction("Reword", "Reword a commit", AllIcons.Actio
     }
 
     override fun update(e: AnActionEvent) {
-//        println("updated")
         e.presentation.isEnabled = true
         e.presentation.isEnabledAndVisible = true
-//        e.presentation.
+        val project = e.project
+        if (project != null && project.service<ModelService>().branchInfo.selectedCommits.size != 1) {
+            e.presentation.isEnabled = false
+        }
 //        super.update(e)
     }
 }

@@ -29,6 +29,10 @@ class DropAction: AnAction("Drop", "Drops a commit", AllIcons.Actions.DeleteTagH
 
     override fun update(e: AnActionEvent) {
         e.presentation.isEnabledAndVisible = true
+        val project = e.project
+        if (project != null && project.service<ModelService>().branchInfo.selectedCommits.size < 1) {
+            e.presentation.isEnabled = false
+        }
 //        super.update(e)
     }
 }

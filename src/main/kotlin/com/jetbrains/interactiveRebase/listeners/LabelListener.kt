@@ -17,7 +17,9 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener {
     override fun mouseClicked(e: MouseEvent?) {
         if (e != null && e.clickCount >= 2) {
             commitInfo.setDoubleClickedTo(true)
-            selectCommitIfNotSelected()
+            commitInfo.isSelected = true
+            modelService.addOrRemoveCommitSelection(commitInfo)
+//            selectCommitIfNotSelected()
         }
         if (e != null && e.clickCount == 1) {
             commitInfo.isSelected = !commitInfo.isSelected
@@ -25,30 +27,6 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener {
         }
     }
 
-    /**
-     * Selects a commit if it is not selected, deselects a commit if it is selected
-     */
-    private fun selectOrDeselectCommit() {
-        if (selectCommitIfNotSelected()) {
-            modelService.branchInfo.removeSelectedCommits(commitInfo)
-            commitInfo.setSelectedTo(false)
-            println("set selected to false")
-        }
-    }
-
-    /**
-     * Selects a commit if it is not already selected, returns false if commit was already selected
-     * and true if it was not selected initially
-     */
-    private fun selectCommitIfNotSelected(): Boolean {
-        if (!commitInfo.isSelected && !modelService.branchInfo.selectedCommits.contains(commitInfo)) {
-            modelService.branchInfo.addSelectedCommits(commitInfo)
-            commitInfo.setSelectedTo(true)
-            println("set selected to true")
-            return false
-        }
-        return true
-    }
 
     override fun mousePressed(e: MouseEvent?) {}
 
@@ -57,14 +35,10 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener {
     /**
      * When the mouse hovers over the label, the related circle is set to hovered
      */
-    override fun mouseEntered(e: MouseEvent?) {
-        commitInfo.setHoveredTo(true)
-    }
+    override fun mouseEntered(e: MouseEvent?) {}
 
     /**
      * de-hovers the circle if the mouse exits
      */
-    override fun mouseExited(e: MouseEvent?) {
-        commitInfo.setHoveredTo(false)
-    }
+    override fun mouseExited(e: MouseEvent?) {}
 }
