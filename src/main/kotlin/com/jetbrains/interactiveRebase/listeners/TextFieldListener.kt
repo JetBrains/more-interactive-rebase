@@ -2,11 +2,13 @@ package com.jetbrains.interactiveRebase.listeners
 
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.RoundedTextField
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 
-class TextFieldListener(private val commitInfo: CommitInfo, private val textField: RoundedTextField) : KeyListener {
+class TextFieldListener(private val commitInfo: CommitInfo, private val textField: RoundedTextField,
+                        private val invoker: RebaseInvoker) : KeyListener {
     override fun keyTyped(e: KeyEvent?) {}
 
     override fun keyPressed(e: KeyEvent?) {}
@@ -27,7 +29,9 @@ class TextFieldListener(private val commitInfo: CommitInfo, private val textFiel
      * Adds a reword change to the list of changes of a commit
      */
     private fun makeRewordChange() {
-        commitInfo.addChange(RewordCommand(commitInfo, textField.text))
+        val command = RewordCommand(mutableListOf(commitInfo), textField.text)
+        commitInfo.addChange(command)
+        invoker.addCommand(command)
         textField.exitTextBox()
     }
 }

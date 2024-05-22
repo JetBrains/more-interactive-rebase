@@ -2,23 +2,31 @@ package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import javax.swing.JButton
 
-class DropCommitListener(val modelService: ModelService, button: JButton, val project: Project) : MouseListener {
-    constructor(button: JButton, project: Project) : this(project.service<ModelService>(), button, project)
+
+class DropCommitListener(val modelService: ModelService, button: JButton,
+                         val project: Project, private val invoker: RebaseInvoker) : MouseListener {
+    constructor(button: JButton, project: Project, invoker: RebaseInvoker) :
+            this(project.service<ModelService>(), button, project, invoker)
+
 
     /**
      * When the button is clicked, the selected commits are dropped.
      */
     override fun mouseClicked(e: MouseEvent?) {
-        modelService.getSelectedCommits().forEach {
+        val commits = modelService.getSelectedCommits()
+        commits.forEach {
                 commitInfo ->
-            commitInfo.addChange(DropCommand(commitInfo))
+            commitInfo.addChange(DropCommand(mutableListOf(commitInfo) ))
         }
+        invoker.addCommand(DropCommand(commits))
         modelService.branchInfo.clearSelectedCommits()
     }
 

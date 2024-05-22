@@ -14,7 +14,7 @@ import javax.swing.JComponent
  */
 class IRFileEditorBase(private val project: Project, private val virtualFile: VirtualFile) : FileEditorBase() {
     private val modelService = project.service<ModelService>()
-    private var component = MainPanel(project, modelService.branchInfo)
+    private var component = MainPanel(project, modelService.branchInfo, modelService.invoker)
 
     /**
      * Returns a component which represents the editor in UI.

@@ -7,13 +7,16 @@ import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import javax.swing.SwingConstants
 
-class MainPanel(private val project: Project, private val branchInfo: BranchInfo) : JBPanel<JBPanel<*>>(), Disposable {
-    internal var commitInfoPanel = CommitInfoPanel(project)
+
+class MainPanel(private val project: Project, private val branchInfo: BranchInfo, private val invoker : RebaseInvoker)
+    : JBPanel<JBPanel<*>>(), Disposable {
+    private var commitInfoPanel = CommitInfoPanel(project)
     private var contentPanel: JBPanel<JBPanel<*>>
     internal var branchPanel: LabeledBranchPanel
     private val branchInfoListener: BranchInfo.Listener
@@ -62,6 +65,7 @@ class MainPanel(private val project: Project, private val branchInfo: BranchInfo
      */
     fun createBranchPanel(): LabeledBranchPanel {
         return LabeledBranchPanel(
+                invoker,
             branchInfo,
             Palette.BLUE,
             SwingConstants.RIGHT,
@@ -91,7 +95,7 @@ class MainPanel(private val project: Project, private val branchInfo: BranchInfo
      * Initializes the main component.
      */
     fun createMainPanel() {
-        val headerPanel = HeaderPanel(this, project)
+        val headerPanel = HeaderPanel(this, project, invoker)
 
         val firstDivider =
             OnePixelSplitter(false, 0.7f).apply {

@@ -20,6 +20,8 @@ class ModelService(
     constructor(project: Project, coroutineScope: CoroutineScope) : this(project, coroutineScope, project.service<CommitService>())
 
     val branchInfo = BranchInfo()
+    internal val invoker = project.service<RebaseInvoker>()
+
 
     /**
      * Fetches current branch info
@@ -29,6 +31,7 @@ class ModelService(
     init {
         fetchBranchInfo()
         project.messageBus.connect(this).subscribe(GitRefreshListener.TOPIC, IRGitRefreshListener(project))
+        invoker.createModel()
     }
 
     /**
@@ -48,7 +51,7 @@ class ModelService(
      * Returns the selected
      * commits
      */
-    fun getSelectedCommits(): List<CommitInfo> {
+    fun getSelectedCommits(): MutableList<CommitInfo> {
         return branchInfo.selectedCommits
     }
 
@@ -65,6 +68,7 @@ class ModelService(
                 branchInfo.setName(name)
                 branchInfo.setCommits(commits)
                 branchInfo.clearSelectedCommits()
+                invoker.branchInfo = branchInfo
             }
         }
     }

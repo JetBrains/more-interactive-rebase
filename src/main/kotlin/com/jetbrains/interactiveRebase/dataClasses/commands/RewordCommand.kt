@@ -5,21 +5,17 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
-data class RewordCommand(override var commit: CommitInfo, var newMessage: String) : RebaseCommand(commit) {
-    override fun execute(model: IRGitModel<GitRebaseEntryGeneratedUsingLog>, branchInfo : BranchInfo) {
-        model.pick(listOf(0))
-    }
-
-<<<<<<< HEAD
+data class RewordCommand(override var commits: MutableList<CommitInfo>, var newMessage: String)
+    : RebaseCommand(commits) {
     /**
-     Usually in a command you would need an undo() method,
-     this is to be discussed if needed in the future.
-
-     TODO: Discuss if undo() method is needed.
-     **/
-    override fun undo() {
-        TODO("Not yet implemented")
+     * This method is to set-up connection with the
+     * Interactive Rebase mechanism.
+     *
+     * This will be called within the RebaseInvoker,
+     * once the actual rebase is initiated through the rebase button.
+     */
+    override fun execute(model: IRGitModel<GitRebaseEntryGeneratedUsingLog>, branchInfo : BranchInfo) {
+        model.reword(branchInfo.currentCommits.indexOf(commits[0]), newMessage)
     }
-=======
->>>>>>> 797c8d3 (invoker created but connection doesnt work)
+
 }
