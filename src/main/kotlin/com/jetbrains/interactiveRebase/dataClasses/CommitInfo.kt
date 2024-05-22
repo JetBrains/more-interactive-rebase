@@ -23,32 +23,62 @@ data class CommitInfo(
 
     fun addListener(listener: Listener) = listeners.add(listener)
 
+    /**
+     * Adds a change to the
+     * list of changes of the
+     * commit
+     */
     fun addChange(change: RebaseCommand) {
         changes.add(change)
         listeners.forEach { it.onCommitChange() }
     }
 
+    /**
+     * Sets isSelected to
+     * passed value
+     */
     fun setSelectedTo(value: Boolean) {
         isSelected = value
     }
 
+    /**
+     * Sets isHovered to
+     * passed value
+     */
     fun setHoveredTo(value: Boolean) {
         isHovered = value
     }
 
+    /**
+     * Sets isDoubleClicked to
+     * passed value and notifies
+     * subscribers
+     */
     fun setDoubleClickedTo(value: Boolean) {
         isDoubleClicked = value
         listeners.forEach { it.onCommitChange() }
     }
 
+    /**
+     * Toggles isSelected
+     */
+
     fun flipSelected() {
         isSelected = !isSelected
     }
+
+    /**
+     * Toggles isHovered
+     */
 
     fun flipHovered() {
         isHovered = !isHovered
     }
 
+    /**
+     * Toggles isDoubleClicked
+     * and notifies subscribers
+     */
     fun flipDoubleClicked() {
         isDoubleClicked = !isDoubleClicked
         listeners.forEach { it.onCommitChange() }
