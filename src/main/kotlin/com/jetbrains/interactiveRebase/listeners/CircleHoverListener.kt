@@ -20,7 +20,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
 
     override fun mouseEntered(e: MouseEvent?) {
         if (e != null && circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
-            circlePanel.commit.isHovered = true
+            circlePanel.commit.setHoveredTo(true)
             circlePanel.repaint()
         }
     }
@@ -31,7 +31,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
 
     override fun mouseExited(e: MouseEvent?) {
         if (e != null && !circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
-            circlePanel.commit.isHovered = false
+            circlePanel.commit.setHoveredTo(false)
             circlePanel.repaint()
         }
     }
@@ -43,7 +43,6 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
         val modelService = circlePanel.commit.project.service<ModelService>()
         circlePanel.commit.isSelected = !circlePanel.commit.isSelected
         modelService.addOrRemoveCommitSelection(circlePanel.commit)
-        circlePanel.repaint()
     }
 
     /**
@@ -61,20 +60,17 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
      * mousePressed is not yet implemented
      */
     override fun mousePressed(e: MouseEvent?) {
-        throw UnsupportedOperationException("mousePressed is not supported for the CircleHoverListener")
     }
 
     /**
      * mouseReleased is not yet implemented
      */
     override fun mouseReleased(e: MouseEvent?) {
-        throw UnsupportedOperationException("mouseReleased is not supported for the CircleHoverListener")
     }
 
     /**
      * mouseDragged is not yet implemented
      */
     override fun mouseDragged(e: MouseEvent?) {
-        throw UnsupportedOperationException("mouseDragged is not supported for the CircleHoverListener")
     }
 }

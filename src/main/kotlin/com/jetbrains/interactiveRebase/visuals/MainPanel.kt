@@ -16,6 +16,8 @@ class MainPanel(private val project: Project, private val branchInfo: BranchInfo
     private var commitInfoPanel = CommitInfoPanel(project)
     private var contentPanel: JBPanel<JBPanel<*>>
     internal var branchPanel: LabeledBranchPanel
+    private val branchInfoListener: BranchInfo.Listener
+    private val commitInfoListener: CommitInfo.Listener
 
     init {
         branchPanel = createBranchPanel()
@@ -24,21 +26,36 @@ class MainPanel(private val project: Project, private val branchInfo: BranchInfo
         this.layout = BorderLayout()
         createMainPanel()
 
-        val listener =
+        branchInfoListener =
             object : BranchInfo.Listener {
                 override fun onNameChange(newName: String) {
+                    branchPanel.updateBranchName()
                 }
 
                 override fun onCommitChange(commits: List<CommitInfo>) {
+                    branchPanel.updateCommits()
+                    registerCommitListener()
                 }
 
                 override fun onSelectedCommitChange(selectedCommits: MutableList<CommitInfo>) {
+                    branchPanel.updateCommits()
                     commitInfoPanel.commitsSelected(selectedCommits.map { it.commit })
                 }
             }
 
-        branchInfo.addListener(listener)
-        Disposer.register(this, listener)
+        commitInfoListener =
+            object : CommitInfo.Listener {
+                override fun onCommitChange() {
+                    branchPanel.updateCommits()
+                }
+
+            }
+
+        branchInfo.addListener(branchInfoListener)
+        registerCommitListener()
+
+        Disposer.register(this, branchInfoListener)
+        Disposer.register(this, commitInfoListener)
     }
 
     /**
@@ -75,7 +92,7 @@ class MainPanel(private val project: Project, private val branchInfo: BranchInfo
      * Initializes the main component.
      */
     fun createMainPanel() {
-        val headerPanel = HeaderPanel(this)
+        val headerPanel = HeaderPanel(this, project)
 
         val firstDivider =
             OnePixelSplitter(false, 0.7f).apply {
@@ -90,6 +107,12 @@ class MainPanel(private val project: Project, private val branchInfo: BranchInfo
             }
 
         this.add(secondDivider, BorderLayout.CENTER)
+    }
+
+    fun registerCommitListener() {
+        branchInfo.commits.forEach {
+            it.addListener(commitInfoListener)
+        }
     }
 
     /**

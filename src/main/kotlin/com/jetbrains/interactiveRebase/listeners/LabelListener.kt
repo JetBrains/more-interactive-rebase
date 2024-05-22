@@ -2,13 +2,13 @@ package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import com.jetbrains.interactiveRebase.services.ComponentService
+import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 
 class LabelListener(private val commitInfo: CommitInfo) : MouseListener {
     private val project = commitInfo.project
-    private val componentService = project.service<ComponentService>()
+    private val modelService = project.service<ModelService>()
 
     /**
      * If double-clicked, enables the right flags to make text field visible
@@ -16,13 +16,12 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener {
      */
     override fun mouseClicked(e: MouseEvent?) {
         if (e != null && e.clickCount >= 2) {
-            commitInfo.isDoubleClicked = true
+            commitInfo.setDoubleClickedTo(true)
             selectCommitIfNotSelected()
         }
         if (e != null && e.clickCount == 1) {
             selectOrDeselectCommit()
         }
-        componentService.isDirty = true
     }
 
     /**
@@ -30,8 +29,8 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener {
      */
     private fun selectOrDeselectCommit() {
         if (selectCommitIfNotSelected()) {
-            componentService.branchInfo.selectedCommits.remove(commitInfo)
-            commitInfo.isSelected = false
+            modelService.branchInfo.removeSelectedCommits(commitInfo)
+            commitInfo.setSelectedTo(false)
         }
     }
 
@@ -40,9 +39,9 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener {
      * and true if it was not selected initially
      */
     private fun selectCommitIfNotSelected(): Boolean {
-        if (!commitInfo.isSelected && !componentService.branchInfo.selectedCommits.contains(commitInfo)) {
-            componentService.branchInfo.selectedCommits.add(commitInfo)
-            commitInfo.isSelected = true
+        if (!commitInfo.isSelected && !modelService.branchInfo.selectedCommits.contains(commitInfo)) {
+            modelService.branchInfo.addSelectedCommits(commitInfo)
+            commitInfo.setSelectedTo(true)
             return false
         }
         return true
@@ -56,15 +55,13 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener {
      * When the mouse hovers over the label, the related circle is set to hovered
      */
     override fun mouseEntered(e: MouseEvent?) {
-        commitInfo.isHovered = true
-        componentService.isDirty = true
+        commitInfo.setHoveredTo(true)
     }
 
     /**
      * de-hovers the circle if the mouse exits
      */
     override fun mouseExited(e: MouseEvent?) {
-        commitInfo.isHovered = false
-        componentService.isDirty = true
+        commitInfo.setHoveredTo(false)
     }
 }

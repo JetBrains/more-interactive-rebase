@@ -40,6 +40,14 @@ class ModelService(private val project: Project, private val coroutineScope: Cor
     }
 
     /**
+     * Returns the selected
+     * commits
+     */
+    fun getSelectedCommits(): List<CommitInfo> {
+        return branchInfo.selectedCommits
+    }
+
+    /**
      * Fetches the branch
      * info inside a
      * coroutine

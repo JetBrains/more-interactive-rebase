@@ -10,7 +10,7 @@ class BranchInfo(
 ) {
     private val listeners: MutableList<Listener> = mutableListOf()
 
-    fun addListener(listener: Listener) = listeners.add(listener)
+    internal fun addListener(listener: Listener) = listeners.add(listener)
 
     /**
      * Sets name of
@@ -58,6 +58,7 @@ class BranchInfo(
      * listeners
      */
     internal fun clearSelectedCommits() {
+        selectedCommits.forEach { it.setSelectedTo(false) }
         selectedCommits.clear()
         listeners.forEach { it.onSelectedCommitChange(selectedCommits) }
     }

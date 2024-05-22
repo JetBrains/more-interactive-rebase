@@ -153,7 +153,7 @@ class ComponentService(private val project: Project, private val coroutineScope:
      */
 
     fun repaintBranchPanel() {
-        branchPanel.showCommits()
+        branchPanel.updateCommits()
         branchPanel.revalidate()
         branchPanel.repaint()
     }

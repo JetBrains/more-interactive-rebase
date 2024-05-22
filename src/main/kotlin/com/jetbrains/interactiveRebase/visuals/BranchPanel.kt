@@ -37,7 +37,7 @@ class BranchPanel(
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
         preferredSize = Dimension(diameter, (size * diameter * 1.5).toInt())
 
-        showCommits()
+        updateCommits()
     }
 
     /**
@@ -133,7 +133,7 @@ class BranchPanel(
      * Sets commits to be shown in branch
      */
 
-    fun showCommits() {
+    fun updateCommits() {
         removeAll()
         circles.clear()
 
