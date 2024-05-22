@@ -7,8 +7,11 @@ import com.jetbrains.interactiveRebase.visuals.RoundedTextField
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 
-class TextFieldListener(private val commitInfo: CommitInfo, private val textField: RoundedTextField,
-                        private val invoker: RebaseInvoker) : KeyListener {
+class TextFieldListener(
+    private val commitInfo: CommitInfo,
+    private val textField: RoundedTextField,
+    private val invoker: RebaseInvoker,
+) : KeyListener {
     override fun keyTyped(e: KeyEvent?) {}
 
     override fun keyPressed(e: KeyEvent?) {}

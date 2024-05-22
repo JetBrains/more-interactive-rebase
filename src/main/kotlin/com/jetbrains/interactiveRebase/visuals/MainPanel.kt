@@ -13,10 +13,9 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import javax.swing.SwingConstants
 
-
-class MainPanel(private val project: Project, private val branchInfo: BranchInfo, private val invoker : RebaseInvoker)
-    : JBPanel<JBPanel<*>>(), Disposable {
-    private var commitInfoPanel = CommitInfoPanel(project)
+class MainPanel(private val project: Project, private val branchInfo: BranchInfo, private val invoker: RebaseInvoker) :
+    JBPanel<JBPanel<*>>(), Disposable {
+    internal var commitInfoPanel = CommitInfoPanel(project)
     private var contentPanel: JBPanel<JBPanel<*>>
     internal var branchPanel: LabeledBranchPanel
     private val branchInfoListener: BranchInfo.Listener
@@ -65,7 +64,7 @@ class MainPanel(private val project: Project, private val branchInfo: BranchInfo
      */
     fun createBranchPanel(): LabeledBranchPanel {
         return LabeledBranchPanel(
-                invoker,
+            invoker,
             branchInfo,
             Palette.BLUE,
             SwingConstants.RIGHT,

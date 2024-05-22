@@ -23,8 +23,6 @@ class ModelService(
 
     internal val invoker = project.service<RebaseInvoker>()
 
-
-
     /**
      * Fetches current branch info
      * on creation and subscribes
@@ -33,7 +31,6 @@ class ModelService(
     init {
         fetchBranchInfo()
         project.messageBus.connect(this).subscribe(GitRefreshListener.TOPIC, IRGitRefreshListener(project))
-
     }
 
     /**

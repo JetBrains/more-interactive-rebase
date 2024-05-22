@@ -12,15 +12,16 @@ import git4ideaClasses.IRGitModel
 @Service(Service.Level.PROJECT)
 class RebaseInvoker(val project: Project) {
     var branchInfo = BranchInfo()
-    internal lateinit var model : IRGitModel<GitRebaseEntryGeneratedUsingLog>
-    fun createModel(){
-        val commits = branchInfo.commits.map{
-            commitInfo -> GitRebaseEntryGeneratedUsingLog(commitInfo.commit)
-        }
+    internal lateinit var model: IRGitModel<GitRebaseEntryGeneratedUsingLog>
+
+    fun createModel() {
+        val commits =
+            branchInfo.commits.map {
+                    commitInfo ->
+                GitRebaseEntryGeneratedUsingLog(commitInfo.commit)
+            }
         model = convertToModel(commits)
     }
-
-
 
     /**
      * Global (project-level) list of rebase commands
@@ -51,22 +52,22 @@ class RebaseInvoker(val project: Project) {
                 IRGitEntry.Action.FIXUP, IRGitEntry.Action.SQUASH -> {
                     val lastElement = result.lastOrNull() ?: throw IllegalArgumentException("Couldn't unite with non-existed commit")
                     val root =
-                            when (lastElement) {
-                                is IRGitModel.Element.UniteChild<T> -> lastElement.root
-                                is IRGitModel.Element.UniteRoot<T> -> lastElement
-                                is IRGitModel.Element.Simple<T> -> {
-                                    when (val rootType = lastElement.type) {
-                                        is IRGitModel.Type.NonUnite.KeepCommit -> {
-                                            val newRoot = IRGitModel.Element.UniteRoot(lastElement.index, rootType, lastElement.entry)
-                                            result[newRoot.index] = newRoot
-                                            newRoot
-                                        }
-                                        is IRGitModel.Type.NonUnite.Drop, is IRGitModel.Type.NonUnite.UpdateRef -> {
-                                            throw IllegalStateException()
-                                        }
+                        when (lastElement) {
+                            is IRGitModel.Element.UniteChild<T> -> lastElement.root
+                            is IRGitModel.Element.UniteRoot<T> -> lastElement
+                            is IRGitModel.Element.Simple<T> -> {
+                                when (val rootType = lastElement.type) {
+                                    is IRGitModel.Type.NonUnite.KeepCommit -> {
+                                        val newRoot = IRGitModel.Element.UniteRoot(lastElement.index, rootType, lastElement.entry)
+                                        result[newRoot.index] = newRoot
+                                        newRoot
+                                    }
+                                    is IRGitModel.Type.NonUnite.Drop, is IRGitModel.Type.NonUnite.UpdateRef -> {
+                                        throw IllegalStateException()
                                     }
                                 }
                             }
+                        }
                     val element = IRGitModel.Element.UniteChild(index, entry, root)
                     root.addChild(element)
                     result.add(element)
@@ -106,7 +107,7 @@ class RebaseInvoker(val project: Project) {
      */
     fun executeCommands() {
         commands.forEach { it.execute(model, branchInfo) }
-        println(" commands" + commands.size + "commits" + branchInfo.commits.size )
-        IRGitRebaseUtils(project).rebase(branchInfo.commits.reversed()[0].commit,model)
+        println(" commands" + commands.size + "commits" + branchInfo.commits.size)
+        IRGitRebaseUtils(project).rebase(branchInfo.commits.reversed()[0].commit, model)
     }
 }

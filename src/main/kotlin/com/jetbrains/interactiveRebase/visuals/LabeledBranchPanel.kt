@@ -35,7 +35,7 @@ import javax.swing.SwingConstants
  * - RIGHT means commits appear to the right and names to the left
  */
 class LabeledBranchPanel(
-        private val invoker: RebaseInvoker,
+    private val invoker: RebaseInvoker,
     private val branch: BranchInfo,
     private val color: JBColor,
     private val alignment: Int = SwingConstants.LEFT,

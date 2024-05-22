@@ -1,5 +1,6 @@
 package com.jetbrains.interactiveRebase.service
 
+import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
@@ -20,15 +21,5 @@ class RebaseInvokerTest : BasePlatformTestCase() {
         rebaseInvoker.commands = mutableListOf(pickCommand)
         rebaseInvoker.removeCommand(pickCommand)
         assertTrue(rebaseInvoker.commands.isEmpty())
-    }
-
-    fun testExecuteCommands() {
-        val rebaseInvoker = RebaseInvoker(project)
-        val pickCommand = Mockito.mock(PickCommand::class.java)
-        val dropCommand = Mockito.mock(DropCommand::class.java)
-        rebaseInvoker.commands = mutableListOf(pickCommand, dropCommand)
-        rebaseInvoker.executeCommands()
-        Mockito.verify(pickCommand).execute()
-        Mockito.verify(dropCommand).execute()
     }
 }

@@ -1,11 +1,13 @@
 package com.jetbrains.interactiveRebase.listeners
 
+import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.RoundedTextField
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
@@ -21,7 +23,7 @@ class TextFieldListenerTest : BasePlatformTestCase() {
         val commitProvider = TestGitCommitProvider(project)
         commitInfo = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf())
         textField = RoundedTextField(commitInfo, "input", JBColor.BLUE)
-        listener = TextFieldListener(commitInfo, textField)
+        listener = TextFieldListener(commitInfo, textField, project.service<RebaseInvoker>())
     }
 
     fun testKeyReleasedConsidersNull() {

@@ -18,7 +18,10 @@ data class SquashCommand(
      * This will be called within the RebaseInvoker,
      * once the actual rebase is initiated through the rebase button.
      */
-    override fun execute(model: IRGitModel<GitRebaseEntryGeneratedUsingLog>, branchInfo : BranchInfo) {
+    override fun execute(
+        model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
+        branchInfo: BranchInfo,
+    ) {
         TODO("Not yet implemented")
     }
 }

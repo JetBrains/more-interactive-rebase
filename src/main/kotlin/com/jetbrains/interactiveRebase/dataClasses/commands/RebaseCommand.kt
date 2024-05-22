@@ -22,6 +22,8 @@ sealed class RebaseCommand(open var commits: MutableList<CommitInfo>) {
      * This will be called within the RebaseInvoker,
      * once the actual rebase is initiated through the rebase button.
      */
-    internal abstract fun execute(model: IRGitModel<GitRebaseEntryGeneratedUsingLog>, branchInfo : BranchInfo)
-
+    internal abstract fun execute(
+        model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
+        branchInfo: BranchInfo,
+    )
 }

@@ -48,12 +48,12 @@ class DropCommitListenerTest : BasePlatformTestCase() {
         modelService.branchInfo.setName("feature1")
         modelService.branchInfo.addSelectedCommits(commitInfo)
         branchInfo = modelService.branchInfo
-        mainPanel = MainPanel(project, branchInfo)
+        mainPanel = MainPanel(project, branchInfo, modelService.invoker)
         button = JButton()
         mainPanel.commitInfoPanel = mock(CommitInfoPanel::class.java)
         doNothing().`when`(mainPanel.commitInfoPanel).commitsSelected(anyCustom())
         doNothing().`when`(mainPanel.commitInfoPanel).repaint()
-        listener = DropCommitListener(modelService, button, project)
+        listener = DropCommitListener(modelService, button, project, modelService.invoker)
         event = MouseEvent(button, 0, 0, 0, 0, 0, 0, false)
     }
 
