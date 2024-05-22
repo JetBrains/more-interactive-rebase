@@ -10,7 +10,6 @@ class FixupAction : AnAction("Fixup", "Combines commits and sets a default messa
 
     override fun actionPerformed(e: AnActionEvent) {
         println("fixup")
-
         TODO("Not yet implemented")
     }
 
@@ -20,6 +19,6 @@ class FixupAction : AnAction("Fixup", "Combines commits and sets a default messa
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.BGT
+        return ActionUpdateThread.EDT
     }
 }

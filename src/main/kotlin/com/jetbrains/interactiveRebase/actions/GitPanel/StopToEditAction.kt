@@ -12,7 +12,7 @@ class StopToEditAction : AnAction("Stop to Edit", "Pauses the rebasing action to
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.BGT
+        return ActionUpdateThread.EDT
     }
 
     override fun update(e: AnActionEvent) {

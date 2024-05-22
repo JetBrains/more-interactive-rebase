@@ -40,6 +40,10 @@
                     class="com.jetbrains.interactiveRebase.actions.GitPanel.SquashAction" text="SquashAction" description="Combine commits here" icon="AllIcons.Actions.DynamicUsages">
                 <add-to-group group-id="com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup"/>
             </action>
+            <action id="com.jetbrains.interactiveRebase.actions.GitPanel.FixupAction"
+                    class="com.jetbrains.interactiveRebase.actions.GitPanel.FixupAction" text="FixupAction">
+                <add-to-group group-id="com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup"/>
+            </action>
             <action id="com.jetbrains.interactiveRebase.actions.GitPanel.RewordAction"
                     class="com.jetbrains.interactiveRebase.actions.GitPanel.RewordAction" text="RewordAction" description="Reword a commit">
                 <add-to-group group-id="com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup"/>
@@ -50,10 +54,6 @@
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.GitPanel.StopToEditAction"
                     class="com.jetbrains.interactiveRebase.actions.GitPanel.StopToEditAction" text="StopToEditAction">
-                <add-to-group group-id="com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup"/>
-            </action>
-            <action id="com.jetbrains.interactiveRebase.actions.GitPanel.FixupAction"
-                    class="com.jetbrains.interactiveRebase.actions.GitPanel.FixupAction" text="FixupAction">
                 <add-to-group group-id="com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup"/>
             </action>
         </group>

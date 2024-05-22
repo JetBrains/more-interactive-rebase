@@ -20,7 +20,8 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener {
             selectCommitIfNotSelected()
         }
         if (e != null && e.clickCount == 1) {
-            selectOrDeselectCommit()
+            commitInfo.isSelected = !commitInfo.isSelected
+            modelService.addOrRemoveCommitSelection(commitInfo)
         }
     }
 
@@ -31,6 +32,7 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener {
         if (selectCommitIfNotSelected()) {
             modelService.branchInfo.removeSelectedCommits(commitInfo)
             commitInfo.setSelectedTo(false)
+            println("set selected to false")
         }
     }
 
@@ -42,6 +44,7 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener {
         if (!commitInfo.isSelected && !modelService.branchInfo.selectedCommits.contains(commitInfo)) {
             modelService.branchInfo.addSelectedCommits(commitInfo)
             commitInfo.setSelectedTo(true)
+            println("set selected to true")
             return false
         }
         return true

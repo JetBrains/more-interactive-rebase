@@ -17,6 +17,6 @@ class PickAction : AnAction("Pick", "Undo the changes made", AllIcons.Actions.Un
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.BGT
+        return ActionUpdateThread.EDT
     }
 }

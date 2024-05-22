@@ -18,6 +18,6 @@ class AddBranchAction : AnAction("Add Branch", "Add another branch to the view",
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.BGT
+        return ActionUpdateThread.EDT
     }
 }

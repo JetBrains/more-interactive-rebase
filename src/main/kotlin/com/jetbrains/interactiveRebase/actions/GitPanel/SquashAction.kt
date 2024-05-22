@@ -12,7 +12,7 @@ class SquashAction() : AnAction("Squash", "Combine multiple commits into one", A
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.BGT
+        return ActionUpdateThread.EDT
     }
 
     override fun update(e: AnActionEvent) {

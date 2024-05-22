@@ -7,25 +7,24 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.services.ComponentService
+import com.jetbrains.interactiveRebase.services.ModelService
 
 class DropAction: AnAction("Drop", "Drops a commit", AllIcons.Actions.DeleteTagHover) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project
         if (project != null) {
-            val service = project.service<ComponentService>()
+            val service = project.service<ModelService>()
             service.getSelectedCommits().forEach {
                     commitInfo ->
-                commitInfo.changes.add(DropCommand(commitInfo))
-
-                commitInfo.isSelected = false
-                service.branchInfo.selectedCommits.remove(commitInfo)
+                commitInfo.addChange(DropCommand(commitInfo))
             }
+            service.branchInfo.clearSelectedCommits()
         }
 
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.BGT
+        return ActionUpdateThread.EDT
     }
 
     override fun update(e: AnActionEvent) {
