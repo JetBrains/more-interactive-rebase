@@ -3,7 +3,7 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.openapi.components.service
 import com.intellij.ui.JBColor
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import com.jetbrains.interactiveRebase.services.ComponentService
+import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.BasicStroke
 import java.awt.Component
 import java.awt.Graphics
@@ -14,7 +14,7 @@ import javax.swing.JTextField
 import javax.swing.border.AbstractBorder
 
 class RoundedTextField(private val commitInfo: CommitInfo, inputText: String, private val borderColor: JBColor) : JTextField(inputText) {
-    private val componentService = commitInfo.project.service<ComponentService>()
+    private val modelService = commitInfo.project.service<ModelService>()
 
     init {
         isOpaque = true
@@ -29,10 +29,9 @@ class RoundedTextField(private val commitInfo: CommitInfo, inputText: String, pr
      * Sets the right flags to make the text field invisible again
      */
     fun exitTextBox() {
-        commitInfo.isDoubleClicked = false
-        componentService.branchInfo.selectedCommits.remove(commitInfo)
-        commitInfo.isSelected = false
-        componentService.isDirty = true
+        commitInfo.setDoubleClickedTo(false)
+        modelService.branchInfo.removeSelectedCommits(commitInfo)
+        commitInfo.setSelectedTo(false)
     }
 }
 

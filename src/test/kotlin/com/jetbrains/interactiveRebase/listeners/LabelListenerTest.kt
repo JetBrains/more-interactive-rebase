@@ -5,21 +5,21 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.components.JBLabel
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
-import com.jetbrains.interactiveRebase.services.ComponentService
+import com.jetbrains.interactiveRebase.services.ModelService
 import org.assertj.core.api.Assertions.assertThat
 import java.awt.event.MouseEvent
 
 class LabelListenerTest : BasePlatformTestCase() {
     private lateinit var listener: LabelListener
     private lateinit var commitInfo: CommitInfo
-    private lateinit var componentService: ComponentService
+    private lateinit var modelService: ModelService
 
     override fun setUp() {
         super.setUp()
         val commitProvider = TestGitCommitProvider(project)
         commitInfo = CommitInfo(commitProvider.createCommit("fix tests"), project, mutableListOf())
         listener = LabelListener(commitInfo)
-        componentService = project.service<ComponentService>()
+        modelService = project.service<ModelService>()
     }
 
     fun testMouseClickedConsidersNull() {
@@ -33,19 +33,17 @@ class LabelListenerTest : BasePlatformTestCase() {
         listener.mouseClicked(event)
         assertThat(commitInfo.isDoubleClicked).isFalse()
         assertThat(commitInfo.isSelected).isTrue()
-        assertThat(componentService.isDirty).isTrue()
-        assertThat(componentService.branchInfo.selectedCommits).contains(commitInfo)
+        assertThat(modelService.branchInfo.selectedCommits).contains(commitInfo)
     }
 
     fun testMouseOneClickDeselect() {
         val event = MouseEvent(JBLabel(), 2, 2, 2, 2, 2, 1, false)
         commitInfo.isSelected = true
-        componentService.branchInfo.selectedCommits.add(commitInfo)
+        modelService.branchInfo.addSelectedCommits(commitInfo)
         listener.mouseClicked(event)
         assertThat(commitInfo.isDoubleClicked).isFalse()
         assertThat(commitInfo.isSelected).isFalse()
-        assertThat(componentService.isDirty).isTrue()
-        assertThat(componentService.branchInfo.selectedCommits).doesNotContain(commitInfo)
+        assertThat(modelService.branchInfo.selectedCommits).doesNotContain(commitInfo)
     }
 
     fun testDoubleClickSelects() {
@@ -53,27 +51,15 @@ class LabelListenerTest : BasePlatformTestCase() {
         listener.mouseClicked(event)
         assertThat(commitInfo.isDoubleClicked).isTrue()
         assertThat(commitInfo.isSelected).isTrue()
-        assertThat(componentService.branchInfo.selectedCommits).contains(commitInfo)
+        assertThat(modelService.branchInfo.selectedCommits).contains(commitInfo)
     }
 
     fun testDoubleClickDoesntDeselect() {
         commitInfo.isSelected = true
-        componentService.branchInfo.selectedCommits.add(commitInfo)
+        modelService.branchInfo.selectedCommits.add(commitInfo)
         val event = MouseEvent(JBLabel(), 2, 2, 2, 2, 2, 2, false)
         listener.mouseClicked(event)
         assertThat(commitInfo.isDoubleClicked).isTrue()
         assertThat(commitInfo.isSelected).isTrue()
-    }
-
-    fun testMouseEnteredHovers() {
-        listener.mouseEntered(null)
-        assertThat(commitInfo.isHovered).isTrue()
-        assertThat(componentService.isDirty).isTrue()
-    }
-
-    fun testMouseExitUnHovers() {
-        listener.mouseExited(null)
-        assertThat(commitInfo.isHovered).isFalse()
-        assertThat(componentService.isDirty).isTrue()
     }
 }

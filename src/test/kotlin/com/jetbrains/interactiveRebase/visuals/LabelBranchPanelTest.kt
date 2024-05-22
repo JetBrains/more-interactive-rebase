@@ -129,8 +129,8 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
     }
 
     fun testSetLabelPanelWrapperConsidersCircles() {
-        val labelPanelWrapper = JBPanel<JBPanel<*>>()
-        labeledBranch.setLabelPanelWrapper(labelPanelWrapper)
+        val labelPanelWrapper = labeledBranch.labelPanelWrapper
+        labeledBranch.setLabelPanelWrapper()
         assertThat(labelPanelWrapper.layout).isInstanceOf(GridLayout::class.java)
         assertThat(labelPanelWrapper.getComponent(0)).isInstanceOf(JBPanel::class.java)
         assertThat(labelPanelWrapper.getComponent(1)).isInstanceOf(JBPanel::class.java)

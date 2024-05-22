@@ -1,7 +1,7 @@
 package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.components.service
-import com.jetbrains.interactiveRebase.services.ComponentService
+import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
@@ -12,9 +12,9 @@ import java.awt.event.MouseMotionListener
  * Involves the implementation of three methods for different type of
  * mouse actions that all reflect different parts of a "hover" action
  */
-class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener, MouseMotionListener {
-    private lateinit var componentService: ComponentService
-
+class CircleHoverListener(
+    private val circlePanel: CirclePanel,
+) : MouseListener, MouseMotionListener {
     /**
      * Highlight the circle if the mouse enters the encapsulating rectangle and
      * is within the drawn circle.
@@ -22,7 +22,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
 
     override fun mouseEntered(e: MouseEvent?) {
         if (e != null && circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
-            circlePanel.commit.isHovered = true
+            circlePanel.commit.setHoveredTo(true)
             circlePanel.repaint()
         }
     }
@@ -33,7 +33,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
 
     override fun mouseExited(e: MouseEvent?) {
         if (e != null && !circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
-            circlePanel.commit.isHovered = false
+            circlePanel.commit.setHoveredTo(false)
             circlePanel.repaint()
         }
     }
@@ -42,10 +42,9 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
      * Select a commit upon a click.
      */
     override fun mouseClicked(e: MouseEvent?) {
-        componentService = circlePanel.commit.project.service<ComponentService>()
+        val modelService = circlePanel.commit.project.service<ModelService>()
         circlePanel.commit.isSelected = !circlePanel.commit.isSelected
-        componentService.addOrRemoveCommitSelection(circlePanel.commit)
-        circlePanel.repaint()
+        modelService.addOrRemoveCommitSelection(circlePanel.commit)
     }
 
     /**
@@ -63,20 +62,17 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseListener,
      * mousePressed is not yet implemented
      */
     override fun mousePressed(e: MouseEvent?) {
-        throw UnsupportedOperationException("mousePressed is not supported for the CircleHoverListener")
     }
 
     /**
      * mouseReleased is not yet implemented
      */
     override fun mouseReleased(e: MouseEvent?) {
-        throw UnsupportedOperationException("mouseReleased is not supported for the CircleHoverListener")
     }
 
     /**
      * mouseDragged is not yet implemented
      */
     override fun mouseDragged(e: MouseEvent?) {
-        throw UnsupportedOperationException("mouseDragged is not supported for the CircleHoverListener")
     }
 }

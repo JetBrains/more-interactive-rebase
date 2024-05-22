@@ -23,7 +23,7 @@ class BranchPanel(
 ) : JBPanel<JBPanel<*>>() {
     val diameter = 25
     val borderSize = 1f
-    private val size = branch.commits.size
+    private var size = branch.commits.size
 
     val circles: MutableList<CirclePanel> = mutableListOf()
 
@@ -36,14 +36,7 @@ class BranchPanel(
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
         preferredSize = Dimension(diameter, (size * diameter * 1.5).toInt())
 
-        for (i in 0 until size) {
-
-            val circle = initializeCirclePanel(i)
-            add(circle)
-            if (i < size - 1) {
-                add(Box.createVerticalGlue())
-            }
-        }
+        updateCommits()
     }
 
     /**
@@ -125,5 +118,33 @@ class BranchPanel(
             x + diameter / 2 + shadowOffset,
             glueY + glueHeight + shadowOffset,
         )
+    }
+
+    /**
+     * Getter for the circle panels.
+     */
+    fun getCirclePanels(): MutableList<CirclePanel> {
+        return circles
+    }
+
+    /**
+     * Sets commits to be shown in branch
+     */
+
+    fun updateCommits() {
+        removeAll()
+        circles.clear()
+
+        size = branch.commits.size
+
+        for (i in 0 until size) {
+            val circle = initializeCirclePanel(i)
+            add(circle)
+            if (i < size - 1) {
+                add(Box.createVerticalGlue())
+            }
+        }
+        super.revalidate()
+        revalidate()
     }
 }

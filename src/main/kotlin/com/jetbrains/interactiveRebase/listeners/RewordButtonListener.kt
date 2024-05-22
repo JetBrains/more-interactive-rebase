@@ -2,7 +2,7 @@ package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.jetbrains.interactiveRebase.services.ComponentService
+import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 
@@ -12,12 +12,9 @@ class RewordButtonListener(private val project: Project) : ActionListener {
      * if there were any changes,meaning this action was performed while there were selected commits
      */
     override fun actionPerformed(e: ActionEvent?) {
-        val componentService: ComponentService = project.service<ComponentService>()
-        componentService.branchInfo.selectedCommits.forEach {
-            it.isDoubleClicked = true
-        }
-        if (componentService.branchInfo.selectedCommits.isNotEmpty()) {
-            componentService.isDirty = true
+        val modelService = project.service<ModelService>()
+        modelService.branchInfo.selectedCommits.forEach {
+            it.setDoubleClickedTo(true)
         }
     }
 }

@@ -10,13 +10,11 @@ import com.intellij.vcs.log.VcsUserRegistry
 import com.intellij.vcs.log.impl.VcsUserImpl
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import com.jetbrains.interactiveRebase.threads.BranchInfoThread
 import git4idea.GitCommit
 import git4idea.history.GitCommitRequirements
 
 class CommitInfoPanelTest : BasePlatformTestCase() {
     private lateinit var branchInfo: BranchInfo
-    private lateinit var thread: BranchInfoThread
     private lateinit var commit1: CommitInfo
     private lateinit var commit2: CommitInfo
     private lateinit var commit3: CommitInfo
@@ -28,7 +26,6 @@ class CommitInfoPanelTest : BasePlatformTestCase() {
         commit3 = CommitInfo(createCommit("my last commit"), project, mutableListOf())
 
         branchInfo = BranchInfo(commits = listOf(commit1, commit2, commit3))
-        thread = BranchInfoThread(project, branchInfo)
     }
 
     fun testNoCommitsSelected() {

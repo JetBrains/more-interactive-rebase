@@ -1,5 +1,6 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import com.intellij.openapi.Disposable
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
@@ -37,10 +38,11 @@ class LabeledBranchPanel(
     private val color: JBColor,
     private val alignment: Int = SwingConstants.LEFT,
 ) :
-    JBPanel<JBPanel<*>>() {
-    val branchPanel = BranchPanel(branch, color)
+    JBPanel<JBPanel<*>>(), Disposable {
+    private val branchPanel = BranchPanel(branch, color)
     private val commitLabels: MutableList<JBLabel> = mutableListOf()
     private val branchNameLabel = BoldLabel(branch.name)
+    internal val labelPanelWrapper = JBPanel<JBPanel<*>>()
 
     init {
         branchNameLabel.horizontalTextPosition = SwingConstants.CENTER
@@ -55,7 +57,7 @@ class LabeledBranchPanel(
         i: Int,
         circle: CirclePanel,
     ): JBLabel {
-        val commitLabel = JBLabel(branch.commits[i].getSubject())
+        val commitLabel = JBLabel(branch.commits[i].commit.subject)
 
         branch.commits[i].changes.forEach {
             if (it is RewordCommand) {
@@ -96,8 +98,7 @@ class LabeledBranchPanel(
         setBranchPosition(gbc)
         add(branchPanel, gbc)
 
-        val labelPanelWrapper = JBPanel<JBPanel<*>>()
-        setLabelPanelWrapper(labelPanelWrapper)
+        setLabelPanelWrapper()
 
         setCommitNamesPosition(gbc)
         add(labelPanelWrapper, gbc)
@@ -106,7 +107,7 @@ class LabeledBranchPanel(
     /**
      * Generates the panel in which commit labels are wrapped with invisible text fields
      */
-    fun setLabelPanelWrapper(labelPanelWrapper: JBPanel<JBPanel<*>>) {
+    fun setLabelPanelWrapper() {
         labelPanelWrapper.layout = GridLayout(0, 1)
         val circles = branchPanel.circles
         for ((i, circle) in circles.withIndex()) {
@@ -234,5 +235,34 @@ class LabeledBranchPanel(
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
         gbc.insets = Insets(5, 5, 5, 5)
+    }
+
+    /**
+     * Updates branch name
+     */
+    fun updateBranchName() {
+        branchNameLabel.text = branch.name
+    }
+
+    /**
+     * Sets commits to be shown in branch
+     */
+    fun updateCommits() {
+        commitLabels.clear()
+        branchPanel.updateCommits()
+        val circles = branchPanel.getCirclePanels()
+        for ((i, circle) in circles.withIndex()) {
+            val commitLabel = generateCommitLabel(i, circle)
+            commitLabels.add(commitLabel)
+        }
+
+        labelPanelWrapper.removeAll()
+        setLabelPanelWrapper()
+    }
+
+    /**
+     * Dispose routine
+     */
+    override fun dispose() {
     }
 }
