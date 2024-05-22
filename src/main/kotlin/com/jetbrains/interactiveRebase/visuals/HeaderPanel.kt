@@ -2,22 +2,8 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
-
 import com.jetbrains.interactiveRebase.listeners.DropCommitListener
 import com.jetbrains.interactiveRebase.listeners.RewordButtonListener
-
-import com.intellij.vcs.log.impl.VcsCommitMetadataImpl
-import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
-import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-
-import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
-import com.jetbrains.interactiveRebase.services.RebaseInvoker
-import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitRebaseUtils
-import git4idea.GitCommit
-import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
-import git4ideaClasses.IRCommitsTable
-import git4ideaClasses.IRGitEntry
-import git4ideaClasses.IRGitModel
 import java.awt.BorderLayout
 import java.awt.Graphics
 import javax.swing.BoxLayout
