@@ -1,19 +1,17 @@
 package com.jetbrains.interactiveRebase.visuals
 
-import CirclePanel
 import com.intellij.openapi.Disposable
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
-import com.intellij.util.ui.UIUtil
-import com.intellij.ui.util.maximumHeight
 import com.intellij.ui.util.preferredWidth
+import com.intellij.util.ui.UIUtil
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
-import com.jetbrains.interactiveRebase.listeners.CircleDragAndDropListener
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
+import com.jetbrains.interactiveRebase.listeners.CircleDragAndDropListener
 import com.jetbrains.interactiveRebase.listeners.LabelListener
 import com.jetbrains.interactiveRebase.listeners.TextFieldListener
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
@@ -49,38 +47,13 @@ class LabeledBranchPanel(
     JBPanel<JBPanel<*>>(), Disposable {
     val branchPanel = BranchPanel(branch, color)
     val commitLabels: MutableList<JBLabel> = mutableListOf()
+    val messages: MutableList<JBPanel<JBPanel<*>>> = mutableListOf()
     private val branchNameLabel = BoldLabel(branch.name)
     internal val labelPanelWrapper = JBPanel<JBPanel<*>>()
 
     init {
         branchNameLabel.horizontalAlignment = SwingConstants.CENTER
-        branchNameLabel.border = BorderFactory.createLineBorder(JBColor.BLACK)
         val circles = branchPanel.circles
-    }
-
-    /**
-     * Updates the width of commit labels.
-     */
-    private fun formatLabel(
-        label: JBLabel,
-        text: String,
-    ) {
-        val alignmentStyle =
-            when (alignment) {
-                SwingConstants.LEFT -> {
-                    "text-align: left;"
-                }
-
-                SwingConstants.RIGHT -> {
-                    "text-align: right;"
-                }
-
-                else -> {
-                    ""
-                }
-            }
-
-        label.text = "<html><body style='$alignmentStyle'>$text</body></html>"
     }
 
     /**
@@ -118,26 +91,7 @@ class LabeledBranchPanel(
         commitLabel.preferredSize = Dimension(commitLabel.preferredWidth, branchPanel.diameter)
         commitLabel.verticalTextPosition = SwingConstants.CENTER
 
-        addCommitLabelListeners(commitLabel, i)
-
         return commitLabel
-    }
-
-    private fun addCommitLabelListeners(
-        commitLabel: JBLabel,
-        i: Int,
-    ) {
-        commitLabel.addMouseListener(
-            object : MouseAdapter() {
-                override fun mouseEntered(e: MouseEvent?) {
-                    formatLabel(commitLabel, commitLabel.text)
-                }
-
-                override fun mouseExited(e: MouseEvent?) {
-                    commitLabel.text = truncateMessage(i)
-                }
-            },
-        )
     }
 
     private fun truncateMessage(i: Int): String {
@@ -200,7 +154,6 @@ class LabeledBranchPanel(
         commitInfo: CommitInfo,
     ): JComponent {
         val textLabelWrapper = JBPanel<JBPanel<*>>()
-        textLabelWrapper.withMaximumHeight(commitLabel.maximumHeight)
         textLabelWrapper.layout = OverlayLayout(textLabelWrapper)
 
         val textWrapper = JBPanel<JBPanel<*>>()
@@ -211,6 +164,7 @@ class LabeledBranchPanel(
 
         val labelWrapper = JBPanel<JBPanel<*>>()
         labelWrapper.layout = FlowLayout(alignment)
+
         labelWrapper.add(commitLabel)
 
         textWrapper.isVisible = false
@@ -224,6 +178,8 @@ class LabeledBranchPanel(
 
         commitLabel.addMouseListener(LabelListener(commitInfo))
         textField.addKeyListener(TextFieldListener(commitInfo, textField, invoker))
+
+        messages.add(textLabelWrapper)
         return textLabelWrapper
     }
 
@@ -265,7 +221,9 @@ class LabeledBranchPanel(
         commitInfo: CommitInfo,
     ): RoundedTextField {
         val textField = RoundedTextField(commitInfo, TextStyle.stripTextFromStyling(commitLabel.text), color)
-        textField.maximumSize = commitLabel.maximumSize
+        SwingUtilities.invokeLater {
+            textField.maximumSize = commitLabel.size
+        }
         textField.horizontalAlignment = alignment
         return textField
     }
@@ -323,7 +281,7 @@ class LabeledBranchPanel(
     fun updateCommits() {
         commitLabels.clear()
         branchPanel.updateCommits()
-        val circles = branchPanel.getCirclePanels()
+        val circles = branchPanel.circles
         for ((i, circle) in circles.withIndex()) {
             val commitLabel = generateCommitLabel(i, circle)
             commitLabels.add(commitLabel)

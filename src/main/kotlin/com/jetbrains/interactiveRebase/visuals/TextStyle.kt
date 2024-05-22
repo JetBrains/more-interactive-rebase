@@ -4,6 +4,8 @@ enum class TextStyle {
     ITALIC,
     BOLD,
     CROSSED,
+    LEFT_ALIGNMENT,
+    RIGHT_ALIGNMENT
     ;
 
     companion object {
@@ -15,6 +17,8 @@ enum class TextStyle {
                 ITALIC -> Pair("<i>", "</i>")
                 BOLD -> Pair("<b>", "</b>")
                 CROSSED -> Pair("<strike>", "</strike>")
+                LEFT_ALIGNMENT -> Pair("<body style='\"text-align: left;\"'>", "</body>")
+                RIGHT_ALIGNMENT -> Pair("<body style='\"text-align: right;\"'>", "</body>")
             }
         }
 

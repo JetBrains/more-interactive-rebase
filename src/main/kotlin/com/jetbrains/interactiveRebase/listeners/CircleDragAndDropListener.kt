@@ -1,10 +1,9 @@
 package com.jetbrains.interactiveRebase.listeners
 
-import com.intellij.openapi.components.service
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBPanel
 import com.intellij.ui.util.preferredHeight
 import com.intellij.util.ui.UIUtil
-import com.jetbrains.interactiveRebase.services.ComponentService
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
@@ -23,11 +22,16 @@ class CircleDragAndDropListener(
     private val circles: MutableList<CirclePanel>,
     private val parent: LabeledBranchPanel,
 ) : MouseAdapter() {
-    private var labels = parent.commitLabels
+    private var messages: MutableList<JBPanel<JBPanel<*>>> = parent.messages
+    private var labels = messages.map { m ->
+        (m.getComponent(0) as JBPanel<JBPanel<*>>)
+            .getComponent(0) as JBLabel
+    }
     private var label = getLabel(circle, labels)
+    private var message: JBPanel<JBPanel<*>> = label.parent.parent as JBPanel<JBPanel<*>>
     private var currentPosition = Point(circle.x, circle.y)
     private var circlesPositions = mutableListOf<CirclePosition>()
-    private var labelsPositions = mutableListOf<Point>()
+    private var messagesPositions = mutableListOf<Point>()
 
     /**
      * Indicators for the vertical limitations of circle movements,
@@ -71,8 +75,8 @@ class CircleDragAndDropListener(
             circles.map { c ->
                 CirclePosition(c.centerX.toInt(), c.centerY.toInt(), c.x, c.y)
             }.toMutableList()
-        labelsPositions =
-            labels.map { l ->
+        messagesPositions =
+            messages.map { l ->
                 Point(l.x, l.y)
             }.toMutableList()
     }
@@ -116,10 +120,10 @@ class CircleDragAndDropListener(
     override fun mouseReleased(e: MouseEvent) {
         if (wasDragged) {
             repositionOnDrop()
-            commit.project.service<ComponentService>().updateMainPanel()
             if (initialIndex != currentIndex) {
                 commit.isReordered = true
             }
+            //TODO propagate changes
         }
     }
 
@@ -133,7 +137,7 @@ class CircleDragAndDropListener(
 
         // Update the circle and label positions
         circle.setLocation(circle.x, newCircleYBounded)
-        label.setLocation(label.x, newCircleYBounded)
+        message.setLocation(message.x, newCircleYBounded)
     }
 
     /**
@@ -159,8 +163,8 @@ class CircleDragAndDropListener(
     ) {
         circles.removeAt(oldIndex)
         circles.add(newIndex, circle)
-        labels.removeAt(oldIndex)
-        labels.add(newIndex, label)
+        messages.removeAt(oldIndex)
+        messages.add(newIndex, message)
 
         /**
          * NEW: Updates CommitInfo
@@ -202,7 +206,7 @@ class CircleDragAndDropListener(
         val newY = circle.y
 
         for ((index, pos) in circlesPositions.withIndex()) {
-            var distance = abs(newY - pos.centerY)
+            val distance = abs(newY - pos.centerY)
 
             // TODO figure out margins for rearrangement
 //            if (distance > 0) {
@@ -225,9 +229,9 @@ class CircleDragAndDropListener(
     private fun repositionOnDrop() {
         for (i in circles.indices) {
             val circle = circles[i]
-            val label = labels[i]
+            val message = messages[i]
             circle.setLocation(circlesPositions[i].x, circlesPositions[i].y)
-            label.setLocation(label.x, labelsPositions[i].y)
+            message.setLocation(label.x, messagesPositions[i].y)
         }
     }
 
@@ -239,9 +243,9 @@ class CircleDragAndDropListener(
         for ((i, other) in circles.withIndex()) {
             if (circle != other) {
                 val circle = circles[i]
-                val label = labels[i]
+                val message = messages[i]
                 circle.setLocation(circlesPositions[i].x, circlesPositions[i].y)
-                label.setLocation(label.x, labelsPositions[i].y)
+                message.setLocation(label.x, messagesPositions[i].y)
             }
         }
     }
@@ -335,11 +339,11 @@ class CircleDragAndDropListener(
         // Move all circles and labels
         for (i in circles.indices) {
             val circle = circles[i]
-            val label = labels[i]
+            val message = messages[i]
 
             val newCircleY = circle.y + delta
             circle.setLocation(circle.x, newCircleY)
-            label.setLocation(label.x, newCircleY)
+            message.setLocation(message.x, newCircleY)
         }
     }
 }
