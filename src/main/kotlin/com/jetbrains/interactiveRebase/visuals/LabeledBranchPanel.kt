@@ -6,6 +6,7 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
+import com.intellij.util.ui.UIUtil
 import com.intellij.ui.util.maximumHeight
 import com.intellij.ui.util.preferredWidth
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
@@ -54,7 +55,7 @@ class LabeledBranchPanel(
     init {
         branchNameLabel.horizontalAlignment = SwingConstants.CENTER
         branchNameLabel.border = BorderFactory.createLineBorder(JBColor.BLACK)
-        val circles = branchPanel.getCirclePanels()
+        val circles = branchPanel.circles
     }
 
     /**
@@ -111,11 +112,11 @@ class LabeledBranchPanel(
         if (branch.currentCommits[i].isSelected) {
             commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.BOLD)
         }
+        commitLabel.fontColor = UIUtil.FontColor.NORMAL
         commitLabel.labelFor = circle
         commitLabel.horizontalAlignment = alignment
         commitLabel.preferredSize = Dimension(commitLabel.preferredWidth, branchPanel.diameter)
         commitLabel.verticalTextPosition = SwingConstants.CENTER
-
 
         addCommitLabelListeners(commitLabel, i)
 

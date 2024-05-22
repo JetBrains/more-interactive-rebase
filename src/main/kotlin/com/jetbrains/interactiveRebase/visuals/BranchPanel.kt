@@ -131,13 +131,6 @@ class BranchPanel(
     }
 
     /**
-     * Getter for the circle panels.
-     */
-    fun getCirclePanels(): MutableList<CirclePanel> {
-        return circles
-    }
-
-    /**
      * Sets commits to be shown in branch
      */
 

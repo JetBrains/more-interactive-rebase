@@ -12,7 +12,6 @@ import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.geom.Ellipse2D
-import javax.swing.BorderFactory
 
 /**
  * Visual representation of commit node in the git graph
@@ -71,6 +70,10 @@ open class CirclePanel(
             g2d.draw(circle)
         } else {
             setCursor(Cursor.getDefaultCursor())
+        }
+
+        if (commit.isReordered) {
+            color = Palette.LIME_GREEN
         }
     }
 

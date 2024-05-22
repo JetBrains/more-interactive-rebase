@@ -1,8 +1,8 @@
 package com.jetbrains.interactiveRebase.listeners
 
-import java.awt.event.MouseAdapter
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
+import java.awt.event.MouseAdapter
 import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.event.MouseEvent
 
@@ -54,23 +54,5 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
     override fun mouseMoved(e: MouseEvent?) {
         circlePanel.commit.isHovered = e != null && circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())
         circlePanel.repaint()
-    }
-
-    /**
-     * mousePressed is not yet implemented
-     */
-    override fun mousePressed(e: MouseEvent?) {
-    }
-
-    /**
-     * mouseReleased is not yet implemented
-     */
-    override fun mouseReleased(e: MouseEvent?) {
-    }
-
-    /**
-     * mouseDragged is not yet implemented
-     */
-    override fun mouseDragged(e: MouseEvent?) {
     }
 }

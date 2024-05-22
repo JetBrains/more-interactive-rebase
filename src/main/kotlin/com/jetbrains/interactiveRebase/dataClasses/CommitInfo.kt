@@ -93,4 +93,7 @@ data class CommitInfo(
 
         override fun dispose() {}
     }
+
+    // TODO use visual changes instead
+    var isReordered = false
 }

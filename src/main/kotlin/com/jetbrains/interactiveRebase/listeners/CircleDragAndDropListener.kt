@@ -1,9 +1,11 @@
 package com.jetbrains.interactiveRebase.listeners
 
-import CirclePanel
+import com.intellij.openapi.components.service
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.util.preferredHeight
 import com.intellij.util.ui.UIUtil
+import com.jetbrains.interactiveRebase.services.ComponentService
+import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
 import java.awt.Point
@@ -12,6 +14,10 @@ import java.awt.event.MouseEvent
 import javax.swing.SwingUtilities
 import kotlin.math.abs
 
+/**
+ * Listener that handles drag and drop actions
+ * of single commits within a branch
+ */
 class CircleDragAndDropListener(
     private val circle: CirclePanel,
     private val circles: MutableList<CirclePanel>,
@@ -19,14 +25,23 @@ class CircleDragAndDropListener(
 ) : MouseAdapter() {
     private var labels = parent.commitLabels
     private var label = getLabel(circle, labels)
-    private var currCirclePos = Point(circle.x, circle.y)
+    private var currentPosition = Point(circle.x, circle.y)
     private var circlesPositions = mutableListOf<CirclePosition>()
     private var labelsPositions = mutableListOf<Point>()
-    private val initialCircleColor = circle.color
-    private val initialFontColor = label.fontColor
-    private var hasMoved = false
+
+    /**
+     * Indicators for the vertical limitations of circle movements,
+     * so that a commit doesn't get outside the parent panel
+     */
     private val minY = 0
     private var maxY = parent.branchPanel.preferredHeight - circle.diameter.toInt()
+
+    /**
+     * Necessary to differentiate between mouse release
+     * for dropping and
+     * mouse click for selecting.
+     */
+    private var wasDragged = false
 
     /**
      * NEW: UPDATES CommitInfo
@@ -34,6 +49,7 @@ class CircleDragAndDropListener(
     private val commit = circle.commit
     private val commits = parent.branch.currentCommits
     private var currentIndex = commits.indexOf(commit)
+    private val initialIndex = commits.indexOf(commit)
 
     init {
         SwingUtilities.invokeLater {
@@ -41,10 +57,16 @@ class CircleDragAndDropListener(
         }
     }
 
+    /**
+     * On mouse press, do the following for a branch:
+     * 1. set current position of the commit
+     * 2. find positions of the circles
+     * 3. find positions of the labels
+     */
     override fun mousePressed(e: MouseEvent) {
-        hasMoved = false
-        currCirclePos.x = e.xOnScreen
-        currCirclePos.y = e.yOnScreen
+        wasDragged = false
+        currentPosition.x = e.xOnScreen
+        currentPosition.y = e.yOnScreen
         circlesPositions =
             circles.map { c ->
                 CirclePosition(c.centerX.toInt(), c.centerY.toInt(), c.x, c.y)
@@ -55,24 +77,25 @@ class CircleDragAndDropListener(
             }.toMutableList()
     }
 
+    /**
+     * On mouse drag:
+     * 1. visual indication through formatting
+     * 2. update circle location to follow the mouse movement dynamically
+     * 3. update view dynamically and reposition all commits
+     * 4. handle limited vertical movement (outside parent component)
+     */
     override fun mouseDragged(e: MouseEvent) {
-        hasMoved = true
-        circle.color = Palette.TOMATO
-        label.fontColor = UIUtil.FontColor.BRIGHTER
-        val deltaY = e.yOnScreen - currCirclePos.y
+        wasDragged = true
+        customFormattingOnDrag()
+        val deltaY = e.yOnScreen - currentPosition.y
         val newCircleY = circle.y + deltaY
 
-        // Check if the new position exceeds the upper or lower limit
-        val newCircleYBounded = newCircleY.coerceIn(minY, maxY)
+        setCurrentCircleLocation(newCircleY)
 
-        // Update the circle and label positions
-        circle.setLocation(circle.x, newCircleYBounded)
-        label.setLocation(label.x, newCircleYBounded)
+        currentPosition.x = e.xOnScreen
+        currentPosition.y = e.yOnScreen
 
-        currCirclePos.x = e.xOnScreen
-        currCirclePos.y = e.yOnScreen
-
-        val newIndex = findNewPosition()
+        val newIndex = findNewBranchIndex()
         if (newIndex != currentIndex) {
             updateIndices(newIndex, currentIndex)
             repositionOnDrag()
@@ -84,15 +107,52 @@ class CircleDragAndDropListener(
         indicateLimitedVerticalMovement(newCircleY)
     }
 
+    /**
+     * On mouse release:
+     * 1. drop and reposition commit if it was dragged;
+     * 2. update main view (refresh)
+     * 3. update commitInfo
+     */
     override fun mouseReleased(e: MouseEvent) {
-        if (hasMoved) {
-            circle.color = Palette.LIME_GREEN
-            label.fontColor = initialFontColor
+        if (wasDragged) {
             repositionOnDrop()
-            parent.repaint()
+            commit.project.service<ComponentService>().updateMainPanel()
+            if (initialIndex != currentIndex) {
+                commit.isReordered = true
+            }
         }
     }
 
+    /**
+     * Sets the current location of the circle
+     * within the parent component
+     */
+    private fun setCurrentCircleLocation(newCircleY: Int) {
+        // Check if the new position exceeds the upper or lower limit
+        val newCircleYBounded = (newCircleY).coerceIn(minY, maxY)
+
+        // Update the circle and label positions
+        circle.setLocation(circle.x, newCircleYBounded)
+        label.setLocation(label.x, newCircleYBounded)
+    }
+
+    /**
+     * Sets custom formatting of the commit
+     * to indicate its being dragged
+     */
+    private fun customFormattingOnDrag() {
+        circle.color = Palette.TOMATO
+        label.fontColor = UIUtil.FontColor.BRIGHTER
+    }
+
+    /**
+     * Update the indices:
+     * 1. commit info current commit order
+     * 2. circle panels order
+     * 3. commit name message label order
+     * 4. update neighbors
+     * (each commit has pointers to previous and next commit)
+     */
     private fun updateIndices(
         newIndex: Int,
         oldIndex: Int,
@@ -112,6 +172,11 @@ class CircleDragAndDropListener(
         updateNeighbors(newIndex)
     }
 
+    /**
+     * Updates the neighboring commits
+     * of a reordered commit.
+     * Set neighbor to null if no neighbor.
+     */
     private fun updateNeighbors(index: Int) {
         if (index < circles.size - 1) {
             circles[index].next = circles[index + 1]
@@ -127,13 +192,24 @@ class CircleDragAndDropListener(
         }
     }
 
-    private fun findNewPosition(): Int {
+    /**
+     * Determine the new position of a circle within a branch
+     * based on its location while being dragged with the mouse
+     */
+    private fun findNewBranchIndex(): Int {
         var newIndex = -1
         var closestDistance = Int.MAX_VALUE
         val newY = circle.y
 
         for ((index, pos) in circlesPositions.withIndex()) {
-            val distance = abs(newY - pos.centerY)
+            var distance = abs(newY - pos.centerY)
+
+            // TODO figure out margins for rearrangement
+//            if (distance > 0) {
+//                distance += circle.height
+//            } else {
+//                distance = abs(distance) - circle.height
+//            }
             if (distance < closestDistance) {
                 newIndex = index
                 closestDistance = distance
@@ -142,6 +218,10 @@ class CircleDragAndDropListener(
         return newIndex
     }
 
+    /**
+     * Reposition all circles to spread apart properly
+     * when a circle is dropped
+     */
     private fun repositionOnDrop() {
         for (i in circles.indices) {
             val circle = circles[i]
@@ -151,6 +231,10 @@ class CircleDragAndDropListener(
         }
     }
 
+    /**
+     * Reposition all circles to spread away from
+     * the circle that is being dragged
+     */
     private fun repositionOnDrag() {
         for ((i, other) in circles.withIndex()) {
             if (circle != other) {
@@ -162,18 +246,70 @@ class CircleDragAndDropListener(
         }
     }
 
+    // TODO figure out smooth transitions!
+
+//    private fun repositionOnDrag() {
+//        val animationDuration = 300 // duration in milliseconds
+//        val animationSteps = 30 // number of animation steps
+//
+//        val startPositions = circles.map { c -> Point(c.x, c.y) }
+//        val steps = mutableListOf<Int>()
+//        val targets = mutableListOf<Int>()
+//
+//        for (i in circles.indices) {
+//            val startY = startPositions[i].y
+//            val targetY = circlesPositions[i].y
+//            targets.add(targetY)
+//
+//            steps.add(ceil(((targetY - startY)).toDouble() / animationSteps).toInt())
+//        }
+//
+//        val timer = Timer((1000.0 / animationDuration).roundToInt()) { _ ->
+// //            for(step in 0 until  animationSteps) {
+//                for ((i, other) in circles.withIndex()) {
+//                    if (other != circle) {
+//                        val currentY = other.y
+//                        val targetY = targets[i]
+//                        val stepY = steps[i]
+//
+//                        if (abs(currentY - targetY) < abs(stepY)) {
+//                            other.setLocation(other.x, targetY)
+//                        } else {
+//                            other.setLocation(other.x, currentY + stepY)
+//                        }
+//                    }
+//                }
+// //            }
+//            parent.repaint()
+//        }
+//
+//        timer.initialDelay = 0
+//        timer.isRepeats = true
+//        timer.start()
+//
+//        // Stop the timer after the animation duration
+//        Timer(animationDuration) {
+//            timer.stop()
+//        }.start()
+//    }
+
+    /**
+     * Retrieves the corresponding label
+     * of the circle that is being dragged
+     */
     private fun getLabel(
         circle: CirclePanel,
         labels: List<JBLabel>,
     ): JBLabel {
-        for (l in labels) {
-            if (l.labelFor == circle) {
-                return l
-            }
-        }
-        return JBLabel()
+        return labels.find { it.labelFor == circle } ?: JBLabel()
     }
 
+    /**
+     * Indicates the user is trying to drag a circle
+     * too far up or too far down
+     * by moving the entire branch up or down
+     * to show that no further movement is possible
+     */
     private fun indicateLimitedVerticalMovement(newCircleY: Int) {
         if (newCircleY <= minY || newCircleY >= maxY) {
             // If the circle reaches the upper or lower limit, adjust positions of all circles
@@ -191,6 +327,10 @@ class CircleDragAndDropListener(
         }
     }
 
+    /**
+     * Moves all circles (commits) to
+     * indicate that the user cannot move the commit further
+     */
     private fun moveAllCircles(delta: Int) {
         // Move all circles and labels
         for (i in circles.indices) {
@@ -204,6 +344,10 @@ class CircleDragAndDropListener(
     }
 }
 
+/**
+ * Data class that stores detailed information
+ * about a circle position within a branch
+ */
 data class CirclePosition(
     val centerX: Int,
     val centerY: Int,

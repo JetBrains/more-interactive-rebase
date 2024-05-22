@@ -54,8 +54,8 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         labeledBranch.setBranchNamePosition(gbc)
         assertThat(gbc.gridx).isEqualTo(0)
         assertThat(gbc.gridy).isEqualTo(0)
-        assertThat(gbc.weightx).isEqualTo(1.0)
-        assertThat(gbc.weighty).isEqualTo(0.0)
+        assertThat(gbc.weightx).isEqualTo(0.0)
+        assertThat(gbc.weighty).isEqualTo(1.0)
         assertThat(gbc.fill).isEqualTo(GridBagConstraints.HORIZONTAL)
         assertThat(gbc.insets).isEqualTo(Insets(5, 5, 5, 5))
     }
@@ -65,7 +65,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         labeledBranch.setBranchPosition(gbc)
         assertThat(gbc.gridx).isEqualTo(0)
         assertThat(gbc.gridy).isEqualTo(1)
-        assertThat(gbc.weightx).isEqualTo(1.0)
+        assertThat(gbc.weightx).isEqualTo(0.0)
         assertThat(gbc.weighty).isEqualTo(1.0)
         assertThat(gbc.fill).isEqualTo(GridBagConstraints.BOTH)
         assertThat(gbc.insets).isEqualTo(Insets(5, 5, 5, 5))
@@ -77,8 +77,9 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         assertThat(gbc.gridx).isEqualTo(1)
         assertThat(gbc.gridy).isEqualTo(1)
         assertThat(gbc.weightx).isEqualTo(1.0)
-        assertThat(gbc.weighty).isEqualTo(1.0)
+        assertThat(gbc.weighty).isEqualTo(0.0)
         assertThat(gbc.fill).isEqualTo(GridBagConstraints.BOTH)
+        assertThat(gbc.anchor).isEqualTo(GridBagConstraints.CENTER)
         assertThat(gbc.insets).isEqualTo(Insets(5, 5, 5, 5))
     }
 

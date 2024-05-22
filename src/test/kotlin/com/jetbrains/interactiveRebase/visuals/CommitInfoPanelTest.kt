@@ -25,7 +25,7 @@ class CommitInfoPanelTest : BasePlatformTestCase() {
         commit2 = CommitInfo(createCommit("my other commit"), project, mutableListOf())
         commit3 = CommitInfo(createCommit("my last commit"), project, mutableListOf())
 
-        branchInfo = BranchInfo(commits = listOf(commit1, commit2, commit3))
+        branchInfo = BranchInfo(initialCommits = listOf(commit1, commit2, commit3))
     }
 
     fun testNoCommitsSelected() {
