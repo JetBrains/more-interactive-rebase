@@ -135,16 +135,16 @@ open class IREditorHandler(private val myProject: Project, private val myRoot: V
         processModel(rebaseTodoModel) { entry: IRGitEntry -> (entry as IRGitEntryDetails).commitDetails.fullMessage }
     }
 
-    fun <T : IRGitEntry> processModel(
+    protected fun <T : IRGitEntry> processModel(
             rebaseTodoModel: IRGitModel<T>,
-            fullMessageGetter: (T) -> Unit,
+            fullMessageGetter: (T) -> String,
     ) {
         val messages: MutableList<RewordedCommitMessageMapping> = ArrayList()
         for (element in rebaseTodoModel.elements) {
             if (element.type is IRGitModel.Type.NonUnite.KeepCommit.Reword) {
                 messages.add(
                     RewordedCommitMessageMapping.fromMapping(
-                        fullMessageGetter.apply{element.entry},
+                        fullMessageGetter.invoke(element.entry),
                         (element.type as IRGitModel.Type.NonUnite.KeepCommit.Reword).newMessage,
                     ),
                 )

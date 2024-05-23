@@ -80,6 +80,7 @@ class MainPanel(
             branchInfo,
             Palette.BLUE,
             SwingConstants.RIGHT,
+                project
         )
     }
 

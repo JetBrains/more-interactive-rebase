@@ -1,9 +1,11 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.Disposable
+
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
+
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
@@ -187,19 +189,21 @@ class LabeledBranchPanel(
         textLabelWrapper.add(labelWrapper)
         textLabelWrapper.add(textWrapper)
 
+
         val labelListener = LabelListener(commitInfo)
         commitLabel.addMouseListener(labelListener)
         if (commitLabel is Disposable) {
             Disposer.register(commitLabel, labelListener)
         }
-        textField.addKeyListener(TextFieldListener(commitInfo, textField, project.service<RebaseInvoker>()))
+        textField.addKeyListener(TextFieldListener(commitInfo, textField, project.service<RebaseInvoker>(),project))
 
         messages.add(textLabelWrapper)
+
         return textLabelWrapper
     }
 
     /**
-     * Sets the text field to be visible, called after a double-click or button click for rewording
+     * Sets the text field to be visible, called after a double click or button click for rewording
      */
     private fun enableTextField(
         textField: RoundedTextField,
