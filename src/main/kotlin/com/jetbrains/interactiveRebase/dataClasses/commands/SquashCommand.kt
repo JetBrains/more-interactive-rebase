@@ -30,10 +30,12 @@ data class SquashCommand(
         val commitIndices = squashedCommits.map { commit -> branchInfo.currentCommits.reversed().indexOf(commit) }
         val uniteRoot = model.unite(commitIndices)
         model.reword(uniteRoot.index, newMessage)
+
 //        val repo = GitUtil.getRepositoryManager(project).getRepositoryForRootQuick(project.guessProjectDir())
 //        if (repo != null) {
 //            IRGitEditorHandler(repo, model).processModel(model) { entry ->
 //                squashedCommits.find { it.commit.id.asString().startsWith(entry.commit) }?.commit.fullMessage
+
 //                        ?: throw IllegalStateException("Full message should be taken from reworded commits only")
 //            }
 //        }
