@@ -2,12 +2,12 @@ package com.jetbrains.interactiveRebase.actions.gitPanel
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
+import com.intellij.openapi.project.DumbAwareAction
 import com.jetbrains.interactiveRebase.services.ModelService
 
-class FixupAction : AnAction("Fixup", "Combine commits and set a default message", AllIcons.Actions.ListFiles) {
+class FixupAction : DumbAwareAction("Fixup", "Combine commits and set a default message", AllIcons.Actions.ListFiles) {
     override fun actionPerformed(e: AnActionEvent) {
         println("fixup")
         TODO("Not yet implemented")

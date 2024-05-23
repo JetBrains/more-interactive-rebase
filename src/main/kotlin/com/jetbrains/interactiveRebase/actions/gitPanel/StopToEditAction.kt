@@ -2,12 +2,12 @@ package com.jetbrains.interactiveRebase.actions.gitPanel
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
+import com.intellij.openapi.project.DumbAwareAction
 import com.jetbrains.interactiveRebase.services.ModelService
 
-class StopToEditAction : AnAction("Stop to Edit", "Pause the rebasing action to edit a commit", AllIcons.Actions.Pause) {
+class StopToEditAction : DumbAwareAction("Stop to Edit", "Pause the rebasing action to edit a commit", AllIcons.Actions.Pause) {
     override fun actionPerformed(e: AnActionEvent) {
         println("stop to edit")
         TODO("Not yet implemented")
