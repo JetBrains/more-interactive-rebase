@@ -1,5 +1,6 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -10,6 +11,7 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.listeners.LabelListener
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito.mock
 import java.awt.GridBagConstraints
@@ -35,7 +37,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         commit2 = CommitInfo(commitProvider.createCommit("Two"), project, mutableListOf())
         commit3 = CommitInfo(commitProvider.createCommit("Three"), project, mutableListOf())
         branch = BranchInfo("branch", mutableListOf(commit1, commit2, commit3))
-        labeledBranch = LabeledBranchPanel(branch, JBColor.BLUE)
+        labeledBranch = LabeledBranchPanel(project.service<RebaseInvoker>(), branch, JBColor.BLUE)
     }
 
     fun testGenerateCommitLabel() {
@@ -79,7 +81,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
     }
 
     fun testGenerateLabelChecksRewordCommand() {
-        val rewordChange = RewordCommand(commit1, "new message")
+        val rewordChange = RewordCommand(mutableListOf(commit1), "new message")
         branch.commits[0].changes.add(rewordChange)
         val label1 = labeledBranch.generateCommitLabel(0, circle)
         assertThat(TextStyle.stripTextFromStyling(label1.text)).isEqualTo("new message")

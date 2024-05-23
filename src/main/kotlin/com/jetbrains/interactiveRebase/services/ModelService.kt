@@ -21,6 +21,8 @@ class ModelService(
 
     val branchInfo = BranchInfo()
 
+    internal val invoker = project.service<RebaseInvoker>()
+
     /**
      * Fetches current branch info
      * on creation and subscribes
@@ -48,7 +50,7 @@ class ModelService(
      * Returns the selected
      * commits
      */
-    fun getSelectedCommits(): List<CommitInfo> {
+    fun getSelectedCommits(): MutableList<CommitInfo> {
         return branchInfo.selectedCommits
     }
 
@@ -65,6 +67,8 @@ class ModelService(
                 branchInfo.setName(name)
                 branchInfo.setCommits(commits)
                 branchInfo.clearSelectedCommits()
+                invoker.branchInfo = branchInfo
+                invoker.createModel()
             }
         }
     }

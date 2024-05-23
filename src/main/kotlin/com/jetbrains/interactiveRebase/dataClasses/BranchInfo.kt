@@ -9,6 +9,7 @@ class BranchInfo(
     val isCheckedOut: Boolean = false,
 ) {
     private val listeners: MutableList<Listener> = mutableListOf()
+    internal var currentCommits: MutableList<CommitInfo> = mutableListOf()
 
     internal fun addListener(listener: Listener) = listeners.add(listener)
 
@@ -29,6 +30,7 @@ class BranchInfo(
      */
     internal fun setCommits(commits: List<CommitInfo>) {
         this.commits = commits
+        this.currentCommits = commits.toMutableList()
         listeners.forEach { it.onCommitChange(commits) }
     }
 

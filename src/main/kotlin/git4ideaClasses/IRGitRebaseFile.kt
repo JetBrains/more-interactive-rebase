@@ -3,6 +3,7 @@ package git4ideaClasses
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
+import com.intellij.openapi.vcs.VcsException
 import com.intellij.openapi.vfs.VirtualFile
 import git4idea.GitUtil
 import git4idea.config.GitConfigUtil
@@ -16,6 +17,7 @@ import java.io.OutputStreamWriter
 import java.io.PrintWriter
 
 internal class IRGitRebaseFile(private val myProject: Project, private val myRoot: VirtualFile, private val myFile: File) {
+    @kotlin.jvm.Throws(NoopException::class, IOException::class, VcsException::class)
     fun load(): List<IRGitEntry> {
         val encoding = GitConfigUtil.getLogEncoding(myProject, myRoot)
         val entries: MutableList<IRGitEntry> = ArrayList()

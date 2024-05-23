@@ -105,4 +105,4 @@ internal fun IRGitEntry.getFullCommitMessage() = (this as? IRGitEntryDetails)?.c
  */
 @VisibleForTesting
 internal class GitRebaseEntryGeneratedUsingLog(details: VcsCommitMetadata) :
-    IRGitEntryDetails(IRGitEntry(Action.PICK, details.id.asString(), details.subject.trimStart()), details)
+    IRGitEntryDetails(IRGitEntry(Action.PICK, details.id.asString().trimStart(), details.subject.trimStart()), details)

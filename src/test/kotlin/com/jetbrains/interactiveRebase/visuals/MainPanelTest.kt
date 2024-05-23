@@ -1,11 +1,13 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.OnePixelSplitter
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.mockito.Mockito.doNothing
@@ -24,7 +26,7 @@ class MainPanelTest : BasePlatformTestCase() {
 
         modelService = ModelService(project, CoroutineScope(Dispatchers.Default))
         branchInfo = modelService.branchInfo
-        mainPanel = MainPanel(project, branchInfo)
+        mainPanel = MainPanel(project, branchInfo, project.service<RebaseInvoker>())
     }
 
     fun testUpdateMainPanelVisuals() {

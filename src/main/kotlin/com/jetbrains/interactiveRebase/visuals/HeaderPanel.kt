@@ -4,14 +4,17 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.listeners.DropCommitListener
 import com.jetbrains.interactiveRebase.listeners.RewordButtonListener
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import java.awt.BorderLayout
 import java.awt.Graphics
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 
-class HeaderPanel(private val mainPanel: JComponent, private val project: Project) : JBPanel<JBPanel<*>>() {
+class HeaderPanel(private val mainPanel: JComponent, private val project: Project, private val invoker: RebaseInvoker) :
+    JBPanel<JBPanel<*>>() {
     val gitActionsPanel = JBPanel<JBPanel<*>>()
+
     val changeActionsPanel = JBPanel<JBPanel<*>>()
 
     init {
@@ -39,8 +42,8 @@ class HeaderPanel(private val mainPanel: JComponent, private val project: Projec
         val rewordButton = JButton("Reword")
         rewordButton.addActionListener(RewordButtonListener(project))
         val dropButton = JButton("Drop")
-        dropButton.addMouseListener(DropCommitListener(dropButton, project))
-
+        dropButton.addMouseListener(DropCommitListener(dropButton, project, invoker))
+        fixupButton.addActionListener { invoker.executeCommands() }
         buttonPanel.add(squashButton)
         buttonPanel.add(fixupButton)
         buttonPanel.add(rewordButton)

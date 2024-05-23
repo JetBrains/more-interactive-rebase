@@ -13,6 +13,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.listeners.LabelListener
 import com.jetbrains.interactiveRebase.listeners.TextFieldListener
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
@@ -34,6 +35,7 @@ import javax.swing.SwingConstants
  * - RIGHT means commits appear to the right and names to the left
  */
 class LabeledBranchPanel(
+    private val invoker: RebaseInvoker,
     private val branch: BranchInfo,
     private val color: JBColor,
     private val alignment: Int = SwingConstants.LEFT,
@@ -151,7 +153,7 @@ class LabeledBranchPanel(
         textLabelWrapper.add(textWrapper)
 
         commitLabel.addMouseListener(LabelListener(commitInfo))
-        textField.addKeyListener(TextFieldListener(commitInfo, textField))
+        textField.addKeyListener(TextFieldListener(commitInfo, textField, invoker))
         return textLabelWrapper
     }
 
