@@ -59,7 +59,8 @@ are presented on the right side of the screen. Double-clicking on a file change 
 ### Interactive Rebase Actions
 After selecting the commits, the buttons that are *active* show the available Interactive Rebase actions. **It is
 important to note that any changes made on the graph are not actually executed until the `Start Rebasing` button
-is pressed. The idea of the graph is to show a preview of how the commit history will look in the end.** If you are not very
+is pressed. The idea of the graph is to show a preview of how the commit history will look in the end.** If you are 
+not very
 familiar with the Interactive Rebase actions that Git has to offer, you can read the
 [Rewriting History](https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History) Chapter provided by Git
 for more information.
@@ -71,8 +72,8 @@ for more information.
 * **<u>Reorder</u>** - You can drag and drop the commits along the branch if you want to reorder them.
 * **<u>Drop</u>** - After selecting commits, pressing the `drop` button will drop the selected commits.
 * **<u>Squash</u>** - If there is only one selected commit pressing the `squash` button will squash that commit with the
-  previous one (older in the commit history). In the case where multiple commits are selected, they get squashed into the
-  oldest selected commit. After squashing, a text field opens for you to reword the commit message
+  previous one (older in the commit history). In the case where multiple commits are selected, they get squashed into
+the oldest selected commit. After squashing, a text field opens for you to reword the commit message
   for the squashed commit.
 * **<u>Fixup</u>** - If there is only one selected commit, pressing the `fixup` button will perform fixup of that
   commit with the previous one (older in the commit history). In the case where multiple commits are selected,
