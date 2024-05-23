@@ -84,7 +84,8 @@ class RebaseInvoker(val project: Project) {
             val index = result.size
             result.add(IRGitModel.Element.Simple(index, IRGitModel.Type.NonUnite.Drop, entry))
         }
-        println("convert entries to model with count of " + result.size)
+
+
         return IRGitModel(result)
     }
 
@@ -109,5 +110,6 @@ class RebaseInvoker(val project: Project) {
         commands.forEach { it.execute(model, branchInfo) }
         IRGitRebaseUtils(project).rebase(branchInfo.initialCommits.reversed()[0].commit, model)
         commands.clear()
+
     }
 }

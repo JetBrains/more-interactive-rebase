@@ -1,5 +1,6 @@
 package com.jetbrains.interactiveRebase.dataClasses.commands
 
+import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
@@ -11,7 +12,9 @@ import git4ideaClasses.IRGitModel
  * This class is the base class for all the commands
  * that will be executed during the rebase process.
  */
+
 sealed class RebaseCommand() {
+
     /**
      * This method is to set up connection with the
      * Interactive Rebase mechanism.
