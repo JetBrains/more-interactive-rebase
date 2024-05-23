@@ -1,6 +1,7 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.OnePixelSplitter
@@ -13,7 +14,11 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import javax.swing.SwingConstants
 
-class MainPanel(private val project: Project, private val branchInfo: BranchInfo, private val invoker: RebaseInvoker) :
+class MainPanel(
+    private val project: Project,
+    private val branchInfo: BranchInfo,
+    private val invoker: RebaseInvoker = project.service<RebaseInvoker>(),
+) :
     JBPanel<JBPanel<*>>(), Disposable {
     internal var commitInfoPanel = CommitInfoPanel(project)
     private var contentPanel: JBPanel<JBPanel<*>>

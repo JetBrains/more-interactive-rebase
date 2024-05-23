@@ -30,8 +30,8 @@ class RoundedTextField(private val commitInfo: CommitInfo, inputText: String, pr
      */
     fun exitTextBox() {
         commitInfo.setDoubleClickedTo(false)
-        modelService.branchInfo.removeSelectedCommits(commitInfo)
         commitInfo.setSelectedTo(false)
+        modelService.branchInfo.clearSelectedCommits()
     }
 }
 
