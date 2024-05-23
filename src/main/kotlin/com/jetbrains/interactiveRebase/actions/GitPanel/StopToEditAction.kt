@@ -7,7 +7,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.services.ModelService
 
-class StopToEditAction : AnAction("Stop to Edit", "Pauses the rebasing action to edit a commit", AllIcons.Actions.Pause) {
+class StopToEditAction : AnAction("Stop to Edit", "Pause the rebasing action to edit a commit", AllIcons.Actions.Pause) {
     override fun actionPerformed(e: AnActionEvent) {
         println("stop to edit")
         TODO("Not yet implemented")

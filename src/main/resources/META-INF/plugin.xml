@@ -29,16 +29,16 @@
                     description="Add another branch to the view">
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.ChangePanel.PickAction"
-                    class="com.jetbrains.interactiveRebase.actions.ChangePanel.PickAction" text="PickAction">
+                    class="com.jetbrains.interactiveRebase.actions.ChangePanel.PickAction" text="PickAction" description="Revert actions of a commit">
             </action>
 
             <separator/>
 
             <action id="com.jetbrains.interactiveRebase.actions.GitPanel.SquashAction"
-                    class="com.jetbrains.interactiveRebase.actions.GitPanel.SquashAction" text="SquashAction" description="Combine commits here" icon="AllIcons.Actions.DynamicUsages">
+                    class="com.jetbrains.interactiveRebase.actions.GitPanel.SquashAction" text="SquashAction" description="Combine commits and set the commit subject" icon="AllIcons.Actions.DynamicUsages">
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.GitPanel.FixupAction"
-                    class="com.jetbrains.interactiveRebase.actions.GitPanel.FixupAction" text="FixupAction">
+                    class="com.jetbrains.interactiveRebase.actions.GitPanel.FixupAction" text="FixupAction" description="Combine commits">
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.GitPanel.RewordAction"
                     class="com.jetbrains.interactiveRebase.actions.GitPanel.RewordAction" text="RewordAction" description="Reword a commit">
@@ -47,7 +47,7 @@
                     class="com.jetbrains.interactiveRebase.actions.GitPanel.DropAction" text="DropAction" description="Drop a commit">
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.GitPanel.StopToEditAction"
-                    class="com.jetbrains.interactiveRebase.actions.GitPanel.StopToEditAction" text="StopToEditAction">
+                    class="com.jetbrains.interactiveRebase.actions.GitPanel.StopToEditAction" text="StopToEditAction" description="Stop while rebasing to edit a commit">
             </action>
         </group>
 

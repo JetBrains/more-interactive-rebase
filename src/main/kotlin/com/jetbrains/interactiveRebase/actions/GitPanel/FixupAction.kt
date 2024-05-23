@@ -7,7 +7,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.services.ModelService
 
-class FixupAction : AnAction("Fixup", "Combines commits and sets a default message", AllIcons.Actions.ListFiles) {
+class FixupAction : AnAction("Fixup", "Combine commits and set a default message", AllIcons.Actions.ListFiles) {
 
 
     override fun actionPerformed(e: AnActionEvent) {

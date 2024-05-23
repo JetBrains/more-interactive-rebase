@@ -59,6 +59,7 @@ class HeaderPanel(private val mainPanel: JComponent, private val project: Projec
         val rebaseButton = JButton("Rebase")
         rebaseButton.background = JBColor.namedColor("Button.default.startBackground", JBUI.CurrentTheme.Button.defaultButtonColorStart())
         rebaseButton.isOpaque = true
+        rebaseButton.border = JBUI.Borders.empty(5, 15)
         val resetButton = JButton("Reset")
         resetButton.foreground = UIManager.getColor("Button.foreground")
         buttonPanel.add(resetButton)

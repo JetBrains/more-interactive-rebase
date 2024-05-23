@@ -9,7 +9,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.services.ComponentService
 import com.jetbrains.interactiveRebase.services.ModelService
 
-class DropAction: AnAction("Drop", "Drops a commit", AllIcons.Actions.DeleteTagHover) {
+class DropAction: AnAction("Drop", "Remove a commit", AllIcons.Actions.DeleteTagHover) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project
         if (project != null) {
