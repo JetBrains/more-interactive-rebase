@@ -27,7 +27,6 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener {
         }
     }
 
-
     override fun mousePressed(e: MouseEvent?) {}
 
     override fun mouseReleased(e: MouseEvent?) {}

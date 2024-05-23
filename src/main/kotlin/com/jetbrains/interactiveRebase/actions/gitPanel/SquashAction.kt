@@ -1,4 +1,4 @@
-package com.jetbrains.interactiveRebase.actions.GitPanel
+package com.jetbrains.interactiveRebase.actions.gitPanel
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread

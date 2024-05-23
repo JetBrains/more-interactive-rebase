@@ -1,16 +1,12 @@
 package com.jetbrains.interactiveRebase.visuals
 
-import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
-import com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup
-import com.jetbrains.interactiveRebase.actions.GitPanel.SquashAction
-import com.jetbrains.interactiveRebase.listeners.DropCommitListener
-import com.jetbrains.interactiveRebase.listeners.RewordButtonListener
+import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import java.awt.BorderLayout
 import java.awt.Graphics
@@ -44,9 +40,12 @@ class HeaderPanel(private val mainPanel: JComponent, private val project: Projec
      * At the moment, the buttons are hardcoded, but we will replace them with icons and listeners later.
      */
     private fun addGitButtons(buttonPanel: JBPanel<JBPanel<*>>) {
-        val actionsGroup = ActionManager.getInstance().getAction("com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup") as RebaseActionsGroup
+        val actionsGroup =
+            ActionManager.getInstance().getAction(
+                "com.jetbrains.interactiveRebase.actions.GitPanel.RebaseActionsGroup",
+            ) as RebaseActionsGroup
         val toolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.EDITOR_TAB, actionsGroup, true)
-        val toolbarComponent : JComponent = toolbar.component
+        val toolbarComponent: JComponent = toolbar.component
         toolbar.targetComponent = buttonPanel
         buttonPanel.add(toolbarComponent)
     }
@@ -60,6 +59,7 @@ class HeaderPanel(private val mainPanel: JComponent, private val project: Projec
         rebaseButton.background = JBColor.namedColor("Button.default.startBackground", JBUI.CurrentTheme.Button.defaultButtonColorStart())
         rebaseButton.isOpaque = true
         rebaseButton.border = JBUI.Borders.empty(5, 15)
+        rebaseButton.addActionListener { invoker.executeCommands() }
         val resetButton = JButton("Reset")
         resetButton.foreground = UIManager.getColor("Button.foreground")
         buttonPanel.add(resetButton)

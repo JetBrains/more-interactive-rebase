@@ -1,4 +1,4 @@
-package com.jetbrains.interactiveRebase.actions.ChangePanel
+package com.jetbrains.interactiveRebase.actions.changePanel
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
