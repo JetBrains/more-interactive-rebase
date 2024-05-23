@@ -7,10 +7,9 @@ import git4idea.GitCommit
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
+import org.mockito.Mockito.`when``
 import java.awt.Graphics
 import java.awt.Graphics2D
-import java.awt.RenderingHints
 import javax.swing.plaf.ComponentUI
 
 class CirclePanelTest : BasePlatformTestCase() {
