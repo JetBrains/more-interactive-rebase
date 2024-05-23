@@ -1,12 +1,10 @@
 package com.jetbrains.interactiveRebase.listeners
 
+import com.intellij.openapi.Disposable
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
-import com.intellij.ui.util.preferredHeight
-import com.intellij.util.ui.UIUtil
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
-import com.jetbrains.interactiveRebase.visuals.Palette
 import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -21,14 +19,11 @@ class CircleDragAndDropListener(
     private val circle: CirclePanel,
     private val circles: MutableList<CirclePanel>,
     private val parent: LabeledBranchPanel,
-) : MouseAdapter() {
+) : MouseAdapter(), Disposable {
     private var messages: MutableList<JBPanel<JBPanel<*>>> = parent.messages
-    private var labels = messages.map { m ->
-        (m.getComponent(0) as JBPanel<JBPanel<*>>)
-            .getComponent(0) as JBLabel
-    }
-    private var label = getLabel(circle, labels)
-    private var message: JBPanel<JBPanel<*>> = label.parent.parent as JBPanel<JBPanel<*>>
+    private var labels = parent.commitLabels
+    private var label = labels[getLabelIndex(circle, labels)]
+    private var message: JBPanel<JBPanel<*>> = messages[getLabelIndex(circle, labels)]
     private var currentPosition = Point(circle.x, circle.y)
     private var circlesPositions = mutableListOf<CirclePosition>()
     private var messagesPositions = mutableListOf<Point>()
@@ -38,7 +33,7 @@ class CircleDragAndDropListener(
      * so that a commit doesn't get outside the parent panel
      */
     private val minY = 0
-    private var maxY = parent.branchPanel.preferredHeight - circle.diameter.toInt()
+    private var maxY = 200
 
     /**
      * Necessary to differentiate between mouse release
@@ -57,8 +52,9 @@ class CircleDragAndDropListener(
 
     init {
         SwingUtilities.invokeLater {
-            maxY = parent.branchPanel.preferredHeight - circle.height
+            maxY = parent.branchPanel.height - circle.height
         }
+//        message.border = BorderFactory.createLineBorder(JBColor.RED)
     }
 
     /**
@@ -76,8 +72,8 @@ class CircleDragAndDropListener(
                 CirclePosition(c.centerX.toInt(), c.centerY.toInt(), c.x, c.y)
             }.toMutableList()
         messagesPositions =
-            messages.map { l ->
-                Point(l.x, l.y)
+            messages.map { m ->
+                Point(m.x, m.y)
             }.toMutableList()
     }
 
@@ -90,7 +86,7 @@ class CircleDragAndDropListener(
      */
     override fun mouseDragged(e: MouseEvent) {
         wasDragged = true
-        customFormattingOnDrag()
+        commit.setDraggedTo(true)
         val deltaY = e.yOnScreen - currentPosition.y
         val newCircleY = circle.y + deltaY
 
@@ -119,11 +115,12 @@ class CircleDragAndDropListener(
      */
     override fun mouseReleased(e: MouseEvent) {
         if (wasDragged) {
+            commit.setDraggedTo(false)
             repositionOnDrop()
             if (initialIndex != currentIndex) {
-                commit.isReordered = true
+                commit.setReorderedTo(true)
             }
-            //TODO propagate changes
+            parent.branch.updateCurrentCommits(initialIndex, currentIndex, commit)
         }
     }
 
@@ -138,15 +135,6 @@ class CircleDragAndDropListener(
         // Update the circle and label positions
         circle.setLocation(circle.x, newCircleYBounded)
         message.setLocation(message.x, newCircleYBounded)
-    }
-
-    /**
-     * Sets custom formatting of the commit
-     * to indicate its being dragged
-     */
-    private fun customFormattingOnDrag() {
-        circle.color = Palette.TOMATO
-        label.fontColor = UIUtil.FontColor.BRIGHTER
     }
 
     /**
@@ -165,12 +153,6 @@ class CircleDragAndDropListener(
         circles.add(newIndex, circle)
         messages.removeAt(oldIndex)
         messages.add(newIndex, message)
-
-        /**
-         * NEW: Updates CommitInfo
-         */
-        commits.removeAt(oldIndex)
-        commits.add(newIndex, commit)
 
         updateNeighbors(oldIndex)
         updateNeighbors(newIndex)
@@ -245,7 +227,7 @@ class CircleDragAndDropListener(
                 val circle = circles[i]
                 val message = messages[i]
                 circle.setLocation(circlesPositions[i].x, circlesPositions[i].y)
-                message.setLocation(label.x, messagesPositions[i].y)
+                message.setLocation(message.x, messagesPositions[i].y)
             }
         }
     }
@@ -298,14 +280,14 @@ class CircleDragAndDropListener(
 //    }
 
     /**
-     * Retrieves the corresponding label
+     * Retrieves the index of the corresponding label
      * of the circle that is being dragged
      */
-    private fun getLabel(
+    private fun getLabelIndex(
         circle: CirclePanel,
         labels: List<JBLabel>,
-    ): JBLabel {
-        return labels.find { it.labelFor == circle } ?: JBLabel()
+    ): Int {
+        return labels.indexOfFirst { it.labelFor == circle }
     }
 
     /**
@@ -345,6 +327,9 @@ class CircleDragAndDropListener(
             circle.setLocation(circle.x, newCircleY)
             message.setLocation(message.x, newCircleY)
         }
+    }
+
+    override fun dispose() {
     }
 }
 

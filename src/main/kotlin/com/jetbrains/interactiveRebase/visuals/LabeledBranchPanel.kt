@@ -1,6 +1,7 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.util.Disposer
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
@@ -12,11 +13,13 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.listeners.CircleDragAndDropListener
+import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
 import com.jetbrains.interactiveRebase.listeners.LabelListener
 import com.jetbrains.interactiveRebase.listeners.TextFieldListener
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import java.awt.Dimension
 import java.awt.FlowLayout
+import java.awt.Graphics
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.GridLayout
@@ -29,6 +32,7 @@ import java.awt.event.MouseEvent
 import javax.swing.JComponent
 import javax.swing.OverlayLayout
 import javax.swing.SwingConstants
+import javax.swing.SwingUtilities
 
 /**
  * Panel encapsulating a branch and corresponding labels
@@ -53,7 +57,20 @@ class LabeledBranchPanel(
 
     init {
         branchNameLabel.horizontalAlignment = SwingConstants.CENTER
-        val circles = branchPanel.circles
+
+        layout = GridBagLayout()
+        val gbc = GridBagConstraints()
+
+        addComponents()
+
+        setBranchNamePosition(gbc)
+        add(branchNameLabel, gbc)
+
+        setBranchPosition(gbc)
+        add(branchPanel, gbc)
+
+        setCommitNamesPosition(gbc)
+        add(labelPanelWrapper, gbc)
     }
 
     /**
@@ -67,7 +84,11 @@ class LabeledBranchPanel(
     ): JBLabel {
         val truncatedMessage = truncateMessage(i)
 
-        val commitLabel = JBLabel(truncatedMessage)
+        val commitLabel =
+            object : JBLabel(truncatedMessage), Disposable {
+                override fun dispose() {
+                }
+            }
 
         branch.currentCommits[i].changes.forEach {
             if (it is RewordCommand) {
@@ -85,6 +106,7 @@ class LabeledBranchPanel(
         if (branch.currentCommits[i].isSelected) {
             commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.BOLD)
         }
+
         commitLabel.fontColor = UIUtil.FontColor.NORMAL
         commitLabel.labelFor = circle
         commitLabel.horizontalAlignment = alignment
@@ -107,40 +129,27 @@ class LabeledBranchPanel(
     }
 
     /**
-     * Draws the branch with the added labels.
-     */
-    override fun addNotify() {
-        super.addNotify()
-
-        layout = GridBagLayout()
-        val gbc = GridBagConstraints()
-
-        setBranchNamePosition(gbc)
-        add(branchNameLabel, gbc)
-
-        setBranchPosition(gbc)
-        add(branchPanel, gbc)
-
-        setLabelPanelWrapper()
-
-        setCommitNamesPosition(gbc)
-        add(labelPanelWrapper, gbc)
-    }
-
-    /**
      * Generates the panel in which commit labels are wrapped with invisible text fields
      */
-    fun setLabelPanelWrapper() {
+    fun addComponents() {
         labelPanelWrapper.layout = GridLayout(0, 1)
         val circles = branchPanel.circles
+        messages.clear()
         for ((i, circle) in circles.withIndex()) {
-            val dragAndDropListener = CircleDragAndDropListener(circle, circles, this)
-            circle.addMouseListener(dragAndDropListener)
-            circle.addMouseMotionListener(dragAndDropListener)
             val commitLabel = generateCommitLabel(i, circle)
             val wrappedLabel = wrapLabelWithTextField(commitLabel, branch.currentCommits[i])
             labelPanelWrapper.add(wrappedLabel)
             commitLabels.add(commitLabel)
+
+            val dragAndDropListener = CircleDragAndDropListener(circle, circles, this)
+            circle.addMouseListener(dragAndDropListener)
+            circle.addMouseMotionListener(dragAndDropListener)
+            Disposer.register(this, dragAndDropListener)
+
+            val circleHoverListener = CircleHoverListener(circle)
+            circle.addMouseListener(circleHoverListener)
+            circle.addMouseMotionListener(circleHoverListener)
+            Disposer.register(this, circleHoverListener)
         }
     }
 
@@ -155,15 +164,18 @@ class LabeledBranchPanel(
     ): JComponent {
         val textLabelWrapper = JBPanel<JBPanel<*>>()
         textLabelWrapper.layout = OverlayLayout(textLabelWrapper)
+        textLabelWrapper.isOpaque = false
 
         val textWrapper = JBPanel<JBPanel<*>>()
         textWrapper.layout = FlowLayout(alignment)
+        textWrapper.isOpaque = false
 
         val textField = createTextBox(commitLabel, commitInfo)
         textWrapper.add(textField)
 
         val labelWrapper = JBPanel<JBPanel<*>>()
         labelWrapper.layout = FlowLayout(alignment)
+        labelWrapper.isOpaque = false
 
         labelWrapper.add(commitLabel)
 
@@ -176,7 +188,11 @@ class LabeledBranchPanel(
         textLabelWrapper.add(labelWrapper)
         textLabelWrapper.add(textWrapper)
 
-        commitLabel.addMouseListener(LabelListener(commitInfo))
+        val labelListener = LabelListener(commitInfo)
+        commitLabel.addMouseListener(labelListener)
+        if (commitLabel is Disposable) {
+            Disposer.register(commitLabel, labelListener)
+        }
         textField.addKeyListener(TextFieldListener(commitInfo, textField, invoker))
 
         messages.add(textLabelWrapper)
@@ -288,7 +304,19 @@ class LabeledBranchPanel(
         }
 
         labelPanelWrapper.removeAll()
-        setLabelPanelWrapper()
+        addComponents()
+    }
+
+    override fun paintComponent(g: Graphics?) {
+        super.paintComponent(g)
+
+        for (commitLabel in commitLabels) {
+            if ((commitLabel.labelFor as CirclePanel).commit.isDragged) {
+                commitLabel.foreground = JBColor.BLUE
+            } else {
+                commitLabel.fontColor = UIUtil.FontColor.NORMAL
+            }
+        }
     }
 
     /**

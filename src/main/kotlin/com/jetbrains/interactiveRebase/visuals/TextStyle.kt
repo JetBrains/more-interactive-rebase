@@ -5,7 +5,7 @@ enum class TextStyle {
     BOLD,
     CROSSED,
     LEFT_ALIGNMENT,
-    RIGHT_ALIGNMENT
+    RIGHT_ALIGNMENT,
     ;
 
     companion object {

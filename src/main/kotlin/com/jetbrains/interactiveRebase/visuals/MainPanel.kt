@@ -50,6 +50,11 @@ class MainPanel(
                     branchPanel.updateCommits()
                     commitInfoPanel.commitsSelected(selectedCommits.map { it.commit })
                 }
+
+                override fun onCurrentCommitsChange(currentCommits: MutableList<CommitInfo>) {
+                    branchPanel.updateCommits()
+                    registerCommitListener()
+                }
             }
 
         commitInfoListener =

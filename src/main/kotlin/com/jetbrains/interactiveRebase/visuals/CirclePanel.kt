@@ -1,13 +1,13 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import com.intellij.openapi.Disposable
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
 import java.awt.BasicStroke
+import java.awt.Color
 import java.awt.Cursor
 import java.awt.Dimension
-import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
@@ -23,7 +23,7 @@ open class CirclePanel(
     open var commit: CommitInfo,
     open var next: CirclePanel? = null,
     open var previous: CirclePanel? = null,
-) : JBPanel<JBPanel<*>>() {
+) : JBPanel<JBPanel<*>>(), Disposable {
     var centerX = 0.0
     var centerY = 0.0
     lateinit var circle: Ellipse2D.Double
@@ -37,8 +37,6 @@ open class CirclePanel(
         isOpaque = false
         minimumSize = Dimension(diameter.toInt(), diameter.toInt())
         createCircle(diameter)
-        addMouseListener(CircleHoverListener(this))
-        addMouseMotionListener(CircleHoverListener(this))
     }
 
     /**
@@ -59,8 +57,28 @@ open class CirclePanel(
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
         createCircle(diameter)
-        val circleColor = if (commit.isSelected) color.darker() else color
-        val borderColor = if (commit.isSelected) Palette.BLUEBORDER.darker() else Palette.DARKBLUE
+        color =
+            if (commit.isDragged) {
+                JBColor.BLUE as JBColor
+            } else if (commit.isReordered) {
+                Palette.INDIGO
+            } else {
+                color
+            }
+        val circleColor =
+            if (commit.isSelected) {
+                color.darker() as JBColor
+            } else {
+                color
+            }
+        val borderColor =
+            if (commit.isSelected) {
+                Palette.BLUEBORDER.darker()
+            } else if (commit.isDragged || commit.isReordered) {
+                color.darker()
+            } else {
+                Palette.DARKBLUE
+            }
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
 
         if (commit.isHovered) {
@@ -70,10 +88,6 @@ open class CirclePanel(
             g2d.draw(circle)
         } else {
             setCursor(Cursor.getDefaultCursor())
-        }
-
-        if (commit.isReordered) {
-            color = Palette.LIME_GREEN
         }
     }
 
@@ -130,5 +144,8 @@ open class CirclePanel(
      */
     fun paintSuper(g: Graphics) {
         super.paintComponent(g)
+    }
+
+    override fun dispose() {
     }
 }

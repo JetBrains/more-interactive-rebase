@@ -65,6 +65,16 @@ class BranchInfo(
         listeners.forEach { it.onSelectedCommitChange(selectedCommits) }
     }
 
+    internal fun updateCurrentCommits(
+        oldIndex: Int,
+        newIndex: Int,
+        commit: CommitInfo,
+    ) {
+        currentCommits.removeAt(oldIndex)
+        currentCommits.add(newIndex, commit)
+        listeners.forEach { it.onCurrentCommitsChange(currentCommits) }
+    }
+
     /**
      * Provides a listener
      * for changes in this class
@@ -75,6 +85,8 @@ class BranchInfo(
         fun onCommitChange(commits: List<CommitInfo>)
 
         fun onSelectedCommitChange(selectedCommits: MutableList<CommitInfo>)
+
+        fun onCurrentCommitsChange(currentCommits: MutableList<CommitInfo>)
 
         override fun dispose() {}
     }

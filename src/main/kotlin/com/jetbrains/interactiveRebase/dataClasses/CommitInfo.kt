@@ -13,6 +13,8 @@ data class CommitInfo(
     var isSelected: Boolean = false,
     var isHovered: Boolean = false,
     var isDoubleClicked: Boolean = false,
+    var isReordered: Boolean = false,
+    var isDragged: Boolean = false,
 ) {
     internal val listeners: MutableList<Listener> = mutableListOf()
 
@@ -60,6 +62,21 @@ data class CommitInfo(
     }
 
     /**
+     * Sets whether circle is reordered.
+     */
+    fun setReorderedTo(value: Boolean) {
+        isReordered = value
+        listeners.forEach { it.onCommitChange() }
+    }
+
+    /**
+     * Sets whether circle is dragged.
+     */
+    fun setDraggedTo(value: Boolean) {
+        isDragged = value
+    }
+
+    /**
      * Toggles isSelected
      */
 
@@ -93,7 +110,4 @@ data class CommitInfo(
 
         override fun dispose() {}
     }
-
-    // TODO use visual changes instead
-    var isReordered = false
 }
