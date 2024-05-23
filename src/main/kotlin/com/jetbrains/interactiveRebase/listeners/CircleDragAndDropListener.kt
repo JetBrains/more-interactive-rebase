@@ -9,7 +9,10 @@ import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.SwingUtilities
+import javax.swing.Timer
 import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 
 /**
  * Listener that handles drag and drop actions
@@ -54,7 +57,6 @@ class CircleDragAndDropListener(
         SwingUtilities.invokeLater {
             maxY = parent.branchPanel.height - circle.height
         }
-//        message.border = BorderFactory.createLineBorder(JBColor.RED)
     }
 
     /**
@@ -219,65 +221,79 @@ class CircleDragAndDropListener(
 
     /**
      * Reposition all circles to spread away from
-     * the circle that is being dragged
+     * the circle that is being dragged (snaps abruptly)
+     */
+//    private fun repositionOnDrag() {
+//        for ((i, other) in circles.withIndex()) {
+//            if (circle != other) {
+//                val circle = circles[i]
+//                val message = messages[i]
+//                circle.setLocation(circlesPositions[i].x, circlesPositions[i].y)
+//                message.setLocation(message.x, messagesPositions[i].y)
+//            }
+//        }
+//    }
+
+    /**
+     * Reposition all circles to spread away from
+     * the circle that is being dragged (smooth animated transition)
      */
     private fun repositionOnDrag() {
-        for ((i, other) in circles.withIndex()) {
-            if (circle != other) {
-                val circle = circles[i]
-                val message = messages[i]
-                circle.setLocation(circlesPositions[i].x, circlesPositions[i].y)
-                message.setLocation(message.x, messagesPositions[i].y)
+        val animationDuration = 30 // Duration in milliseconds
+        val animationSteps = 10 // Number of animation steps
+
+        // Calculate the target positions for each circle
+        val startPositions = circles.map { Point(it.x, it.y) }
+        val targetPositions = circlesPositions.map { Point(it.x, it.y) }
+        val stepSizes = mutableListOf<Point>()
+
+        // Calculate step sizes for each circle
+        for (i in circles.indices) {
+            val startX = startPositions[i].x
+            val startY = startPositions[i].y
+            val targetX = targetPositions[i].x
+            val targetY = targetPositions[i].y
+
+            val stepX = ceil((targetX - startX).toDouble() / animationSteps).toInt()
+            val stepY = ceil((targetY - startY).toDouble() / animationSteps).toInt()
+            stepSizes.add(Point(stepX, stepY))
+        }
+
+        var currentStep = 0
+
+        // Timer to perform the animation
+        val timer = Timer((animationDuration / animationSteps.toDouble()).roundToInt()) {
+            currentStep++
+            for ((i, other) in circles.withIndex()) {
+                if(other != circle) {
+                    val message = messages[i]
+
+                    val currentX = other.x
+                    val currentY = other.y
+                    val stepX = stepSizes[i].x
+                    val stepY = stepSizes[i].y
+
+                    // Move the circle and message to the next step
+                    val newX = if (Math.abs(targetPositions[i].x - currentX) < Math.abs(stepX)) targetPositions[i].x else currentX + stepX
+                    val newY = if (Math.abs(targetPositions[i].y - currentY) < Math.abs(stepY)) targetPositions[i].y else currentY + stepY
+                    other.setLocation(newX, newY)
+                    message.setLocation(message.x, newY)
+                }
+            }
+
+            // Repaint the parent to reflect the changes
+            parent.repaint()
+
+            // Stop the timer when the animation is complete
+            if (currentStep >= animationSteps) {
+                (it.source as Timer).stop()
             }
         }
+
+        timer.initialDelay = 0
+        timer.isRepeats = true
+        timer.start()
     }
-
-    // TODO figure out smooth transitions!
-
-//    private fun repositionOnDrag() {
-//        val animationDuration = 300 // duration in milliseconds
-//        val animationSteps = 30 // number of animation steps
-//
-//        val startPositions = circles.map { c -> Point(c.x, c.y) }
-//        val steps = mutableListOf<Int>()
-//        val targets = mutableListOf<Int>()
-//
-//        for (i in circles.indices) {
-//            val startY = startPositions[i].y
-//            val targetY = circlesPositions[i].y
-//            targets.add(targetY)
-//
-//            steps.add(ceil(((targetY - startY)).toDouble() / animationSteps).toInt())
-//        }
-//
-//        val timer = Timer((1000.0 / animationDuration).roundToInt()) { _ ->
-// //            for(step in 0 until  animationSteps) {
-//                for ((i, other) in circles.withIndex()) {
-//                    if (other != circle) {
-//                        val currentY = other.y
-//                        val targetY = targets[i]
-//                        val stepY = steps[i]
-//
-//                        if (abs(currentY - targetY) < abs(stepY)) {
-//                            other.setLocation(other.x, targetY)
-//                        } else {
-//                            other.setLocation(other.x, currentY + stepY)
-//                        }
-//                    }
-//                }
-// //            }
-//            parent.repaint()
-//        }
-//
-//        timer.initialDelay = 0
-//        timer.isRepeats = true
-//        timer.start()
-//
-//        // Stop the timer after the animation duration
-//        Timer(animationDuration) {
-//            timer.stop()
-//        }.start()
-//    }
 
     /**
      * Retrieves the index of the corresponding label

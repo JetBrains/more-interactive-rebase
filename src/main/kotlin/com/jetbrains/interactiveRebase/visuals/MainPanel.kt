@@ -96,7 +96,7 @@ class MainPanel(
         gbc.gridx = 0
         gbc.gridy = 0
         gbc.weightx = 1.0
-        gbc.anchor = GridBagConstraints.WEST
+        gbc.anchor = GridBagConstraints.CENTER
 
         contentPanel.add(
             branchPanel,
