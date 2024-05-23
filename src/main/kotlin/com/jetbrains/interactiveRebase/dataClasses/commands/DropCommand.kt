@@ -22,5 +22,6 @@ data class DropCommand(var commit: CommitInfo) : RebaseCommand() {
 
         model.drop(listOf(branchInfo.currentCommits.reversed().indexOf(commit)))
 
+
     }
 }
