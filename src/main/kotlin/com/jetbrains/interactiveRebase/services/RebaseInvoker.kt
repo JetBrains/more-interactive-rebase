@@ -107,7 +107,6 @@ class RebaseInvoker(val project: Project) {
      */
     fun executeCommands() {
         commands.forEach { it.execute(model, branchInfo) }
-        println(" commands" + commands.size + "commits" + branchInfo.commits.size)
         IRGitRebaseUtils(project).rebase(branchInfo.commits.reversed()[0].commit, model)
     }
 }

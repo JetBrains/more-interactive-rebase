@@ -42,16 +42,12 @@ open class IREditorHandler(private val myProject: Project, private val myRoot: V
             if (myRebaseEditorShown) {
                 val encoding = GitConfigUtil.getCommitEncoding(myProject, myRoot)
                 val originalMessage = FileUtil.loadFile(file, encoding)
-                println("doesnt get here huh")
                 val newMessage =
                     myRewordedCommitMessageProvider.getRewordedCommitMessage(myProject, myRoot, originalMessage)
-                println("message created")
                 if (newMessage == null) {
                     myUnstructuredEditorCancelled = !handleUnstructuredEditor(file)
-                    println("message null")
                     return if (myUnstructuredEditorCancelled) GitRebaseEditorHandler.ERROR_EXIT_CODE else 0
                 }
-                println("message not null")
                 FileUtil.writeToFile(file, newMessage.toByteArray(Charset.forName(encoding)))
                 0
             } else {
@@ -60,7 +56,6 @@ open class IREditorHandler(private val myProject: Project, private val myRoot: V
                 if (success) {
                     0
                 } else {
-                    println("huhhhhhh")
                     myCommitListCancelled = true
                     GitRebaseEditorHandler.ERROR_EXIT_CODE
                 }
