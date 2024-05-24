@@ -67,18 +67,21 @@ class DropCirclePanelTest : BasePlatformTestCase() {
     }
 
     fun testPaintCircleHovered() {
+        commit.isHovered = true
         dropCirclePanel.paintCircle(g)
 
         verify(g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
         verify(g, times(2)).fill(any(Ellipse2D.Double::class.java))
-        verify(g).stroke = any(BasicStroke::class.java)
-        verify(g, times(1)).draw(any(Ellipse2D.Double::class.java))
-        verify(g).stroke = any(BasicStroke::class.java)
-        verify(g, times(2)).color = colorCaptor.capture()
+        verify(g, times(2)).stroke = any(BasicStroke::class.java)
+        verify(g, times(2)).draw(any(Ellipse2D.Double::class.java))
+        verify(g, times(2)).stroke = any(BasicStroke::class.java)
+        verify(g, times(3)).color = colorCaptor.capture()
 
-        assertEquals(2, colorCaptor.allValues.size)
+        assertEquals(3, colorCaptor.allValues.size)
         colorEquals(Palette.GRAY, colorCaptor.allValues[0])
         colorEquals(Palette.BLUEBORDER, colorCaptor.allValues[1])
+        colorEquals(Palette.BLUEBORDER, colorCaptor.allValues[1])
+        colorEquals(JBColor.BLACK, colorCaptor.allValues[2])
     }
 
     fun testDrawBorder() {

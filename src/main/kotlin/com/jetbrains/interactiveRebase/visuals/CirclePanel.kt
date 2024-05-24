@@ -149,13 +149,6 @@ open class CirclePanel(
         g2d.draw(circle)
     }
 
-    /**
-     * Draws the circle with a shadow and border.
-     */
-    fun paintSuper(g: Graphics) {
-        super.paintComponent(g)
-    }
-
     override fun dispose() {
     }
 }

@@ -130,13 +130,13 @@ class ActionServiceTest : BasePlatformTestCase() {
 
     fun testPerformPickAction() {
         // setup the commands
-        val command1 = DropCommand(mutableListOf(commitInfo1))
-        val command2 = ReorderCommand(mutableListOf(commitInfo1))
+        val command1 = DropCommand(commitInfo1)
+        val command2 = ReorderCommand(commitInfo1)
         commitInfo1.addChange(command1)
         commitInfo1.addChange(command2)
         commitInfo1.isSelected = true
 
-        val command3 = DropCommand(mutableListOf(commitInfo2))
+        val command3 = DropCommand(commitInfo2)
         commitInfo2.addChange(command3)
 
         project.service<RebaseInvoker>().addCommand(command1)
@@ -157,13 +157,13 @@ class ActionServiceTest : BasePlatformTestCase() {
 
     fun testResetAllChangesACtion() {
         // setup the commands
-        val command1 = DropCommand(mutableListOf(commitInfo1))
-        val command2 = ReorderCommand(mutableListOf(commitInfo1))
+        val command1 = DropCommand(commitInfo1)
+        val command2 = ReorderCommand(commitInfo1)
         commitInfo1.addChange(command1)
         commitInfo1.addChange(command2)
         commitInfo1.isSelected = true
 
-        val command3 = DropCommand(mutableListOf(commitInfo2))
+        val command3 = DropCommand(commitInfo2)
         commitInfo2.addChange(command3)
 
         modelService.invoker.addCommand(command1)
