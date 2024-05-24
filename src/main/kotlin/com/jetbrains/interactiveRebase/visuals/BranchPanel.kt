@@ -4,6 +4,7 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 import java.awt.BasicStroke
 import java.awt.Dimension
 import java.awt.Graphics
@@ -43,12 +44,16 @@ class BranchPanel(
      * Makes a circle panel and links it
      * to the next and previous neighbors
      */
-    private fun initializeCirclePanel(i: Int): CirclePanel {
+    fun initializeCirclePanel(i: Int): CirclePanel {
         val commit = branch.commits[i]
         var circle = CirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
 
         if (commit.changes.any { it is DropCommand } == true) {
             circle = DropCirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
+        }
+
+        if (commit.changes.any { it is StopToEditCommand } == true) {
+            circle = StopToEditCirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
         }
 
         circles.add(circle)

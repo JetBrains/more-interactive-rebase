@@ -5,11 +5,12 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
     private var modelService = project.service<ModelService>()
-    private var invoker = project.service<RebaseInvoker>()
+    private var invoker = modelService.invoker
 
     /**
      * Constructor for injection during testing
@@ -55,5 +56,16 @@ class ActionService(project: Project) {
      */
     fun checkReword(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.size == 1
+    }
+
+    fun takeStopToEditAction() {
+        val commits = modelService.getSelectedCommits()
+        commits.forEach {
+                commitInfo ->
+            val command = StopToEditCommand(mutableListOf(commitInfo))
+            commitInfo.addChange(command)
+            invoker.addCommand(command)
+        }
+        modelService.branchInfo.clearSelectedCommits()
     }
 }

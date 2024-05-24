@@ -8,12 +8,14 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.listeners.LabelListener
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito.mock
+import java.awt.Component.RIGHT_ALIGNMENT
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.GridLayout
@@ -87,6 +89,20 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         assertThat(TextStyle.stripTextFromStyling(label1.text)).isEqualTo("new message")
         val label2 = labeledBranch.generateCommitLabel(1, circle)
         assertThat(TextStyle.stripTextFromStyling(label2.text)).isEqualTo("Two")
+    }
+
+    fun testChangeTextWhenCommitDropped() {
+        commit3.changes.add(DropCommand(mutableListOf()))
+        val label = labeledBranch.generateCommitLabel(2, circle)
+        assertThat(TextStyle.stripTextFromStyling(label.text)).isEqualTo(commit3.commit.subject)
+        assertThat(label.alignmentX).isEqualTo(RIGHT_ALIGNMENT)
+        assertThat(label.horizontalAlignment).isEqualTo(SwingConstants.NORTH_EAST)
+    }
+
+    fun testCommitLabelIsBold() {
+        commit1.isSelected = true
+        val label = labeledBranch.generateCommitLabel(0, circle)
+        assertThat(label.text).isEqualTo("<html><b>" + commit1.commit.subject + "</b></html>")
     }
 
     fun testWrapsLabelWithTextField() {

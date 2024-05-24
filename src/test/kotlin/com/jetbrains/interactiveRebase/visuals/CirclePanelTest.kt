@@ -35,7 +35,7 @@ class CirclePanelTest : BasePlatformTestCase() {
 
         verify(graph2).dispose()
         verify(graph, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        verify(graph, times(3)).fill(circlePanel.circle)
+        verify(graph, times(2)).fill(circlePanel.circle)
     }
 
     fun testPaintComponentIsSelected() {
@@ -47,8 +47,8 @@ class CirclePanelTest : BasePlatformTestCase() {
 
         verify(graph2).dispose()
         verify(graph, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        verify(graph, times(3)).draw(circlePanel.circle)
-        verify(graph, times(3)).fill(circlePanel.circle)
+        verify(graph, times(2)).draw(circlePanel.circle)
+        verify(graph, times(2)).fill(circlePanel.circle)
     }
 
     fun testDrawBorder() {
@@ -61,21 +61,11 @@ class CirclePanelTest : BasePlatformTestCase() {
         verify(graph).draw(circle)
     }
 
-    fun testDrawShadow() {
-        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
-        val circle = circlePanel.circle
-        val shadowColor = JBColor.BLACK
-        circlePanel.drawShadow(graph, circle, shadowColor)
-        verify(graph, times(2)).fill(circle)
-        verify(graph).draw(circle)
-    }
-
     fun testSelectedCommitAppearance() {
         val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
         val circleColor = JBColor.BLACK
-        val shadowColor = JBColor.BLACK
         val borderColor = JBColor.BLACK
-        circlePanel.selectedCommitAppearance(graph, true, circleColor, shadowColor, borderColor)
-        verify(graph, times(3)).fill(circlePanel.circle)
+        circlePanel.selectedCommitAppearance(graph, true, circleColor, borderColor)
+        verify(graph, times(2)).fill(circlePanel.circle)
     }
 }
