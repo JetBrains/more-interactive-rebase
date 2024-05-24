@@ -102,7 +102,6 @@ class RebaseInvoker(val project: Project) {
         commands.remove(command)
     }
 
-
     /**
      * Executes all the commands to be able to perform the rebase.
      */

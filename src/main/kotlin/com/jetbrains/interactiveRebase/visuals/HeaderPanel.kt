@@ -61,9 +61,9 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
         rebaseButton.background = JBColor.namedColor("Button.default.startBackground", JBUI.CurrentTheme.Button.defaultButtonColorStart())
         rebaseButton.isOpaque = true
         rebaseButton.border = JBUI.Borders.empty(5, 6)
-        rebaseButton.addActionListener { 
+        rebaseButton.addActionListener {
             invoker.createModel()
-            invoker.executeCommands() 
+            invoker.executeCommands()
         }
         val resetButton = JButton("Reset")
         resetButton.foreground = UIManager.getColor("Button.foreground")

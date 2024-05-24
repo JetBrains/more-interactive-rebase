@@ -33,7 +33,9 @@ class BranchPanelTest : BasePlatformTestCase() {
         commit1 = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
         commit2 = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
         commit3 = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
-        branchPanel = BranchPanel(BranchInfo("branch", mutableListOf(commit1, commit2, commit3)), JBColor.BLUE)
+        val branch = BranchInfo("branch", mutableListOf(commit1, commit2, commit3))
+        branch.currentCommits = mutableListOf(commit1, commit2, commit3)
+        branchPanel = BranchPanel(branch, JBColor.BLUE)
 
         commit2.changes.add(StopToEditCommand(commit2))
         commit3.changes.add(DropCommand(commit3))

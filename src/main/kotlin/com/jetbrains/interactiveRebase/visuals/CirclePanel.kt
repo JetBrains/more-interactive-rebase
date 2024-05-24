@@ -4,9 +4,14 @@ import com.intellij.openapi.Disposable
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import java.awt.*
+import java.awt.BasicStroke
+import java.awt.Color
+import java.awt.Cursor
+import java.awt.Dimension
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.RenderingHints
 import java.awt.geom.Ellipse2D
-import javax.swing.ImageIcon
 
 /**
  * Visual representation of commit node in the git graph
@@ -45,7 +50,7 @@ open class CirclePanel(
         paintCircle(g)
     }
 
-    public open fun paintCircle(g: Graphics) {
+    open fun paintCircle(g: Graphics) {
         val g2d = g as Graphics2D
 
         // Set rendering hints for smoother rendering
@@ -88,11 +93,11 @@ open class CirclePanel(
     }
 
 //    fun grabCursor(): Cursor {
-//        val grabImagePath = "Images/commit.png"
+//        val grabImagePath = "Images/cursor-hand-grab.png"
 //        val grabImage: Image = ImageIcon(grabImagePath).image
 //
 //        val toolkit = Toolkit.getDefaultToolkit()
-//        return toolkit.createCustomCursor(grabImage, Point(0, 0), "Grab")
+//        return toolkit.createCustomCursor(grabImage, Point(13, 13), "Grab")
 //
 //    }
 

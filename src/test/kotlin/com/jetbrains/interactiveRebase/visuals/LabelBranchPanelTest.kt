@@ -21,6 +21,7 @@ import java.awt.GridBagLayout
 import java.awt.GridLayout
 import java.awt.Insets
 import javax.swing.SwingConstants
+import javax.swing.SwingUtilities
 
 class LabelBranchPanelTest : BasePlatformTestCase() {
     private lateinit var circle: CirclePanel
@@ -39,7 +40,8 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         commit2 = CommitInfo(commitProvider.createCommit("Two"), project, mutableListOf())
         commit3 = CommitInfo(commitProvider.createCommit("Three"), project, mutableListOf())
         branch = BranchInfo("branch", mutableListOf(commit1, commit2, commit3))
-        labeledBranch = LabeledBranchPanel(project.service<RebaseInvoker>(), branch, JBColor.BLUE)
+        branch.currentCommits = mutableListOf(commit1, commit2, commit3)
+        labeledBranch = LabeledBranchPanel(project, project.service<RebaseInvoker>(), branch, JBColor.BLUE)
     }
 
     fun testGenerateCommitLabel() {
@@ -85,7 +87,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
 
     fun testGenerateLabelChecksRewordCommand() {
         val rewordChange = RewordCommand(commit1, "new message")
-        branch.commits[0].changes.add(rewordChange)
+        branch.currentCommits[0].changes.add(rewordChange)
         val label1 = labeledBranch.generateCommitLabel(0, circle)
         assertThat(TextStyle.stripTextFromStyling(label1.text)).isEqualTo("new message")
         val label2 = labeledBranch.generateCommitLabel(1, circle)
@@ -143,13 +145,15 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
     fun testCreateTextBoxSetsAlignments() {
         val commitLabel = JBLabel("label")
         val textField = labeledBranch.createTextBox(commitLabel, commit1)
-        assertThat(textField.maximumSize).isEqualTo(commitLabel.maximumSize)
+        SwingUtilities.invokeLater {
+            assertThat(textField.maximumSize).isEqualTo(commitLabel.size)
+        }
         assertThat(textField.horizontalAlignment).isEqualTo(SwingConstants.LEFT)
     }
 
-    fun testSetLabelPanelWrapperConsidersCircles() {
+    fun testAddComponents() {
         val labelPanelWrapper = labeledBranch.labelPanelWrapper
-        labeledBranch.setLabelPanelWrapper()
+        labeledBranch.addComponents()
         assertThat(labelPanelWrapper.layout).isInstanceOf(GridLayout::class.java)
         assertThat(labelPanelWrapper.getComponent(0)).isInstanceOf(JBPanel::class.java)
         assertThat(labelPanelWrapper.getComponent(1)).isInstanceOf(JBPanel::class.java)

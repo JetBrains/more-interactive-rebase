@@ -28,13 +28,13 @@ class CircleDragAndDropListener(
     val project: Project,
     private val circle: CirclePanel,
     private val circles: MutableList<CirclePanel>,
-    private val parent: LabeledBranchPanel
+    private val parent: LabeledBranchPanel,
 ) : MouseAdapter(), Disposable {
     private var messages: MutableList<JBPanel<JBPanel<*>>> = parent.messages
     private var labels = parent.commitLabels
     private var label = labels[getLabelIndex(circle, labels)]
     private var message: JBPanel<JBPanel<*>> = messages[getLabelIndex(circle, labels)]
-    private var currentPosition = Point(circle.x, circle.y)
+    private var mousePosition = Point(circle.x, circle.y)
     private var circlesPositions = mutableListOf<CirclePosition>()
     private var messagesPositions = mutableListOf<Point>()
 
@@ -74,8 +74,7 @@ class CircleDragAndDropListener(
      */
     override fun mousePressed(e: MouseEvent) {
         wasDragged = false
-        currentPosition.x = e.xOnScreen
-        currentPosition.y = e.yOnScreen
+        updateMousePosition(e)
         circlesPositions =
             circles.map { c ->
                 CirclePosition(c.centerX.toInt(), c.centerY.toInt(), c.x, c.y)
@@ -97,13 +96,12 @@ class CircleDragAndDropListener(
         if (!commit.changes.any { it is DropCommand }) {
             wasDragged = true
             commit.setDraggedTo(true)
-            val deltaY = e.yOnScreen - currentPosition.y
+            val deltaY = e.yOnScreen - mousePosition.y
             val newCircleY = circle.y + deltaY
 
             setCurrentCircleLocation(newCircleY)
 
-            currentPosition.x = e.xOnScreen
-            currentPosition.y = e.yOnScreen
+            updateMousePosition(e)
 
             val newIndex = findNewBranchIndex()
             if (newIndex != currentIndex) {
@@ -119,6 +117,15 @@ class CircleDragAndDropListener(
     }
 
     /**
+     * Updates the coordinates of the mouse cursor
+     * upon mouse press and while dragging
+     */
+    private fun updateMousePosition(e: MouseEvent) {
+        mousePosition.x = e.xOnScreen
+        mousePosition.y = e.yOnScreen
+    }
+
+    /**
      * On mouse release:
      * 1. drop and reposition commit if it was dragged;
      * 2. update main view (refresh)
@@ -129,16 +136,30 @@ class CircleDragAndDropListener(
             commit.setDraggedTo(false)
             repositionOnDrop()
             if (initialIndex != currentIndex) {
-                commit.setReorderedTo(true)
-                val command = ReorderCommand(
-                    parent.branch.initialCommits as MutableList,
-                    commits.size - initialIndex - 1,
-                    commits.size - initialIndex - 1)
-                commit.addChange(command)
-                project.service<RebaseInvoker>().addCommand(command)
+                markCommitAsReordered()
             }
             parent.branch.updateCurrentCommits(initialIndex, currentIndex, commit)
         }
+    }
+
+    /**
+     * Marks a commit as a reordered by
+     * 1. sets the isReordered flag to true
+     * 2. adds a ReorderCommand
+     * to the visual changes applied to the commit
+     * 3. adds the Reorder Command to the Invoker
+     * that holds an overview of all staged changes.
+     */
+    private fun markCommitAsReordered() {
+        commit.setReorderedTo(true)
+        val command =
+            ReorderCommand(
+                parent.branch.initialCommits as MutableList,
+                commits.size - initialIndex - 1,
+                commits.size - initialIndex - 1,
+            )
+        commit.addChange(command)
+        project.service<RebaseInvoker>().addCommand(command)
     }
 
     /**
@@ -234,10 +255,10 @@ class CircleDragAndDropListener(
         }
     }
 
-    /**
-     * Reposition all circles to spread away from
-     * the circle that is being dragged (snaps abruptly)
-     */
+//    /**
+//     * Reposition all circles to spread away from
+//     * the circle that is being dragged (snaps abruptly)
+//     */
 //    private fun repositionOnDrag() {
 //        for ((i, other) in circles.withIndex()) {
 //            if (circle != other) {
@@ -254,27 +275,52 @@ class CircleDragAndDropListener(
      * the circle that is being dragged (smooth animated transition)
      */
     private fun repositionOnDrag() {
-        val animationDuration = 30 // Duration in milliseconds
-        val animationSteps = 10 // Number of animation steps
-
         // Calculate the target positions for each circle
         val startPositions = circles.map { Point(it.x, it.y) }
         val targetPositions = circlesPositions.map { Point(it.x, it.y) }
-        val stepSizes = calculateStepSizes(startPositions, targetPositions, animationSteps)
+        val stepSizes = calculateStepSizes(startPositions, targetPositions)
 
+        val timer =
+            createReorderAnimation(
+                stepSizes,
+                targetPositions,
+            )
+
+        startReorderAnimation(timer)
+    }
+
+    /**
+     * Creates a transition that dynamically
+     * rearranges all remaining circles in the branch
+     * accordingly to the circle that is being dragged.
+     * One can specify:
+     * 1. the duration of the animation
+     * 2. how many frames (steps) for smooth/jiggled execution
+     * 3. custom step size for every circle
+     * 4. target position for each circle
+     */
+    private fun createReorderAnimation(
+        stepSizes: MutableList<Point>,
+        targetPositions: List<Point>,
+        animationDuration: Int = 30,
+        animationSteps: Int = 10,
+    ): Timer {
         var currentStep = 0
 
         // Timer to perform the animation
-        val timer = Timer((animationDuration / animationSteps.toDouble()).roundToInt()) {
-            currentStep++
-            moveCirclesAndMessages(stepSizes, targetPositions)
+        val timer =
+            Timer((animationDuration / animationSteps.toDouble()).roundToInt()) {
+                currentStep++
+                moveCirclesAndMessages(stepSizes, targetPositions)
+                stopAnimationIfComplete(currentStep, animationSteps, it)
+            }
+        return timer
+    }
 
-            // Repaint the parent to reflect the changes
-            parent.repaint()
-
-            stopAnimationIfComplete(currentStep, animationSteps, it)
-        }
-
+    /**
+     * Starts playing the reorder animation.
+     */
+    private fun startReorderAnimation(timer: Timer) {
         timer.initialDelay = 0
         timer.isRepeats = true
         timer.start()
@@ -284,15 +330,24 @@ class CircleDragAndDropListener(
      *  Stop the timer
      *  when the animation is complete
      */
-    private fun stopAnimationIfComplete(currentStep: Int, animationSteps: Int, it: ActionEvent) {
+    private fun stopAnimationIfComplete(
+        currentStep: Int,
+        animationSteps: Int,
+        it: ActionEvent,
+    ) {
         if (currentStep >= animationSteps) {
             (it.source as Timer).stop()
         }
     }
 
+    /**
+     * Iteratively moves all circles and messages
+     * taking small steps
+     * to their target positions
+     */
     private fun moveCirclesAndMessages(
         stepSizes: MutableList<Point>,
-        targetPositions: List<Point>
+        targetPositions: List<Point>,
     ) {
         for ((i, other) in circles.withIndex()) {
             if (other != circle) {
@@ -305,19 +360,33 @@ class CircleDragAndDropListener(
 
                 // Move the circle and message to the next step
                 val newX =
-                    if (abs(targetPositions[i].x - currentX) < abs(stepX)) targetPositions[i].x else currentX + stepX
+                    reorderStep(targetPositions[i].x, currentX, stepX)
                 val newY =
-                    if (abs(targetPositions[i].y - currentY) < abs(stepY)) targetPositions[i].y else currentY + stepY
+                    reorderStep(targetPositions[i].y, currentY, stepY)
                 other.setLocation(newX, newY)
                 message.setLocation(message.x, newY)
             }
         }
+        parent.repaint()
     }
 
+    /**
+     * Calculates what is the new position
+     * after a step is taken
+     */
+    private fun reorderStep(
+        target: Int,
+        current: Int,
+        step: Int,
+    ) = if (abs(target - current) < abs(step)) target else current + step
+
+    /**
+     * Calculate the steps
+     */
     private fun calculateStepSizes(
         startPositions: List<Point>,
         targetPositions: List<Point>,
-        animationSteps: Int
+        animationSteps: Int = 10,
     ): MutableList<Point> {
         val stepSizes = mutableListOf<Point>()
 

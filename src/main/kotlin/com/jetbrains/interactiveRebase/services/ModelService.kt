@@ -68,7 +68,7 @@ class ModelService(
                 branchInfo.setCommits(commits)
                 branchInfo.clearSelectedCommits()
                 invoker.branchInfo = branchInfo
-               // invoker.createModel()
+                // invoker.createModel()
             }
         }
     }

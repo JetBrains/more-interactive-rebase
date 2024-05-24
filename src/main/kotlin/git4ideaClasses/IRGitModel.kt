@@ -232,7 +232,6 @@ class IRGitModel<T : IRGitEntry>(initialState: List<Element<T>>) {
         lateinit var root: Element.UniteRoot<T>
         rows.modifyList {
             root = convertToRoot(indices.last())
-
         }
         return root
     }

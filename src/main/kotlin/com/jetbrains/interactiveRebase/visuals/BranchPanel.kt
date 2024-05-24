@@ -48,12 +48,10 @@ class BranchPanel(
         val commit = branch.currentCommits[i]
         var circle = CirclePanel(diameter.toDouble(), borderSize, color, branch.currentCommits[i])
 
-        if (commit.changes.any { it is DropCommand } == true) {
+        if (commit.changes.any { it is DropCommand }) {
             circle = DropCirclePanel(diameter.toDouble(), borderSize, color, branch.currentCommits[i])
-        }
-
-        if (commit.changes.any { it is StopToEditCommand } == true) {
-            circle = StopToEditCirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
+        } else if (commit.changes.any { it is StopToEditCommand }) {
+            circle = StopToEditCirclePanel(diameter.toDouble(), borderSize, color, branch.currentCommits[i])
         }
 
         circles.add(circle)
