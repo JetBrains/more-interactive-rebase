@@ -38,7 +38,7 @@ class StopToEditCirclePanel(
     }
 
     fun paintIcon(g: Graphics) {
-        // val icon = PlatformIcons.EDIT
+//         val icon = PlatformIcons.EDIT
         val icon = AllIcons.Actions.Pause
         val iconX = (width - icon.iconWidth) / 2
         val iconY = (height - icon.iconHeight) / 2

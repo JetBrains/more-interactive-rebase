@@ -4,17 +4,13 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
-import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import java.awt.BorderLayout
 import java.awt.Graphics
 import javax.swing.BoxLayout
-import javax.swing.JButton
 import javax.swing.JComponent
-import javax.swing.UIManager
 
 class HeaderPanel(private val project: Project, private val actionManager: ActionManager = ActionManager.getInstance()) :
     JBPanel<JBPanel<*>>() {
@@ -57,16 +53,12 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
      * At the moment, the buttons are hardcoded, but we will replace them with icons and listeners later.
      */
     fun addChangeButtons(buttonPanel: JBPanel<JBPanel<*>>) {
-        val rebaseButton = JButton("Rebase")
-        rebaseButton.background = JBColor.namedColor("Button.default.startBackground", JBUI.CurrentTheme.Button.defaultButtonColorStart())
-        rebaseButton.isOpaque = true
-        rebaseButton.border = JBUI.Borders.empty(5, 6)
-        rebaseButton.addActionListener {
-            invoker.createModel()
-            invoker.executeCommands()
-        }
-        val resetButton = JButton("Reset")
-        resetButton.foreground = UIManager.getColor("Button.foreground")
+        val rebaseButton = RoundedButton("Rebase", Palette.BLUEBUTTON, Palette.WHITETEXT)
+
+        rebaseButton.addActionListener { invoker.createModel()
+            invoker.executeCommands() }
+        val resetButton = RoundedButton("Reset", Palette.GRAYBUTTON,  Palette.WHITETEXT)
+
         buttonPanel.add(resetButton)
         buttonPanel.add(rebaseButton)
     }
