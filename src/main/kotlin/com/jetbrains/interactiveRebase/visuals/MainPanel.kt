@@ -99,7 +99,7 @@ class MainPanel(
      * Initializes the main component.
      */
     fun createMainPanel() {
-        val headerPanel = HeaderPanel(this, project, invoker)
+        val headerPanel = HeaderPanel(project)
 
         val firstDivider =
             OnePixelSplitter(false, 0.7f).apply {
