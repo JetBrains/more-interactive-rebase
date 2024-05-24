@@ -9,8 +9,7 @@ import com.jetbrains.interactiveRebase.services.ActionService
 
 class StopToEditAction : DumbAwareAction("Stop to Edit", "Pause the rebasing action to edit a commit", AllIcons.Actions.Pause) {
     override fun actionPerformed(e: AnActionEvent) {
-        println("stop to edit")
-        TODO("Not yet implemented")
+        e.project?.service<ActionService>()?.takeStopToEditAction()
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
@@ -18,6 +17,6 @@ class StopToEditAction : DumbAwareAction("Stop to Edit", "Pause the rebasing act
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkDrop(e) // TODO replace with actual implementation
+        e.project?.service<ActionService>()?.checkDrop(e)
     }
 }
