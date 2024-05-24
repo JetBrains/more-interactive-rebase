@@ -17,6 +17,6 @@ data class DropCommand(override var commits: MutableList<CommitInfo>) : RebaseCo
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
     ) {
-        model.drop(commits.map { commit -> branchInfo.currentCommits.indexOf(commit) })
+        model.drop(commits.map { commit -> branchInfo.currentCommits.reversed().indexOf(commit) })
     }
 }
