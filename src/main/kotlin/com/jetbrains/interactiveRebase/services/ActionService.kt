@@ -96,14 +96,14 @@ class ActionService(project: Project) {
     /**
      * Resets all changes made to the commits
      */
-    fun resetAllChangesAction(){
+    fun resetAllChangesAction()  {
         invoker.commands = mutableListOf()
         val currentBranchInfo = invoker.branchInfo
-        currentBranchInfo.currentCommits = currentBranchInfo.commits.toMutableList()
-        currentBranchInfo.commits.forEach{
-                commitInfo -> commitInfo.changes.clear()
+        invoker.branchInfo.currentCommits = currentBranchInfo.commits.toMutableList()
+        invoker.branchInfo.commits.forEach {
+                commitInfo ->
+            commitInfo.changes.clear()
         }
-        currentBranchInfo.clearSelectedCommits()
+        invoker.branchInfo.clearSelectedCommits()
     }
-
 }

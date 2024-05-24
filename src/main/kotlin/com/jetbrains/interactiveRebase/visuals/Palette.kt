@@ -26,5 +26,4 @@ object Palette {
     public final val BLUEBUTTON = JBColor(Color(41, 152, 231), Color(20, 124, 204))
     public final val GRAYBUTTON = JBColor(Color(178, 172, 172), Color(89, 101, 103))
     public final val WHITETEXT = JBColor(Color(255, 255, 255), Color(255, 255, 255))
-
 }
