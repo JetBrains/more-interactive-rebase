@@ -10,6 +10,7 @@ import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
 data class SquashCommand(
+
     val parentCommit: CommitInfo,
     val squashedCommits: List<CommitInfo>,
     val newMessage: String,

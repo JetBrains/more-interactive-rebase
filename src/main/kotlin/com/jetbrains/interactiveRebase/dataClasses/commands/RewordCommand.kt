@@ -7,8 +7,10 @@ import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
 
+
 data class RewordCommand(var commit: CommitInfo, var newMessage: String) :
     RebaseCommand() {
+
 
     /**
      * This method is to set up connection with the

@@ -22,6 +22,7 @@ class DropCommitListener(
      * When the button is clicked, the selected commits are dropped.
      */
     override fun mouseClicked(e: MouseEvent?) {
+
 //        val commits = modelService.getSelectedCommits()
 //        commits.forEach {
 //                commitInfo ->
@@ -29,6 +30,7 @@ class DropCommitListener(
 //        }
 //        invoker.addCommand(DropCommand(commits, project))
 //        modelService.branchInfo.clearSelectedCommits()
+
     }
 
     /**

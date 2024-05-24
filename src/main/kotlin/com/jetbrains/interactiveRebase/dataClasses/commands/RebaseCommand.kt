@@ -15,6 +15,7 @@ import git4ideaClasses.IRGitModel
 
 sealed class RebaseCommand() {
 
+
     /**
      * This method is to set up connection with the
      * Interactive Rebase mechanism.

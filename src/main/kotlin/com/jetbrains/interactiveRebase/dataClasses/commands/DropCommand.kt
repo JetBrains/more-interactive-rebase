@@ -8,6 +8,7 @@ import git4ideaClasses.IRGitModel
 
 
 data class DropCommand(var commit: CommitInfo) : RebaseCommand() {
+
     /**
      * This method is to set up connection with the
      * Interactive Rebase mechanism.
@@ -21,7 +22,6 @@ data class DropCommand(var commit: CommitInfo) : RebaseCommand() {
     ) {
 
         model.drop(listOf(branchInfo.currentCommits.reversed().indexOf(commit)))
-
 
     }
 }

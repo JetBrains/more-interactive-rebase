@@ -35,7 +35,9 @@ class TextFieldListener(
      */
     private fun makeRewordChange() {
 
+
         val command = RewordCommand(commitInfo, textField.text)
+
         commitInfo.addChange(command)
         invoker.addCommand(command)
         textField.exitTextBox()

@@ -7,6 +7,7 @@ import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
 
+
 data class PickCommand(var commit: CommitInfo) : RebaseCommand() {
 
     /**

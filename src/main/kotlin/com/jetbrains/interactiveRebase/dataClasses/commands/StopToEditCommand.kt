@@ -7,6 +7,7 @@ import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
 
+
 data class StopToEditCommand(var commit: CommitInfo) : RebaseCommand() {
 
     /**
@@ -20,6 +21,8 @@ data class StopToEditCommand(var commit: CommitInfo) : RebaseCommand() {
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
     ) {
+
         model.edit(listOf(branchInfo.currentCommits.reversed().indexOf(commit)))
+
     }
 }
