@@ -29,9 +29,9 @@ class BranchPanelTest : BasePlatformTestCase() {
         graph = mock(Graphics2D::class.java)
         graph2 = mock(Graphics::class.java)
         ui = mock(ComponentUI::class.java)
-        commit1 = CommitInfo(mock(GitCommit::class.java), project, null)
-        commit2 = CommitInfo(mock(GitCommit::class.java), project, null)
-        commit3 = CommitInfo(mock(GitCommit::class.java), project, null)
+        commit1 = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
+        commit2 = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
+        commit3 = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
         branchPanel = BranchPanel(BranchInfo("branch", mutableListOf(commit1, commit2, commit3)), JBColor.BLUE)
     }
 
@@ -42,11 +42,11 @@ class BranchPanelTest : BasePlatformTestCase() {
 
         verify(graph2).dispose()
         verify(graph, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        verify(graph, times(2)).drawLine(anyInt(), anyInt(), anyInt(), anyInt())
+        verify(graph, times(4)).drawLine(anyInt(), anyInt(), anyInt(), anyInt())
     }
 
     fun testGetCirclePanels() {
-        assertEquals(branchPanel.getCirclePanels().size, 3)
+        assertEquals(branchPanel.circles.size, 3)
     }
 
     fun testColor() {

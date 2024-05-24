@@ -5,6 +5,7 @@ import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
 import java.awt.BasicStroke
+import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
@@ -13,17 +14,17 @@ import java.awt.geom.Ellipse2D
 /**
  * Visual representation of commit node in the git graph
  */
-class CirclePanel(
+open class CirclePanel(
     private val diameter: Double,
     private val border: Float,
     private val color: JBColor,
-    var commit: CommitInfo,
-    var next: CirclePanel? = null,
-    var previous: CirclePanel? = null,
+    open var commit: CommitInfo,
+    open var next: CirclePanel? = null,
+    open var previous: CirclePanel? = null,
 ) : JBPanel<JBPanel<*>>() {
     private var centerX = 0.0
     private var centerY = 0.0
-    lateinit var circle: Ellipse2D
+    lateinit var circle: Ellipse2D.Double
 
     /**
      * Makes a panel where the circle will be drawn and
@@ -46,22 +47,20 @@ class CirclePanel(
 
     public override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
+        paintCircle(g)
+    }
 
-        // Cast the Graphics object to Graphics2D for more advanced rendering
+    public open fun paintCircle(g: Graphics) {
         val g2d = g as Graphics2D
 
         // Set rendering hints for smoother rendering
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
         createCircle()
-
-        if (commit.isSelected) {
-            g2d.color = color.darker()
-        } else {
-            g2d.color = color
-        }
-
-        g2d.fill(circle)
+        val circleColor = if (commit.isSelected) color.darker() else color
+        val shadowColor = if (commit.isSelected) Palette.SELECTEDHIGHLIGHT else Palette.DARKSHADOW
+        val borderColor = if (commit.isSelected) Palette.BLUEBORDER.darker() else Palette.DARKBLUE
+        selectedCommitAppearance(g2d, commit.isSelected, circleColor, shadowColor, borderColor)
 
         if (commit.isHovered) {
             g2d.color = JBColor.BLACK
@@ -73,17 +72,74 @@ class CirclePanel(
     /**
      * Creates a circle shape to be drawn inside the panel.
      */
-    private fun createCircle() {
+    fun createCircle() {
         val width = width.toDouble()
         val height = height.toDouble()
 
         // Calculate the diameter of the circle,
         // so that border is not cropped due to the panel size
-        val diameter = diameter - 2 * border
+        val diameter = Math.min(width, height) - 2 * (border + 0.5)
 
         // Calculate the x and y coordinates for drawing the circle at the center
-        centerX = (width - diameter) / 2
-        centerY = (height - diameter) / 2
+        val centerX = (width - diameter) / 2
+        val centerY = (height - diameter) / 2
         circle = Ellipse2D.Double(centerX, centerY, diameter, diameter)
+    }
+
+    /**
+     * Draws the circle with a shadow and border.
+     */
+    open fun selectedCommitAppearance(
+        g2d: Graphics2D,
+        isSelected: Boolean,
+        circleColor: Color,
+        shadowColor: Color,
+        borderColor: Color,
+    ) {
+        drawShadow(g2d, circle, shadowColor)
+        g2d.color = if (isSelected) circleColor.darker() else circleColor
+        drawBorder(g2d, circle, borderColor)
+    }
+
+    /**
+     * Draws the border of the circle.
+     */
+    open fun drawBorder(
+        g2d: Graphics2D,
+        circle: Ellipse2D.Double,
+        borderColor: Color,
+    ) {
+        g2d.fill(circle)
+        g2d.color = borderColor
+        g2d.stroke = BasicStroke(border)
+        g2d.draw(circle)
+    }
+
+    /**
+     * Draws a shadow around the circle.
+     */
+    open fun drawShadow(
+        g2d: Graphics2D,
+        circle: Ellipse2D.Double,
+        color: Color,
+    ) {
+        val shadowLayers = 5
+        val maxShadowOffset = 3.5
+        for (i in 0 until shadowLayers) {
+            val alpha = (255 * (1.0 - i.toDouble() / shadowLayers)).toInt() - 20
+            val shadowColor = Color(color.red, color.green, color.blue, alpha)
+            g2d.color = shadowColor
+            val offset = maxShadowOffset * (i.toDouble() / shadowLayers)
+            g2d.fill(Ellipse2D.Double(circle.x - offset, circle.y - offset, circle.width + 2 * offset, circle.height + 2 * offset))
+        }
+        g2d.draw(circle)
+        g2d.fill(circle)
+    }
+
+    /**
+     * Draws the circle with a shadow and border.
+     */
+    fun paintSuper(g: Graphics) {
+        super.paintComponent(g)
     }
 }

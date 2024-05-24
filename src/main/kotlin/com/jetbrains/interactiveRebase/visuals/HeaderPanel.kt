@@ -1,13 +1,22 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.project.Project
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
+import com.intellij.util.ui.JBUI
+import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import java.awt.BorderLayout
 import java.awt.Graphics
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
+import javax.swing.UIManager
 
-class HeaderPanel(mainPanel: JComponent) : JBPanel<JBPanel<*>>() {
+class HeaderPanel(private val mainPanel: JComponent, private val project: Project, private val invoker: RebaseInvoker) :
+    JBPanel<JBPanel<*>>() {
     val gitActionsPanel = JBPanel<JBPanel<*>>()
     val changeActionsPanel = JBPanel<JBPanel<*>>()
 
@@ -31,15 +40,14 @@ class HeaderPanel(mainPanel: JComponent) : JBPanel<JBPanel<*>>() {
      * At the moment, the buttons are hardcoded, but we will replace them with icons and listeners later.
      */
     private fun addGitButtons(buttonPanel: JBPanel<JBPanel<*>>) {
-        val squashButton = JButton("Squash")
-        val fixupButton = JButton("Stop to edit")
-        val rewordButton = JButton("Reword")
-        val dropButton = JButton("Drop")
-
-        buttonPanel.add(squashButton)
-        buttonPanel.add(fixupButton)
-        buttonPanel.add(rewordButton)
-        buttonPanel.add(dropButton)
+        val actionsGroup =
+            ActionManager.getInstance().getAction(
+                "com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup",
+            ) as RebaseActionsGroup
+        val toolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.EDITOR_TAB, actionsGroup, true)
+        val toolbarComponent: JComponent = toolbar.component
+        toolbar.targetComponent = buttonPanel
+        buttonPanel.add(toolbarComponent)
     }
 
     /**
@@ -47,10 +55,14 @@ class HeaderPanel(mainPanel: JComponent) : JBPanel<JBPanel<*>>() {
      * At the moment, the buttons are hardcoded, but we will replace them with icons and listeners later.
      */
     private fun addChangeButtons(buttonPanel: JBPanel<JBPanel<*>>) {
-        val pickButton = JButton("Pick")
+        val rebaseButton = JButton("Rebase")
+        rebaseButton.background = JBColor.namedColor("Button.default.startBackground", JBUI.CurrentTheme.Button.defaultButtonColorStart())
+        rebaseButton.isOpaque = true
+        rebaseButton.border = JBUI.Borders.empty(5, 15)
+        rebaseButton.addActionListener { invoker.executeCommands() }
         val resetButton = JButton("Reset")
-
-        buttonPanel.add(pickButton)
+        resetButton.foreground = UIManager.getColor("Button.foreground")
         buttonPanel.add(resetButton)
+        buttonPanel.add(rebaseButton)
     }
 }

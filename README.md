@@ -1,138 +1,143 @@
-# Interactive Rebase Jetbrains
-
-
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
-
-# plugin_template
-
-![Build]()
-[![Version](https://img.shields.io/jetbrains/plugin/v/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
-
-## Template ToDo list
-- [x] Create a new [IntelliJ Platform Plugin Template][template] project.
-- [ ] Get familiar with the [template documentation][template].
-- [ ] Adjust the [pluginGroup](./gradle.properties), [plugin ID](./src/main/resources/META-INF/plugin.xml) and [sources package](./src/main/kotlin).
-- [ ] Adjust the plugin description in `README` (see [Tips][docs:plugin-description])
-- [ ] Review the [Legal Agreements](https://plugins.jetbrains.com/docs/marketplace/legal-agreements.html?from=IJPluginTemplate).
-- [ ] [Publish a plugin manually](https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html?from=IJPluginTemplate) for the first time.
-- [ ] Set the `PLUGIN_ID` in the above README badges.
-- [ ] Set the [Plugin Signing](https://plugins.jetbrains.com/docs/intellij/plugin-signing.html?from=IJPluginTemplate) related [secrets](https://github.com/JetBrains/intellij-platform-plugin-template#environment-variables).
-- [ ] Set the [Deployment Token](https://plugins.jetbrains.com/docs/marketplace/plugin-upload.html?from=IJPluginTemplate).
-- [ ] Click the <kbd>Watch</kbd> button on the top of the [IntelliJ Platform Plugin Template][template] to be notified about releases containing new features and fixes.
-
-<!-- Plugin description -->
-This Fancy IntelliJ Platform Plugin is going to be your implementation of the brilliant ideas that you have.
-
-This specific section is a source for the [plugin.xml](/src/main/resources/META-INF/plugin.xml) file which will be extracted by the [Gradle](/build.gradle.kts) during the build process.
-
-To keep everything working, do not remove `<!-- ... -->` sections.
-<!-- Plugin description end -->
-
-## Installation
-
-- Using the IDE built-in plugin system:
-
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "plugin_template"</kbd> >
-  <kbd>Install</kbd>
-
-- Manually:
-
-  Download the [latest release]() and install it manually using
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+# <img src="src/main/resources/META-INF/pluginIcon.svg" style="width: 200px; height: 200px; "> A More Interactive Rebase
 
 
 ---
-Plugin based on the [IntelliJ Platform Plugin Template][template].
+<!-- Plugin description -->
+A More Interactive Rebase for JetBrains is a plugin for the integrated development
+environments (IDEs) from JetBrains. The tool makes it easier for you to perform Git Interactive Rebase actions, without 
+the need for a command line, by providing a clear 
+graphical visualization of the commit history and the changes you want to perform on it.
+<!-- Plugin description end -->
 
-[template]: https://github.com/JetBrains/intellij-platform-plugin-template
-[docs:plugin-description]: https://plugins.jetbrains.com/docs/intellij/plugin-user-experience.html#plugin-description-and-presentation
+
+## 📋 Table of Contents
+
+1. ✨ [Features](#features)
+2. ⚙️ [Installation](#-installation)
+3.  ⚡ [Quick Start](#-quick-start-)
+4. 🔗 [Dependencies](#-dependencies)
+5. ❓ [Support](#-support)
+6. 🗺️ [Roadmap](#-roadmap)
+7. ✒️ [Authors and Acknowledgement](#authors-and-acknowledgment)
+
+
+## ✨ Features
+A More Interactive Rebase offers the following functionality for a better user experience:
+* Opens in the editor tab for a better visualization
+* Shows clearly the commit history in the form of a graph
+* Gives details about the commits and their file changes
+* Allows performing Interactive Rebase actions on selected commits
+* Allows reordering of commits by drag-and-drop
+
+[//]: # (Add short video here)
+
+##  ⚙️ Installation
+You can easily get started with setting up the plugin by following these guidelines:
+
+### Guidelines for Setting up
+
+1. Download the Plugin zip on your device
+2. Extract the files in it in a folder
+3. Open a JetBrains IDE and navigate to <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> >
+   <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+4. Navigate to the folder of the Plugin and select `interactive-rebase-jetbrains-version.jar`
+5. The Plugin should be in the list of Plugins and you can search for it by name *A More Interactive Rebase*
+6. Click on the Plugin and enable it
+7. Restart your IDE
+
+
+## ⚡ Quick Start
+### Opening the Plugin
+Navigate to <kbd>Tools</kbd> > <kbd> Interactive Rebase Current Branch</kbd>. The Plugin opens as a file in
+the editor tab. The branch drawn shows the latest commits on the checked out branch. Closing the Plugin and opening it
+again keeps the changes that were made.
+
+### Commit Information
+Clicking on one or multiple commits selects them. The commit information and file changes of the selected commits
+are presented on the right side of the screen. Double-clicking on a file change opens its diff and shows the changes.
+
+### Interactive Rebase Actions
+After selecting the commits, the buttons that are *active* show the available Interactive Rebase actions. **It is
+important to note that any changes made on the graph are not actually executed until the `Start Rebasing` button
+is pressed. The idea of the graph is to show a preview of how the commit history will look in the end.** If you are 
+not very
+familiar with the Interactive Rebase actions that Git has to offer, you can read the
+[Rewriting History](https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History) Chapter provided by Git
+for more information.
+
+* **<u>Reword</u>** - If a single commit is selected you can click the `reword` button that opens a text field
+  in place of the commit message. Alternatively, if there is no selected commit, you can just double-click on a
+  commit message, which will also enable the text field. You can edit the message and press `Enter`.
+  If you want to cancel your rewording, pressing `Escape` closes the text field.
+* **<u>Reorder</u>** - You can drag and drop the commits along the branch if you want to reorder them.
+* **<u>Drop</u>** - After selecting commits, pressing the `drop` button will drop the selected commits.
+* **<u>Squash</u>** - If there is only one selected commit pressing the `squash` button will squash that commit with the
+  previous one (older in the commit history). In the case where multiple commits are selected, they get squashed into
+the oldest selected commit. After squashing, a text field opens for you to reword the commit message
+  for the squashed commit.
+* **<u>Fixup</u>** - If there is only one selected commit, pressing the `fixup` button will perform fixup of that
+  commit with the previous one (older in the commit history). In the case where multiple commits are selected,
+  they are fixed up into the oldest selected commit. This action combines automatically the commit messages of the
+  selected commits.
+* **<u>Stop to Edit</u>** - After selecting commits and pressing the `stop to edit` button the IDE opens each commit
+  in chronological order (from oldest to newest) and allows you to make changes to that commit (amend it).
+  After having made your changes, you have to stage them by typing `git add .`. Pressing `Continue` on the pop-up
+  in the lower right corner of the screen will proceed with the rebasing of the next commit. You can also press
+  `Abort` to stop the
+  stop-to-edit action.
+* **<u>Pick</u>** - Selecting the commits and pressing `Pick` reverts all changes done on them except for reordering.
+* **<u>Reset</u>** - clicking the `Reset` button reverts the graph to its initial state,
+  before any changes were indicated.
+* **<u>Start Rebasing</u>** - Pressing `Start Rebasing` starts the Interactive Rebase and executes all the changes
+  that were made starting from the lowest changed commit on the graph.
+
+##  🔗 Dependencies
+
+### IntelliJ OpenAPI
+In order for our Plugin to interact with the current JetBrains IDEs we are making use of the
+[Intellij Platform API](https://plugins.jetbrains.com/docs/intellij/explore-api.html). This streamlines the process of
+building a Plugin by offering extension points to already existing functionality.
+
+### git4idea
+To allow interaction with Git functionality, we use the [git4idea](https://plugins.jetbrains.com/plugin/13173-git)
+Plugin as a library.
+
+### IntelliJ Community
+Our Plugin is compatible with [IntelliJ Community 2024.1](https://www.jetbrains.com/idea/download/other.html) and newer
+versions.
+### Gradle
+For managing the dependencies during runtime and testing we use
+[Gradle 8.7](https://docs.gradle.org/8.7/release-notes.html). We have defined tasks for tools such as
+Jacoco and Spotless.
+
+
+
+
+## ❓ Support
+If you are experiencing any difficulties, need help or want to report a bug feel free to contact one
+of our team members through email:
+* Marina Mădăraş - [M.Madaras@student.tudelft.nl](mailto:M.Madaras@student.tudelft.nl)
+* Diego Becerra Merodio - [D.BecerraMerodio@student.tudelft.nl](mailto:D.BecerraMerodio@student.tudelft.nl)
+* Aleksandra Savova - [A.Savova@student.tudelft.nl](mailto:A.Savova@student.tudelft.nl)
+* Ada Turgut - [A.Turgut@student.tudelft.nl](mailto:A.Turgut@student.tudelft.nl)
+* Galya Vergieva -  [G.Vergieva@student.tudelft.nl](mailto:G.Vergieva@student.tudelft.nl)
+
+
+## 🗺️ Roadmap
+Since the project is still under development, here you can see the plan for the foreseeable future. You can see
+the whole Roadmap via this [link](https://gitlab.ewi.tudelft.nl/groups/cse2000-software-project/2023-2024/cluster-p/12c/-/roadmap?state=all&sort=start_date_asc&layout=WEEKS&timeframe_range_type=CURRENT_QUARTER&progress=WEIGHT&show_progress=true&show_milestones=true&milestones_type=ALL&show_labels=false).
+Keep in mind that opening it requires access to the repository.
+
+
+![roadmap.png](Images/roadmap.png)
+
+## ✒️ Authors and acknowledgment
+**Main contributors to the project are the members of our team:**
+* Marina Mădăraş
+* Diego Becerra Merodio
+* Aleksandra Savova
+* Ada Turgut
+* Galya Vergieva
+
+
+

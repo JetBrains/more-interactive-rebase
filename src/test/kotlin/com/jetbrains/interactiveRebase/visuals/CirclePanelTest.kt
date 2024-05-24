@@ -24,7 +24,7 @@ class CirclePanelTest : BasePlatformTestCase() {
         graph = mock(Graphics2D::class.java)
         graph2 = mock(Graphics::class.java)
         ui = mock(ComponentUI::class.java)
-        commit = CommitInfo(mock(GitCommit::class.java), project, null)
+        commit = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
     }
 
     fun testPaintComponent() {
@@ -35,7 +35,7 @@ class CirclePanelTest : BasePlatformTestCase() {
 
         verify(graph2).dispose()
         verify(graph, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        verify(graph).fill(circlePanel.circle)
+        verify(graph, times(3)).fill(circlePanel.circle)
     }
 
     fun testPaintComponentIsSelected() {
@@ -47,7 +47,35 @@ class CirclePanelTest : BasePlatformTestCase() {
 
         verify(graph2).dispose()
         verify(graph, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        verify(graph).draw(circlePanel.circle)
-        verify(graph).fill(circlePanel.circle)
+        verify(graph, times(3)).draw(circlePanel.circle)
+        verify(graph, times(3)).fill(circlePanel.circle)
+    }
+
+    fun testDrawBorder() {
+        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
+        val circle = circlePanel.circle
+        val borderColor = JBColor.BLACK
+        circlePanel.drawBorder(graph, circle, borderColor)
+        verify(graph).fill(circle)
+        verify(graph).color = borderColor
+        verify(graph).draw(circle)
+    }
+
+    fun testDrawShadow() {
+        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
+        val circle = circlePanel.circle
+        val shadowColor = JBColor.BLACK
+        circlePanel.drawShadow(graph, circle, shadowColor)
+        verify(graph, times(2)).fill(circle)
+        verify(graph).draw(circle)
+    }
+
+    fun testSelectedCommitAppearance() {
+        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
+        val circleColor = JBColor.BLACK
+        val shadowColor = JBColor.BLACK
+        val borderColor = JBColor.BLACK
+        circlePanel.selectedCommitAppearance(graph, true, circleColor, shadowColor, borderColor)
+        verify(graph, times(3)).fill(circlePanel.circle)
     }
 }

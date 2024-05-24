@@ -19,7 +19,7 @@ import git4idea.rebase.GitRebaseUtils
  */
 @Service(Service.Level.PROJECT)
 @State(
-    name = "GitRewordedCommitMessages",
+    name = "IRRewordedCommitMessages",
     storages = [Storage(value = StoragePathMacros.WORKSPACE_FILE, roamingType = RoamingType.DISABLED)],
     reportStatistic = false,
 )
