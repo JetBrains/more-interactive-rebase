@@ -20,7 +20,7 @@ class RebaseInvoker(val project: Project) {
                     commitInfo ->
                 GitRebaseEntryGeneratedUsingLog(commitInfo.commit)
             }
-        model = convertToModel(commits)
+        model = convertToModel(commits.reversed())
     }
 
     /**

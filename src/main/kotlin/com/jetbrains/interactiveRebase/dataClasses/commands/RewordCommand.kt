@@ -18,6 +18,6 @@ data class RewordCommand(override var commits: MutableList<CommitInfo>, var newM
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
     ) {
-        model.reword(branchInfo.currentCommits.indexOf(commits[0]), newMessage)
+        model.reword(branchInfo.currentCommits.reversed().indexOf(commits[0]), newMessage)
     }
 }
