@@ -1,5 +1,6 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import java.awt.Color
 
@@ -18,4 +19,6 @@ object Palette {
     public final val SELECTEDHIGHLIGHT = JBColor(Color(0, 0, 0), Color(120, 191, 232))
     public final val DARKSHADOW = JBColor(Color(22, 92, 140), Color(19, 71, 139))
     public final val BLUEBORDER = JBColor(Color(37, 47, 65), Color(21, 147, 232))
+    public final val JETBRAINSGRAY = JBColor(Gray._242, Color(60, 63, 65))
+    public final val DARKGRAY = JBColor(Color(28, 29, 31), Color(60, 63, 65))
 }
