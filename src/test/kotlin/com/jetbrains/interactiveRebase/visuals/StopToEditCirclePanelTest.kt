@@ -20,9 +20,8 @@ import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.geom.Ellipse2D
 
-
-class StopToEditCirclePanelTest: BasePlatformTestCase() {
-    private lateinit var stopToEditCirclePanel:  StopToEditCirclePanel
+class StopToEditCirclePanelTest : BasePlatformTestCase() {
+    private lateinit var stopToEditCirclePanel: StopToEditCirclePanel
     private lateinit var commit: CommitInfo
     private lateinit var g: Graphics2D
 
@@ -89,6 +88,4 @@ class StopToEditCirclePanelTest: BasePlatformTestCase() {
         assertThat(expected.green).isEqualTo(actual.green)
         assertThat(expected.blue).isEqualTo(actual.blue)
     }
-
-
 }

@@ -33,7 +33,7 @@ class StopToEditCirclePanel(
             g2d.draw(circle)
         }
 
-        //TODO: Very hard to unit test, icon cannot be mocked
+        // TODO: Very hard to unit test, icon cannot be mocked
         paintIcon(g2d)
     }
 

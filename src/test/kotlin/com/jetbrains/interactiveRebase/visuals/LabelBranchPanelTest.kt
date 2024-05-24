@@ -91,7 +91,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         assertThat(TextStyle.stripTextFromStyling(label2.text)).isEqualTo("Two")
     }
 
-    fun testChangeTextWhenCommitDropped(){
+    fun testChangeTextWhenCommitDropped() {
         commit3.changes.add(DropCommand(mutableListOf()))
         val label = labeledBranch.generateCommitLabel(2, circle)
         assertThat(TextStyle.stripTextFromStyling(label.text)).isEqualTo(commit3.commit.subject)
@@ -103,7 +103,6 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         commit1.isSelected = true
         val label = labeledBranch.generateCommitLabel(0, circle)
         assertThat(label.text).isEqualTo("<html><b>" + commit1.commit.subject + "</b></html>")
-
     }
 
     fun testWrapsLabelWithTextField() {

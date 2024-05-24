@@ -113,5 +113,13 @@ class ActionServiceTest : BasePlatformTestCase() {
         return AnActionEvent(null, dataContext, "place", presentation, ActionManager.getInstance(), 2)
     }
 
+    fun testTakeStopToEditAction() {
+        actionService.takeStopToEditAction()
+        assertThat(branchInfo.selectedCommits.isEmpty()).isTrue()
+        assertThat(commitInfo1.changes.isNotEmpty()).isTrue()
+        assertThat(commitInfo1.isSelected).isFalse()
+        Mockito.verify(mainPanel.commitInfoPanel).commitsSelected(anyCustom())
+    }
+
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)
 }
