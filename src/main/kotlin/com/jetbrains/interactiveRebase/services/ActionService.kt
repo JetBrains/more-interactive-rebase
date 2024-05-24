@@ -92,4 +92,18 @@ class ActionService(project: Project) {
         }
         modelService.branchInfo.clearSelectedCommits()
     }
+
+    /**
+     * Resets all changes made to the commits
+     */
+    fun resetAllChangesAction(){
+        invoker.commands = mutableListOf()
+        val currentBranchInfo = invoker.branchInfo
+        currentBranchInfo.currentCommits = currentBranchInfo.commits.toMutableList()
+        currentBranchInfo.commits.forEach{
+                commitInfo -> commitInfo.changes.clear()
+        }
+        currentBranchInfo.clearSelectedCommits()
+    }
+
 }
