@@ -5,9 +5,9 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
-data class StopToEditCommand(override var commits: MutableList<CommitInfo>) : RebaseCommand(commits) {
+data class StopToEditCommand(var commit: CommitInfo) : RebaseCommand() {
     /**
-     * This method is to set-up connection with the
+     * This method is to set up connection with the
      * Interactive Rebase mechanism.
      *
      * This will be called within the RebaseInvoker,
@@ -17,6 +17,6 @@ data class StopToEditCommand(override var commits: MutableList<CommitInfo>) : Re
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
     ) {
-        TODO("Not yet implemented")
+        model.edit(listOf(branchInfo.currentCommits.reversed().indexOf(commit)))
     }
 }

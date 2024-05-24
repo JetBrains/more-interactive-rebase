@@ -5,10 +5,10 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
-data class FixupCommand(var parentCommits: MutableList<CommitInfo>, val fixupCommits: List<CommitInfo>) :
-    RebaseCommand(parentCommits) {
+data class FixupCommand(var parentCommit: CommitInfo, val fixupCommits: List<CommitInfo>) :
+    RebaseCommand() {
     /**
-     * This method is to set-up connection with the
+     * This method is to set up connection with the
      * Interactive Rebase mechanism.
      *
      * This will be called within the RebaseInvoker,

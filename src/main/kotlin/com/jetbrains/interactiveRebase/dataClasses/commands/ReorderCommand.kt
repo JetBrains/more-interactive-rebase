@@ -6,9 +6,9 @@ import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
 // TODO: Add needed attributes for the indices or ordering of the commits, based on drag-and-drop implementation
-data class ReorderCommand(override var commits: MutableList<CommitInfo>) : RebaseCommand(commits) {
+data class ReorderCommand(var commit: CommitInfo) : RebaseCommand() {
     /**
-     * This method is to set-up connection with the
+     * This method is to set up connection with the
      * Interactive Rebase mechanism.
      *
      * This will be called within the RebaseInvoker,

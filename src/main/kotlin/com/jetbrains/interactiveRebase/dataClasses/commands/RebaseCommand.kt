@@ -1,7 +1,6 @@
 package com.jetbrains.interactiveRebase.dataClasses.commands
 
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
-import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
@@ -11,10 +10,8 @@ import git4ideaClasses.IRGitModel
  *
  * This class is the base class for all the commands
  * that will be executed during the rebase process.
- *
- * @param commit The commit that the command will be executed on.
  */
-sealed class RebaseCommand(open var commits: MutableList<CommitInfo>) {
+sealed class RebaseCommand() {
     /**
      * This method is to set up connection with the
      * Interactive Rebase mechanism.

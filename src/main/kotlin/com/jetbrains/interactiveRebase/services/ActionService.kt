@@ -36,7 +36,7 @@ class ActionService(project: Project) {
         val commits = modelService.getSelectedCommits()
         commits.forEach {
                 commitInfo ->
-            val command = DropCommand(mutableListOf(commitInfo))
+            val command = DropCommand(commitInfo)
             commitInfo.addChange(command)
             invoker.addCommand(command)
         }
@@ -62,7 +62,7 @@ class ActionService(project: Project) {
         val commits = modelService.getSelectedCommits()
         commits.forEach {
                 commitInfo ->
-            val command = StopToEditCommand(mutableListOf(commitInfo))
+            val command = StopToEditCommand(commitInfo)
             commitInfo.addChange(command)
             invoker.addCommand(command)
         }
