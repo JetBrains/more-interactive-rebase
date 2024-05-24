@@ -154,7 +154,6 @@ class CircleDragAndDropListener(
         commit.setReorderedTo(true)
         val command =
             ReorderCommand(
-                parent.branch.initialCommits as MutableList,
                 commits.size - initialIndex - 1,
                 commits.size - initialIndex - 1,
             )

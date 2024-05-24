@@ -76,9 +76,13 @@ for more information.
   commit message, which will also enable the text field. You can edit the message and press `Enter`.
   If you want to cancel your rewording, pressing `Escape` closes the text field.
 
-![drop.gif](Images/drop.gif)
+![reword.gif](Images/reword.gif)
 * **<u>Reorder</u>** - You can drag and drop the commits along the branch if you want to reorder them.
+
+![reorder.gif](Images/reorder.gif)
 * **<u>Drop</u>** - After selecting commits, pressing the `drop` button will drop the selected commits.
+
+![drop.gif](Images/drop.gif)
 * **<u>Squash</u>** - If there is only one selected commit pressing the `squash` button will squash that commit with the
   previous one (older in the commit history). In the case where multiple commits are selected, they get squashed into
 the oldest selected commit. After squashing, a text field opens for you to reword the commit message
