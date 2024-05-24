@@ -4,6 +4,8 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.JBColor
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 import git4idea.GitCommit
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito.mock
@@ -33,6 +35,9 @@ class BranchPanelTest : BasePlatformTestCase() {
         commit2 = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
         commit3 = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
         branchPanel = BranchPanel(BranchInfo("branch", mutableListOf(commit1, commit2, commit3)), JBColor.BLUE)
+
+        commit2.changes.add(StopToEditCommand(mutableListOf()))
+        commit3.changes.add(DropCommand(mutableListOf()))
     }
 
     fun testPaintComponent() {
@@ -55,5 +60,17 @@ class BranchPanelTest : BasePlatformTestCase() {
 
     fun testBranchSize() {
         assertEquals(branchPanel.borderSize, 1f)
+    }
+
+    fun testInitializeCirclePanelDrop() {
+        val circle = branchPanel.initializeCirclePanel(2)
+        assertTrue(circle is DropCirclePanel)
+        assertEquals(circle.commit, commit3)
+    }
+
+    fun testInitializeCirclePanelStopToEdit() {
+        val circle = branchPanel.initializeCirclePanel(1)
+        assertTrue(circle is StopToEditCirclePanel)
+        assertEquals(circle.commit, commit2)
     }
 }

@@ -44,7 +44,7 @@ class BranchPanel(
      * Makes a circle panel and links it
      * to the next and previous neighbors
      */
-    private fun initializeCirclePanel(i: Int): CirclePanel {
+    fun initializeCirclePanel(i: Int): CirclePanel {
         val commit = branch.commits[i]
         var circle = CirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
 

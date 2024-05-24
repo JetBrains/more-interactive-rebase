@@ -3,7 +3,6 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.icons.AllIcons
 import com.intellij.ui.JBColor
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import com.jetbrains.interactiveRebase.visuals.Palette.JETBRAINSGRAY
 import java.awt.BasicStroke
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -24,7 +23,7 @@ class StopToEditCirclePanel(
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
         createCircle()
-        val circleColor = if (commit.isSelected) Palette.DARKGRAY.darker() else JETBRAINSGRAY
+        val circleColor = if (commit.isSelected) Palette.DARKGRAY.darker() else Palette.JETBRAINSGRAY
         val borderColor = if (commit.isSelected) Palette.BLUEBORDER.darker() else Palette.DARKBLUE
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
 
@@ -33,7 +32,13 @@ class StopToEditCirclePanel(
             g2d.stroke = BasicStroke(border)
             g2d.draw(circle)
         }
-//        val icon = PlatformIcons.EDIT
+
+        //TODO: Very hard to unit test, icon cannot be mocked
+        paintIcon(g2d)
+    }
+
+    fun paintIcon(g: Graphics) {
+        // val icon = PlatformIcons.EDIT
         val icon = AllIcons.Actions.Pause
         val iconX = (width - icon.iconWidth) / 2
         val iconY = (height - icon.iconHeight) / 2

@@ -5,7 +5,6 @@ import com.intellij.ui.JBColor
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Captor
@@ -21,8 +20,9 @@ import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.geom.Ellipse2D
 
-class DropCirclePanelTest : BasePlatformTestCase() {
-    private lateinit var dropCirclePanel: DropCirclePanel
+
+class StopToEditCirclePanelTest: BasePlatformTestCase() {
+    private lateinit var stopToEditCirclePanel:  StopToEditCirclePanel
     private lateinit var commit: CommitInfo
     private lateinit var g: Graphics2D
 
@@ -32,12 +32,12 @@ class DropCirclePanelTest : BasePlatformTestCase() {
     override fun setUp() {
         super.setUp()
         val commitProvider = TestGitCommitProvider(project)
-        commit = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf())
+        commit = CommitInfo(commitProvider.createCommit("LOL"), project, mutableListOf())
         g = mock(Graphics2D::class.java)
 
-        dropCirclePanel =
+        stopToEditCirclePanel =
             spy(
-                DropCirclePanel(
+                StopToEditCirclePanel(
                     50.0,
                     2.0f,
                     JBColor.BLACK,
@@ -48,12 +48,12 @@ class DropCirclePanelTest : BasePlatformTestCase() {
 
         doAnswer {
             commit
-        }.`when`(dropCirclePanel).commit
+        }.`when`(stopToEditCirclePanel).commit
     }
 
     fun testPaintCircleSelected() {
         commit.isSelected = true
-        dropCirclePanel.paintCircle(g)
+        stopToEditCirclePanel.paintCircle(g)
         verify(g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
         verify(g, times(2)).fill(any(Ellipse2D.Double::class.java))
         verify(g).stroke = any(BasicStroke::class.java)
@@ -62,12 +62,12 @@ class DropCirclePanelTest : BasePlatformTestCase() {
         verify(g, times(2)).color = colorCaptor.capture()
 
         assertEquals(2, colorCaptor.allValues.size)
-        colorEquals(colorCaptor.allValues[0], Palette.GRAY.darker().darker())
+        colorEquals(colorCaptor.allValues[0], Palette.DARKGRAY.darker().darker())
         colorEquals(colorCaptor.allValues[1], Palette.BLUEBORDER.darker())
     }
 
     fun testPaintCircleHovered() {
-        dropCirclePanel.paintCircle(g)
+        stopToEditCirclePanel.paintCircle(g)
 
         verify(g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
         verify(g, times(2)).fill(any(Ellipse2D.Double::class.java))
@@ -77,28 +77,8 @@ class DropCirclePanelTest : BasePlatformTestCase() {
         verify(g, times(2)).color = colorCaptor.capture()
 
         assertEquals(2, colorCaptor.allValues.size)
-        colorEquals(Palette.GRAY, colorCaptor.allValues[0])
-        colorEquals(Palette.BLUEBORDER, colorCaptor.allValues[1])
-    }
-
-    fun testDrawBorder() {
-        val circle = Ellipse2D.Double(0.0, 0.0, 50.0, 50.0)
-        val borderColor = JBColor.BLUE
-
-        dropCirclePanel.drawBorder(g, circle, borderColor)
-
-        verify(g).fill(circle)
-        verify(g).color = borderColor
-
-        val captor = ArgumentCaptor.forClass(BasicStroke::class.java)
-        verify(g).stroke = captor.capture()
-        assertEquals(1.5f * 2.0f, captor.value.lineWidth)
-        assertEquals(BasicStroke.CAP_BUTT, captor.value.endCap)
-        assertEquals(BasicStroke.JOIN_MITER, captor.value.lineJoin)
-        assertEquals(10f, captor.value.miterLimit)
-        assertArrayEquals(floatArrayOf(3f, 3f), captor.value.dashArray)
-        assertEquals(0f, captor.value.dashPhase)
-        verify(g).draw(circle)
+        colorEquals(Palette.JETBRAINSGRAY, colorCaptor.allValues[0])
+        colorEquals(Palette.DARKBLUE, colorCaptor.allValues[1])
     }
 
     private fun colorEquals(
@@ -109,4 +89,6 @@ class DropCirclePanelTest : BasePlatformTestCase() {
         assertThat(expected.green).isEqualTo(actual.green)
         assertThat(expected.blue).isEqualTo(actual.blue)
     }
+
+
 }
