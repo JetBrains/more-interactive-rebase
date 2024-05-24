@@ -2,11 +2,7 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.ui.JBColor
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import java.awt.BasicStroke
-import java.awt.Color
-import java.awt.Graphics
-import java.awt.Graphics2D
-import java.awt.RenderingHints
+import java.awt.*
 import java.awt.geom.Ellipse2D
 
 class DropCirclePanel(
@@ -31,6 +27,7 @@ class DropCirclePanel(
 
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
         if (commit.isHovered) {
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))
             g2d.color = JBColor.BLACK
             g2d.stroke = BasicStroke(border)
             g2d.draw(circle)

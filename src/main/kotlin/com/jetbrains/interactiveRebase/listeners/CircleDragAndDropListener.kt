@@ -1,11 +1,17 @@
 package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import java.awt.Point
+import java.awt.event.ActionEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.SwingUtilities
@@ -19,9 +25,10 @@ import kotlin.math.roundToInt
  * of single commits within a branch
  */
 class CircleDragAndDropListener(
+    val project: Project,
     private val circle: CirclePanel,
     private val circles: MutableList<CirclePanel>,
-    private val parent: LabeledBranchPanel,
+    private val parent: LabeledBranchPanel
 ) : MouseAdapter(), Disposable {
     private var messages: MutableList<JBPanel<JBPanel<*>>> = parent.messages
     private var labels = parent.commitLabels
@@ -87,26 +94,28 @@ class CircleDragAndDropListener(
      * 4. handle limited vertical movement (outside parent component)
      */
     override fun mouseDragged(e: MouseEvent) {
-        wasDragged = true
-        commit.setDraggedTo(true)
-        val deltaY = e.yOnScreen - currentPosition.y
-        val newCircleY = circle.y + deltaY
+        if (!commit.changes.any { it is DropCommand }) {
+            wasDragged = true
+            commit.setDraggedTo(true)
+            val deltaY = e.yOnScreen - currentPosition.y
+            val newCircleY = circle.y + deltaY
 
-        setCurrentCircleLocation(newCircleY)
+            setCurrentCircleLocation(newCircleY)
 
-        currentPosition.x = e.xOnScreen
-        currentPosition.y = e.yOnScreen
+            currentPosition.x = e.xOnScreen
+            currentPosition.y = e.yOnScreen
 
-        val newIndex = findNewBranchIndex()
-        if (newIndex != currentIndex) {
-            updateIndices(newIndex, currentIndex)
-            repositionOnDrag()
-            parent.repaint()
-            currentIndex = newIndex
+            val newIndex = findNewBranchIndex()
+            if (newIndex != currentIndex) {
+                updateIndices(newIndex, currentIndex)
+                repositionOnDrag()
+                parent.repaint()
+                currentIndex = newIndex
+            }
+
+            // Handle visual indication of movement limits
+            indicateLimitedVerticalMovement(newCircleY)
         }
-
-        // Handle visual indication of movement limits
-        indicateLimitedVerticalMovement(newCircleY)
     }
 
     /**
@@ -121,6 +130,12 @@ class CircleDragAndDropListener(
             repositionOnDrop()
             if (initialIndex != currentIndex) {
                 commit.setReorderedTo(true)
+                val command = ReorderCommand(
+                    parent.branch.initialCommits as MutableList,
+                    commits.size - initialIndex - 1,
+                    commits.size - initialIndex - 1)
+                commit.addChange(command)
+                project.service<RebaseInvoker>().addCommand(command)
             }
             parent.branch.updateCurrentCommits(initialIndex, currentIndex, commit)
         }
@@ -245,6 +260,65 @@ class CircleDragAndDropListener(
         // Calculate the target positions for each circle
         val startPositions = circles.map { Point(it.x, it.y) }
         val targetPositions = circlesPositions.map { Point(it.x, it.y) }
+        val stepSizes = calculateStepSizes(startPositions, targetPositions, animationSteps)
+
+        var currentStep = 0
+
+        // Timer to perform the animation
+        val timer = Timer((animationDuration / animationSteps.toDouble()).roundToInt()) {
+            currentStep++
+            moveCirclesAndMessages(stepSizes, targetPositions)
+
+            // Repaint the parent to reflect the changes
+            parent.repaint()
+
+            stopAnimationIfComplete(currentStep, animationSteps, it)
+        }
+
+        timer.initialDelay = 0
+        timer.isRepeats = true
+        timer.start()
+    }
+
+    /**
+     *  Stop the timer
+     *  when the animation is complete
+     */
+    private fun stopAnimationIfComplete(currentStep: Int, animationSteps: Int, it: ActionEvent) {
+        if (currentStep >= animationSteps) {
+            (it.source as Timer).stop()
+        }
+    }
+
+    private fun moveCirclesAndMessages(
+        stepSizes: MutableList<Point>,
+        targetPositions: List<Point>
+    ) {
+        for ((i, other) in circles.withIndex()) {
+            if (other != circle) {
+                val message = messages[i]
+
+                val currentX = other.x
+                val currentY = other.y
+                val stepX = stepSizes[i].x
+                val stepY = stepSizes[i].y
+
+                // Move the circle and message to the next step
+                val newX =
+                    if (abs(targetPositions[i].x - currentX) < abs(stepX)) targetPositions[i].x else currentX + stepX
+                val newY =
+                    if (abs(targetPositions[i].y - currentY) < abs(stepY)) targetPositions[i].y else currentY + stepY
+                other.setLocation(newX, newY)
+                message.setLocation(message.x, newY)
+            }
+        }
+    }
+
+    private fun calculateStepSizes(
+        startPositions: List<Point>,
+        targetPositions: List<Point>,
+        animationSteps: Int
+    ): MutableList<Point> {
         val stepSizes = mutableListOf<Point>()
 
         // Calculate step sizes for each circle
@@ -258,41 +332,7 @@ class CircleDragAndDropListener(
             val stepY = ceil((targetY - startY).toDouble() / animationSteps).toInt()
             stepSizes.add(Point(stepX, stepY))
         }
-
-        var currentStep = 0
-
-        // Timer to perform the animation
-        val timer = Timer((animationDuration / animationSteps.toDouble()).roundToInt()) {
-            currentStep++
-            for ((i, other) in circles.withIndex()) {
-                if(other != circle) {
-                    val message = messages[i]
-
-                    val currentX = other.x
-                    val currentY = other.y
-                    val stepX = stepSizes[i].x
-                    val stepY = stepSizes[i].y
-
-                    // Move the circle and message to the next step
-                    val newX = if (Math.abs(targetPositions[i].x - currentX) < Math.abs(stepX)) targetPositions[i].x else currentX + stepX
-                    val newY = if (Math.abs(targetPositions[i].y - currentY) < Math.abs(stepY)) targetPositions[i].y else currentY + stepY
-                    other.setLocation(newX, newY)
-                    message.setLocation(message.x, newY)
-                }
-            }
-
-            // Repaint the parent to reflect the changes
-            parent.repaint()
-
-            // Stop the timer when the animation is complete
-            if (currentStep >= animationSteps) {
-                (it.source as Timer).stop()
-            }
-        }
-
-        timer.initialDelay = 0
-        timer.isRepeats = true
-        timer.start()
+        return stepSizes
     }
 
     /**

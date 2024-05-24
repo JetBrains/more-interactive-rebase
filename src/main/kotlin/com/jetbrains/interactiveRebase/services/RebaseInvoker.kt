@@ -102,11 +102,13 @@ class RebaseInvoker(val project: Project) {
         commands.remove(command)
     }
 
+
     /**
      * Executes all the commands to be able to perform the rebase.
      */
     fun executeCommands() {
         commands.forEach { it.execute(model, branchInfo) }
-        IRGitRebaseUtils(project).rebase(branchInfo.currentCommits.reversed()[0].commit, model)
+        IRGitRebaseUtils(project).rebase(branchInfo.initialCommits.reversed()[0].commit, model)
+        commands.clear()
     }
 }

@@ -1,6 +1,7 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -40,6 +41,7 @@ import javax.swing.SwingUtilities
  * - RIGHT means commits appear to the right and names to the left
  */
 class LabeledBranchPanel(
+    val project: Project,
     private val invoker: RebaseInvoker,
     val branch: BranchInfo,
     private val color: JBColor,
@@ -138,7 +140,7 @@ class LabeledBranchPanel(
             labelPanelWrapper.add(wrappedLabel)
             commitLabels.add(commitLabel)
 
-            val dragAndDropListener = CircleDragAndDropListener(circle, circles, this)
+            val dragAndDropListener = CircleDragAndDropListener(project, circle, circles, this)
             circle.addMouseListener(dragAndDropListener)
             circle.addMouseMotionListener(dragAndDropListener)
             Disposer.register(this, dragAndDropListener)

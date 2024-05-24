@@ -4,14 +4,9 @@ import com.intellij.openapi.Disposable
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import java.awt.BasicStroke
-import java.awt.Color
-import java.awt.Cursor
-import java.awt.Dimension
-import java.awt.Graphics
-import java.awt.Graphics2D
-import java.awt.RenderingHints
+import java.awt.*
 import java.awt.geom.Ellipse2D
+import javax.swing.ImageIcon
 
 /**
  * Visual representation of commit node in the git graph
@@ -82,7 +77,8 @@ open class CirclePanel(
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
 
         if (commit.isHovered) {
-            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))
+//            setCursor(grabCursor())
+            cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             g2d.color = JBColor.BLACK
             g2d.stroke = BasicStroke(border)
             g2d.draw(circle)
@@ -90,6 +86,15 @@ open class CirclePanel(
             setCursor(Cursor.getDefaultCursor())
         }
     }
+
+//    fun grabCursor(): Cursor {
+//        val grabImagePath = "Images/commit.png"
+//        val grabImage: Image = ImageIcon(grabImagePath).image
+//
+//        val toolkit = Toolkit.getDefaultToolkit()
+//        return toolkit.createCustomCursor(grabImage, Point(0, 0), "Grab")
+//
+//    }
 
     /**
      * Creates a circle shape to be drawn inside the panel.
