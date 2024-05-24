@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 
 @Service(Service.Level.PROJECT)
-class ActionService(private val project: Project) {
+class ActionService(project: Project) {
     private var modelService = project.service<ModelService>()
     private var invoker = project.service<RebaseInvoker>()
 
@@ -19,35 +19,41 @@ class ActionService(private val project: Project) {
         this.invoker = invoker
     }
 
+    /**
+     * Enables the text field once the Reword button on the toolbar is pressed
+     */
     fun takeRewordAction() {
         modelService.branchInfo.selectedCommits.forEach {
             it.setDoubleClickedTo(true)
         }
     }
 
+    /**
+     * Makes a drop change once the Drop button is clicked
+     */
     fun takeDropAction() {
         val commits = modelService.getSelectedCommits()
         commits.forEach {
                 commitInfo ->
-            commitInfo.addChange(DropCommand(mutableListOf(commitInfo)))
+            val command = DropCommand(mutableListOf(commitInfo))
+            commitInfo.addChange(command)
+            invoker.addCommand(command)
         }
-        invoker.addCommand(DropCommand(commits))
+
         modelService.branchInfo.clearSelectedCommits()
     }
 
+    /**
+     * Enables the Drop button if there are selected commits
+     */
     fun checkDrop(e: AnActionEvent) {
-        //        e.presentation.isEnabledAndVisible = true
-        if (modelService.branchInfo.selectedCommits.size < 1) {
-            e.presentation.isEnabled = false
-        }
+        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty()
     }
 
+    /**
+     * Enables reword button if one commit is selected
+     */
     fun checkReword(e: AnActionEvent) {
-        e.presentation.isEnabled = true
-        e.presentation.isEnabledAndVisible = true
-        val project = e.project
-        if (project != null && project.service<ModelService>().branchInfo.selectedCommits.size != 1) {
-            e.presentation.isEnabled = false
-        }
+        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.size == 1
     }
 }

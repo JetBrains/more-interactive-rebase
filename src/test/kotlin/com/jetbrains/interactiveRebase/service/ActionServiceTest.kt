@@ -1,5 +1,9 @@
 package com.jetbrains.interactiveRebase.service
 
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.application.EDT
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
@@ -12,10 +16,10 @@ import com.jetbrains.interactiveRebase.visuals.CommitInfoPanel
 import com.jetbrains.interactiveRebase.visuals.MainPanel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
+import org.mockito.Mockito.mock
 
 class ActionServiceTest : BasePlatformTestCase() {
     private lateinit var mainPanel: MainPanel
@@ -30,7 +34,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         val commitProvider = TestGitCommitProvider(project)
         commitInfo1 = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf())
         commitInfo2 = CommitInfo(commitProvider.createCommit("fix tests"), project, mutableListOf())
-        val commitService = Mockito.mock(CommitService::class.java)
+        val commitService = mock(CommitService::class.java)
 
         Mockito.doAnswer {
             listOf(commitInfo1.commit)
@@ -46,7 +50,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.addSelectedCommits(commitInfo1)
         branchInfo = modelService.branchInfo
         mainPanel = MainPanel(project, branchInfo, modelService.invoker)
-        mainPanel.commitInfoPanel = Mockito.mock(CommitInfoPanel::class.java)
+        mainPanel.commitInfoPanel = mock(CommitInfoPanel::class.java)
         Mockito.doNothing().`when`(mainPanel.commitInfoPanel).commitsSelected(anyCustom())
         Mockito.doNothing().`when`(mainPanel.commitInfoPanel).repaint()
 
@@ -67,6 +71,47 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(commitInfo2.isDoubleClicked).isFalse()
     }
 
+    fun testTakeRewordActionConsidersEmptyList() {
+        commitInfo1.isSelected = false
+        modelService.branchInfo.clearSelectedCommits()
+        actionService.takeRewordAction()
+        assertThat(commitInfo2.isDoubleClicked).isFalse()
+        assertThat(commitInfo1.isDoubleClicked).isFalse()
+    }
+
+    fun testCheckRewordDisables() {
+        commitInfo1.isSelected = false
+        modelService.branchInfo.clearSelectedCommits()
+        val presentation = Presentation()
+        presentation.isEnabled = true
+        val event = createEventWithPresentation(presentation)
+        actionService.checkReword(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+        modelService.branchInfo.addSelectedCommits(commitInfo1)
+        actionService.checkReword(event)
+        assertThat(presentation.isEnabledAndVisible).isTrue()
+        modelService.branchInfo.addSelectedCommits(commitInfo2)
+        actionService.checkReword(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+    }
+
+    fun testCheckDropDisables() {
+        commitInfo1.isSelected = false
+        modelService.branchInfo.clearSelectedCommits()
+        val presentation = Presentation()
+        presentation.isEnabledAndVisible = true
+        val event = createEventWithPresentation(presentation)
+        actionService.checkDrop(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+        modelService.branchInfo.addSelectedCommits(commitInfo1)
+        actionService.checkDrop(event)
+        assertThat(presentation.isEnabledAndVisible).isTrue()
+    }
+
+    private fun createEventWithPresentation(presentation: Presentation): AnActionEvent {
+        val dataContext = mock(DataContext::class.java)
+        return AnActionEvent(null, dataContext, "place", presentation, ActionManager.getInstance(), 2)
+    }
 
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)
 }
