@@ -28,7 +28,7 @@ class CommitInfoTest : BasePlatformTestCase() {
     }
 
     fun testAddChange() {
-        commitInfo.addChange(DropCommand(mutableListOf(commitInfo)))
+        commitInfo.addChange(DropCommand(commitInfo))
         assertEquals(1, commitInfo.changes.size)
         verify(listener, times(1)).onCommitChange()
     }

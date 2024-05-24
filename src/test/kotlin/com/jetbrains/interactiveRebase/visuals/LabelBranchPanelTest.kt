@@ -83,7 +83,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
     }
 
     fun testGenerateLabelChecksRewordCommand() {
-        val rewordChange = RewordCommand(mutableListOf(commit1), "new message")
+        val rewordChange = RewordCommand(commit1, "new message")
         branch.commits[0].changes.add(rewordChange)
         val label1 = labeledBranch.generateCommitLabel(0, circle)
         assertThat(TextStyle.stripTextFromStyling(label1.text)).isEqualTo("new message")
@@ -92,7 +92,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
     }
 
     fun testChangeTextWhenCommitDropped() {
-        commit3.changes.add(DropCommand(mutableListOf()))
+        commit3.changes.add(DropCommand(commit3))
         val label = labeledBranch.generateCommitLabel(2, circle)
         assertThat(TextStyle.stripTextFromStyling(label.text)).isEqualTo(commit3.commit.subject)
         assertThat(label.alignmentX).isEqualTo(RIGHT_ALIGNMENT)

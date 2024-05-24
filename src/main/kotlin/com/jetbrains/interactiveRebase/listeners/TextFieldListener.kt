@@ -32,7 +32,7 @@ class TextFieldListener(
      * Adds a reword change to the list of changes of a commit
      */
     private fun makeRewordChange() {
-        val command = RewordCommand(mutableListOf(commitInfo), textField.text)
+        val command = RewordCommand(commitInfo, textField.text)
         commitInfo.addChange(command)
         invoker.addCommand(command)
         textField.exitTextBox()

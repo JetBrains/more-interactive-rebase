@@ -36,8 +36,8 @@ class BranchPanelTest : BasePlatformTestCase() {
         commit3 = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
         branchPanel = BranchPanel(BranchInfo("branch", mutableListOf(commit1, commit2, commit3)), JBColor.BLUE)
 
-        commit2.changes.add(StopToEditCommand(mutableListOf()))
-        commit3.changes.add(DropCommand(mutableListOf()))
+        commit2.changes.add(StopToEditCommand(commit2))
+        commit3.changes.add(DropCommand(commit3))
     }
 
     fun testPaintComponent() {

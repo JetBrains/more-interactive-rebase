@@ -25,9 +25,9 @@ class DropCommitListener(
         val commits = modelService.getSelectedCommits()
         commits.forEach {
                 commitInfo ->
-            commitInfo.addChange(DropCommand(mutableListOf(commitInfo)))
+            commitInfo.addChange(DropCommand(commitInfo))
         }
-        invoker.addCommand(DropCommand(commits))
+
         modelService.branchInfo.clearSelectedCommits()
     }
 
