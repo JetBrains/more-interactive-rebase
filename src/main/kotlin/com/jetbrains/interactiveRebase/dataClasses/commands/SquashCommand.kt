@@ -46,6 +46,6 @@ data class SquashCommand(
     }
 
     override fun toString(): String {
-        return "SquashCommand(parentCommits=$parentCommits, squashedCommits=$squashedCommits, newMessage='$newMessage')"
+        return "SquashCommand(newMessage='$newMessage')"
     }
 }

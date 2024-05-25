@@ -10,8 +10,10 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
+import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
@@ -31,8 +33,10 @@ class ActionService(project: Project) {
      */
     fun takeRewordAction() {
         modelService.branchInfo.selectedCommits.forEach {
+            println("selected in reword is $it")
             it.setDoubleClickedTo(true)
         }
+        println("current in reword ${modelService.branchInfo.currentCommits}")
     }
 
     /**
