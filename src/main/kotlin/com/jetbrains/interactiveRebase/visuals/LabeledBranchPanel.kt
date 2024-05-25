@@ -42,7 +42,7 @@ import javax.swing.SwingUtilities
  */
 class LabeledBranchPanel(
     val project: Project,
-    private val invoker: RebaseInvoker,
+    val invoker: RebaseInvoker,
     val branch: BranchInfo,
     private val color: JBColor,
     private val alignment: Int = SwingConstants.LEFT,

@@ -27,38 +27,38 @@ import kotlin.math.roundToInt
 class CircleDragAndDropListener(
     val project: Project,
     private val circle: CirclePanel,
-    private val circles: MutableList<CirclePanel>,
+    internal val circles: MutableList<CirclePanel>,
     private val parent: LabeledBranchPanel,
 ) : MouseAdapter(), Disposable {
-    private var messages: MutableList<JBPanel<JBPanel<*>>> = parent.messages
-    private var labels = parent.commitLabels
-    private var label = labels[getLabelIndex(circle, labels)]
-    private var message: JBPanel<JBPanel<*>> = messages[getLabelIndex(circle, labels)]
-    private var mousePosition = Point(circle.x, circle.y)
-    private var circlesPositions = mutableListOf<CirclePosition>()
-    private var messagesPositions = mutableListOf<Point>()
+    internal var messages: MutableList<JBPanel<JBPanel<*>>> = parent.messages
+    internal var labels = parent.commitLabels
+    internal var label = labels[getLabelIndex(circle, labels)]
+    internal var message: JBPanel<JBPanel<*>> = messages[getLabelIndex(circle, labels)]
+    internal var mousePosition = Point(circle.x, circle.y)
+    internal var circlesPositions = mutableListOf<CirclePosition>()
+    internal var messagesPositions = mutableListOf<Point>()
 
     /**
      * Indicators for the vertical limitations of circle movements,
      * so that a commit doesn't get outside the parent panel
      */
-    private val minY = 0
-    private var maxY = 200
+    internal val minY = 0
+    internal var maxY = 200
 
     /**
      * Necessary to differentiate between mouse release
      * for dropping and
      * mouse click for selecting.
      */
-    private var wasDragged = false
+    internal var wasDragged = false
 
     /**
      * NEW: UPDATES CommitInfo
      */
-    private val commit = circle.commit
-    private val commits = parent.branch.currentCommits
-    private var currentIndex = commits.indexOf(commit)
-    private val initialIndex = commits.indexOf(commit)
+    internal val commit = circle.commit
+    internal val commits = parent.branch.currentCommits
+    internal var currentIndex = commits.indexOf(commit)
+    internal val initialIndex = commits.indexOf(commit)
 
     init {
         SwingUtilities.invokeLater {
@@ -120,7 +120,7 @@ class CircleDragAndDropListener(
      * Updates the coordinates of the mouse cursor
      * upon mouse press and while dragging
      */
-    private fun updateMousePosition(e: MouseEvent) {
+    internal fun updateMousePosition(e: MouseEvent) {
         mousePosition.x = e.xOnScreen
         mousePosition.y = e.yOnScreen
     }
@@ -150,7 +150,7 @@ class CircleDragAndDropListener(
      * 3. adds the Reorder Command to the Invoker
      * that holds an overview of all staged changes.
      */
-    private fun markCommitAsReordered() {
+    internal fun markCommitAsReordered() {
         commit.setReorderedTo(true)
         val command =
             ReorderCommand(
@@ -165,7 +165,7 @@ class CircleDragAndDropListener(
      * Sets the current location of the circle
      * within the parent component
      */
-    private fun setCurrentCircleLocation(newCircleY: Int) {
+    internal fun setCurrentCircleLocation(newCircleY: Int) {
         // Check if the new position exceeds the upper or lower limit
         val newCircleYBounded = (newCircleY).coerceIn(minY, maxY)
 
@@ -182,7 +182,7 @@ class CircleDragAndDropListener(
      * 4. update neighbors
      * (each commit has pointers to previous and next commit)
      */
-    private fun updateIndices(
+    internal fun updateIndices(
         newIndex: Int,
         oldIndex: Int,
     ) {
@@ -200,7 +200,7 @@ class CircleDragAndDropListener(
      * of a reordered commit.
      * Set neighbor to null if no neighbor.
      */
-    private fun updateNeighbors(index: Int) {
+    internal fun updateNeighbors(index: Int) {
         if (index < circles.size - 1) {
             circles[index].next = circles[index + 1]
         } else {
@@ -219,7 +219,7 @@ class CircleDragAndDropListener(
      * Determine the new position of a circle within a branch
      * based on its location while being dragged with the mouse
      */
-    private fun findNewBranchIndex(): Int {
+    internal fun findNewBranchIndex(): Int {
         var newIndex = -1
         var closestDistance = Int.MAX_VALUE
         val newY = circle.y
@@ -245,7 +245,7 @@ class CircleDragAndDropListener(
      * Reposition all circles to spread apart properly
      * when a circle is dropped
      */
-    private fun repositionOnDrop() {
+    internal fun repositionOnDrop() {
         for (i in circles.indices) {
             val circle = circles[i]
             val message = messages[i]
@@ -273,7 +273,7 @@ class CircleDragAndDropListener(
      * Reposition all circles to spread away from
      * the circle that is being dragged (smooth animated transition)
      */
-    private fun repositionOnDrag() {
+    internal fun repositionOnDrag() {
         // Calculate the target positions for each circle
         val startPositions = circles.map { Point(it.x, it.y) }
         val targetPositions = circlesPositions.map { Point(it.x, it.y) }
@@ -298,7 +298,7 @@ class CircleDragAndDropListener(
      * 3. custom step size for every circle
      * 4. target position for each circle
      */
-    private fun createReorderAnimation(
+    internal fun createReorderAnimation(
         stepSizes: MutableList<Point>,
         targetPositions: List<Point>,
         animationDuration: Int = 30,
@@ -319,7 +319,7 @@ class CircleDragAndDropListener(
     /**
      * Starts playing the reorder animation.
      */
-    private fun startReorderAnimation(timer: Timer) {
+    internal fun startReorderAnimation(timer: Timer) {
         timer.initialDelay = 0
         timer.isRepeats = true
         timer.start()
@@ -329,7 +329,7 @@ class CircleDragAndDropListener(
      *  Stop the timer
      *  when the animation is complete
      */
-    private fun stopAnimationIfComplete(
+    internal fun stopAnimationIfComplete(
         currentStep: Int,
         animationSteps: Int,
         it: ActionEvent,
@@ -344,7 +344,7 @@ class CircleDragAndDropListener(
      * taking small steps
      * to their target positions
      */
-    private fun moveCirclesAndMessages(
+    internal fun moveCirclesAndMessages(
         stepSizes: MutableList<Point>,
         targetPositions: List<Point>,
     ) {
@@ -373,7 +373,7 @@ class CircleDragAndDropListener(
      * Calculates what is the new position
      * after a step is taken
      */
-    private fun reorderStep(
+    internal fun reorderStep(
         target: Int,
         current: Int,
         step: Int,
@@ -382,7 +382,7 @@ class CircleDragAndDropListener(
     /**
      * Calculate the steps
      */
-    private fun calculateStepSizes(
+    internal fun calculateStepSizes(
         startPositions: List<Point>,
         targetPositions: List<Point>,
         animationSteps: Int = 10,
@@ -407,7 +407,7 @@ class CircleDragAndDropListener(
      * Retrieves the index of the corresponding label
      * of the circle that is being dragged
      */
-    private fun getLabelIndex(
+    internal fun getLabelIndex(
         circle: CirclePanel,
         labels: List<JBLabel>,
     ): Int {
@@ -420,7 +420,7 @@ class CircleDragAndDropListener(
      * by moving the entire branch up or down
      * to show that no further movement is possible
      */
-    private fun indicateLimitedVerticalMovement(newCircleY: Int) {
+    internal fun indicateLimitedVerticalMovement(newCircleY: Int) {
         if (newCircleY <= minY || newCircleY >= maxY) {
             // If the circle reaches the upper or lower limit, adjust positions of all circles
             val deltaAllCircles =
@@ -441,7 +441,7 @@ class CircleDragAndDropListener(
      * Moves all circles (commits) to
      * indicate that the user cannot move the commit further
      */
-    private fun moveAllCircles(delta: Int) {
+    internal fun moveAllCircles(delta: Int) {
         // Move all circles and labels
         for (i in circles.indices) {
             val circle = circles[i]
