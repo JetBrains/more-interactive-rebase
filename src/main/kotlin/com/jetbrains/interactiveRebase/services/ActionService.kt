@@ -6,6 +6,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
