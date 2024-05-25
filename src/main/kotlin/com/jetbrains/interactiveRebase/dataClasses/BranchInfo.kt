@@ -41,6 +41,7 @@ class BranchInfo(
      */
     internal fun addSelectedCommits(commit: CommitInfo) {
         selectedCommits.add(commit)
+        println("selected $commit")
         listeners.forEach { it.onSelectedCommitChange(selectedCommits) }
     }
 
@@ -51,6 +52,7 @@ class BranchInfo(
      */
     internal fun removeSelectedCommits(commit: CommitInfo) {
         selectedCommits.remove(commit)
+        println("deselected $commit")
         listeners.forEach { it.onSelectedCommitChange(selectedCommits) }
     }
 

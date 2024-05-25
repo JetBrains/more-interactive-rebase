@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
@@ -136,5 +137,37 @@ class ActionService(project: Project) {
             commitInfo.changes.clear()
         }
         invoker.branchInfo.clearSelectedCommits()
+    }
+
+    fun takeSquashAction() {
+        takeFixupAction()
+        takeRewordAction()
+    }
+
+    fun takeFixupAction() {
+        val commits: MutableList<CommitInfo> = modelService.getSelectedCommits()
+        val parent = commits.last()
+        // get the parent one with diegos logic
+        val command = SquashCommand(mutableListOf(parent), commits.dropLast(1), "new message")
+        invoker.addCommand(command)
+
+        println("selected commits are $commits")
+
+        commits.forEach {
+                commitInfo ->
+            commitInfo.isSelected = false
+            commitInfo.isHovered = false
+
+            if (commits.last() != commitInfo) {
+                modelService.branchInfo.currentCommits.remove(commitInfo)
+                println("remove $commitInfo")
+            }
+            commitInfo.addChange(command)
+        }
+        modelService.branchInfo.clearSelectedCommits()
+        modelService.branchInfo.addSelectedCommits(parent)
+        println("exitiing fixup selected are ${modelService.branchInfo.selectedCommits}")
+        println("exit fixup current are ${modelService.branchInfo.currentCommits}")
+        // TODO add to the model for backend
     }
 }

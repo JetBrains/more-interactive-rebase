@@ -16,6 +16,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.listeners.CircleDragAndDropListener
 import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.LabelListener
 import com.jetbrains.interactiveRebase.listeners.TextFieldListener
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
@@ -99,6 +100,12 @@ class LabeledBranchPanel(
                 // TODO: the alignment setting logic was changed
                 commitLabel.horizontalAlignment = alignment
                 commitLabel.alignmentX = RIGHT_ALIGNMENT
+            }
+
+            if (it is SquashCommand) {
+                if (it.parentCommits.first() == branch.currentCommits[i]) {
+                    commitLabel.foreground = JBColor.BLUE
+                }
             }
         }
 

@@ -20,7 +20,6 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener, Disposa
             commitInfo.setDoubleClickedTo(true)
             commitInfo.isSelected = true
             modelService.addOrRemoveCommitSelection(commitInfo)
-//            selectCommitIfNotSelected()
         }
         if (e != null && e.clickCount == 1) {
             commitInfo.isSelected = !commitInfo.isSelected
