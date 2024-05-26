@@ -9,9 +9,9 @@ import java.awt.Graphics2D
 import java.awt.RenderingHints
 
 class StopToEditCirclePanel(
-    private val diameter: Double,
+    diameter: Double,
     private val border: Float,
-    private val color: JBColor,
+    color: JBColor,
     override var commit: CommitInfo,
     override var next: CirclePanel? = null,
     override var previous: CirclePanel? = null,
@@ -22,7 +22,7 @@ class StopToEditCirclePanel(
         // Set rendering hints for smoother rendering
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
-        createCircle()
+        createCircle(diameter)
         val circleColor = if (commit.isSelected) Palette.DARKGRAY.darker() else Palette.JETBRAINSGRAY
         val borderColor = if (commit.isSelected) Palette.BLUEBORDER.darker() else Palette.DARKBLUE
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)

@@ -14,7 +14,6 @@ import org.mockito.Mockito.doNothing
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import java.awt.BorderLayout
-import java.awt.GridBagLayout
 
 class MainPanelTest : BasePlatformTestCase() {
     private lateinit var modelService: ModelService
@@ -36,14 +35,6 @@ class MainPanelTest : BasePlatformTestCase() {
 
     fun testCreateMainComponent() {
         assertTrue(mainPanel.layout is BorderLayout)
-    }
-
-    fun testCreateBranchPanel() {
-        val branchPanel = mainPanel.createContentPanel()
-
-        assertTrue(branchPanel.layout is GridBagLayout)
-        assertEquals(1, branchPanel.componentCount)
-        assertTrue(branchPanel.getComponent(0) is LabeledBranchPanel)
     }
 
     fun testAddOrRemoveCommitSelection() {

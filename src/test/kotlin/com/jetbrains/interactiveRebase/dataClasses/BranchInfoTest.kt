@@ -28,6 +28,9 @@ class BranchInfoTest : BasePlatformTestCase() {
 
                     override fun onSelectedCommitChange(selectedCommits: MutableList<CommitInfo>) {
                     }
+
+                    override fun onCurrentCommitsChange(currentCommits: MutableList<CommitInfo>) {
+                    }
                 },
             )
         openMocks(this)
@@ -42,7 +45,7 @@ class BranchInfoTest : BasePlatformTestCase() {
 
     fun testSetCommits() {
         branchInfo.setCommits(listOf(commit))
-        assertEquals(listOf(commit), branchInfo.commits)
+        assertEquals(listOf(commit), branchInfo.currentCommits)
         verify(listener, times(1)).onCommitChange(listOf(commit))
     }
 }

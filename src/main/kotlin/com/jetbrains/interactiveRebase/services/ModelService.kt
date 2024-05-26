@@ -68,7 +68,7 @@ class ModelService(
                 branchInfo.setCommits(commits)
                 branchInfo.clearSelectedCommits()
                 invoker.branchInfo = branchInfo
-                invoker.createModel()
+                // invoker.createModel()
             }
         }
     }
@@ -82,7 +82,7 @@ class ModelService(
         newName: String,
         newCommits: List<CommitInfo>,
     ): Boolean {
-        val commitsIds = branchInfo.commits.map { it.commit.id }.toSet()
+        val commitsIds = branchInfo.initialCommits.map { it.commit.id }.toSet()
         val newCommitsIds = newCommits.map { it.commit.id }.toSet()
 
         return branchInfo.name != newName || commitsIds != newCommitsIds

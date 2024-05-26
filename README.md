@@ -52,9 +52,15 @@ Navigate to <kbd>Tools</kbd> > <kbd> Interactive Rebase Current Branch</kbd>. Th
 the editor tab. The branch drawn shows the latest commits on the checked out branch. Closing the Plugin and opening it
 again keeps the changes that were made.
 
+![entry.png](Images/entry.png)
+
+![view.png](Images/view.png)
+
 ### Commit Information
 Clicking on one or multiple commits selects them. The commit information and file changes of the selected commits
 are presented on the right side of the screen. Double-clicking on a file change opens its diff and shows the changes.
+
+![commit.png](Images/commit.png)
 
 ### Interactive Rebase Actions
 After selecting the commits, the buttons that are *active* show the available Interactive Rebase actions. **It is
@@ -69,8 +75,14 @@ for more information.
   in place of the commit message. Alternatively, if there is no selected commit, you can just double-click on a
   commit message, which will also enable the text field. You can edit the message and press `Enter`.
   If you want to cancel your rewording, pressing `Escape` closes the text field.
+
+![reword.gif](Images/reword.gif)
 * **<u>Reorder</u>** - You can drag and drop the commits along the branch if you want to reorder them.
+
+![reorder.gif](Images/reorder.gif)
 * **<u>Drop</u>** - After selecting commits, pressing the `drop` button will drop the selected commits.
+
+![drop.gif](Images/drop.gif)
 * **<u>Squash</u>** - If there is only one selected commit pressing the `squash` button will squash that commit with the
   previous one (older in the commit history). In the case where multiple commits are selected, they get squashed into
 the oldest selected commit. After squashing, a text field opens for you to reword the commit message

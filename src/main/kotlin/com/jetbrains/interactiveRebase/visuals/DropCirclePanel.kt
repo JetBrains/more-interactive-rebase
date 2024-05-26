@@ -4,15 +4,16 @@ import com.intellij.ui.JBColor
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import java.awt.BasicStroke
 import java.awt.Color
+import java.awt.Cursor
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.geom.Ellipse2D
 
 class DropCirclePanel(
-    private val diameter: Double,
+    diameter: Double,
     private val border: Float,
-    private val color: JBColor,
+    color: JBColor,
     override var commit: CommitInfo,
     override var next: CirclePanel? = null,
     override var previous: CirclePanel? = null,
@@ -25,12 +26,13 @@ class DropCirclePanel(
         // Set rendering hints for smoother rendering
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
-        createCircle()
+        createCircle(diameter)
         val circleColor = if (commit.isSelected) Palette.GRAY.darker() else Palette.GRAY
         val borderColor = if (commit.isSelected) Palette.BLUEBORDER.darker() else Palette.BLUEBORDER
 
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
         if (commit.isHovered) {
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))
             g2d.color = JBColor.BLACK
             g2d.stroke = BasicStroke(border)
             g2d.draw(circle)

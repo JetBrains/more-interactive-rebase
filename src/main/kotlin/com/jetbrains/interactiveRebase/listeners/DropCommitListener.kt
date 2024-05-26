@@ -1,5 +1,6 @@
 package com.jetbrains.interactiveRebase.listeners
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
@@ -14,7 +15,7 @@ class DropCommitListener(
     button: JButton,
     val project: Project,
     private val invoker: RebaseInvoker,
-) : MouseListener {
+) : MouseListener, Disposable {
     constructor(button: JButton, project: Project, invoker: RebaseInvoker) :
         this(project.service<ModelService>(), button, project, invoker)
 
@@ -55,5 +56,8 @@ class DropCommitListener(
      * Does nothing when the mouse exits the button.
      */
     override fun mouseExited(e: MouseEvent?) {
+    }
+
+    override fun dispose() {
     }
 }

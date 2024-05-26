@@ -9,9 +9,8 @@ import java.awt.BasicStroke
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
+import java.awt.GridLayout
 import java.awt.RenderingHints
-import javax.swing.Box
-import javax.swing.BoxLayout
 
 /**
  * A panel encapsulating a branch:
@@ -24,7 +23,7 @@ class BranchPanel(
 ) : JBPanel<JBPanel<*>>() {
     val diameter = 25
     val borderSize = 1f
-    private var size = branch.commits.size
+    private var size = branch.currentCommits.size
 
     val circles: MutableList<CirclePanel> = mutableListOf()
 
@@ -34,8 +33,9 @@ class BranchPanel(
      * - adds commits to the branch (circle panel)
      */
     init {
-        layout = BoxLayout(this, BoxLayout.Y_AXIS)
-        preferredSize = Dimension(diameter, (size * diameter * 1.5).toInt())
+        minimumSize = Dimension(diameter, (size * diameter * 1.5).toInt())
+        preferredSize = minimumSize
+        layout = GridLayout(0, 1)
 
         updateCommits()
     }
@@ -45,15 +45,13 @@ class BranchPanel(
      * to the next and previous neighbors
      */
     fun initializeCirclePanel(i: Int): CirclePanel {
-        val commit = branch.commits[i]
-        var circle = CirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
+        val commit = branch.currentCommits[i]
+        var circle = CirclePanel(diameter.toDouble(), borderSize, color, branch.currentCommits[i])
 
-        if (commit.changes.any { it is DropCommand } == true) {
-            circle = DropCirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
-        }
-
-        if (commit.changes.any { it is StopToEditCommand } == true) {
-            circle = StopToEditCirclePanel(diameter.toDouble(), borderSize, color, branch.commits[i])
+        if (commit.changes.any { it is DropCommand }) {
+            circle = DropCirclePanel(diameter.toDouble(), borderSize, color, branch.currentCommits[i])
+        } else if (commit.changes.any { it is StopToEditCommand }) {
+            circle = StopToEditCirclePanel(diameter.toDouble(), borderSize, color, branch.currentCommits[i])
         }
 
         circles.add(circle)
@@ -101,8 +99,8 @@ class BranchPanel(
 
         // Calculate line coordinates
         val x = (width - diameter) / 2
-        val startY = circle.y + diameter / 2
-        val endY = nextCircle.y + diameter / 2
+        val startY = circle.y + circle.height / 2 + diameter / 2
+        val endY = nextCircle.y + circle.height / 2 + diameter / 2
         val glueHeight = endY - startY - diameter
         val glueY = startY + diameter / 2 + diameter / 2
 
@@ -126,13 +124,6 @@ class BranchPanel(
     }
 
     /**
-     * Getter for the circle panels.
-     */
-    fun getCirclePanels(): MutableList<CirclePanel> {
-        return circles
-    }
-
-    /**
      * Sets commits to be shown in branch
      */
 
@@ -140,14 +131,11 @@ class BranchPanel(
         removeAll()
         circles.clear()
 
-        size = branch.commits.size
+        size = branch.currentCommits.size
 
         for (i in 0 until size) {
             val circle = initializeCirclePanel(i)
             add(circle)
-            if (i < size - 1) {
-                add(Box.createVerticalGlue())
-            }
         }
         super.revalidate()
         revalidate()
