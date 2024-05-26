@@ -56,9 +56,11 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
     fun addChangeButtons(buttonPanel: JBPanel<JBPanel<*>>) {
         val rebaseButton = RoundedButton("Rebase", Palette.BLUEBUTTON, Palette.WHITETEXT)
 
-        rebaseButton.addActionListener { invoker.createModel()
-            invoker.executeCommands() }
-        val resetButton = RoundedButton("Reset", Palette.GRAYBUTTON,  Palette.WHITETEXT)
+        rebaseButton.addActionListener {
+            invoker.createModel()
+            invoker.executeCommands()
+        }
+        val resetButton = RoundedButton("Reset", Palette.GRAYBUTTON, Palette.WHITETEXT)
 
         resetButton.addActionListener { project.service<ActionService>().resetAllChangesAction() }
 

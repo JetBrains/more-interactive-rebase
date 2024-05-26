@@ -49,7 +49,8 @@ class ActionServiceTest : BasePlatformTestCase() {
         }.`when`(commitService).getBranchName()
 
         modelService = ModelService(project, CoroutineScope(Dispatchers.EDT), commitService)
-        modelService.branchInfo.commits = listOf(commitInfo1, commitInfo2)
+        modelService.branchInfo.initialCommits = mutableListOf(commitInfo1, commitInfo2)
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo1, commitInfo2)
         modelService.addOrRemoveCommitSelection(commitInfo1)
         modelService.branchInfo.setName("feature1")
         modelService.branchInfo.addSelectedCommits(commitInfo1)
@@ -131,7 +132,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     fun testPerformPickAction() {
         // setup the commands
         val command1 = DropCommand(commitInfo1)
-        val command2 = ReorderCommand(commitInfo1)
+        val command2 = ReorderCommand(1, 2)
         commitInfo1.addChange(command1)
         commitInfo1.addChange(command2)
         commitInfo1.isSelected = true
@@ -158,7 +159,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     fun testResetAllChangesACtion() {
         // setup the commands
         val command1 = DropCommand(commitInfo1)
-        val command2 = ReorderCommand(commitInfo1)
+        val command2 = ReorderCommand(1, 2)
         commitInfo1.addChange(command1)
         commitInfo1.addChange(command2)
         commitInfo1.isSelected = true
@@ -171,7 +172,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.invoker.addCommand(command3)
 
         actionService.resetAllChangesAction()
-
         assertThat(commitInfo1.changes.size).isEqualTo(0)
         assertThat(commitInfo2.changes.size).isEqualTo(0)
         assertThat(project.service<RebaseInvoker>().commands.size).isEqualTo(0)
