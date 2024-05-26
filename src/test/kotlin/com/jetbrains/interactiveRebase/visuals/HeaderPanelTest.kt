@@ -4,9 +4,7 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
-import com.intellij.util.ui.JBEmptyBorder
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.mockito.ArgumentCaptor
@@ -14,7 +12,6 @@ import org.mockito.Mockito.any
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import javax.swing.JButton
 
 class HeaderPanelTest : BasePlatformTestCase() {
     private lateinit var headerPanel: HeaderPanel
@@ -46,11 +43,12 @@ class HeaderPanelTest : BasePlatformTestCase() {
     fun testIncludesChangeButtonsRebase() {
         val buttonPanel: JBPanel<JBPanel<*>> = JBPanel()
         headerPanel.addChangeButtons(buttonPanel)
-        val rebaseButton = buttonPanel.getComponent(1) as JButton
-        assertThat(rebaseButton.background).isInstanceOf(JBColor::class.java)
-        assertThat(rebaseButton.isOpaque).isTrue()
-        assertThat(rebaseButton.border).isInstanceOf(JBEmptyBorder::class.java)
+
+        val rebaseButton = buttonPanel.getComponent(1) as RoundedButton
         assertThat(rebaseButton.actionListeners).hasSize(1)
+
+        val resetButton = buttonPanel.getComponent(0) as RoundedButton
+        assertThat(resetButton.actionListeners).hasSize(1)
     }
 
     private inline fun <reified T> anyCustom(): T = any(T::class.java)

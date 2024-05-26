@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 
 @Service(Service.Level.PROJECT)
@@ -58,6 +59,9 @@ class ActionService(project: Project) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.size == 1
     }
 
+    /**
+     * Adds a visual change for a commit that has to be stopped to edit
+     */
     fun takeStopToEditAction() {
         val commits = modelService.getSelectedCommits()
         commits.forEach {
@@ -67,5 +71,39 @@ class ActionService(project: Project) {
             invoker.addCommand(command)
         }
         modelService.branchInfo.clearSelectedCommits()
+    }
+
+    /**
+     * Picks the selected commits and removes all changes except for reorders,
+     * similar to the logic in the git to-do file for rebasing
+     */
+    fun performPickAction() {
+        val commits = modelService.getSelectedCommits()
+        commits.forEach { commitInfo ->
+            val changes = commitInfo.changes.iterator()
+
+            while (changes.hasNext()) {
+                val change = changes.next()
+                if (change !is ReorderCommand) {
+                    invoker.removeCommand(change)
+                    changes.remove()
+                }
+            }
+        }
+        modelService.branchInfo.clearSelectedCommits()
+    }
+
+    /**
+     * Resets all changes made to the commits
+     */
+    fun resetAllChangesAction() {
+        invoker.commands = mutableListOf()
+        val currentBranchInfo = invoker.branchInfo
+        invoker.branchInfo.currentCommits = currentBranchInfo.initialCommits.toMutableList()
+        invoker.branchInfo.initialCommits.forEach {
+                commitInfo ->
+            commitInfo.changes.clear()
+        }
+        invoker.branchInfo.clearSelectedCommits()
     }
 }

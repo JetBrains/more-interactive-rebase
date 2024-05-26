@@ -24,7 +24,7 @@ class CirclePanelTest : BasePlatformTestCase() {
         graph = mock(Graphics2D::class.java)
         graph2 = mock(Graphics::class.java)
         ui = mock(ComponentUI::class.java)
-        commit = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
+        commit = CommitInfo(mock(GitCommit::class.java), project, mutableListOf(), false, false)
     }
 
     fun testPaintComponent() {
@@ -42,10 +42,20 @@ class CirclePanelTest : BasePlatformTestCase() {
         val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
         `when`(graph.create()).thenReturn(graph2)
         circlePanel.commit.isSelected = true
-        circlePanel.commit.isHovered = true
         circlePanel.paintComponent(graph)
 
         verify(graph2).dispose()
+        verify(graph, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        verify(graph, times(1)).draw(circlePanel.circle)
+        verify(graph, times(2)).fill(circlePanel.circle)
+    }
+
+    fun testPaintCircleIsHovered() {
+        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
+        `when`(graph.create()).thenReturn(graph2)
+        circlePanel.commit.isHovered = true
+        circlePanel.paintCircle(graph)
+
         verify(graph, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
         verify(graph, times(2)).draw(circlePanel.circle)
         verify(graph, times(2)).fill(circlePanel.circle)

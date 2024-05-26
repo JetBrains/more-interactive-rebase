@@ -1,19 +1,19 @@
-package com.jetbrains.interactiveRebase.actions.changePanel
+package com.jetbrains.interactiveRebase.actions.gitPanel
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.components.service
+import com.jetbrains.interactiveRebase.services.ActionService
 
-class PickAction : AnAction("Pick", "Undo the changes made", AllIcons.Actions.Undo) {
+class PickAction : AnAction("Pick", "Undo the changes made", AllIcons.Diff.GutterCheckBoxSelected) {
     override fun actionPerformed(e: AnActionEvent) {
-        println("pick")
-        TODO("Not yet implemented")
+        e.project?.service<ActionService>()?.performPickAction()
     }
 
     override fun update(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible = true
-//        super.update(e)
+        e.project?.service<ActionService>()?.checkDrop(e)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
