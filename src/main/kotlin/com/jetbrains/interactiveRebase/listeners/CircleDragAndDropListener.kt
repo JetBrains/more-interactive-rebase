@@ -301,7 +301,7 @@ class CircleDragAndDropListener(
     internal fun createReorderAnimation(
         stepSizes: MutableList<Point>,
         targetPositions: List<Point>,
-        animationDuration: Int = 30,
+        animationDuration: Int = 50,
         animationSteps: Int = 10,
     ): Timer {
         var currentStep = 0
