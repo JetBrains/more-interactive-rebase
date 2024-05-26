@@ -1,6 +1,5 @@
 package com.jetbrains.interactiveRebase.visuals
 
-import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -12,7 +11,6 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.listeners.LabelListener
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
-import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito.mock
 import java.awt.Component.RIGHT_ALIGNMENT
@@ -41,7 +39,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         commit3 = CommitInfo(commitProvider.createCommit("Three"), project, mutableListOf())
         branch = BranchInfo("branch", mutableListOf(commit1, commit2, commit3))
         branch.currentCommits = mutableListOf(commit1, commit2, commit3)
-        labeledBranch = LabeledBranchPanel(project, project.service<RebaseInvoker>(), branch, JBColor.BLUE)
+        labeledBranch = LabeledBranchPanel(project, branch, JBColor.BLUE)
     }
 
     fun testGenerateCommitLabel() {

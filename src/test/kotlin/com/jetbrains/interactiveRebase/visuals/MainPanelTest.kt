@@ -37,14 +37,6 @@ class MainPanelTest : BasePlatformTestCase() {
         assertTrue(mainPanel.layout is BorderLayout)
     }
 
-//    fun testCreateBranchPanel() {
-//        val branchPanel = mainPanel.createContentPanel()
-//
-//        assertTrue(branchPanel.layout is GridBagLayout)
-//        assertEquals(1, branchPanel.componentCount)
-//        assertTrue(branchPanel.getComponent(0) is LabeledBranchPanel)
-//    }
-
     fun testAddOrRemoveCommitSelection() {
         val commit1 = CommitInfo(TestGitCommitProvider(project).createCommit("my commit"), project, mutableListOf())
         commit1.isSelected = true

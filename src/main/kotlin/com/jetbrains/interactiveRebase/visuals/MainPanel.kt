@@ -77,7 +77,6 @@ class MainPanel(
     fun createBranchPanel(): LabeledBranchPanel {
         return LabeledBranchPanel(
             project,
-            invoker,
             branchInfo,
             Palette.BLUE,
             SwingConstants.RIGHT,

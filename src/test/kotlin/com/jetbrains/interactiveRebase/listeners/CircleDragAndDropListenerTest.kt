@@ -86,7 +86,6 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
 
         parent = mock(LabeledBranchPanel::class.java)
         `when`(parent.project).thenReturn(project)
-        `when`(parent.invoker).thenReturn(invoker)
         `when`(parent.branch).thenReturn(branch)
         `when`(parent.messages).thenReturn(messages)
         `when`(parent.commitLabels).thenReturn(mutableListOf(label, otherLabel))

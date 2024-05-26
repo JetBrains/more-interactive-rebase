@@ -1,6 +1,7 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.JBColor
@@ -42,7 +43,6 @@ import javax.swing.SwingUtilities
  */
 class LabeledBranchPanel(
     val project: Project,
-    val invoker: RebaseInvoker,
     val branch: BranchInfo,
     private val color: JBColor,
     private val alignment: Int = SwingConstants.LEFT,
@@ -192,7 +192,7 @@ class LabeledBranchPanel(
         if (commitLabel is Disposable) {
             Disposer.register(commitLabel, labelListener)
         }
-        textField.addKeyListener(TextFieldListener(commitInfo, textField, invoker))
+        textField.addKeyListener(TextFieldListener(commitInfo, textField, project.service<RebaseInvoker>()))
 
         messages.add(textLabelWrapper)
         return textLabelWrapper
