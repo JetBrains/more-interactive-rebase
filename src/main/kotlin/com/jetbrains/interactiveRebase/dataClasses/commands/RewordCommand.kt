@@ -20,4 +20,8 @@ data class RewordCommand(var commit: CommitInfo, var newMessage: String) :
     ) {
         model.reword(branchInfo.currentCommits.reversed().indexOf(commit), newMessage)
     }
+
+    override fun toString(): String {
+        return "RewordCommand(${commit.commit.subject}, $newMessage)"
+    }
 }

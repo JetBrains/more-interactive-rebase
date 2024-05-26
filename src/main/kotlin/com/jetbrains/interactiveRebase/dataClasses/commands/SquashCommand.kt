@@ -41,11 +41,4 @@ data class SquashCommand(
         // This existed in the previous functionality but could make it work
     }
 
-    override fun toString(): String {
-        return "SquashCommand(newMessage='$newMessage')"
-    }
-
-    override fun toString(): String {
-        return "SquashCommand(newMessage='$newMessage')"
-    }
 }

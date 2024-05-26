@@ -22,6 +22,7 @@ import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
 import com.jetbrains.interactiveRebase.listeners.LabelListener
 import com.jetbrains.interactiveRebase.listeners.TextFieldListener
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
+import com.jetbrains.interactiveRebase.services.strategies.SquashTextStrategy
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.GridBagConstraints
@@ -224,7 +225,7 @@ class LabeledBranchPanel(
         val textField = createTextBox(commitLabel, commitInfo)
         textWrapper.add(textField, gbc)
 
-        if (commitInfo.isDoubleClicked) {
+        if (commitInfo.isTextFieldEnabled) {
             enableTextField(textField, textWrapper, labelWrapper)
         }
         textLabelWrapper.add(labelWrapper)
@@ -275,12 +276,25 @@ class LabeledBranchPanel(
         textField: RoundedTextField,
         textWrapper: JBPanel<JBPanel<*>>,
         labelWrapper: JBPanel<JBPanel<*>>,
+        commitInfo: CommitInfo
     ) {
+        val listener = TextFieldListener(commitInfo, textField, invoker)
+        textField.addKeyListener(listener)
+        textField.requestFocusInWindow()
+
+        setTextFieldListenerStrategy(listener, commitInfo)
+
         textField.background = textField.background.darker()
         textWrapper.isVisible = true
         labelWrapper.isVisible = false
-        textField.requestFocusInWindow()
+
         listenForClickOutside(textField)
+    }
+
+    private fun setTextFieldListenerStrategy(listener: TextFieldListener, commitInfo: CommitInfo) {
+        if (commitInfo.changes.any { it is SquashCommand }){
+            listener.strategy = SquashTextStrategy()
+        }
     }
 
     /**

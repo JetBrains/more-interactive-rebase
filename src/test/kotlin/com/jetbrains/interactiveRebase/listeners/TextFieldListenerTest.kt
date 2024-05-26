@@ -33,7 +33,7 @@ class TextFieldListenerTest : BasePlatformTestCase() {
     fun testKeyReleasedChecksEscape() {
         val key = KeyEvent(JBLabel(), KeyEvent.VK_ESCAPE, 2, 2, KeyEvent.VK_ESCAPE)
         listener.keyReleased(key)
-        assertThat(commitInfo.isDoubleClicked).isFalse()
+        assertThat(commitInfo.isTextFieldEnabled).isFalse()
     }
 
     fun testIsNotAffectedByOtherEvents() {

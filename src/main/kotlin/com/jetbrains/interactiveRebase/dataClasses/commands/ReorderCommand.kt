@@ -20,4 +20,8 @@ data class ReorderCommand(val oldIndex: Int, val newIndex: Int) :
         branchInfo: BranchInfo,
     ) {
     }
+
+    override fun toString(): String {
+        return "ReorderCommand(${commit.commit.subject})"
+    }
 }

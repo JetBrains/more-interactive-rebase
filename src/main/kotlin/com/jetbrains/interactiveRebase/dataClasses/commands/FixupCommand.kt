@@ -26,4 +26,8 @@ data class FixupCommand(var parentCommit: CommitInfo, val fixupCommits: MutableL
             }.reversed()
         model.unite(commitIndices)
     }
+
+    override fun toString(): String {
+        return "FixupCommand(${parentCommit.commit.subject})"
+    }
 }
