@@ -28,9 +28,11 @@ import java.awt.Graphics
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
+import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JComponent
+import javax.swing.JTextField
 import javax.swing.OverlayLayout
 import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
@@ -93,6 +95,7 @@ class LabeledBranchPanel(
         branch.currentCommits[i].changes.forEach {
             if (it is RewordCommand) {
                 commitLabel.text = TextStyle.addStyling(it.newMessage, TextStyle.ITALIC)
+                commitLabel.foreground = JBColor.BLUE
             }
             if (it is DropCommand) {
                 commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.CROSSED)
@@ -105,6 +108,8 @@ class LabeledBranchPanel(
             if (it is SquashCommand) {
                 if (it.parentCommit == branch.currentCommits[i]) {
                     commitLabel.foreground = JBColor.BLUE
+                    println("setting ${commitLabel.text} to ${it.newMessage}")
+                    commitLabel.text = it.newMessage ?: commitLabel.text
                 }
             }
         }
@@ -282,7 +287,7 @@ class LabeledBranchPanel(
         textField.addKeyListener(listener)
         textField.requestFocusInWindow()
 
-        setTextFieldListenerStrategy(listener, commitInfo)
+        setTextFieldListenerStrategy(listener, commitInfo, textField)
 
         textField.background = textField.background.darker()
         textWrapper.isVisible = true
@@ -291,9 +296,12 @@ class LabeledBranchPanel(
         listenForClickOutside(textField)
     }
 
-    private fun setTextFieldListenerStrategy(listener: TextFieldListener, commitInfo: CommitInfo) {
-        if (commitInfo.changes.any { it is SquashCommand }){
-            listener.strategy = SquashTextStrategy()
+    private fun setTextFieldListenerStrategy(listener: TextFieldListener, commitInfo: CommitInfo, textField : JTextField) {
+        commitInfo.changes.forEach {
+            command ->
+            if (command is SquashCommand) {
+                listener.strategy = SquashTextStrategy(command, textField)
+            }
         }
     }
 

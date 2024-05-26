@@ -52,11 +52,11 @@ data class CommitInfo(
     }
 
     /**
-     * Sets isDoubleClicked to
+     * Sets isTextFieldEnabled to
      * passed value and notifies
      * subscribers
      */
-    fun setDoubleClickedTo(value: Boolean) {
+    fun setTextFieldEnabledTo(value: Boolean) {
         isTextFieldEnabled = value
         listeners.forEach { it.onCommitChange() }
     }

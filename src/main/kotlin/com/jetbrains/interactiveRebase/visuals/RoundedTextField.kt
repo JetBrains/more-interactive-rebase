@@ -29,7 +29,7 @@ class RoundedTextField(private val commitInfo: CommitInfo, inputText: String, pr
      * Sets the right flags to make the text field invisible again
      */
     fun exitTextBox() {
-        commitInfo.setDoubleClickedTo(false)
+        commitInfo.setTextFieldEnabledTo(false)
         commitInfo.setSelectedTo(false)
         modelService.branchInfo.clearSelectedCommits()
     }

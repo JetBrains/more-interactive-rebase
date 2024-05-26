@@ -13,6 +13,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.*
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 
 @Service(Service.Level.PROJECT)
@@ -33,10 +34,8 @@ class ActionService(project: Project) {
      */
     fun takeRewordAction() {
         modelService.branchInfo.selectedCommits.forEach {
-            println("selected in reword is $it")
-            it.setDoubleClickedTo(true)
+            it.setTextFieldEnabledTo(true)
         }
-        println("current in reword ${modelService.branchInfo.currentCommits}")
     }
 
     /**
@@ -196,7 +195,7 @@ class ActionService(project: Project) {
             commitInfo.changes.clear()
             commitInfo.isSelected = false
             commitInfo.isSquashed = false
-            commitInfo.isDoubleClicked = false
+            commitInfo.isTextFieldEnabled = false
             commitInfo.isDragged = false
             commitInfo.isReordered = false
             commitInfo.isHovered = false
@@ -209,15 +208,18 @@ class ActionService(project: Project) {
      * creates a squash command
      */
     fun takeSquashAction() {
-        takeFixupAction()
-        takeRewordAction()
+        combineCommits(true)
+    }
+
+    fun takeFixupAction() {
+        combineCommits(false)
     }
 
     /**
      * Takes fixup action and
      * creates a fixup command
      */
-    fun takeFixupAction() {
+    fun combineCommits(isSquash : Boolean) {
         val selectedCommits: MutableList<CommitInfo> = modelService.getSelectedCommits()
         selectedCommits.sortBy { modelService.branchInfo.currentCommits.indexOf(it) }
         var parentCommit = selectedCommits.last()
