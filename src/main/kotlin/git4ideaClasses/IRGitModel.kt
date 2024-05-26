@@ -8,7 +8,7 @@ import kotlin.math.min
  * The model that handles interactive rebasing actions and changes
  */
 class IRGitModel<T : IRGitEntry>(initialState: List<Element<T>>) {
-    private val rows = ElementList(initialState)
+    internal val rows = ElementList(initialState)
 
     val elements: List<Element<T>>
         get() = rows.elements
@@ -228,7 +228,15 @@ class IRGitModel<T : IRGitEntry>(initialState: List<Element<T>>) {
         }
     }
 
-    private fun MutableElementList<T>.convertToRoot(rootIndex: Int): Element.UniteRoot<T> =
+    internal fun convertElementToRoot(indices: List<Int>): Element.UniteRoot<T> {
+        lateinit var root: Element.UniteRoot<T>
+        rows.modifyList {
+            root = convertToRoot(indices.last())
+        }
+        return root
+    }
+
+    internal fun MutableElementList<T>.convertToRoot(rootIndex: Int): Element.UniteRoot<T> =
         when (val element = rows[rootIndex]) {
             is Element.UniteRoot -> element
             is Element.UniteChild -> element.root
@@ -288,7 +296,7 @@ class IRGitModel<T : IRGitEntry>(initialState: List<Element<T>>) {
     /**
      * List for the initial states
      */
-    private class ElementList<T : IRGitEntry>(initialState: List<Element<T>>) {
+    internal class ElementList<T : IRGitEntry>(initialState: List<Element<T>>) {
         private val mutableElementList = MutableElementList(initialState)
 
         val size = initialState.size
@@ -329,7 +337,7 @@ class IRGitModel<T : IRGitEntry>(initialState: List<Element<T>>) {
         }
     }
 
-    private class MutableElementList<T : IRGitEntry>(initialState: List<Element<T>>) {
+    internal class MutableElementList<T : IRGitEntry>(initialState: List<Element<T>>) {
         private val _elements: MutableList<Element<T>> = initialState.toMutableList()
 
         val elements: List<Element<T>>

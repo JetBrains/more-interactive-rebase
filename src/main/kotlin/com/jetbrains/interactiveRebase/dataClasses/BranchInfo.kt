@@ -4,12 +4,12 @@ import com.intellij.openapi.Disposable
 
 class BranchInfo(
     var name: String = "",
-    var commits: List<CommitInfo> = listOf(),
+    var initialCommits: List<CommitInfo> = listOf(),
     var selectedCommits: MutableList<CommitInfo> = mutableListOf(),
     val isCheckedOut: Boolean = false,
 ) {
-    private val listeners: MutableList<Listener> = mutableListOf()
     internal var currentCommits: MutableList<CommitInfo> = mutableListOf()
+    private val listeners: MutableList<Listener> = mutableListOf()
 
     internal fun addListener(listener: Listener) = listeners.add(listener)
 
@@ -29,7 +29,7 @@ class BranchInfo(
      * listeners
      */
     internal fun setCommits(commits: List<CommitInfo>) {
-        this.commits = commits
+        this.initialCommits = commits
         this.currentCommits = commits.toMutableList()
         listeners.forEach { it.onCommitChange(commits) }
     }
@@ -65,6 +65,16 @@ class BranchInfo(
         listeners.forEach { it.onSelectedCommitChange(selectedCommits) }
     }
 
+    internal fun updateCurrentCommits(
+        oldIndex: Int,
+        newIndex: Int,
+        commit: CommitInfo,
+    ) {
+        currentCommits.removeAt(oldIndex)
+        currentCommits.add(newIndex, commit)
+        listeners.forEach { it.onCurrentCommitsChange(currentCommits) }
+    }
+
     /**
      * Provides a listener
      * for changes in this class
@@ -75,6 +85,8 @@ class BranchInfo(
         fun onCommitChange(commits: List<CommitInfo>)
 
         fun onSelectedCommitChange(selectedCommits: MutableList<CommitInfo>)
+
+        fun onCurrentCommitsChange(currentCommits: MutableList<CommitInfo>)
 
         override fun dispose() {}
     }

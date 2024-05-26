@@ -28,12 +28,11 @@
                     class="com.jetbrains.interactiveRebase.actions.changePanel.AddBranchAction" text="AddBranchAction"
                     description="Add another branch to the view">
             </action>
-            <action id="com.jetbrains.interactiveRebase.actions.changePanel.PickAction"
-                    class="com.jetbrains.interactiveRebase.actions.changePanel.PickAction" text="PickAction" description="Revert actions of a commit">
-            </action>
 
             <separator/>
-
+            <action id="com.jetbrains.interactiveRebase.actions.gitPanel.PickAction"
+                    class="com.jetbrains.interactiveRebase.actions.gitPanel.PickAction" text="PickAction" description="Revert actions of a commit">
+            </action>
             <action id="com.jetbrains.interactiveRebase.actions.gitPanel.SquashAction"
                     class="com.jetbrains.interactiveRebase.actions.gitPanel.SquashAction" text="SquashAction" description="Combine commits and set the commit subject" icon="AllIcons.Actions.DynamicUsages">
             </action>
@@ -50,6 +49,8 @@
                     class="com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction" text="StopToEditAction" description="Stop while rebasing to edit a commit">
             </action>
         </group>
+
+
 
 
     </actions>

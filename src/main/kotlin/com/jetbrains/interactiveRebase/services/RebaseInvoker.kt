@@ -16,7 +16,7 @@ class RebaseInvoker(val project: Project) {
 
     fun createModel() {
         val commits =
-            branchInfo.commits.map {
+            branchInfo.currentCommits.map {
                     commitInfo ->
                 GitRebaseEntryGeneratedUsingLog(commitInfo.commit)
             }
@@ -107,6 +107,7 @@ class RebaseInvoker(val project: Project) {
      */
     fun executeCommands() {
         commands.forEach { it.execute(model, branchInfo) }
-        IRGitRebaseUtils(project).rebase(branchInfo.commits.reversed()[0].commit, model)
+        IRGitRebaseUtils(project).rebase(branchInfo.initialCommits.reversed()[0].commit, model)
+        commands.clear()
     }
 }

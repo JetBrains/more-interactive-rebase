@@ -1,20 +1,18 @@
 package com.jetbrains.interactiveRebase.listeners
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
+import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import java.awt.event.MouseListener
-import java.awt.event.MouseMotionListener
 
 /**
  * A listener that allows a circle panel to be hovered on.
  * Involves the implementation of three methods for different type of
  * mouse actions that all reflect different parts of a "hover" action
  */
-class CircleHoverListener(
-    private val circlePanel: CirclePanel,
-) : MouseListener, MouseMotionListener {
+class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter(), Disposable {
     /**
      * Highlight the circle if the mouse enters the encapsulating rectangle and
      * is within the drawn circle.
@@ -58,21 +56,6 @@ class CircleHoverListener(
         circlePanel.repaint()
     }
 
-    /**
-     * mousePressed is not yet implemented
-     */
-    override fun mousePressed(e: MouseEvent?) {
-    }
-
-    /**
-     * mouseReleased is not yet implemented
-     */
-    override fun mouseReleased(e: MouseEvent?) {
-    }
-
-    /**
-     * mouseDragged is not yet implemented
-     */
-    override fun mouseDragged(e: MouseEvent?) {
+    override fun dispose() {
     }
 }

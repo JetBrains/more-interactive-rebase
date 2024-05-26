@@ -5,9 +5,9 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
-data class PickCommand(override var commits: MutableList<CommitInfo>) : RebaseCommand(commits) {
+data class PickCommand(var commit: CommitInfo) : RebaseCommand() {
     /**
-     * This method is to set-up connection with the
+     * This method is to set up connection with the
      * Interactive Rebase mechanism.
      *
      * This will be called within the RebaseInvoker,

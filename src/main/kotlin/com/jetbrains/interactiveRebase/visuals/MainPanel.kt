@@ -6,12 +6,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBPanel
+import com.intellij.ui.components.JBScrollPane
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import javax.swing.ScrollPaneConstants
 import javax.swing.SwingConstants
 
 class MainPanel(
@@ -21,7 +23,7 @@ class MainPanel(
 ) :
     JBPanel<JBPanel<*>>(), Disposable {
     internal var commitInfoPanel = CommitInfoPanel(project)
-    private var contentPanel: JBPanel<JBPanel<*>>
+    private var contentPanel: JBScrollPane
     internal var branchPanel: LabeledBranchPanel
     private val branchInfoListener: BranchInfo.Listener
     private val commitInfoListener: CommitInfo.Listener
@@ -48,6 +50,11 @@ class MainPanel(
                     branchPanel.updateCommits()
                     commitInfoPanel.commitsSelected(selectedCommits.map { it.commit })
                 }
+
+                override fun onCurrentCommitsChange(currentCommits: MutableList<CommitInfo>) {
+                    branchPanel.updateCommits()
+                    registerCommitListener()
+                }
             }
 
         commitInfoListener =
@@ -69,7 +76,7 @@ class MainPanel(
      */
     fun createBranchPanel(): LabeledBranchPanel {
         return LabeledBranchPanel(
-            invoker,
+            project,
             branchInfo,
             Palette.BLUE,
             SwingConstants.RIGHT,
@@ -79,27 +86,34 @@ class MainPanel(
     /**
      * Creates a content panel.
      */
-    fun createContentPanel(): JBPanel<JBPanel<*>> {
+    fun createContentPanel(): JBScrollPane {
+        val scrollable = JBScrollPane()
+
         val contentPanel = JBPanel<JBPanel<*>>()
         contentPanel.layout = GridBagLayout()
 
         val gbc = GridBagConstraints()
         gbc.gridx = 0
         gbc.gridy = 0
-        gbc.fill = GridBagConstraints.BOTH
+        gbc.weightx = 1.0
+        gbc.anchor = GridBagConstraints.CENTER
 
         contentPanel.add(
             branchPanel,
             gbc,
         )
-        return contentPanel
+
+        scrollable.setViewportView(contentPanel)
+        scrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
+        scrollable.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED)
+        return scrollable
     }
 
     /**
      * Initializes the main component.
      */
     fun createMainPanel() {
-        val headerPanel = HeaderPanel(this, project, invoker)
+        val headerPanel = HeaderPanel(project)
 
         val firstDivider =
             OnePixelSplitter(false, 0.7f).apply {
@@ -117,7 +131,7 @@ class MainPanel(
     }
 
     fun registerCommitListener() {
-        branchInfo.commits.forEach {
+        branchInfo.currentCommits.forEach {
             it.addListener(commitInfoListener)
         }
     }

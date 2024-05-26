@@ -13,7 +13,7 @@ import git4idea.GitDisposable
 import git4idea.history.GitCommitRequirements
 import git4idea.history.GitLogUtil
 
-/*
+/**
 Creates the panel that displays all the files
 changed by a commit as well as all the commit info
  */

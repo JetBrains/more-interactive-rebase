@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAwareAction
-import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.services.ActionService
 
 class FixupAction : DumbAwareAction("Fixup", "Combine commits and set a default message", AllIcons.Actions.ListFiles) {
     override fun actionPerformed(e: AnActionEvent) {
@@ -14,12 +14,7 @@ class FixupAction : DumbAwareAction("Fixup", "Combine commits and set a default 
     }
 
     override fun update(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible = true
-        val project = e.project
-        if (project != null && project.service<ModelService>().branchInfo.selectedCommits.size < 1) {
-            e.presentation.isEnabled = false
-        }
-//        super.update(e)
+        e.project?.service<ActionService>()?.checkDrop(e) // TODO replace with actual implementation
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
