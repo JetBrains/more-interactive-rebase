@@ -22,6 +22,6 @@ data class FixupCommand(var parentCommit: CommitInfo, val fixupCommits: List<Com
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
     ) {
-        TODO("Not yet implemented")
+
     }
 }

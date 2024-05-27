@@ -14,6 +14,7 @@ class StopToEditAction : DumbAwareAction("Stop to Edit", "Pause the rebasing act
     override fun actionPerformed(e: AnActionEvent) {
         e.project?.service<ActionService>()?.takeStopToEditAction()
 
+
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {

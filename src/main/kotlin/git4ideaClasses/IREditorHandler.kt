@@ -135,7 +135,7 @@ open class IREditorHandler(private val myProject: Project, private val myRoot: V
         processModel(rebaseTodoModel) { entry: IRGitEntry -> (entry as IRGitEntryDetails).commitDetails.fullMessage }
     }
 
-    protected fun <T : IRGitEntry> processModel(
+    fun <T : IRGitEntry> processModel(
             rebaseTodoModel: IRGitModel<T>,
             fullMessageGetter: (T) -> String,
     ) {
