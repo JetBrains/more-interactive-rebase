@@ -41,11 +41,10 @@ class ModelService(
      */
     fun addOrRemoveCommitSelection(commit: CommitInfo) {
         commit.changes.forEach { change ->
-            if (change is FixupCommand){
-                if(commit.isSelected){
+            if (change is FixupCommand) {
+                if (commit.isSelected) {
                     branchInfo.selectedCommits.addAll(change.fixupCommits)
-                }
-                else{
+                } else {
                     branchInfo.selectedCommits.removeAll(change.fixupCommits)
                 }
             }

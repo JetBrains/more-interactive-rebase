@@ -10,6 +10,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
+import com.jetbrains.rd.framework.base.deepClonePolymorphic
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
@@ -59,7 +60,7 @@ class ActionService(project: Project) {
      * Enables reword button if one commit is selected
      */
     fun checkReword(e: AnActionEvent) {
-        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.size == 1
+        e.presentation.isEnabled = modelService.branchInfo.getActualSelectedCommitsSize() == 1
     }
 
     /**
@@ -117,27 +118,26 @@ class ActionService(project: Project) {
 
     fun takeFixupAction() {
         val selectedCommits: MutableList<CommitInfo> = modelService.getSelectedCommits()
-        selectedCommits.forEach { println("${it.commit.subject} : ${selectedCommits.indexOf(it)} : ${it.commit.commitTime}") }
-        selectedCommits.sortBy { it.commit.commitTime }
-        selectedCommits.forEach { println("${it.commit.subject} : ${selectedCommits.indexOf(it)}") }
+        selectedCommits.sortBy { modelService.branchInfo.currentCommits.indexOf(it) }
         var parentCommit = selectedCommits.last()
-        println("Parent commit ${parentCommit.commit.subject}")
-        if (selectedCommits.size == 1){
+        if (selectedCommits.size == 1) {
             val selectedIndex = modelService.getCurrentCommits().indexOf(selectedCommits[0])
 
-            if(selectedIndex == modelService.getCurrentCommits().size - 1){
+            if (selectedIndex == modelService.getCurrentCommits().size - 1) {
                 throw IRInaccessibleException("Commit can not be squashed (parent commit not found)")
             }
 
             parentCommit = modelService.getCurrentCommits()[selectedIndex + 1]
         }
         selectedCommits.remove(parentCommit)
-        val command = FixupCommand(parentCommit, selectedCommits)
+        val fixupCommits = selectedCommits.deepClonePolymorphic()
+        val command = FixupCommand(parentCommit, fixupCommits)
 
-        selectedCommits.forEach {
+        fixupCommits.forEach {
                 commit ->
             commit.isSelected = false
             commit.isHovered = false
+            commit.isSquashed = true
             modelService.branchInfo.currentCommits.remove(commit)
 
             commit.addChange(command)

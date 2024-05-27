@@ -7,7 +7,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 
 class AddBranchAction : AnAction("Add Branch", "Add another branch to the view", AllIcons.Actions.AddList) {
     override fun actionPerformed(e: AnActionEvent) {
-        println("pick")
         TODO("Not yet implemented")
     }
 

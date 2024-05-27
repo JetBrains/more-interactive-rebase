@@ -137,7 +137,6 @@ class BranchPanel(
             val circle = initializeCirclePanel(i)
             add(circle)
         }
-        super.revalidate()
         revalidate()
     }
 }
