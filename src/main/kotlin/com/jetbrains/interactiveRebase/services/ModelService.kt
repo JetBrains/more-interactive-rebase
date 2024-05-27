@@ -82,6 +82,7 @@ class ModelService(
             val name = commitService.getBranchName()
             val commits = commitService.getCommitInfoForBranch(commitService.getCommits())
             if (branchChange(name, commits)) {
+                println("Branch changed")
                 branchInfo.setName(name)
                 branchInfo.setCommits(commits)
                 branchInfo.clearSelectedCommits()
