@@ -1,6 +1,6 @@
 # <img src="src/main/resources/META-INF/pluginIcon.svg" style="width: 200px; height: 200px; "> A More Interactive Rebase
 
-
+[![Coverage Badge](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/badges/main/coverage.svg)](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/badges/main/coverage.svg)
 ---
 <!-- Plugin description -->
 A More Interactive Rebase for JetBrains is a plugin for the integrated development

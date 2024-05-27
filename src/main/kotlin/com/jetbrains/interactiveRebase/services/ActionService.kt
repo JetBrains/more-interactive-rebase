@@ -46,18 +46,71 @@ class ActionService(project: Project) {
     }
 
     /**
-     * Enables the Drop button if there are selected commits
+     * Enables the Drop button
      */
     fun checkDrop(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty()
+                && invoker.model.canDrop(modelService.getSelectedCommits().map{
+                    c -> invoker.branchInfo.currentCommits.reversed().indexOf(c)})
+                && modelService.getSelectedCommits().none { commit ->
+            commit.changes.any { change -> change is DropCommand }}
+
+
     }
 
     /**
-     * Enables reword button if one commit is selected
+     * Enables reword button
      */
     fun checkReword(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.size == 1
+                && modelService.getSelectedCommits().none { commit ->
+                    !invoker.model.canReword(invoker.branchInfo.currentCommits.reversed().indexOf(commit))}
+                && modelService.getSelectedCommits().none { commit ->
+            commit.changes.any { change -> change is DropCommand }}
+
     }
+
+    /**
+     * Enables stop-to-edit button
+     */
+    fun checkStopToEdit(e: AnActionEvent) {
+        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty()
+                && invoker.model.canEdit(modelService.getSelectedCommits().map{
+            c -> invoker.branchInfo.currentCommits.reversed().indexOf(c)})
+                && modelService.getSelectedCommits().none { commit ->
+            commit.changes.any { change -> change is DropCommand }}
+
+    }
+
+    /**
+     * Enables fixup or squash button
+     */
+    fun checkFixupOrSquash(e: AnActionEvent) {
+        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty()
+                &&
+                !(modelService.branchInfo.selectedCommits.size==1 &&
+                        invoker.branchInfo.currentCommits.reversed().indexOf(modelService.branchInfo.selectedCommits[0])==0)
+                && invoker.model.canUnite(modelService.getSelectedCommits().map{
+            c -> invoker.branchInfo.currentCommits.reversed().indexOf(c)})
+                && modelService.getSelectedCommits().none { commit ->
+            commit.changes.any { change -> change is DropCommand }}
+
+    }
+
+    /**
+     * Enables pick button
+     */
+    fun checkPick(e: AnActionEvent) {
+        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty()
+                && invoker.model.canPick(modelService.getSelectedCommits().map{
+            c -> invoker.branchInfo.currentCommits.reversed().indexOf(c)})
+
+
+    }
+
+
+
+
 
     /**
      * Adds a visual change for a commit that has to be stopped to edit

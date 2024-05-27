@@ -20,4 +20,6 @@ class FixupAction : DumbAwareAction("Fixup", "Combine commits and set a default 
     override fun getActionUpdateThread(): ActionUpdateThread {
         return ActionUpdateThread.EDT
     }
+
+
 }
