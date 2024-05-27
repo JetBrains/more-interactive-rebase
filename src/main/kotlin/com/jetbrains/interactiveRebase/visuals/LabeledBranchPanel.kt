@@ -192,14 +192,15 @@ class LabeledBranchPanel(
         if (commitLabel is Disposable) {
             Disposer.register(commitLabel, labelListener)
         }
-        textField.addKeyListener(TextFieldListener(commitInfo, textField, project.service<RebaseInvoker>()))
+        textField.addKeyListener(TextFieldListener(commitInfo, textField, project.service<RebaseInvoker>(), project))
 
         messages.add(textLabelWrapper)
+
         return textLabelWrapper
     }
 
     /**
-     * Sets the text field to be visible, called after a double-click or button click for rewording
+     * Sets the text field to be visible, called after a double click or button click for rewording
      */
     private fun enableTextField(
         textField: RoundedTextField,

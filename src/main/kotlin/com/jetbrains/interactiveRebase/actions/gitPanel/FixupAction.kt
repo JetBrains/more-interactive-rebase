@@ -9,8 +9,7 @@ import com.jetbrains.interactiveRebase.services.ActionService
 
 class FixupAction : DumbAwareAction("Fixup", "Combine commits and set a default message", AllIcons.Actions.ListFiles) {
     override fun actionPerformed(e: AnActionEvent) {
-        println("fixup")
-        TODO("Not yet implemented")
+        e.project?.service<ActionService>()?.takeFixupAction()
     }
 
     override fun update(e: AnActionEvent) {

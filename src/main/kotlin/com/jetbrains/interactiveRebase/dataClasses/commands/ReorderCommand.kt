@@ -5,6 +5,7 @@ import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
 // TODO: Add needed attributes for the indices or ordering of the commits, based on drag-and-drop implementation
+
 data class ReorderCommand(val oldIndex: Int, val newIndex: Int) :
     RebaseCommand() {
     /**

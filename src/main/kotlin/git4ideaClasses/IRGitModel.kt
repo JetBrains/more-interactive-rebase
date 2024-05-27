@@ -112,7 +112,7 @@ class IRGitModel<T : IRGitEntry>(initialState: List<Element<T>>) {
     }
 
     /**
-     * Possibly can be deleted
+     * Squashing and fixup
      */
     fun unite(indices: List<Int>): Element.UniteRoot<T> {
         lateinit var root: Element.UniteRoot<T>

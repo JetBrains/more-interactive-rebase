@@ -11,6 +11,7 @@ import git4ideaClasses.IRGitModel
  * This class is the base class for all the commands
  * that will be executed during the rebase process.
  */
+
 sealed class RebaseCommand() {
     /**
      * This method is to set up connection with the

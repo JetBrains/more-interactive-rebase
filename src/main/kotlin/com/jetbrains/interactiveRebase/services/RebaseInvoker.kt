@@ -84,7 +84,7 @@ class RebaseInvoker(val project: Project) {
             val index = result.size
             result.add(IRGitModel.Element.Simple(index, IRGitModel.Type.NonUnite.Drop, entry))
         }
-        println("convert entries to model with count of " + result.size)
+
         return IRGitModel(result)
     }
 

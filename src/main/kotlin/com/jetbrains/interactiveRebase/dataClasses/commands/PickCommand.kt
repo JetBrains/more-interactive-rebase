@@ -17,6 +17,5 @@ data class PickCommand(var commit: CommitInfo) : RebaseCommand() {
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
     ) {
-        TODO("Not yet implemented")
     }
 }
