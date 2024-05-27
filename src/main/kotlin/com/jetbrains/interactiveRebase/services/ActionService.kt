@@ -97,10 +97,6 @@ class ActionService(project: Project) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty()
     }
 
-
-
-
-
     /**
      * Adds a visual change for a commit that has to be stopped to edit
      */
