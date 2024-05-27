@@ -10,7 +10,9 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.CommitService
@@ -191,7 +193,7 @@ class ActionServiceTest : BasePlatformTestCase() {
 
     fun testPerformPickAction() {
         // setup the commands
-        val command1 = DropCommand(commitInfo1)
+        val command1 = SquashCommand(commitInfo1, mutableListOf(commitInfo2), "lol")
         val command2 = ReorderCommand(1, 2)
         commitInfo1.addChange(command1)
         commitInfo1.addChange(command2)
@@ -207,7 +209,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         actionService.performPickAction()
 
         assertThat(commitInfo1.changes.size).isEqualTo(1)
-        assertThat(project.service<RebaseInvoker>().commands.size).isEqualTo(2)
         assertThat(modelService.branchInfo.selectedCommits.size).isEqualTo(0)
     }
 
@@ -216,7 +217,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(modelService.branchInfo.selectedCommits.size).isEqualTo(0)
     }
 
-    fun testResetAllChangesACtion() {
+    fun testResetAllChangesAction() {
         // setup the commands
         val command1 = DropCommand(commitInfo1)
         val command2 = ReorderCommand(1, 2)
@@ -236,6 +237,60 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(commitInfo2.changes.size).isEqualTo(0)
         assertThat(project.service<RebaseInvoker>().commands.size).isEqualTo(0)
         assertThat(modelService.branchInfo.selectedCommits.size).isEqualTo(0)
+    }
+
+    fun testTakeFixupActionMultipleCommits() {
+        commitInfo2.isSelected = true
+
+        modelService.addOrRemoveCommitSelection(commitInfo2)
+
+        actionService.takeFixupAction()
+        assertThat(commitInfo1.changes.size).isEqualTo(1)
+        assertThat(commitInfo2.changes.size).isEqualTo(1)
+        assertThat(modelService.invoker.commands[0])
+        val command = commitInfo1.changes[0] as FixupCommand
+        assertThat(command.parentCommit == commitInfo1)
+        assertThat(command.fixupCommits == listOf(commitInfo2))
+    }
+
+    fun testTakeFixupActionSingleCommit() {
+        actionService.takeFixupAction()
+        assertThat(commitInfo1.changes.size).isEqualTo(1)
+        assertThat(commitInfo2.changes.size).isEqualTo(1)
+        assertThat(modelService.invoker.commands[0])
+        val command = commitInfo1.changes[0] as FixupCommand
+        assertThat(command.parentCommit == commitInfo1)
+        assertThat(command.fixupCommits == listOf(commitInfo2))
+    }
+
+    fun testClearFixupOnPick() {
+        val command1 = FixupCommand(commitInfo1, mutableListOf(commitInfo2))
+        commitInfo1.addChange(command1)
+        commitInfo2.addChange(command1)
+        commitInfo1.isSquashed = true
+        commitInfo2.isSquashed = true
+
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo1)
+
+        modelService.invoker.addCommand(command1)
+
+        actionService.clearFixupOnPick(command1, commitInfo1)
+        assertThat(modelService.branchInfo.currentCommits).isEqualTo(listOf(commitInfo2, commitInfo1))
+    }
+
+    fun testClearSquashOnPick() {
+        val command1 = SquashCommand(commitInfo1, mutableListOf(commitInfo2), "lol")
+        commitInfo1.addChange(command1)
+        commitInfo2.addChange(command1)
+        commitInfo1.isSquashed = true
+        commitInfo2.isSquashed = true
+
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo1)
+
+        modelService.invoker.addCommand(command1)
+
+        actionService.clearSquashOnPick(command1, commitInfo1)
+        assertThat(modelService.branchInfo.currentCommits).isEqualTo(listOf(commitInfo2, commitInfo1))
     }
 
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)

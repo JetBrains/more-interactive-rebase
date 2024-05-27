@@ -8,8 +8,8 @@ class BranchInfo(
     var selectedCommits: MutableList<CommitInfo> = mutableListOf(),
     val isCheckedOut: Boolean = false,
 ) {
-    internal var currentCommits: MutableList<CommitInfo> = mutableListOf()
     private val listeners: MutableList<Listener> = mutableListOf()
+    internal var currentCommits: MutableList<CommitInfo> = initialCommits.toMutableList()
 
     internal fun addListener(listener: Listener) = listeners.add(listener)
 
@@ -63,6 +63,17 @@ class BranchInfo(
         selectedCommits.forEach { it.setSelectedTo(false) }
         selectedCommits.clear()
         listeners.forEach { it.onSelectedCommitChange(selectedCommits) }
+    }
+
+    /**
+     * Returns number of selected
+     * commits excluding squashed commits
+     */
+    fun getActualSelectedCommitsSize(): Int {
+        var size = 0
+        selectedCommits.forEach { if (!it.isSquashed) size++ }
+
+        return size
     }
 
     internal fun updateCurrentCommits(

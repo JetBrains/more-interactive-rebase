@@ -4,11 +4,14 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
+import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
+import com.jetbrains.rd.framework.base.deepClonePolymorphic
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
@@ -95,6 +98,7 @@ class ActionService(project: Project) {
      */
     fun checkPick(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty()
+
     }
 
     /**
@@ -119,9 +123,14 @@ class ActionService(project: Project) {
         val commits = modelService.getSelectedCommits()
         commits.forEach { commitInfo ->
             val changes = commitInfo.changes.iterator()
-
             while (changes.hasNext()) {
                 val change = changes.next()
+                if (change is FixupCommand && change.parentCommit == commitInfo) {
+                    clearFixupOnPick(change, commitInfo)
+                }
+                if (change is SquashCommand && change.parentCommit == commitInfo) {
+                    clearSquashOnPick(change, commitInfo)
+                }
                 if (change !is ReorderCommand) {
                     invoker.removeCommand(change)
                     changes.remove()
@@ -132,32 +141,42 @@ class ActionService(project: Project) {
     }
 
     /**
-     * Adds a visual change for a commit that has to be squashed hardcoded
+     * Puts back the fixup commits to the list of current commits
      */
-    fun takeSquashAction() {
-        if (invoker != null) {
-            invoker.addCommand(
-                SquashCommand(
-                    invoker.branchInfo.selectedCommits.last(),
-                    invoker.branchInfo.selectedCommits.subList(0, invoker.branchInfo.selectedCommits.size - 1),
-                    "s",
-                ),
-            )
+    fun clearFixupOnPick(
+        change: FixupCommand,
+        commitInfo: CommitInfo,
+    ) {
+        change.fixupCommits.forEach {
+                fixupCommit ->
+            fixupCommit.isSquashed = false
+            fixupCommit.changes.clear()
         }
+        val parentCommit = change.parentCommit
+        val parentIndex = modelService.getCurrentCommits().indexOfFirst { it == parentCommit }
+        if (parentIndex != -1) {
+            modelService.getCurrentCommits().addAll(parentIndex, change.fixupCommits)
+        }
+        commitInfo.isSquashed = false
     }
 
     /**
-     * Adds a visual change for a commit that has to be fixed up hardcoded
+     * Puts back the squashed commits to the list of current commits
      */
-    fun takeFixupAction() {
-        if (invoker != null) {
-            invoker.addCommand(
-                FixupCommand(
-                    invoker.branchInfo.selectedCommits.last(),
-                    invoker.branchInfo.selectedCommits.subList(0, invoker.branchInfo.selectedCommits.size - 1),
-                ),
-            )
+    fun clearSquashOnPick(
+        change: SquashCommand,
+        commitInfo: CommitInfo,
+    ) {
+        change.squashedCommits.forEach {
+                fixupCommit ->
+            fixupCommit.isSquashed = false
         }
+        val parentCommit = change.parentCommit
+        val parentIndex = modelService.getCurrentCommits().indexOfFirst { it == parentCommit }
+        if (parentIndex != -1) {
+            modelService.getCurrentCommits().addAll(parentIndex, change.squashedCommits)
+        }
+        commitInfo.isSquashed = false
     }
 
     /**
@@ -170,7 +189,52 @@ class ActionService(project: Project) {
         invoker.branchInfo.initialCommits.forEach {
                 commitInfo ->
             commitInfo.changes.clear()
+            commitInfo.isSelected = false
+            commitInfo.isSquashed = false
+            commitInfo.isDoubleClicked = false
+            commitInfo.isDragged = false
+            commitInfo.isReordered = false
+            commitInfo.isHovered = false
         }
         invoker.branchInfo.clearSelectedCommits()
+    }
+
+    fun takeSquashAction() {
+        takeFixupAction()
+        takeRewordAction()
+    }
+
+    fun takeFixupAction() {
+        val selectedCommits: MutableList<CommitInfo> = modelService.getSelectedCommits()
+        selectedCommits.sortBy { modelService.branchInfo.currentCommits.indexOf(it) }
+        var parentCommit = selectedCommits.last()
+        if (selectedCommits.size == 1) {
+            val selectedIndex = modelService.getCurrentCommits().indexOf(selectedCommits[0])
+
+            if (selectedIndex == modelService.getCurrentCommits().size - 1) {
+                throw IRInaccessibleException("Commit can not be squashed (parent commit not found)")
+            }
+
+            parentCommit = modelService.getCurrentCommits()[selectedIndex + 1]
+        }
+        selectedCommits.remove(parentCommit)
+        val fixupCommits = selectedCommits.deepClonePolymorphic()
+        val command = FixupCommand(parentCommit, fixupCommits)
+
+        fixupCommits.forEach {
+                commit ->
+            commit.isSelected = false
+            commit.isHovered = false
+            commit.isSquashed = true
+            modelService.branchInfo.currentCommits.remove(commit)
+
+            commit.addChange(command)
+        }
+
+        parentCommit.addChange(command)
+        modelService.branchInfo.clearSelectedCommits()
+
+        invoker.addCommand(command)
+        // TODO add to the model for backend
     }
 }

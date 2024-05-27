@@ -14,6 +14,7 @@ import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.CircleDragAndDropListener
 import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
 import com.jetbrains.interactiveRebase.listeners.LabelListener
@@ -97,8 +98,14 @@ class LabeledBranchPanel(
                 commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.CROSSED)
                 // TODO: when drag-and-drop is implemented, this will probably break because
                 // TODO: the alignment setting logic was changed
-                commitLabel.horizontalAlignment = alignment
+                commitLabel.horizontalAlignment = SwingConstants.RIGHT
                 commitLabel.alignmentX = RIGHT_ALIGNMENT
+            }
+
+            if (it is SquashCommand) {
+                if (it.parentCommit == branch.currentCommits[i]) {
+                    commitLabel.foreground = JBColor.BLUE
+                }
             }
         }
 
@@ -305,6 +312,7 @@ class LabeledBranchPanel(
 
         labelPanelWrapper.removeAll()
         addComponents()
+        revalidate()
     }
 
     override fun paintComponent(g: Graphics?) {

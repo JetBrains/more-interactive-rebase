@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 
 class RebaseActionsGroup : DefaultActionGroup() {
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.BGT
+        return ActionUpdateThread.EDT
     }
 
     override fun update(event: AnActionEvent) {

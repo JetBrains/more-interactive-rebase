@@ -22,14 +22,14 @@ data class SquashCommand(
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
     ) {
-        squashedCommits.add(parentCommit)
+        val squashes = squashedCommits + parentCommit
         val commitIndices =
-            squashedCommits.map {
+            squashes.map {
                     c ->
                 branchInfo.currentCommits.reversed().indexOf(c)
             }.reversed()
         model.unite(commitIndices)
-        // model.reword(branchInfo.currentCommits.reversed().indexOf(parentCommit), newMessage)
+        model.reword(branchInfo.currentCommits.reversed().indexOf(parentCommit), newMessage)
 //        val repo = GitUtil.getRepositoryManager(project).getRepositoryForRootQuick(project.guessProjectDir())
         //      if = null) {
 //            IRGitEditorHandler(repo, model).processModel(model) { entry ->
@@ -39,5 +39,9 @@ data class SquashCommand(
 //            }
 //        }
         // This existed in the previous functionality but could make it work
+    }
+
+    override fun toString(): String {
+        return "SquashCommand(newMessage='$newMessage')"
     }
 }

@@ -19,6 +19,5 @@ data class ReorderCommand(val oldIndex: Int, val newIndex: Int) :
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
     ) {
-        model.exchangeIndices(oldIndex, newIndex)
     }
 }
