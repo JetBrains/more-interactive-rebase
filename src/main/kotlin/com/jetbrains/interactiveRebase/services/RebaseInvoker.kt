@@ -85,7 +85,6 @@ class RebaseInvoker(val project: Project) {
             result.add(IRGitModel.Element.Simple(index, IRGitModel.Type.NonUnite.Drop, entry))
         }
 
-
         return IRGitModel(result)
     }
 
@@ -110,6 +109,5 @@ class RebaseInvoker(val project: Project) {
         commands.forEach { it.execute(model, branchInfo) }
         IRGitRebaseUtils(project).rebase(branchInfo.initialCommits.reversed()[0].commit, model)
         commands.clear()
-
     }
 }

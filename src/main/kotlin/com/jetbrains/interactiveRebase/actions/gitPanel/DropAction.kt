@@ -9,8 +9,6 @@ import com.jetbrains.interactiveRebase.services.ActionService
 
 class DropAction : DumbAwareAction("Drop", "Remove a commit", AllIcons.Actions.DeleteTagHover) {
     override fun actionPerformed(e: AnActionEvent) {
-
-
         e.project?.service<ActionService>()?.takeDropAction()
     }
 

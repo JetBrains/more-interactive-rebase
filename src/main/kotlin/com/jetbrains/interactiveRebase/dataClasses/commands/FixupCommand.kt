@@ -1,16 +1,12 @@
 package com.jetbrains.interactiveRebase.dataClasses.commands
 
-import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
-
-
 data class FixupCommand(var parentCommit: CommitInfo, val fixupCommits: MutableList<CommitInfo>) :
     RebaseCommand() {
-
     /**
      * This method is to set up connection with the
      * Interactive Rebase mechanism.
@@ -23,9 +19,11 @@ data class FixupCommand(var parentCommit: CommitInfo, val fixupCommits: MutableL
         branchInfo: BranchInfo,
     ) {
         fixupCommits.add(parentCommit)
-        val commitIndices =  fixupCommits.map{
-            c-> branchInfo.currentCommits.reversed().indexOf(c)}.reversed()
+        val commitIndices =
+            fixupCommits.map {
+                    c ->
+                branchInfo.currentCommits.reversed().indexOf(c)
+            }.reversed()
         model.unite(commitIndices)
-
     }
 }

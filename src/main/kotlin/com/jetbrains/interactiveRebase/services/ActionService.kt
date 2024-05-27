@@ -4,7 +4,11 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.jetbrains.interactiveRebase.dataClasses.commands.*
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
@@ -96,9 +100,13 @@ class ActionService(project: Project) {
      */
     fun takeSquashAction() {
         if (invoker != null) {
-            invoker.addCommand(SquashCommand(invoker.branchInfo.selectedCommits.last(),
-                    invoker.branchInfo.selectedCommits.subList(0,invoker.branchInfo.selectedCommits.size-1),"s"))
-
+            invoker.addCommand(
+                SquashCommand(
+                    invoker.branchInfo.selectedCommits.last(),
+                    invoker.branchInfo.selectedCommits.subList(0, invoker.branchInfo.selectedCommits.size - 1),
+                    "s",
+                ),
+            )
         }
     }
 
@@ -107,13 +115,14 @@ class ActionService(project: Project) {
      */
     fun takeFixupAction() {
         if (invoker != null) {
-            invoker.addCommand(FixupCommand(invoker.branchInfo.selectedCommits.last(),
-                    invoker.branchInfo.selectedCommits.subList(0,invoker.branchInfo.selectedCommits.size-1)))
-
+            invoker.addCommand(
+                FixupCommand(
+                    invoker.branchInfo.selectedCommits.last(),
+                    invoker.branchInfo.selectedCommits.subList(0, invoker.branchInfo.selectedCommits.size - 1),
+                ),
+            )
         }
     }
-
-
 
     /**
      * Resets all changes made to the commits

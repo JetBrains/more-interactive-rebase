@@ -12,7 +12,7 @@ class TextFieldListener(
     private val commitInfo: CommitInfo,
     private val textField: RoundedTextField,
     private val invoker: RebaseInvoker,
-    val project : Project
+    val project: Project,
 ) : KeyListener {
     override fun keyTyped(e: KeyEvent?) {}
 
@@ -34,8 +34,6 @@ class TextFieldListener(
      * Adds a reword change to the list of changes of a commit
      */
     private fun makeRewordChange() {
-
-
         val command = RewordCommand(commitInfo, textField.text)
 
         commitInfo.addChange(command)
