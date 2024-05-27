@@ -107,10 +107,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.removeSelectedCommits(commitInfo1)
         actionService.checkReword(event)
         assertThat(presentation.isEnabledAndVisible).isFalse()
-
-
     }
-
 
     fun testCheckStopToEditDisables() {
         commitInfo1.isSelected = false
@@ -161,7 +158,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         commitInfo1.addChange(DropCommand(commitInfo1))
         actionService.checkStopToEdit(event)
         assertThat(presentation.isEnabledAndVisible).isFalse()
-
     }
 
     fun testCheckPickDisables() {
@@ -175,7 +171,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.addSelectedCommits(commitInfo2)
         actionService.checkPick(event)
         assertThat(presentation.isEnabledAndVisible).isTrue()
-
     }
 
     private fun createEventWithPresentation(presentation: Presentation): AnActionEvent {
