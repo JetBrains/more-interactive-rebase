@@ -23,7 +23,7 @@ class TextFieldListenerTest : BasePlatformTestCase() {
         val commitProvider = TestGitCommitProvider(project)
         commitInfo = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf())
         textField = RoundedTextField(commitInfo, "input", JBColor.BLUE)
-        listener = TextFieldListener(commitInfo, textField, project.service<RebaseInvoker>())
+        listener = TextFieldListener(commitInfo, textField, project.service<RebaseInvoker>(), project)
     }
 
     fun testKeyReleasedConsidersNull() {
