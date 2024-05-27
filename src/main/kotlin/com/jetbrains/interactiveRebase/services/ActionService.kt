@@ -8,8 +8,8 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
+import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
@@ -97,35 +97,6 @@ class ActionService(project: Project) {
     }
 
     /**
-     * Adds a visual change for a commit that has to be squashed hardcoded
-     */
-    fun takeSquashAction() {
-        if (invoker != null) {
-            invoker.addCommand(
-                SquashCommand(
-                    invoker.branchInfo.selectedCommits.last(),
-                    invoker.branchInfo.selectedCommits.subList(0, invoker.branchInfo.selectedCommits.size - 1),
-                    "s",
-                ),
-            )
-        }
-    }
-
-    /**
-     * Adds a visual change for a commit that has to be fixed up hardcoded
-     */
-    fun takeFixupAction() {
-        if (invoker != null) {
-            invoker.addCommand(
-                FixupCommand(
-                    invoker.branchInfo.selectedCommits.last(),
-                    invoker.branchInfo.selectedCommits.subList(0, invoker.branchInfo.selectedCommits.size - 1),
-                ),
-            )
-        }
-    }
-
-    /**
      * Resets all changes made to the commits
      */
     fun resetAllChangesAction() {
@@ -145,29 +116,38 @@ class ActionService(project: Project) {
     }
 
     fun takeFixupAction() {
-        val commits: MutableList<CommitInfo> = modelService.getSelectedCommits()
-        val parent = commits.last()
-        // get the parent one with diegos logic
-        val command = SquashCommand(mutableListOf(parent), commits.dropLast(1), "new message")
-        invoker.addCommand(command)
+        val selectedCommits: MutableList<CommitInfo> = modelService.getSelectedCommits()
+        selectedCommits.forEach { println("${it.commit.subject} : ${selectedCommits.indexOf(it)} : ${it.commit.commitTime}") }
+        selectedCommits.sortBy { it.commit.commitTime }
+        selectedCommits.forEach { println("${it.commit.subject} : ${selectedCommits.indexOf(it)}") }
+        var parentCommit = selectedCommits.last()
+        println("Parent commit ${parentCommit.commit.subject}")
+        if (selectedCommits.size == 1){
+            val selectedIndex = modelService.getCurrentCommits().indexOf(selectedCommits[0])
 
-        println("selected commits are $commits")
-
-        commits.forEach {
-                commitInfo ->
-            commitInfo.isSelected = false
-            commitInfo.isHovered = false
-
-            if (commits.last() != commitInfo) {
-                modelService.branchInfo.currentCommits.remove(commitInfo)
-                println("remove $commitInfo")
+            if(selectedIndex == modelService.getCurrentCommits().size - 1){
+                throw IRInaccessibleException("Commit can not be squashed (parent commit not found)")
             }
-            commitInfo.addChange(command)
+
+            parentCommit = modelService.getCurrentCommits()[selectedIndex + 1]
         }
+        selectedCommits.remove(parentCommit)
+        val command = FixupCommand(parentCommit, selectedCommits)
+
+        selectedCommits.forEach {
+                commit ->
+            commit.isSelected = false
+            commit.isHovered = false
+            modelService.branchInfo.currentCommits.remove(commit)
+
+            commit.addChange(command)
+        }
+
+        parentCommit.addChange(command)
         modelService.branchInfo.clearSelectedCommits()
-        modelService.branchInfo.addSelectedCommits(parent)
-        println("exitiing fixup selected are ${modelService.branchInfo.selectedCommits}")
-        println("exit fixup current are ${modelService.branchInfo.currentCommits}")
+        modelService.branchInfo.addSelectedCommits(parentCommit)
+
+        invoker.addCommand(command)
         // TODO add to the model for backend
     }
 }

@@ -103,7 +103,7 @@ class LabeledBranchPanel(
             }
 
             if (it is SquashCommand) {
-                if (it.parentCommits.first() == branch.currentCommits[i]) {
+                if (it.parentCommit == branch.currentCommits[i]) {
                     commitLabel.foreground = JBColor.BLUE
                 }
             }
