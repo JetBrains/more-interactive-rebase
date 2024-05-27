@@ -2,7 +2,6 @@ package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.services.strategies.RewordTextStrategy
 import com.jetbrains.interactiveRebase.services.strategies.TextFieldStrategy
@@ -19,7 +18,8 @@ class TextFieldListener(
     /**
      * Set to reword by default, sets the logic to be executed once pressing enter in a text field
      */
-    var strategy : TextFieldStrategy = RewordTextStrategy(commitInfo, invoker, textField)
+    var strategy: TextFieldStrategy = RewordTextStrategy(commitInfo, invoker, textField)
+
     override fun keyTyped(e: KeyEvent?) {}
 
     override fun keyPressed(e: KeyEvent?) {}

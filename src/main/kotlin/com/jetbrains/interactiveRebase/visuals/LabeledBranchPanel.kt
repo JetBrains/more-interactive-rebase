@@ -28,7 +28,6 @@ import java.awt.Graphics
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
-import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JComponent
@@ -281,9 +280,9 @@ class LabeledBranchPanel(
         textField: RoundedTextField,
         textWrapper: JBPanel<JBPanel<*>>,
         labelWrapper: JBPanel<JBPanel<*>>,
-        commitInfo: CommitInfo
+        commitInfo: CommitInfo,
     ) {
-        val listener = TextFieldListener(commitInfo, textField, invoker)
+        val listener = TextFieldListener(commitInfo, textField, project.service<RebaseInvoker>())
         textField.addKeyListener(listener)
         textField.requestFocusInWindow()
 
@@ -296,9 +295,13 @@ class LabeledBranchPanel(
         listenForClickOutside(textField)
     }
 
-    private fun setTextFieldListenerStrategy(listener: TextFieldListener, commitInfo: CommitInfo, textField : JTextField) {
+    private fun setTextFieldListenerStrategy(
+        listener: TextFieldListener,
+        commitInfo: CommitInfo,
+        textField: JTextField,
+    ) {
         commitInfo.changes.forEach {
-            command ->
+                command ->
             if (command is SquashCommand) {
                 listener.strategy = SquashTextStrategy(command, textField)
             }

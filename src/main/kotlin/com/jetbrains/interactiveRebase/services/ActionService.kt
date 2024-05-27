@@ -11,9 +11,11 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.*
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 
 @Service(Service.Level.PROJECT)
@@ -229,7 +231,13 @@ class ActionService(project: Project) {
         }
         selectedCommits.remove(parentCommit)
         val fixupCommits = cleanSelectedCommits(parentCommit, selectedCommits)
-        val command = FixupCommand(parentCommit, fixupCommits)
+        var command : RebaseCommand = FixupCommand(parentCommit, fixupCommits)
+
+        if (isSquash) {
+            command = SquashCommand(parentCommit, fixupCommits, null)
+            parentCommit.setTextFieldEnabledTo(true)
+            println("made squash command ${parentCommit.commit.subject} parent")
+        }
 
         fixupCommits.forEach {
                 commit ->
