@@ -1,56 +1,29 @@
 package com.jetbrains.interactiveRebase.visuals
 
-import com.intellij.openapi.Disposable
 import com.intellij.ui.JBColor
-import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import java.awt.BasicStroke
 import java.awt.Color
-import java.awt.Cursor
-import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.geom.Ellipse2D
 
-/**
- * Visual representation of commit node in the git graph
- */
-open class CirclePanel(
-    val diameter: Double,
+class SquashedCirclePanel(
+    diameter: Double,
     private val border: Float,
-    var color: JBColor,
-    open var commit: CommitInfo,
-    open var next: CirclePanel? = null,
-    open var previous: CirclePanel? = null,
-) : JBPanel<JBPanel<*>>(), Disposable {
-    var centerX = 0.0
-    var centerY = 0.0
-    lateinit var circle: Ellipse2D.Double
+    color: JBColor,
+    override var commit: CommitInfo,
+    override var next: CirclePanel? = null,
+    override var previous: CirclePanel? = null,
+) : CirclePanel(diameter, border, color, commit, next, previous) {
+    lateinit var backCircle: Ellipse2D.Double
 
     /**
-     * Makes a panel where the circle will be drawn and
-     * sets listeners.
+     * Paints a squashed circle
+     * panel
      */
-
-    init {
-        isOpaque = false
-        minimumSize = Dimension(diameter.toInt(), diameter.toInt())
-        createCircle(diameter)
-    }
-
-    /**
-     * Draws circles within the circle panel
-     * - if hovered put an outline
-     * - if selected make color darker
-     */
-
-    public override fun paintComponent(g: Graphics) {
-        super.paintComponent(g)
-        paintCircle(g)
-    }
-
-    open fun paintCircle(g: Graphics) {
+    override fun paintCircle(g: Graphics) {
         val g2d = g as Graphics2D
 
         // Set rendering hints for smoother rendering
@@ -79,32 +52,20 @@ open class CirclePanel(
             } else {
                 Palette.DARKBLUE
             }
+
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
 
         if (commit.isHovered) {
-//            setCursor(grabCursor())
-            cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             g2d.color = JBColor.BLACK
             g2d.stroke = BasicStroke(border)
             g2d.draw(circle)
-        } else {
-            setCursor(Cursor.getDefaultCursor())
         }
     }
-
-//    fun grabCursor(): Cursor {
-//        val grabImagePath = "Images/cursor-hand-grab.png"
-//        val grabImage: Image = ImageIcon(grabImagePath).image
-//
-//        val toolkit = Toolkit.getDefaultToolkit()
-//        return toolkit.createCustomCursor(grabImage, Point(13, 13), "Grab")
-//
-//    }
 
     /**
      * Creates a circle shape to be drawn inside the panel.
      */
-    open fun createCircle(diameter: Double) {
+    override fun createCircle(diameter: Double) {
         val width = width.toDouble()
         val height = height.toDouble()
 
@@ -118,37 +79,24 @@ open class CirclePanel(
 
         centerX = this.x + adjustedDiameter / 2
         centerY = this.y + adjustedDiameter / 2
+        backCircle = Ellipse2D.Double(originX + 10, originY, adjustedDiameter, adjustedDiameter)
         circle = Ellipse2D.Double(originX, originY, adjustedDiameter, adjustedDiameter)
     }
 
     /**
      * Draws the circle with a shadow and border.
      */
-    open fun selectedCommitAppearance(
+    override fun selectedCommitAppearance(
         g2d: Graphics2D,
         isSelected: Boolean,
         circleColor: Color,
         borderColor: Color,
     ) {
+        g2d.fill(backCircle)
         g2d.fill(circle)
         g2d.color = if (isSelected) circleColor.darker() else circleColor
+        drawBorder(g2d, backCircle, borderColor)
+        g2d.color = if (isSelected) circleColor.darker() else circleColor
         drawBorder(g2d, circle, borderColor)
-    }
-
-    /**
-     * Draws the border of the circle.
-     */
-    open fun drawBorder(
-        g2d: Graphics2D,
-        circle: Ellipse2D.Double,
-        borderColor: Color,
-    ) {
-        g2d.fill(circle)
-        g2d.color = borderColor
-        g2d.stroke = BasicStroke(border)
-        g2d.draw(circle)
-    }
-
-    override fun dispose() {
     }
 }

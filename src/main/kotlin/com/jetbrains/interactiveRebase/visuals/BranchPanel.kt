@@ -4,6 +4,8 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 import java.awt.BasicStroke
 import java.awt.Dimension
@@ -52,6 +54,8 @@ class BranchPanel(
             circle = DropCirclePanel(diameter.toDouble(), borderSize, color, branch.currentCommits[i])
         } else if (commit.changes.any { it is StopToEditCommand }) {
             circle = StopToEditCirclePanel(diameter.toDouble(), borderSize, color, branch.currentCommits[i])
+        } else if (commit.changes.any { it is SquashCommand } || commit.changes.any { it is FixupCommand }) {
+            circle = SquashedCirclePanel(diameter.toDouble(), borderSize, color, branch.currentCommits[i])
         }
 
         circles.add(circle)
