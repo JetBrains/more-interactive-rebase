@@ -4,11 +4,13 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
+import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
+import com.jetbrains.rd.framework.base.deepClonePolymorphic
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
@@ -58,7 +60,7 @@ class ActionService(project: Project) {
      * Enables reword button if one commit is selected
      */
     fun checkReword(e: AnActionEvent) {
-        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.size == 1
+        e.presentation.isEnabled = modelService.branchInfo.getActualSelectedCommitsSize() == 1
     }
 
     /**
@@ -96,35 +98,6 @@ class ActionService(project: Project) {
     }
 
     /**
-     * Adds a visual change for a commit that has to be squashed hardcoded
-     */
-    fun takeSquashAction() {
-        if (invoker != null) {
-            invoker.addCommand(
-                SquashCommand(
-                    invoker.branchInfo.selectedCommits.last(),
-                    invoker.branchInfo.selectedCommits.subList(0, invoker.branchInfo.selectedCommits.size - 1),
-                    "s",
-                ),
-            )
-        }
-    }
-
-    /**
-     * Adds a visual change for a commit that has to be fixed up hardcoded
-     */
-    fun takeFixupAction() {
-        if (invoker != null) {
-            invoker.addCommand(
-                FixupCommand(
-                    invoker.branchInfo.selectedCommits.last(),
-                    invoker.branchInfo.selectedCommits.subList(0, invoker.branchInfo.selectedCommits.size - 1),
-                ),
-            )
-        }
-    }
-
-    /**
      * Resets all changes made to the commits
      */
     fun resetAllChangesAction() {
@@ -134,7 +107,52 @@ class ActionService(project: Project) {
         invoker.branchInfo.initialCommits.forEach {
                 commitInfo ->
             commitInfo.changes.clear()
+            commitInfo.isSelected = false
+            commitInfo.isSquashed = false
+            commitInfo.isDoubleClicked = false
+            commitInfo.isDragged = false
+            commitInfo.isReordered = false
+            commitInfo.isHovered = false
         }
         invoker.branchInfo.clearSelectedCommits()
+    }
+
+    fun takeSquashAction() {
+        takeFixupAction()
+        takeRewordAction()
+    }
+
+    fun takeFixupAction() {
+        val selectedCommits: MutableList<CommitInfo> = modelService.getSelectedCommits()
+        selectedCommits.sortBy { modelService.branchInfo.currentCommits.indexOf(it) }
+        var parentCommit = selectedCommits.last()
+        if (selectedCommits.size == 1) {
+            val selectedIndex = modelService.getCurrentCommits().indexOf(selectedCommits[0])
+
+            if (selectedIndex == modelService.getCurrentCommits().size - 1) {
+                throw IRInaccessibleException("Commit can not be squashed (parent commit not found)")
+            }
+
+            parentCommit = modelService.getCurrentCommits()[selectedIndex + 1]
+        }
+        selectedCommits.remove(parentCommit)
+        val fixupCommits = selectedCommits.deepClonePolymorphic()
+        val command = FixupCommand(parentCommit, fixupCommits)
+
+        fixupCommits.forEach {
+                commit ->
+            commit.isSelected = false
+            commit.isHovered = false
+            commit.isSquashed = true
+            modelService.branchInfo.currentCommits.remove(commit)
+
+            commit.addChange(command)
+        }
+
+        parentCommit.addChange(command)
+        modelService.branchInfo.clearSelectedCommits()
+
+        invoker.addCommand(command)
+        // TODO add to the model for backend
     }
 }

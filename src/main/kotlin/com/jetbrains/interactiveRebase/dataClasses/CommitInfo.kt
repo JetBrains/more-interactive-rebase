@@ -13,6 +13,7 @@ data class CommitInfo(
     var isSelected: Boolean = false,
     var isHovered: Boolean = false,
     var isDoubleClicked: Boolean = false,
+    var isSquashed: Boolean = false,
     var isReordered: Boolean = false,
     var isDragged: Boolean = false,
 ) {
@@ -62,6 +63,15 @@ data class CommitInfo(
     }
 
     /**
+     * Sets isSquashed to
+     * passed value and notifies
+     * subscribers
+     */
+    fun setSquashedTo(value: Boolean) {
+        isSelected = value
+    }
+
+    /**
      * Sets whether circle is reordered.
      */
     fun setReorderedTo(value: Boolean) {
@@ -99,6 +109,14 @@ data class CommitInfo(
     fun flipDoubleClicked() {
         isDoubleClicked = !isDoubleClicked
         listeners.forEach { it.onCommitChange() }
+    }
+
+    /**
+     * Shows commitInfo in a human
+     * readable way
+     */
+    override fun toString(): String {
+        return "CommitInfo(commit=${commit.subject})"
     }
 
     /**

@@ -10,6 +10,7 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.ActionService
@@ -156,7 +157,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(modelService.branchInfo.selectedCommits.size).isEqualTo(0)
     }
 
-    fun testResetAllChangesACtion() {
+    fun testResetAllChangesAction() {
         // setup the commands
         val command1 = DropCommand(commitInfo1)
         val command2 = ReorderCommand(1, 2)
@@ -176,6 +177,30 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(commitInfo2.changes.size).isEqualTo(0)
         assertThat(project.service<RebaseInvoker>().commands.size).isEqualTo(0)
         assertThat(modelService.branchInfo.selectedCommits.size).isEqualTo(0)
+    }
+
+    fun testTakeFixupActionMultipleCommits() {
+        commitInfo2.isSelected = true
+
+        modelService.addOrRemoveCommitSelection(commitInfo2)
+
+        actionService.takeFixupAction()
+        assertThat(commitInfo1.changes.size).isEqualTo(1)
+        assertThat(commitInfo2.changes.size).isEqualTo(1)
+        assertThat(modelService.invoker.commands[0])
+        val command = commitInfo1.changes[0] as FixupCommand
+        assertThat(command.parentCommit == commitInfo1)
+        assertThat(command.fixupCommits == listOf(commitInfo2))
+    }
+
+    fun testTakeFixupActionSingleCommit() {
+        actionService.takeFixupAction()
+        assertThat(commitInfo1.changes.size).isEqualTo(1)
+        assertThat(commitInfo2.changes.size).isEqualTo(1)
+        assertThat(modelService.invoker.commands[0])
+        val command = commitInfo1.changes[0] as FixupCommand
+        assertThat(command.parentCommit == commitInfo1)
+        assertThat(command.fixupCommits == listOf(commitInfo2))
     }
 
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)
