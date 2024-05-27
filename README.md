@@ -141,7 +141,7 @@ the whole Roadmap via this [link](https://gitlab.ewi.tudelft.nl/groups/cse2000-s
 Keep in mind that opening it requires access to the repository.
 
 
-![roadmap.png](Images/roadmap.png)
+![roadmap.png](Images/Roadmap 27.04.2024.png)
 
 ## ✒️ Authors and acknowledgment
 **Main contributors to the project are the members of our team:**
