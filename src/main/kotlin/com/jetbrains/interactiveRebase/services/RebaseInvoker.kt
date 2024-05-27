@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitRebaseUtils
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
@@ -142,7 +143,8 @@ class RebaseInvoker(val project: Project) {
      * Executes all the commands to be able to perform the rebase.
      */
     fun executeCommands() {
-        commands.forEach { it.execute(model, branchInfo) }
+        val commandz = commands.filterNot { it is ReorderCommand }
+        commandz.forEach { it.execute(model, branchInfo) }
         IRGitRebaseUtils(project).rebase(branchInfo.initialCommits.reversed()[0].commit, model)
         commands.clear()
     }
