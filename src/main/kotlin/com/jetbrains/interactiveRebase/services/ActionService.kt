@@ -107,6 +107,12 @@ class ActionService(project: Project) {
         invoker.branchInfo.initialCommits.forEach {
                 commitInfo ->
             commitInfo.changes.clear()
+            commitInfo.isSelected = false
+            commitInfo.isSquashed = false
+            commitInfo.isDoubleClicked = false
+            commitInfo.isDragged = false
+            commitInfo.isReordered = false
+            commitInfo.isHovered = false
         }
         invoker.branchInfo.clearSelectedCommits()
     }
@@ -145,7 +151,6 @@ class ActionService(project: Project) {
 
         parentCommit.addChange(command)
         modelService.branchInfo.clearSelectedCommits()
-        modelService.branchInfo.addSelectedCommits(parentCommit)
 
         invoker.addCommand(command)
         // TODO add to the model for backend
