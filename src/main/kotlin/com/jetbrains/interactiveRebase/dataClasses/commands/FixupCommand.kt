@@ -18,9 +18,9 @@ data class FixupCommand(var parentCommit: CommitInfo, val fixupCommits: MutableL
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
     ) {
-        fixupCommits.add(parentCommit)
+        val fixups = fixupCommits + parentCommit
         val commitIndices =
-            fixupCommits.map {
+            fixups.map {
                     c ->
                 branchInfo.currentCommits.reversed().indexOf(c)
             }.reversed()

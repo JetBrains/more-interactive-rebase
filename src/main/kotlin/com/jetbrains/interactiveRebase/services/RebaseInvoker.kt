@@ -3,7 +3,9 @@ package com.jetbrains.interactiveRebase.services
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitRebaseUtils
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitEntry
@@ -14,13 +16,47 @@ class RebaseInvoker(val project: Project) {
     var branchInfo = BranchInfo()
     internal lateinit var model: IRGitModel<GitRebaseEntryGeneratedUsingLog>
 
+    /**
+     * Creates a git model for the rebase, from the
+     * correct list of current commits.
+     */
     fun createModel() {
+        expandCurrentCommits()
         val commits =
             branchInfo.currentCommits.map {
                     commitInfo ->
                 GitRebaseEntryGeneratedUsingLog(commitInfo.commit)
             }
+
         model = convertToModel(commits.reversed())
+    }
+
+    /**
+     * Method that expands the previously changed list of current commits.
+     * At the moment, we remove the "squashed" and "fixed up" commits from the list,
+     * but we add them back at the correct position.
+     */
+    fun expandCurrentCommits() {
+        val commits = branchInfo.currentCommits.toMutableList()
+        for (commitInfo in branchInfo.currentCommits) {
+            for (command in commitInfo.changes) {
+                if (command is SquashCommand) {
+                    val parentCommit = command.parentCommit
+                    val parentIndex = commits.indexOfFirst { it == parentCommit }
+                    if (parentIndex != -1) {
+                        commits.addAll(parentIndex, command.squashedCommits)
+                    }
+                }
+                if (command is FixupCommand) {
+                    val parentCommit = command.parentCommit
+                    val parentIndex = commits.indexOfFirst { it == parentCommit }
+                    if (parentIndex != -1) {
+                        commits.addAll(parentIndex, command.fixupCommits)
+                    }
+                }
+            }
+        }
+        branchInfo.currentCommits = commits
     }
 
     /**
