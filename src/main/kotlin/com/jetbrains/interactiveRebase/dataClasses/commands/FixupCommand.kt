@@ -8,7 +8,7 @@ import git4ideaClasses.IRGitModel
 
 
 
-data class FixupCommand(var parentCommit: CommitInfo, val fixupCommits: List<CommitInfo>) :
+data class FixupCommand(var parentCommit: CommitInfo, val fixupCommits: MutableList<CommitInfo>) :
     RebaseCommand() {
 
     /**
@@ -22,6 +22,10 @@ data class FixupCommand(var parentCommit: CommitInfo, val fixupCommits: List<Com
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
     ) {
+        fixupCommits.add(parentCommit)
+        val commitIndices =  fixupCommits.map{
+            c-> branchInfo.currentCommits.reversed().indexOf(c)}.reversed()
+        model.unite(commitIndices)
 
     }
 }

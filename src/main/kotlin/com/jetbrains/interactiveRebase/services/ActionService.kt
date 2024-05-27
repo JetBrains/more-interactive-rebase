@@ -4,10 +4,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.*
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
@@ -95,7 +92,7 @@ class ActionService(project: Project) {
     }
 
     /**
-     * Adds a visual change for a commit that has to be squashed
+     * Adds a visual change for a commit that has to be squashed hardcoded
      */
     fun takeSquashAction() {
         if (invoker != null) {
@@ -104,6 +101,19 @@ class ActionService(project: Project) {
 
         }
     }
+
+    /**
+     * Adds a visual change for a commit that has to be fixed up hardcoded
+     */
+    fun takeFixupAction() {
+        if (invoker != null) {
+            invoker.addCommand(FixupCommand(invoker.branchInfo.selectedCommits.last(),
+                    invoker.branchInfo.selectedCommits.subList(0,invoker.branchInfo.selectedCommits.size-1)))
+
+        }
+    }
+
+
 
     /**
      * Resets all changes made to the commits
