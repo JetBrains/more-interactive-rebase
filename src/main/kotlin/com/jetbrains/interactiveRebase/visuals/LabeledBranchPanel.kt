@@ -107,7 +107,6 @@ class LabeledBranchPanel(
             if (it is SquashCommand) {
                 if (it.parentCommit == branch.currentCommits[i]) {
                     commitLabel.foreground = JBColor.BLUE
-                    println("setting ${commitLabel.text} to ${it.newMessage}")
                     commitLabel.text = it.newMessage ?: commitLabel.text
                 }
             }
@@ -230,7 +229,7 @@ class LabeledBranchPanel(
         textWrapper.add(textField, gbc)
 
         if (commitInfo.isTextFieldEnabled) {
-            enableTextField(textField, textWrapper, labelWrapper)
+            enableTextField(textField, textWrapper, labelWrapper, commitInfo)
         }
         textLabelWrapper.add(labelWrapper)
         textLabelWrapper.add(textWrapper)
@@ -241,14 +240,6 @@ class LabeledBranchPanel(
         if (commitLabel is Disposable) {
             Disposer.register(commitLabel, labelListener)
         }
-        textField.addKeyListener(
-            TextFieldListener(
-                commitInfo,
-                textField,
-                project.service<RebaseInvoker>(),
-                project,
-            ),
-        )
 
         messages.add(textLabelWrapper)
 

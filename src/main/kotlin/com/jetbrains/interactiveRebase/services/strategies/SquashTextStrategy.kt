@@ -8,8 +8,6 @@ class SquashTextStrategy(
     private val textField: JTextField,
 ) : TextFieldStrategy {
     override fun handleEnter() {
-        println("strategy used is squash")
         command.newMessage = textField.text
-        println("new message is ${command.newMessage}")
     }
 }

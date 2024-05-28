@@ -6,17 +6,11 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
-import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
@@ -221,7 +215,7 @@ class ActionService(project: Project) {
      * Takes fixup action and
      * creates a fixup command
      */
-    fun combineCommits(isSquash : Boolean) {
+    fun combineCommits(isSquash: Boolean) {
         val selectedCommits: MutableList<CommitInfo> = modelService.getSelectedCommits()
         selectedCommits.sortBy { modelService.branchInfo.currentCommits.indexOf(it) }
         var parentCommit = selectedCommits.last()
@@ -231,12 +225,11 @@ class ActionService(project: Project) {
         }
         selectedCommits.remove(parentCommit)
         val fixupCommits = cleanSelectedCommits(parentCommit, selectedCommits)
-        var command : RebaseCommand = FixupCommand(parentCommit, fixupCommits)
+        var command: RebaseCommand = FixupCommand(parentCommit, fixupCommits)
 
         if (isSquash) {
             command = SquashCommand(parentCommit, fixupCommits, null)
             parentCommit.setTextFieldEnabledTo(true)
-            println("made squash command ${parentCommit.commit.subject} parent")
         }
 
         fixupCommits.forEach {

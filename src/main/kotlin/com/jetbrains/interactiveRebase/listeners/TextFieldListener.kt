@@ -1,6 +1,5 @@
 package com.jetbrains.interactiveRebase.listeners
 
-import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.services.strategies.RewordTextStrategy
@@ -10,10 +9,9 @@ import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 
 class TextFieldListener(
-    private val commitInfo: CommitInfo,
+    commitInfo: CommitInfo,
     private val textField: RoundedTextField,
-    private val invoker: RebaseInvoker,
-    val project: Project,
+    invoker: RebaseInvoker,
 ) : KeyListener {
     /**
      * Set to reword by default, sets the logic to be executed once pressing enter in a text field
