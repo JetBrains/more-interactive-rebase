@@ -19,5 +19,4 @@ data class StopToEditCommand(var commit: CommitInfo) : RebaseCommand() {
     ) {
         model.edit(listOf(branchInfo.currentCommits.reversed().indexOf(commit)))
     }
-
 }
