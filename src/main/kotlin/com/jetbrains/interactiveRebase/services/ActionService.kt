@@ -7,10 +7,10 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
-import com.jetbrains.rd.framework.base.deepClonePolymorphic
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
@@ -199,21 +199,29 @@ class ActionService(project: Project) {
         invoker.branchInfo.clearSelectedCommits()
     }
 
+    /**
+     * Takes squash action and
+     * creates a squash command
+     */
     fun takeSquashAction() {
         takeFixupAction()
         takeRewordAction()
     }
 
+    /**
+     * Takes fixup action and
+     * creates a fixup command
+     */
     fun takeFixupAction() {
         val selectedCommits: MutableList<CommitInfo> = modelService.getSelectedCommits()
         selectedCommits.sortBy { modelService.branchInfo.currentCommits.indexOf(it) }
         var parentCommit = selectedCommits.last()
-        if (selectedCommits.size == 1) {
+        if (modelService.branchInfo.getActualSelectedCommitsSize() == 1) {
             val selectedIndex = modelService.getCurrentCommits().indexOf(selectedCommits[0])
             parentCommit = modelService.getCurrentCommits()[selectedIndex + 1]
         }
         selectedCommits.remove(parentCommit)
-        val fixupCommits = selectedCommits.deepClonePolymorphic()
+        val fixupCommits = cleanSelectedCommits(parentCommit, selectedCommits)
         val command = FixupCommand(parentCommit, fixupCommits)
 
         fixupCommits.forEach {
@@ -230,6 +238,41 @@ class ActionService(project: Project) {
         modelService.branchInfo.clearSelectedCommits()
 
         invoker.addCommand(command)
-        // TODO add to the model for backend
+    }
+
+    /**
+     * Removes squashing/fixup change
+     * from all commits and returns list
+     * of commits to squash
+     */
+    private fun cleanSelectedCommits(
+        parent: CommitInfo,
+        selectedCommits: List<CommitInfo>,
+    ): MutableList<CommitInfo> {
+        val ret = mutableListOf<CommitInfo>()
+        selectedCommits.forEach {
+            removeSquashFixChange(it)
+            ret.add(it)
+        }
+
+        removeSquashFixChange(parent)
+
+        return ret
+    }
+
+    /**
+     * Removes squash and fixup
+     * commands from commitInfo
+     * and the invoker
+     */
+    private fun removeSquashFixChange(commit: CommitInfo) {
+        val changesToRemove = mutableListOf<RebaseCommand>()
+        commit.changes.forEach {
+            if (it is FixupCommand || it is SquashCommand) {
+                modelService.invoker.removeCommand(it)
+                changesToRemove.add(it)
+            }
+        }
+        commit.changes.removeAll(changesToRemove)
     }
 }
