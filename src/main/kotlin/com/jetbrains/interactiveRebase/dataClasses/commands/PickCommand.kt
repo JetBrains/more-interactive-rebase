@@ -18,8 +18,4 @@ data class PickCommand(var commit: CommitInfo) : RebaseCommand() {
         branchInfo: BranchInfo,
     ) {
     }
-
-    override fun toString(): String {
-        return "PickCommand(${commit.commit.subject})"
-    }
 }
