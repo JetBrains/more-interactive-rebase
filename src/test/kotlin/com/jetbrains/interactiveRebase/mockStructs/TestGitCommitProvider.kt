@@ -16,7 +16,10 @@ class TestGitCommitProvider(private val project: Project) {
         val root = MockVirtualFile("mock name")
         val message = "example long commit message"
         val commitRequirements = GitCommitRequirements()
-        return GitCommit(project, hash, listOf(), 1000L, root, subject, author, message, author, 1000L, listOf(), commitRequirements)
+        return GitCommit(
+            project, hash, listOf(), 1000L, root, subject, author,
+            message, author, 1000L, listOf(), commitRequirements,
+        )
     }
 
     private class MockVcsUserRegistry : VcsUserRegistry {

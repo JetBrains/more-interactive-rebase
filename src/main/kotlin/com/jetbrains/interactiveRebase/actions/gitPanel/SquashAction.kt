@@ -17,6 +17,6 @@ class SquashAction() : DumbAwareAction("Squash", "Combine multiple commits into 
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkDrop(e) // TODO replace with actual implementation
+        e.project?.service<ActionService>()?.checkFixupOrSquash(e)
     }
 }

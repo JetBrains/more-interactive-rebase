@@ -103,6 +103,26 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.addSelectedCommits(commitInfo2)
         actionService.checkReword(event)
         assertThat(presentation.isEnabledAndVisible).isFalse()
+        commitInfo2.addChange(DropCommand(commitInfo2))
+        modelService.branchInfo.removeSelectedCommits(commitInfo1)
+        actionService.checkReword(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+    }
+
+    fun testCheckStopToEditDisables() {
+        commitInfo1.isSelected = false
+        modelService.branchInfo.clearSelectedCommits()
+        val presentation = Presentation()
+        presentation.isEnabled = true
+        val event = createEventWithPresentation(presentation)
+        actionService.checkStopToEdit(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+        modelService.branchInfo.addSelectedCommits(commitInfo1)
+        actionService.checkReword(event)
+        assertThat(presentation.isEnabledAndVisible).isTrue()
+        commitInfo1.addChange(DropCommand(commitInfo1))
+        actionService.checkStopToEdit(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
     }
 
     fun testCheckDropDisables() {
@@ -115,6 +135,41 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(presentation.isEnabledAndVisible).isFalse()
         modelService.branchInfo.addSelectedCommits(commitInfo1)
         actionService.checkDrop(event)
+        assertThat(presentation.isEnabledAndVisible).isTrue()
+        commitInfo1.addChange(DropCommand(commitInfo1))
+        actionService.checkDrop(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+    }
+
+    fun testCheckFixupOrSquashDisables() {
+        commitInfo1.isSelected = false
+        modelService.branchInfo.clearSelectedCommits()
+        val presentation = Presentation()
+        presentation.isEnabled = true
+        val event = createEventWithPresentation(presentation)
+        actionService.checkFixupOrSquash(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+        modelService.branchInfo.addSelectedCommits(commitInfo2)
+        actionService.checkFixupOrSquash(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+        modelService.branchInfo.addSelectedCommits(commitInfo1)
+        actionService.checkStopToEdit(event)
+        assertThat(presentation.isEnabledAndVisible).isTrue()
+        commitInfo1.addChange(DropCommand(commitInfo1))
+        actionService.checkStopToEdit(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+    }
+
+    fun testCheckPickDisables() {
+        commitInfo1.isSelected = false
+        modelService.branchInfo.clearSelectedCommits()
+        val presentation = Presentation()
+        presentation.isEnabled = true
+        val event = createEventWithPresentation(presentation)
+        actionService.checkPick(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+        modelService.branchInfo.addSelectedCommits(commitInfo2)
+        actionService.checkPick(event)
         assertThat(presentation.isEnabledAndVisible).isTrue()
     }
 

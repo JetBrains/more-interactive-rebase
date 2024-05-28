@@ -10,7 +10,6 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
-import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import com.jetbrains.rd.framework.base.deepClonePolymorphic
 
 @Service(Service.Level.PROJECT)
@@ -51,17 +50,55 @@ class ActionService(project: Project) {
     }
 
     /**
-     * Enables the Drop button if there are selected commits
+     * Enables the Drop button
      */
     fun checkDrop(e: AnActionEvent) {
-        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty()
+        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
+            modelService.getSelectedCommits().none { commit ->
+                commit.changes.any { change -> change is DropCommand }
+            }
     }
 
     /**
-     * Enables reword button if one commit is selected
+     * Enables reword button
      */
     fun checkReword(e: AnActionEvent) {
-        e.presentation.isEnabled = modelService.branchInfo.getActualSelectedCommitsSize() == 1
+        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.size == 1 &&
+            modelService.getSelectedCommits().none { commit ->
+                commit.changes.any { change -> change is DropCommand }
+            }
+    }
+
+    /**
+     * Enables stop-to-edit button
+     */
+    fun checkStopToEdit(e: AnActionEvent) {
+        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
+            modelService.getSelectedCommits().none { commit ->
+                commit.changes.any { change -> change is DropCommand }
+            }
+    }
+
+    /**
+     * Enables fixup or squash button
+     */
+    fun checkFixupOrSquash(e: AnActionEvent) {
+        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
+            !(
+                modelService.branchInfo.selectedCommits.size==1 &&
+                    invoker.branchInfo.currentCommits.reversed()
+                        .indexOf(modelService.branchInfo.selectedCommits[0])==0
+            ) &&
+            modelService.getSelectedCommits().none { commit ->
+                commit.changes.any { change -> change is DropCommand }
+            }
+    }
+
+    /**
+     * Enables pick button
+     */
+    fun checkPick(e: AnActionEvent) {
+        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty()
     }
 
     /**
@@ -173,11 +210,6 @@ class ActionService(project: Project) {
         var parentCommit = selectedCommits.last()
         if (selectedCommits.size == 1) {
             val selectedIndex = modelService.getCurrentCommits().indexOf(selectedCommits[0])
-
-            if (selectedIndex == modelService.getCurrentCommits().size - 1) {
-                throw IRInaccessibleException("Commit can not be squashed (parent commit not found)")
-            }
-
             parentCommit = modelService.getCurrentCommits()[selectedIndex + 1]
         }
         selectedCommits.remove(parentCommit)

@@ -13,7 +13,7 @@ class FixupAction : DumbAwareAction("Fixup", "Combine commits and set a default 
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkDrop(e) // TODO replace with actual implementation
+        e.project?.service<ActionService>()?.checkFixupOrSquash(e)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
