@@ -123,7 +123,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
 
     fun testWrapsLabelWithTextFieldConsidersDoubleClick() {
         val commitLabel = JBLabel("label")
-        commit2.isDoubleClicked = true
+        commit2.isTextFieldEnabled = true
         val mainWrapper = labeledBranch.wrapLabelWithTextField(commitLabel, commit2)
         val labelWrapper = mainWrapper.getComponent(0) as JBPanel<*>
         val textWrapper = mainWrapper.getComponent(1) as JBPanel<*>

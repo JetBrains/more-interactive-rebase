@@ -23,7 +23,7 @@ class TextFieldListenerTest : BasePlatformTestCase() {
         val commitProvider = TestGitCommitProvider(project)
         commitInfo = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf())
         textField = RoundedTextField(commitInfo, "input", JBColor.BLUE)
-        listener = TextFieldListener(commitInfo, textField, project.service<RebaseInvoker>(), project)
+        listener = TextFieldListener(commitInfo, textField, project.service<RebaseInvoker>())
     }
 
     fun testKeyReleasedConsidersNull() {
@@ -33,7 +33,7 @@ class TextFieldListenerTest : BasePlatformTestCase() {
     fun testKeyReleasedChecksEscape() {
         val key = KeyEvent(JBLabel(), KeyEvent.VK_ESCAPE, 2, 2, KeyEvent.VK_ESCAPE)
         listener.keyReleased(key)
-        assertThat(commitInfo.isDoubleClicked).isFalse()
+        assertThat(commitInfo.isTextFieldEnabled).isFalse()
     }
 
     fun testIsNotAffectedByOtherEvents() {

@@ -30,7 +30,7 @@ class ActionService(project: Project) {
      */
     fun takeRewordAction() {
         modelService.branchInfo.selectedCommits.forEach {
-            it.setDoubleClickedTo(true)
+            it.setTextFieldEnabledTo(true)
         }
     }
 
@@ -63,7 +63,7 @@ class ActionService(project: Project) {
      * Enables reword button
      */
     fun checkReword(e: AnActionEvent) {
-        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.size == 1 &&
+        e.presentation.isEnabled = modelService.branchInfo.getActualSelectedCommitsSize() == 1 &&
             modelService.getSelectedCommits().none { commit ->
                 commit.changes.any { change -> change is DropCommand }
             }
@@ -168,8 +168,9 @@ class ActionService(project: Project) {
         commitInfo: CommitInfo,
     ) {
         change.squashedCommits.forEach {
-                fixupCommit ->
-            fixupCommit.isSquashed = false
+                squashedCommit ->
+            squashedCommit.isSquashed = false
+            squashedCommit.changes.clear()
         }
         val parentCommit = change.parentCommit
         val parentIndex = modelService.getCurrentCommits().indexOfFirst { it == parentCommit }
@@ -191,7 +192,7 @@ class ActionService(project: Project) {
             commitInfo.changes.clear()
             commitInfo.isSelected = false
             commitInfo.isSquashed = false
-            commitInfo.isDoubleClicked = false
+            commitInfo.isTextFieldEnabled = false
             commitInfo.isDragged = false
             commitInfo.isReordered = false
             commitInfo.isHovered = false
@@ -204,15 +205,18 @@ class ActionService(project: Project) {
      * creates a squash command
      */
     fun takeSquashAction() {
-        takeFixupAction()
-        takeRewordAction()
+        combineCommits(true)
+    }
+
+    fun takeFixupAction() {
+        combineCommits(false)
     }
 
     /**
      * Takes fixup action and
      * creates a fixup command
      */
-    fun takeFixupAction() {
+    fun combineCommits(isSquash: Boolean) {
         val selectedCommits: MutableList<CommitInfo> = modelService.getSelectedCommits()
         selectedCommits.sortBy { modelService.branchInfo.currentCommits.indexOf(it) }
         var parentCommit = selectedCommits.last()
@@ -222,7 +226,12 @@ class ActionService(project: Project) {
         }
         selectedCommits.remove(parentCommit)
         val fixupCommits = cleanSelectedCommits(parentCommit, selectedCommits)
-        val command = FixupCommand(parentCommit, fixupCommits)
+        var command: RebaseCommand = FixupCommand(parentCommit, fixupCommits)
+
+        if (isSquash) {
+            command = SquashCommand(parentCommit, fixupCommits, parentCommit.commit.subject)
+            parentCommit.setTextFieldEnabledTo(true)
+        }
 
         fixupCommits.forEach {
                 commit ->

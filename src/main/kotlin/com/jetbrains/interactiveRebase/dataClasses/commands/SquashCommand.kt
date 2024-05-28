@@ -8,7 +8,7 @@ import git4ideaClasses.IRGitModel
 data class SquashCommand(
     val parentCommit: CommitInfo,
     val squashedCommits: MutableList<CommitInfo>,
-    val newMessage: String,
+    var newMessage: String,
 ) :
     RebaseCommand() {
     /**
@@ -39,9 +39,5 @@ data class SquashCommand(
 //            }
 //        }
         // This existed in the previous functionality but could make it work
-    }
-
-    override fun toString(): String {
-        return "SquashCommand(newMessage='$newMessage')"
     }
 }

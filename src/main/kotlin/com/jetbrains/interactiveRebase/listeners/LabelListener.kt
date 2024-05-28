@@ -17,7 +17,7 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener, Disposa
      */
     override fun mouseClicked(e: MouseEvent?) {
         if (e != null && e.clickCount >= 2) {
-            commitInfo.setDoubleClickedTo(true)
+            commitInfo.setTextFieldEnabledTo(true)
             commitInfo.isSelected = true
             modelService.addOrRemoveCommitSelection(commitInfo)
         }

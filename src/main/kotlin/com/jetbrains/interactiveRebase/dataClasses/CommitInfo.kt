@@ -2,7 +2,6 @@ package com.jetbrains.interactiveRebase.dataClasses
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
-import com.jetbrains.interactiveRebase.dataClasses.BranchInfo.Listener
 import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import git4idea.GitCommit
 
@@ -12,7 +11,7 @@ data class CommitInfo(
     val changes: MutableList<RebaseCommand> = mutableListOf(),
     var isSelected: Boolean = false,
     var isHovered: Boolean = false,
-    var isDoubleClicked: Boolean = false,
+    var isTextFieldEnabled: Boolean = false,
     var isSquashed: Boolean = false,
     var isReordered: Boolean = false,
     var isDragged: Boolean = false,
@@ -53,22 +52,13 @@ data class CommitInfo(
     }
 
     /**
-     * Sets isDoubleClicked to
+     * Sets isTextFieldEnabled to
      * passed value and notifies
      * subscribers
      */
-    fun setDoubleClickedTo(value: Boolean) {
-        isDoubleClicked = value
+    fun setTextFieldEnabledTo(value: Boolean) {
+        isTextFieldEnabled = value
         listeners.forEach { it.onCommitChange() }
-    }
-
-    /**
-     * Sets isSquashed to
-     * passed value and notifies
-     * subscribers
-     */
-    fun setSquashedTo(value: Boolean) {
-        isSelected = value
     }
 
     /**
@@ -107,7 +97,7 @@ data class CommitInfo(
      * and notifies subscribers
      */
     fun flipDoubleClicked() {
-        isDoubleClicked = !isDoubleClicked
+        isTextFieldEnabled = !isTextFieldEnabled
         listeners.forEach { it.onCommitChange() }
     }
 

@@ -77,16 +77,16 @@ class ActionServiceTest : BasePlatformTestCase() {
 
     fun testTakeRewordAction() {
         actionService.takeRewordAction()
-        assertThat(commitInfo1.isDoubleClicked).isTrue()
-        assertThat(commitInfo2.isDoubleClicked).isFalse()
+        assertThat(commitInfo1.isTextFieldEnabled).isTrue()
+        assertThat(commitInfo2.isTextFieldEnabled).isFalse()
     }
 
     fun testTakeRewordActionConsidersEmptyList() {
         commitInfo1.isSelected = false
         modelService.branchInfo.clearSelectedCommits()
         actionService.takeRewordAction()
-        assertThat(commitInfo2.isDoubleClicked).isFalse()
-        assertThat(commitInfo1.isDoubleClicked).isFalse()
+        assertThat(commitInfo2.isTextFieldEnabled).isFalse()
+        assertThat(commitInfo1.isTextFieldEnabled).isFalse()
     }
 
     fun testCheckRewordDisables() {

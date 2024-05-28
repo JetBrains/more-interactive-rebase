@@ -44,8 +44,8 @@ class CommitInfoTest : BasePlatformTestCase() {
     }
 
     fun testSetDoubleClickTo() {
-        commitInfo.setDoubleClickedTo(true)
-        assertTrue(commitInfo.isDoubleClicked)
+        commitInfo.setTextFieldEnabledTo(true)
+        assertTrue(commitInfo.isTextFieldEnabled)
         verify(listener, times(1)).onCommitChange()
     }
 
@@ -62,9 +62,9 @@ class CommitInfoTest : BasePlatformTestCase() {
     }
 
     fun testFlipDoubleCLick() {
-        commitInfo.setDoubleClickedTo(false)
+        commitInfo.setTextFieldEnabledTo(false)
         commitInfo.flipDoubleClicked()
-        assertTrue(commitInfo.isDoubleClicked)
+        assertTrue(commitInfo.isTextFieldEnabled)
         verify(listener, times(2)).onCommitChange()
     }
 }
