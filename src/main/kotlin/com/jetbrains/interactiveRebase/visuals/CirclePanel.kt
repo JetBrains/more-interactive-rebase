@@ -10,8 +10,11 @@ import java.awt.Cursor
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
+import java.awt.Point
 import java.awt.RenderingHints
+import java.awt.Toolkit
 import java.awt.geom.Ellipse2D
+import javax.swing.ImageIcon
 
 /**
  * Visual representation of commit node in the git graph
@@ -35,7 +38,14 @@ open class CirclePanel(
 
     init {
         isOpaque = false
-        minimumSize = Dimension(diameter.toInt(), diameter.toInt())
+        minimumSize =
+            Dimension(
+                diameter.toInt(),
+                // Ensure there is always spacing between circles
+                // when drawing a branch
+                (diameter.toInt() * 2.0).toInt(),
+            )
+        preferredSize = minimumSize
         createCircle(diameter)
     }
 
@@ -82,7 +92,7 @@ open class CirclePanel(
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
 
         if (commit.isHovered) {
-//            setCursor(grabCursor())
+//            cursor = openHandCursor()
             cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             g2d.color = JBColor.BLACK
             g2d.stroke = BasicStroke(border)
@@ -92,13 +102,45 @@ open class CirclePanel(
         }
     }
 
-//    fun grabCursor(): Cursor {
-//        val grabImagePath = "Images/cursor-hand-grab.png"
-//        val grabImage: Image = ImageIcon(grabImagePath).image
+    fun openHandCursor(): Cursor {
+        val grabImagePath = "Images/cursor-hand-open.png"
+        val grabImage = ImageIcon(grabImagePath).image
+
+        val toolkit = Toolkit.getDefaultToolkit()
+        return toolkit.createCustomCursor(grabImage, Point(0, 0), "open")
+    }
+
+//    fun openHandCursor(): Cursor {
+// //        val openHandImage = Toolkit
+// //            .getDefaultToolkit()
+// //            .getImage("Images/commit.png")
+// //        val hotspot = Point(openHandImage.getWidth(null) / 2, openHandImage.getHeight(null) / 2)
+// //        return Toolkit
+// //            .getDefaultToolkit()
+// //            .createCustomCursor(
+// //                openHandImage,
+// //                hotspot,
+// //                "open_hand_cursor")
+// //        val toolkit = getToolkit()
+//        val image = toolkit.getImage("Images/cursor-hand-open.png")
+//        return toolkit.createCustomCursor(
+//            image, Point(x, y), "open"
+//        )
+//    }
+
+//    fun resizeImage(originalImage: BufferedImage, targetWidth: Int, targetHeight: Int): BufferedImage {
+//        val resizedImage = BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB)
+//        val g: Graphics2D = resizedImage.createGraphics()
+//        g.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null)
+//        g.dispose()
+//        return resizedImage
+//    }
 //
-//        val toolkit = Toolkit.getDefaultToolkit()
-//        return toolkit.createCustomCursor(grabImage, Point(13, 13), "Grab")
-//
+//    fun openHandCursor(): Cursor {
+//        val originalImage = ImageIO.read(File("Images/cursor-hand-open.png"))
+//        val resizedImage = resizeImage(originalImage, 32, 32)
+//        val hotspot = Point(resizedImage.width / 2, resizedImage.height / 2)
+//        return Toolkit.getDefaultToolkit().createCustomCursor(resizedImage, hotspot, "open_hand_cursor")
 //    }
 
     /**
