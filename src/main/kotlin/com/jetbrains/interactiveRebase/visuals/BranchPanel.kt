@@ -65,19 +65,21 @@ class BranchPanel(
                     branch.currentCommits[i],
                 )
         } else if (commit.changes.any { it is StopToEditCommand }) {
-            circle = StopToEditCirclePanel(
-                diameter.toDouble(),
-                borderSize,
-                color,
-                branch.currentCommits[i]
-            )
+            circle =
+                StopToEditCirclePanel(
+                    diameter.toDouble(),
+                    borderSize,
+                    color,
+                    branch.currentCommits[i],
+                )
         } else if (commit.changes.any { it is SquashCommand } || commit.changes.any { it is FixupCommand }) {
-            circle = SquashedCirclePanel(
-                diameter.toDouble(),
-                borderSize,
-                color,
-                branch.currentCommits[i]
-            )
+            circle =
+                SquashedCirclePanel(
+                    diameter.toDouble(),
+                    borderSize,
+                    color,
+                    branch.currentCommits[i],
+                )
         }
 
         circles.add(circle)
@@ -115,7 +117,7 @@ class BranchPanel(
      * Draws the line from the earliest branch commit
      * to the bottom of the screen
      */
-    private fun drawBottomLine(g2d: Graphics2D) {
+    internal fun drawBottomLine(g2d: Graphics2D) {
         val startX = width / 2
         val startY = circles[size - 1].y + circles[size - 1].height / 2 + diameter / 2
         val endX = width / 2
@@ -130,7 +132,7 @@ class BranchPanel(
      * Adds a gradient to the line
      * to make it seem as if it's fading away
      */
-    private fun fadingAwayEffect(
+    internal fun fadingAwayEffect(
         g2d: Graphics2D,
         startX: Int,
         startY: Int,

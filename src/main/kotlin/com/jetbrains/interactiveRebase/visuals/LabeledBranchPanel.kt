@@ -97,7 +97,7 @@ class LabeledBranchPanel(
                 commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.CROSSED)
                 // TODO: when drag-and-drop is implemented, this will probably break because
                 // TODO: the alignment setting logic was changed
-                commitLabel.horizontalAlignment = alignment // MAY NEED TO BE RIGHT
+                commitLabel.horizontalAlignment = alignment
                 commitLabel.alignmentX = RIGHT_ALIGNMENT
             }
 
@@ -180,7 +180,7 @@ class LabeledBranchPanel(
      * for a given circle index
      * and a list of circle panels.
      */
-    private fun gridCellForCircle(
+    internal fun gridCellForCircle(
         i: Int,
         circles: MutableList<CirclePanel>,
     ): GridBagConstraints {
@@ -241,7 +241,8 @@ class LabeledBranchPanel(
                 commitInfo,
                 textField,
                 project.service<RebaseInvoker>(),
-                project)
+                project,
+            ),
         )
 
         messages.add(textLabelWrapper)
