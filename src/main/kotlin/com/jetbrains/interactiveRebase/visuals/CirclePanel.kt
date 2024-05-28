@@ -94,10 +94,12 @@ open class CirclePanel(
                 Palette.DARKBLUE
             }
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
-        if (commit.isDragged) {
-            cursor = grabHandCursor()
-        } else if (commit.isHovered) {
-            cursor = openHandCursor()
+//        if (commit.isDragged) {
+//            cursor = grabHandCursor()
+//        } else
+        if (commit.isHovered) {
+//            cursor = openHandCursor()
+            cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             g2d.color = JBColor.BLACK
             g2d.stroke = BasicStroke(border)
             g2d.draw(circle)

@@ -80,8 +80,8 @@ class SquashedCirclePanel(
         centerX = this.x + adjustedDiameter / 2
         centerY = this.y + adjustedDiameter / 2
         backCircle = Ellipse2D.Double(
-            originX + adjustedDiameter * 0.4,
-            originY - adjustedDiameter * 0.4,
+            originX + adjustedDiameter * 0.35,
+            originY - adjustedDiameter * 0.35,
             adjustedDiameter * 0.9,
             adjustedDiameter * 0.9
         )
