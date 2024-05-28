@@ -66,7 +66,15 @@ class RebaseInvokerTest : BasePlatformTestCase() {
         rebaseInvoker.branchInfo.currentCommits = mutableListOf(commit4, commit5)
         rebaseInvoker.expandCurrentCommits()
         assertThat(rebaseInvoker.branchInfo.currentCommits.size).isEqualTo(5)
-        assertThat(rebaseInvoker.branchInfo.currentCommits).isEqualTo(mutableListOf(commit1, commit3, commit4, commit2, commit5))
+        assertThat(rebaseInvoker.branchInfo.currentCommits).isEqualTo(
+            mutableListOf(
+                commit1,
+                commit3,
+                commit4,
+                commit2,
+                commit5,
+            ),
+        )
     }
 
     fun testCreateModel() {
