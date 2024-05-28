@@ -16,7 +16,7 @@ class SquashedCirclePanel(
     override var commit: CommitInfo,
     override var next: CirclePanel? = null,
     override var previous: CirclePanel? = null,
-) : CirclePanel(diameter, border, color, commit, next, previous) {
+) : CirclePanel(diameter * 1.7, border, color, commit, next, previous) {
     lateinit var backCircle: Ellipse2D.Double
 
     /**
@@ -71,7 +71,7 @@ class SquashedCirclePanel(
 
         // Calculate the diameter of the circle,
         // so that border is not cropped due to the panel size
-        val adjustedDiameter = diameter - 2 * (border + 0.5)
+        val adjustedDiameter = diameter / 1.6 - 2 * (border + 0.5)
 
         // Calculate the x and y coordinates for drawing the circle at the center
         val originX = (width - adjustedDiameter) / 2
@@ -79,7 +79,12 @@ class SquashedCirclePanel(
 
         centerX = this.x + adjustedDiameter / 2
         centerY = this.y + adjustedDiameter / 2
-        backCircle = Ellipse2D.Double(originX + 10, originY, adjustedDiameter, adjustedDiameter)
+        backCircle = Ellipse2D.Double(
+            originX + adjustedDiameter * 0.4,
+            originY - adjustedDiameter * 0.4,
+            adjustedDiameter * 0.9,
+            adjustedDiameter * 0.9
+        )
         circle = Ellipse2D.Double(originX, originY, adjustedDiameter, adjustedDiameter)
     }
 
