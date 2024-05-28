@@ -10,15 +10,12 @@ import java.awt.Cursor
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
-import java.awt.Image
 import java.awt.Point
 import java.awt.RenderingHints
 import java.awt.Toolkit
 import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
-import java.io.File
 import javax.imageio.ImageIO
-import javax.swing.ImageIcon
 
 /**
  * Visual representation of commit node in the git graph
@@ -103,7 +100,7 @@ open class CirclePanel(
             g2d.color = JBColor.BLACK
             g2d.stroke = BasicStroke(border)
             g2d.draw(circle)
-        }  else {
+        } else {
             cursor = Cursor.getDefaultCursor()
         }
     }
@@ -113,7 +110,7 @@ open class CirclePanel(
         val file = this::class.java.getResource("/open-hand-cursor.png")
         val image = ImageIO.read(file)
         val resizedImage = resizeImage(image, 1024, 1024)
-        val hotSpot = Point(16,16)
+        val hotSpot = Point(16, 16)
         return toolkit.createCustomCursor(resizedImage, hotSpot, "OpenHandCursor")
     }
 
@@ -122,11 +119,15 @@ open class CirclePanel(
         val file = this::class.java.getResource("/grab-hand-cursor.png")
         val image = ImageIO.read(file)
         val resizedImage = resizeImage(image, 1024, 1024)
-        val hotSpot = Point(16,16)
+        val hotSpot = Point(16, 16)
         return toolkit.createCustomCursor(resizedImage, hotSpot, "GrabHandCursor")
     }
 
-    fun resizeImage(originalImage: BufferedImage, width: Int, height: Int): BufferedImage {
+    fun resizeImage(
+        originalImage: BufferedImage,
+        width: Int,
+        height: Int,
+    ): BufferedImage {
         val resizedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
         val g = resizedImage.createGraphics()
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
