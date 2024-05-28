@@ -8,7 +8,7 @@ import git4ideaClasses.IRGitModel
 data class SquashCommand(
     val parentCommit: CommitInfo,
     val squashedCommits: MutableList<CommitInfo>,
-    var newMessage: String?,
+    var newMessage: String,
 ) :
     RebaseCommand() {
     /**
@@ -29,7 +29,7 @@ data class SquashCommand(
                 branchInfo.currentCommits.reversed().indexOf(c)
             }.reversed()
         model.unite(commitIndices)
-        model.reword(branchInfo.currentCommits.reversed().indexOf(parentCommit), newMessage!!)
+        model.reword(branchInfo.currentCommits.reversed().indexOf(parentCommit), newMessage)
 //        val repo = GitUtil.getRepositoryManager(project).getRepositoryForRootQuick(project.guessProjectDir())
         //      if = null) {
 //            IRGitEditorHandler(repo, model).processModel(model) { entry ->

@@ -168,8 +168,9 @@ class ActionService(project: Project) {
         commitInfo: CommitInfo,
     ) {
         change.squashedCommits.forEach {
-                fixupCommit ->
-            fixupCommit.isSquashed = false
+                squashedCommit ->
+            squashedCommit.isSquashed = false
+            squashedCommit.changes.clear()
         }
         val parentCommit = change.parentCommit
         val parentIndex = modelService.getCurrentCommits().indexOfFirst { it == parentCommit }
@@ -228,7 +229,7 @@ class ActionService(project: Project) {
         var command: RebaseCommand = FixupCommand(parentCommit, fixupCommits)
 
         if (isSquash) {
-            command = SquashCommand(parentCommit, fixupCommits, null)
+            command = SquashCommand(parentCommit, fixupCommits, parentCommit.commit.subject)
             parentCommit.setTextFieldEnabledTo(true)
         }
 

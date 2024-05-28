@@ -106,8 +106,7 @@ class LabeledBranchPanel(
 
             if (it is SquashCommand) {
                 if (it.parentCommit == branch.currentCommits[i]) {
-                    commitLabel.foreground = JBColor.BLUE
-                    commitLabel.text = it.newMessage ?: commitLabel.text
+                    commitLabel.text = it.newMessage
                 }
             }
         }
@@ -115,8 +114,6 @@ class LabeledBranchPanel(
         if (branch.currentCommits[i].isSelected) {
             commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.BOLD)
         }
-
-        commitLabel.fontColor = UIUtil.FontColor.NORMAL
         commitLabel.labelFor = circle
         commitLabel.horizontalAlignment = alignment
         commitLabel.verticalTextPosition = SwingConstants.CENTER
