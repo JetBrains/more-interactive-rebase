@@ -63,7 +63,7 @@ class ActionService(project: Project) {
      * Enables reword button
      */
     fun checkReword(e: AnActionEvent) {
-        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.size == 1 &&
+        e.presentation.isEnabled = modelService.branchInfo.getActualSelectedCommitsSize() == 1 &&
             modelService.getSelectedCommits().none { commit ->
                 commit.changes.any { change -> change is DropCommand }
             }
