@@ -69,7 +69,7 @@ class IRGitRebaseUtils(private val project: Project) {
 /**
  * Handler for the interactive rebasing
  */
-private class IRGitEditorHandler(
+internal class IRGitEditorHandler(
     repository: GitRepository,
     private val rebaseTodoModel: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
 ) :

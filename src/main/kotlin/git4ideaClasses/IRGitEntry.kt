@@ -104,5 +104,16 @@ internal fun IRGitEntry.getFullCommitMessage() = (this as? IRGitEntryDetails)?.c
  * Translates a commit to an entry for the initial table
  */
 @VisibleForTesting
-internal class GitRebaseEntryGeneratedUsingLog(details: VcsCommitMetadata) :
-    IRGitEntryDetails(IRGitEntry(Action.PICK, details.id.asString().trimStart(), details.subject.trimStart()), details)
+internal class GitRebaseEntryGeneratedUsingLog(val details: VcsCommitMetadata) :
+    IRGitEntryDetails(IRGitEntry(Action.PICK, details.id.asString().trimStart(), details.subject.trimStart()), details) {
+    override fun equals(other: Any?): Boolean {
+        if (other != null) {
+            if (other is GitRebaseEntryGeneratedUsingLog) {
+                val that = other as GitRebaseEntryGeneratedUsingLog
+                return this.details.equals(other.details)
+            }
+            return false
+        }
+        return false
+    }
+}

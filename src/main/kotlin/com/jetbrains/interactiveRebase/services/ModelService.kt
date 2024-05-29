@@ -6,6 +6,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.listeners.IRGitRefreshListener
 import git4idea.status.GitRefreshListener
 import kotlinx.coroutines.CoroutineScope
@@ -39,6 +40,15 @@ class ModelService(
      * list of selected commits
      */
     fun addOrRemoveCommitSelection(commit: CommitInfo) {
+        commit.changes.forEach { change ->
+            if (change is FixupCommand) {
+                if (commit.isSelected) {
+                    branchInfo.selectedCommits.addAll(change.fixupCommits)
+                } else {
+                    branchInfo.selectedCommits.removeAll(change.fixupCommits)
+                }
+            }
+        }
         if (commit.isSelected) {
             branchInfo.addSelectedCommits(commit)
         } else {
@@ -52,6 +62,14 @@ class ModelService(
      */
     fun getSelectedCommits(): MutableList<CommitInfo> {
         return branchInfo.selectedCommits
+    }
+
+    /**
+     * Returns the current
+     * displayed commits
+     */
+    fun getCurrentCommits(): MutableList<CommitInfo> {
+        return branchInfo.currentCommits
     }
 
     /**

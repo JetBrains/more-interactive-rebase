@@ -25,13 +25,13 @@ class LabelListenerTest : BasePlatformTestCase() {
     fun testMouseClickedConsidersNull() {
         listener.mouseClicked(null)
         assertThat(commitInfo.isSelected).isFalse()
-        assertThat(commitInfo.isDoubleClicked).isFalse()
+        assertThat(commitInfo.isTextFieldEnabled).isFalse()
     }
 
     fun testMouseClickedConsidersOneClickSelect() {
         val event = MouseEvent(JBLabel(), 2, 2, 2, 2, 2, 1, false)
         listener.mouseClicked(event)
-        assertThat(commitInfo.isDoubleClicked).isFalse()
+        assertThat(commitInfo.isTextFieldEnabled).isFalse()
         assertThat(commitInfo.isSelected).isTrue()
         assertThat(modelService.branchInfo.selectedCommits).contains(commitInfo)
     }
@@ -41,7 +41,7 @@ class LabelListenerTest : BasePlatformTestCase() {
         commitInfo.isSelected = true
         modelService.branchInfo.addSelectedCommits(commitInfo)
         listener.mouseClicked(event)
-        assertThat(commitInfo.isDoubleClicked).isFalse()
+        assertThat(commitInfo.isTextFieldEnabled).isFalse()
         assertThat(commitInfo.isSelected).isFalse()
         assertThat(modelService.branchInfo.selectedCommits).doesNotContain(commitInfo)
     }
@@ -49,7 +49,7 @@ class LabelListenerTest : BasePlatformTestCase() {
     fun testDoubleClickSelects() {
         val event = MouseEvent(JBLabel(), 2, 2, 2, 2, 2, 2, false)
         listener.mouseClicked(event)
-        assertThat(commitInfo.isDoubleClicked).isTrue()
+        assertThat(commitInfo.isTextFieldEnabled).isTrue()
         assertThat(commitInfo.isSelected).isTrue()
         assertThat(modelService.branchInfo.selectedCommits).contains(commitInfo)
     }
@@ -59,7 +59,7 @@ class LabelListenerTest : BasePlatformTestCase() {
         modelService.branchInfo.selectedCommits.add(commitInfo)
         val event = MouseEvent(JBLabel(), 2, 2, 2, 2, 2, 2, false)
         listener.mouseClicked(event)
-        assertThat(commitInfo.isDoubleClicked).isTrue()
+        assertThat(commitInfo.isTextFieldEnabled).isTrue()
         assertThat(commitInfo.isSelected).isTrue()
     }
 }

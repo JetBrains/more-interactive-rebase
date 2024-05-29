@@ -13,7 +13,7 @@ class PickAction : AnAction("Pick", "Undo the changes made", AllIcons.Diff.Gutte
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkDrop(e)
+        e.project?.service<ActionService>()?.checkPick(e)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {

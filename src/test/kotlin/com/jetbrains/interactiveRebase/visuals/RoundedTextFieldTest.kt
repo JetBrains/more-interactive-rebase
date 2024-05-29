@@ -23,7 +23,7 @@ class RoundedTextFieldTest : BasePlatformTestCase() {
 
     fun testExitTextBoxExits() {
         textField.exitTextBox()
-        assertThat(commitInfo.isDoubleClicked).isFalse()
+        assertThat(commitInfo.isTextFieldEnabled).isFalse()
         assertThat(modelService.branchInfo.selectedCommits).doesNotContain(commitInfo)
         assertThat(commitInfo.isSelected).isFalse()
     }

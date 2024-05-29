@@ -16,7 +16,6 @@ import org.mockito.Mockito.mock
 import java.awt.Component.RIGHT_ALIGNMENT
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import java.awt.GridLayout
 import java.awt.Insets
 import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
@@ -77,7 +76,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         assertThat(gbc.gridx).isEqualTo(1)
         assertThat(gbc.gridy).isEqualTo(1)
         assertThat(gbc.weightx).isEqualTo(1.0)
-        assertThat(gbc.weighty).isEqualTo(0.0)
+        assertThat(gbc.weighty).isEqualTo(1.0)
         assertThat(gbc.fill).isEqualTo(GridBagConstraints.BOTH)
         assertThat(gbc.anchor).isEqualTo(GridBagConstraints.CENTER)
         assertThat(gbc.insets).isEqualTo(Insets(5, 5, 5, 5))
@@ -124,7 +123,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
 
     fun testWrapsLabelWithTextFieldConsidersDoubleClick() {
         val commitLabel = JBLabel("label")
-        commit2.isDoubleClicked = true
+        commit2.isTextFieldEnabled = true
         val mainWrapper = labeledBranch.wrapLabelWithTextField(commitLabel, commit2)
         val labelWrapper = mainWrapper.getComponent(0) as JBPanel<*>
         val textWrapper = mainWrapper.getComponent(1) as JBPanel<*>
@@ -152,7 +151,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
     fun testAddComponents() {
         val labelPanelWrapper = labeledBranch.labelPanelWrapper
         labeledBranch.addComponents()
-        assertThat(labelPanelWrapper.layout).isInstanceOf(GridLayout::class.java)
+        assertThat(labelPanelWrapper.layout).isInstanceOf(GridBagLayout::class.java)
         assertThat(labelPanelWrapper.getComponent(0)).isInstanceOf(JBPanel::class.java)
         assertThat(labelPanelWrapper.getComponent(1)).isInstanceOf(JBPanel::class.java)
         assertThat(labelPanelWrapper.getComponent(2)).isInstanceOf(JBPanel::class.java)

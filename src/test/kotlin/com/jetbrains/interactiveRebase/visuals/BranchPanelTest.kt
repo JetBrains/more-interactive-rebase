@@ -8,6 +8,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 import git4idea.GitCommit
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -35,7 +36,7 @@ class BranchPanelTest : BasePlatformTestCase() {
         commit3 = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
         val branch = BranchInfo("branch", mutableListOf(commit1, commit2, commit3))
         branch.currentCommits = mutableListOf(commit1, commit2, commit3)
-        branchPanel = BranchPanel(branch, JBColor.BLUE)
+        branchPanel = spy(BranchPanel(branch, JBColor.BLUE))
 
         commit2.changes.add(StopToEditCommand(commit2))
         commit3.changes.add(DropCommand(commit3))

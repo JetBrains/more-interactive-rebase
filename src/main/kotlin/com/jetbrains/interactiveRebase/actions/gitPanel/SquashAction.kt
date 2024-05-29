@@ -9,7 +9,7 @@ import com.jetbrains.interactiveRebase.services.ActionService
 
 class SquashAction() : DumbAwareAction("Squash", "Combine multiple commits into one", AllIcons.Actions.DynamicUsages) {
     override fun actionPerformed(e: AnActionEvent) {
-        println("performed action")
+        e.project?.service<ActionService>()?.takeSquashAction()
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
@@ -17,6 +17,6 @@ class SquashAction() : DumbAwareAction("Squash", "Combine multiple commits into 
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkDrop(e) // TODO replace with actual implementation
+        e.project?.service<ActionService>()?.checkFixupOrSquash(e)
     }
 }

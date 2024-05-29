@@ -8,27 +8,30 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
+import com.intellij.ui.util.minimumWidth
+import com.intellij.ui.util.preferredHeight
 import com.intellij.ui.util.preferredWidth
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.CircleDragAndDropListener
 import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
 import com.jetbrains.interactiveRebase.listeners.LabelListener
 import com.jetbrains.interactiveRebase.listeners.TextFieldListener
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
+import com.jetbrains.interactiveRebase.services.strategies.SquashTextStrategy
 import java.awt.Dimension
-import java.awt.FlowLayout
 import java.awt.Graphics
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import java.awt.GridLayout
 import java.awt.Insets
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JComponent
+import javax.swing.JTextField
 import javax.swing.OverlayLayout
 import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
@@ -56,7 +59,6 @@ class LabeledBranchPanel(
 
     init {
         branchNameLabel.horizontalAlignment = SwingConstants.CENTER
-
         layout = GridBagLayout()
         val gbc = GridBagConstraints()
 
@@ -92,6 +94,7 @@ class LabeledBranchPanel(
         branch.currentCommits[i].changes.forEach {
             if (it is RewordCommand) {
                 commitLabel.text = TextStyle.addStyling(it.newMessage, TextStyle.ITALIC)
+                commitLabel.foreground = JBColor.BLUE
             }
             if (it is DropCommand) {
                 commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.CROSSED)
@@ -100,16 +103,19 @@ class LabeledBranchPanel(
                 commitLabel.horizontalAlignment = alignment
                 commitLabel.alignmentX = RIGHT_ALIGNMENT
             }
+
+            if (it is SquashCommand) {
+                if (it.parentCommit == branch.currentCommits[i]) {
+                    commitLabel.text = it.newMessage
+                }
+            }
         }
 
         if (branch.currentCommits[i].isSelected) {
             commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.BOLD)
         }
-
-        commitLabel.fontColor = UIUtil.FontColor.NORMAL
         commitLabel.labelFor = circle
         commitLabel.horizontalAlignment = alignment
-        commitLabel.preferredSize = Dimension(commitLabel.preferredWidth, branchPanel.diameter)
         commitLabel.verticalTextPosition = SwingConstants.CENTER
 
         return commitLabel
@@ -131,16 +137,34 @@ class LabeledBranchPanel(
      * Generates the panel in which commit labels are wrapped with invisible text fields
      */
     fun addComponents() {
-        labelPanelWrapper.layout = GridLayout(0, 1)
+        labelPanelWrapper.layout = GridBagLayout()
+
         val circles = branchPanel.circles
         messages.clear()
         for ((i, circle) in circles.withIndex()) {
             val commitLabel = generateCommitLabel(i, circle)
             val wrappedLabel = wrapLabelWithTextField(commitLabel, branch.currentCommits[i])
-            labelPanelWrapper.add(wrappedLabel)
+            wrappedLabel.preferredSize =
+                Dimension(
+                    wrappedLabel.preferredWidth,
+                    circle.preferredHeight,
+                )
+            wrappedLabel.minimumSize =
+                Dimension(
+                    wrappedLabel.minimumWidth,
+                    circle.preferredHeight,
+                )
+            val gbc = gridCellForCircle(i, circles)
+            labelPanelWrapper.add(wrappedLabel, gbc)
             commitLabels.add(commitLabel)
 
-            val dragAndDropListener = CircleDragAndDropListener(project, circle, circles, this)
+            val dragAndDropListener =
+                CircleDragAndDropListener(
+                    project,
+                    circle,
+                    circles,
+                    this,
+                )
             circle.addMouseListener(dragAndDropListener)
             circle.addMouseMotionListener(dragAndDropListener)
             Disposer.register(this, dragAndDropListener)
@@ -150,6 +174,25 @@ class LabeledBranchPanel(
             circle.addMouseMotionListener(circleHoverListener)
             Disposer.register(this, circleHoverListener)
         }
+    }
+
+    /**
+     * Sets the grid constraints
+     * for a given circle index
+     * and a list of circle panels.
+     */
+    internal fun gridCellForCircle(
+        i: Int,
+        circles: MutableList<CirclePanel>,
+    ): GridBagConstraints {
+        val gbc = GridBagConstraints()
+        gbc.gridx = 0
+        gbc.gridy = i
+        gbc.weightx = 0.0
+        gbc.weighty = if (i == circles.size - 1) 1.0 else 0.0
+        gbc.anchor = GridBagConstraints.NORTH
+        gbc.fill = GridBagConstraints.HORIZONTAL
+        return gbc
     }
 
     /**
@@ -165,52 +208,92 @@ class LabeledBranchPanel(
         textLabelWrapper.layout = OverlayLayout(textLabelWrapper)
         textLabelWrapper.isOpaque = false
 
-        val textWrapper = JBPanel<JBPanel<*>>()
-        textWrapper.layout = FlowLayout(alignment)
-        textWrapper.isOpaque = false
-
-        val textField = createTextBox(commitLabel, commitInfo)
-        textWrapper.add(textField)
+        val gbc = gridCellForTextLabel()
 
         val labelWrapper = JBPanel<JBPanel<*>>()
-        labelWrapper.layout = FlowLayout(alignment)
+        labelWrapper.layout = GridBagLayout()
         labelWrapper.isOpaque = false
-
-        labelWrapper.add(commitLabel)
-
-        textWrapper.isVisible = false
         labelWrapper.isVisible = true
 
-        if (commitInfo.isDoubleClicked) {
-            enableTextField(textField, textWrapper, labelWrapper)
+        labelWrapper.add(commitLabel, gbc)
+
+        val textWrapper = JBPanel<JBPanel<*>>()
+        textWrapper.layout = GridBagLayout()
+        textWrapper.isOpaque = false
+        textWrapper.isVisible = false
+
+        val textField = createTextBox(commitLabel, commitInfo)
+        textWrapper.add(textField, gbc)
+
+        if (commitInfo.isTextFieldEnabled) {
+            enableTextField(textField, textWrapper, labelWrapper, commitInfo)
         }
         textLabelWrapper.add(labelWrapper)
         textLabelWrapper.add(textWrapper)
 
         val labelListener = LabelListener(commitInfo)
         commitLabel.addMouseListener(labelListener)
+
         if (commitLabel is Disposable) {
             Disposer.register(commitLabel, labelListener)
         }
-        textField.addKeyListener(TextFieldListener(commitInfo, textField, project.service<RebaseInvoker>()))
 
         messages.add(textLabelWrapper)
+
         return textLabelWrapper
     }
 
+    private fun gridCellForTextLabel(): GridBagConstraints {
+        val gbc = GridBagConstraints()
+        gbc.gridx = 0
+        gbc.gridy = 0
+        gbc.weightx = 1.0
+        gbc.weighty = 1.0
+        gbc.anchor =
+            if (alignment == SwingConstants.LEFT) {
+                GridBagConstraints.LINE_START
+            } else {
+                GridBagConstraints.LINE_END
+            }
+        gbc.fill = GridBagConstraints.NONE
+        return gbc
+    }
+
     /**
-     * Sets the text field to be visible, called after a double-click or button click for rewording
+     * Sets the text field to be visible,
+     * called after a double click or
+     * button click for rewording
      */
     private fun enableTextField(
         textField: RoundedTextField,
         textWrapper: JBPanel<JBPanel<*>>,
         labelWrapper: JBPanel<JBPanel<*>>,
+        commitInfo: CommitInfo,
     ) {
+        val listener = TextFieldListener(commitInfo, textField, project.service<RebaseInvoker>())
+        textField.addKeyListener(listener)
+        textField.requestFocusInWindow()
+
+        setTextFieldListenerStrategy(listener, commitInfo, textField)
+
         textField.background = textField.background.darker()
         textWrapper.isVisible = true
         labelWrapper.isVisible = false
-        textField.requestFocusInWindow()
+
         listenForClickOutside(textField)
+    }
+
+    private fun setTextFieldListenerStrategy(
+        listener: TextFieldListener,
+        commitInfo: CommitInfo,
+        textField: JTextField,
+    ) {
+        commitInfo.changes.forEach {
+                command ->
+            if (command is SquashCommand) {
+                listener.strategy = SquashTextStrategy(command, textField)
+            }
+        }
     }
 
     /**
@@ -251,7 +334,7 @@ class LabeledBranchPanel(
         gbc.gridx = if (alignment == SwingConstants.LEFT) 1 else 0
         gbc.gridy = 1
         gbc.weightx = 1.0
-        gbc.weighty = 0.0
+        gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
         gbc.anchor = GridBagConstraints.CENTER
         gbc.insets = Insets(5, 5, 5, 5)
@@ -280,6 +363,7 @@ class LabeledBranchPanel(
         gbc.weightx = 0.0
         gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.HORIZONTAL
+        gbc.anchor = GridBagConstraints.SOUTH
         gbc.insets = Insets(5, 5, 5, 5)
     }
 
@@ -304,6 +388,7 @@ class LabeledBranchPanel(
 
         labelPanelWrapper.removeAll()
         addComponents()
+        revalidate()
     }
 
     override fun paintComponent(g: Graphics?) {

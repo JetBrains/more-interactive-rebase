@@ -1,5 +1,7 @@
 # <img src="src/main/resources/META-INF/pluginIcon.svg" style="width: 200px; height: 200px; "> A More Interactive Rebase
 
+[![Coverage Badge](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/badges/main/coverage.svg)](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/badges/main/coverage.svg)
+[![Pipeline Status](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/badges/main/pipeline.svg)](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/badges/main/pipeline.svg)
 
 ---
 <!-- Plugin description -->
@@ -141,7 +143,7 @@ the whole Roadmap via this [link](https://gitlab.ewi.tudelft.nl/groups/cse2000-s
 Keep in mind that opening it requires access to the repository.
 
 
-![roadmap.png](Images/roadmap.png)
+![roadmap.png](Images/Roadmap 27.04.2024.png)
 
 ## ✒️ Authors and acknowledgment
 **Main contributors to the project are the members of our team:**

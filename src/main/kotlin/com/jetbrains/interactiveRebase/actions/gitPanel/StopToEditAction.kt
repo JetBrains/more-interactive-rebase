@@ -17,6 +17,6 @@ class StopToEditAction : DumbAwareAction("Stop to Edit", "Pause the rebasing act
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkDrop(e)
+        e.project?.service<ActionService>()?.checkStopToEdit(e)
     }
 }
