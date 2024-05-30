@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.listeners
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
@@ -16,7 +17,7 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener, Disposa
      * If clicked once, selects or deselects commit
      */
     override fun mouseClicked(e: MouseEvent?) {
-        if (e != null && e.clickCount >= 2) {
+        if (e != null && e.clickCount >= 2 && !commitInfo.changes.any { change -> change is DropCommand }) {
             commitInfo.setTextFieldEnabledTo(true)
             commitInfo.isSelected = true
             modelService.addOrRemoveCommitSelection(commitInfo)
