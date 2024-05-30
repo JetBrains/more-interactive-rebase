@@ -49,6 +49,7 @@
             <action id="com.jetbrains.interactiveRebase.actions.gitPanel.DropAction"
                     class="com.jetbrains.interactiveRebase.actions.gitPanel.DropAction" text="DropAction" description="Drop a commit">
                 <keyboard-shortcut first-keystroke="DELETE" keymap="$default"/>
+                <keyboard-shortcut first-keystroke="BACK_SPACE" keymap="$default"/>
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction"
                     class="com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction" text="StopToEditAction" description="Stop while rebasing to edit a commit">
