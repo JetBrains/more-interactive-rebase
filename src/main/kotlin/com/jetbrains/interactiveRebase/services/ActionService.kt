@@ -208,15 +208,19 @@ class ActionService(project: Project) {
         combineCommits(true)
     }
 
+    /**
+     * Takes fixup action and
+     * creates a fixup command
+     */
     fun takeFixupAction() {
         combineCommits(false)
     }
 
     /**
-     * Takes fixup action and
-     * creates a fixup command
+     * Used for squash or fixup,
+     * combines commits that are involved and turns them into their corresponding commands
      */
-    fun combineCommits(isSquash: Boolean) {
+    private fun combineCommits(isSquash: Boolean) {
         val selectedCommits: MutableList<CommitInfo> = modelService.getSelectedCommits()
         selectedCommits.sortBy { modelService.branchInfo.currentCommits.indexOf(it) }
         var parentCommit = selectedCommits.last()
@@ -235,18 +239,29 @@ class ActionService(project: Project) {
 
         fixupCommits.forEach {
                 commit ->
-            commit.isSelected = false
-            commit.isHovered = false
-            commit.isSquashed = true
-            modelService.branchInfo.currentCommits.remove(commit)
-
-            commit.addChange(command)
+            handleCombinedCommits(commit, command)
         }
 
         parentCommit.addChange(command)
+        parentCommit.isSelected = false
         modelService.branchInfo.clearSelectedCommits()
 
         invoker.addCommand(command)
+    }
+
+    /**
+     * For fixup and squashed commits, handles the flags for commits involved that are not the parent
+     */
+    private fun handleCombinedCommits(
+        commit: CommitInfo,
+        command: RebaseCommand,
+    ) {
+        commit.isSelected = false
+        commit.isHovered = false
+        commit.isSquashed = true
+        modelService.branchInfo.currentCommits.remove(commit)
+
+        commit.addChange(command)
     }
 
     /**
@@ -283,5 +298,17 @@ class ActionService(project: Project) {
             }
         }
         commit.changes.removeAll(changesToRemove)
+    }
+
+    /**
+     * Called to either get the fixupCommits or squashedCommits parameter of a command,
+     * to be used when fixup and squashed command is being used interchangeably
+     */
+    fun getCombinedCommits(change: RebaseCommand): List<CommitInfo> {
+        return when (change) {
+            is FixupCommand -> change.fixupCommits
+            is SquashCommand -> change.squashedCommits
+            else -> emptyList()
+        }
     }
 }

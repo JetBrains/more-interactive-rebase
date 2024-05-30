@@ -132,7 +132,7 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
         listener.mousePressed(eventPress)
         listener.mouseDragged(eventDrag)
 
-        verify(circle.commit).setDraggedTo(true)
+        verify(circle.commit).isDragged = true
         verify(listener).setCurrentCircleLocation(30)
         verify(listener).updateMousePosition(eventDrag)
         verify(listener).findNewBranchIndex()
