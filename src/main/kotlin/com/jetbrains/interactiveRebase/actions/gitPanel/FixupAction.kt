@@ -4,7 +4,11 @@ import com.intellij.icons.AllIcons
 import com.intellij.ide.HelpTooltip
 import com.intellij.ide.IdeBundle
 import com.intellij.ide.actions.GotoClassPresentationUpdater
-import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.components.service
@@ -16,7 +20,13 @@ import java.awt.Dimension
 import java.util.function.Supplier
 import javax.swing.JComponent
 
-class FixupAction : DumbAwareAction("Fixup", "Combine commits and set a default message", AllIcons.Actions.ListFiles), CustomComponentAction {
+class FixupAction :
+    DumbAwareAction(
+        "Fixup",
+        "Combine commits and set a default message",
+        AllIcons.Actions.ListFiles,
+    ),
+    CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
         e.project?.service<ActionService>()?.takeFixupAction()
     }
@@ -29,26 +39,42 @@ class FixupAction : DumbAwareAction("Fixup", "Combine commits and set a default 
         return ActionUpdateThread.EDT
     }
 
-    override fun createCustomComponent(presentation: Presentation, place: String): JComponent {
-        return object : ActionButton(this, presentation, place, Supplier {getMinimumSize(place) }) {
+    override fun createCustomComponent(
+        presentation: Presentation,
+        place: String,
+    ): JComponent {
+        return object : ActionButton(this, presentation, place, Supplier { getMinimumSize(place) }) {
             override fun updateToolTipText() {
-                val classesTabName = java.lang.String.join("/", GotoClassPresentationUpdater.getActionTitlePluralized())
+                val classesTabName =
+                    java.lang.String.join(
+                        "/",
+                        GotoClassPresentationUpdater.getActionTitlePluralized(),
+                    )
                 if (Registry.`is`("ide.helptooltip.enabled")) {
                     HelpTooltip.dispose(this)
                     HelpTooltip()
-                            .setTitle(myPresentation.text)
-                            .setShortcut("Alt+F")
-                            .setDescription("Combine commits")
-                            .installOn(this)
+                        .setTitle(myPresentation.text)
+                        .setShortcut("Alt+F")
+                        .setDescription("Combine commits")
+                        .installOn(this)
                 } else {
-                    toolTipText = IdeBundle.message("search.everywhere.action.tooltip.text", shortcutText, classesTabName)
+                    toolTipText =
+                        IdeBundle.message(
+                            "search.everywhere.action.tooltip.text",
+                            shortcutText,
+                            classesTabName,
+                        )
                 }
             }
         }
     }
 
     private fun getMinimumSize(place: String): Dimension {
-        return if (isExperimentalToolbar(place)) ActionToolbar.experimentalToolbarMinimumButtonSize() else ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+        return if (isExperimentalToolbar(place)) {
+            ActionToolbar.experimentalToolbarMinimumButtonSize()
+        } else {
+            ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+        }
     }
 
     private fun isExperimentalToolbar(place: String): Boolean {
