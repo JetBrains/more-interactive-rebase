@@ -17,7 +17,7 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener, Disposa
      * If clicked once, selects or deselects commit
      */
     override fun mouseClicked(e: MouseEvent?) {
-        if (e != null && e.clickCount >= 2 && !commitInfo.changes.any { change -> change is DropCommand }){
+        if (e != null && e.clickCount >= 2 && !commitInfo.changes.any { change -> change is DropCommand }) {
             commitInfo.setTextFieldEnabledTo(true)
             commitInfo.isSelected = true
             modelService.addOrRemoveCommitSelection(commitInfo)
