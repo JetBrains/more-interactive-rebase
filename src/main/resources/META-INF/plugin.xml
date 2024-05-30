@@ -32,6 +32,7 @@
             <separator/>
             <action id="com.jetbrains.interactiveRebase.actions.gitPanel.PickAction"
                     class="com.jetbrains.interactiveRebase.actions.gitPanel.PickAction" text="PickAction" description="Revert actions of a commit">
+                <keyboard-shortcut first-keystroke="alt P" keymap="$default"/>
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.gitPanel.SquashAction"
                     class="com.jetbrains.interactiveRebase.actions.gitPanel.SquashAction" text="SquashAction" description="Combine commits and set the commit subject" icon="AllIcons.Actions.DynamicUsages">
@@ -39,16 +40,19 @@
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.gitPanel.FixupAction"
                     class="com.jetbrains.interactiveRebase.actions.gitPanel.FixupAction" text="FixupAction" description="Combine commits">
+                <keyboard-shortcut first-keystroke="alt F" keymap="$default"/>
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction"
                     class="com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction" text="RewordAction" description="Reword a commit">
-                <keyboard-shortcut first-keystroke="F2" keymap="$default"/>
+                <keyboard-shortcut first-keystroke="alt R" keymap="$default"/>
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.gitPanel.DropAction"
                     class="com.jetbrains.interactiveRebase.actions.gitPanel.DropAction" text="DropAction" description="Drop a commit">
+                <keyboard-shortcut first-keystroke="DELETE" keymap="$default"/>
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction"
                     class="com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction" text="StopToEditAction" description="Stop while rebasing to edit a commit">
+                <keyboard-shortcut first-keystroke="alt E" keymap="$default"/>
             </action>
         </group>
 
