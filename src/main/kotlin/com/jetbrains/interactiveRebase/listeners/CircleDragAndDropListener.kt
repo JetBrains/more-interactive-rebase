@@ -95,7 +95,7 @@ class CircleDragAndDropListener(
     override fun mouseDragged(e: MouseEvent) {
         if (!commit.changes.any { it is DropCommand }) {
             wasDragged = true
-            commit.setDraggedTo(true)
+            commit.isDragged = true
             val deltaY = e.yOnScreen - mousePosition.y
             val newCircleY = circle.y + deltaY
 
@@ -133,7 +133,7 @@ class CircleDragAndDropListener(
      */
     override fun mouseReleased(e: MouseEvent) {
         if (wasDragged) {
-            commit.setDraggedTo(false)
+            commit.isDragged = false
             repositionOnDrop()
             if (initialIndex != currentIndex) {
                 markCommitAsReordered()

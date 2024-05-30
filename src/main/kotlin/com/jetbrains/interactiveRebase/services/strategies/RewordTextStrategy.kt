@@ -17,6 +17,5 @@ class RewordTextStrategy(
         val command = RewordCommand(commitInfo, textField.text)
         commitInfo.addChange(command)
         invoker.addCommand(command)
-        println("used reword strategy")
     }
 }
