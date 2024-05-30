@@ -35,12 +35,14 @@
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.gitPanel.SquashAction"
                     class="com.jetbrains.interactiveRebase.actions.gitPanel.SquashAction" text="SquashAction" description="Combine commits and set the commit subject" icon="AllIcons.Actions.DynamicUsages">
+                <keyboard-shortcut first-keystroke="alt S" keymap="$default"/>
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.gitPanel.FixupAction"
                     class="com.jetbrains.interactiveRebase.actions.gitPanel.FixupAction" text="FixupAction" description="Combine commits">
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction"
                     class="com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction" text="RewordAction" description="Reword a commit">
+                <keyboard-shortcut first-keystroke="F2" keymap="$default"/>
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.gitPanel.DropAction"
                     class="com.jetbrains.interactiveRebase.actions.gitPanel.DropAction" text="DropAction" description="Drop a commit">
