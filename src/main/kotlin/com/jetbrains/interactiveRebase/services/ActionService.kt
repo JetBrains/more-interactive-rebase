@@ -11,11 +11,13 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
+import com.jetbrains.interactiveRebase.visuals.MainPanel
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
     private var modelService = project.service<ModelService>()
     private var invoker = modelService.invoker
+    internal lateinit var mainPanel: MainPanel
 
     /**
      * Constructor for injection during testing

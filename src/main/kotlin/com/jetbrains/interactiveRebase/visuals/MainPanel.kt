@@ -1,7 +1,6 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.OnePixelSplitter
@@ -9,7 +8,7 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import com.jetbrains.interactiveRebase.services.RebaseInvoker
+import com.jetbrains.interactiveRebase.visuals.multipleBranches.SidePanel
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -18,19 +17,20 @@ import javax.swing.SwingConstants
 
 class MainPanel(
     private val project: Project,
-    private val branchInfo: BranchInfo,
-    private val invoker: RebaseInvoker = project.service<RebaseInvoker>(),
+    private val branchInfo: BranchInfo
 ) :
     JBPanel<JBPanel<*>>(), Disposable {
     internal var commitInfoPanel = CommitInfoPanel(project)
     private var contentPanel: JBScrollPane
     internal var branchPanel: LabeledBranchPanel
+    internal var sidePanel: SidePanel
     private val branchInfoListener: BranchInfo.Listener
     private val commitInfoListener: CommitInfo.Listener
 
     init {
         branchPanel = createBranchPanel()
         contentPanel = createContentPanel()
+        sidePanel = createSidePanel()
 
         this.layout = BorderLayout()
         createMainPanel()
@@ -111,6 +111,10 @@ class MainPanel(
         return scrollable
     }
 
+    fun createSidePanel(): SidePanel {
+        return SidePanel()
+    }
+
     /**
      * Initializes the main component.
      */
@@ -123,13 +127,18 @@ class MainPanel(
                 secondComponent = commitInfoPanel
             }
 
-        val secondDivider =
+        val secondDivider = OnePixelSplitter(false, 0.2f).apply {
+            sidePanel.setVisible(false)
+            firstComponent = sidePanel
+            secondComponent = firstDivider
+        }
+        val thirdDivider =
             OnePixelSplitter(true, 0.03f, 0.03f, 0.03f).apply {
                 firstComponent = headerPanel
-                secondComponent = firstDivider
+                secondComponent = secondDivider
             }
 
-        this.add(secondDivider, BorderLayout.CENTER)
+        this.add(thirdDivider, BorderLayout.CENTER)
     }
 
     fun registerCommitListener() {

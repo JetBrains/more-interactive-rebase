@@ -4,6 +4,7 @@ import com.intellij.diff.util.FileEditorBase
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.MainPanel
 import javax.swing.JComponent
@@ -13,8 +14,19 @@ import javax.swing.JComponent
  * It is used to create the Editor Tab for the Interactive Rebase feature.
  */
 class IRFileEditorBase(private val project: Project, private val virtualFile: VirtualFile) : FileEditorBase() {
-    private val modelService = project.service<ModelService>()
-    private var component = MainPanel(project, modelService.branchInfo, modelService.invoker)
+    private val modelService: ModelService
+    private val actionService: ActionService
+    private var component: MainPanel
+
+    init{
+        modelService = project.service<ModelService>()
+        component = MainPanel(project, modelService.branchInfo)
+
+        //done to be able to get an instance of the main panel if you
+        //have a reference to the project
+        actionService = project.service<ActionService>()
+        actionService.mainPanel = component
+    }
 
     /**
      * Returns a component which represents the editor in UI.
