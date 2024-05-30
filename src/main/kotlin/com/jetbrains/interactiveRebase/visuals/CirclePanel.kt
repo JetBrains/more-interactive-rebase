@@ -14,13 +14,14 @@ import java.awt.Point
 import java.awt.RenderingHints
 import java.awt.Toolkit
 import java.awt.geom.Ellipse2D
-import javax.swing.ImageIcon
+import java.awt.image.BufferedImage
+import javax.imageio.ImageIO
 
 /**
  * Visual representation of commit node in the git graph
  */
 open class CirclePanel(
-    val diameter: Double,
+    open val diameter: Double,
     private val border: Float,
     var color: JBColor,
     open var commit: CommitInfo,
@@ -90,7 +91,9 @@ open class CirclePanel(
                 Palette.DARKBLUE
             }
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
-
+//        if (commit.isDragged) {
+//            cursor = grabHandCursor()
+//        } else
         if (commit.isHovered) {
 //            cursor = openHandCursor()
             cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
@@ -98,50 +101,40 @@ open class CirclePanel(
             g2d.stroke = BasicStroke(border)
             g2d.draw(circle)
         } else {
-            setCursor(Cursor.getDefaultCursor())
+            cursor = Cursor.getDefaultCursor()
         }
     }
 
     fun openHandCursor(): Cursor {
-        val grabImagePath = "Images/cursor-hand-open.png"
-        val grabImage = ImageIcon(grabImagePath).image
-
         val toolkit = Toolkit.getDefaultToolkit()
-        return toolkit.createCustomCursor(grabImage, Point(0, 0), "open")
+        val file = this::class.java.getResource("/open-hand-cursor.png")
+        val image = ImageIO.read(file)
+        val resizedImage = resizeImage(image, 1024, 1024)
+        val hotSpot = Point(16, 16)
+        return toolkit.createCustomCursor(resizedImage, hotSpot, "OpenHandCursor")
     }
 
-//    fun openHandCursor(): Cursor {
-// //        val openHandImage = Toolkit
-// //            .getDefaultToolkit()
-// //            .getImage("Images/commit.png")
-// //        val hotspot = Point(openHandImage.getWidth(null) / 2, openHandImage.getHeight(null) / 2)
-// //        return Toolkit
-// //            .getDefaultToolkit()
-// //            .createCustomCursor(
-// //                openHandImage,
-// //                hotspot,
-// //                "open_hand_cursor")
-// //        val toolkit = getToolkit()
-//        val image = toolkit.getImage("Images/cursor-hand-open.png")
-//        return toolkit.createCustomCursor(
-//            image, Point(x, y), "open"
-//        )
-//    }
+    fun grabHandCursor(): Cursor {
+        val toolkit = Toolkit.getDefaultToolkit()
+        val file = this::class.java.getResource("/grab-hand-cursor.png")
+        val image = ImageIO.read(file)
+        val resizedImage = resizeImage(image, 1024, 1024)
+        val hotSpot = Point(16, 16)
+        return toolkit.createCustomCursor(resizedImage, hotSpot, "GrabHandCursor")
+    }
 
-//    fun resizeImage(originalImage: BufferedImage, targetWidth: Int, targetHeight: Int): BufferedImage {
-//        val resizedImage = BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB)
-//        val g: Graphics2D = resizedImage.createGraphics()
-//        g.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null)
-//        g.dispose()
-//        return resizedImage
-//    }
-//
-//    fun openHandCursor(): Cursor {
-//        val originalImage = ImageIO.read(File("Images/cursor-hand-open.png"))
-//        val resizedImage = resizeImage(originalImage, 32, 32)
-//        val hotspot = Point(resizedImage.width / 2, resizedImage.height / 2)
-//        return Toolkit.getDefaultToolkit().createCustomCursor(resizedImage, hotspot, "open_hand_cursor")
-//    }
+    fun resizeImage(
+        originalImage: BufferedImage,
+        width: Int,
+        height: Int,
+    ): BufferedImage {
+        val resizedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        val g = resizedImage.createGraphics()
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        g.drawImage(originalImage, 0, 0, width, height, null)
+        g.dispose()
+        return resizedImage
+    }
 
     /**
      * Creates a circle shape to be drawn inside the panel.

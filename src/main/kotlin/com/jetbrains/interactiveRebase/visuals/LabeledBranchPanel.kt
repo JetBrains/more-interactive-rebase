@@ -279,7 +279,9 @@ class LabeledBranchPanel(
         textField.background = textField.background.darker()
         textWrapper.isVisible = true
         labelWrapper.isVisible = false
-
+        SwingUtilities.invokeLater {
+            textField.requestFocusInWindow()
+        }
         listenForClickOutside(textField)
     }
 
