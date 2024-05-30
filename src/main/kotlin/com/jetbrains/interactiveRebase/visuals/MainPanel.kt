@@ -9,6 +9,7 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.listeners.BranchNavigationListener
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.SidePanel
 import java.awt.BorderLayout
@@ -28,6 +29,7 @@ class MainPanel(
     internal var sidePanel: JBScrollPane
     private val branchInfoListener: BranchInfo.Listener
     private val commitInfoListener: CommitInfo.Listener
+    private val branchNavigationListener: BranchNavigationListener
 
     init {
         branchPanel = createBranchPanel()
@@ -66,11 +68,15 @@ class MainPanel(
                 }
             }
 
+        branchNavigationListener = BranchNavigationListener(project)
+
         branchInfo.addListener(branchInfoListener)
         registerCommitListener()
+        this.addKeyListener(branchNavigationListener)
 
         Disposer.register(this, branchInfoListener)
         Disposer.register(this, commitInfoListener)
+        Disposer.register(this, branchNavigationListener)
     }
 
     /**
