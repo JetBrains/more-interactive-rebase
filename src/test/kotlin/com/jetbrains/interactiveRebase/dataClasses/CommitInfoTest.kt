@@ -57,4 +57,19 @@ class CommitInfoTest : BasePlatformTestCase() {
         assertTrue(commitInfo.isTextFieldEnabled)
         verify(listener, times(2)).onCommitChange()
     }
+
+    fun testSetReorderTo() {
+        commitInfo.setReorderedTo(false)
+        assertFalse(commitInfo.isReordered)
+        verify(listener, times(1)).onCommitChange()
+    }
+
+    fun testSetDraggedTo() {
+        commitInfo.setDraggedTo(false)
+        assertFalse(commitInfo.isDragged)
+    }
+
+    fun testToString() {
+        assertEquals(commitInfo.toString(), "CommitInfo(commit=tests)")
+    }
 }
