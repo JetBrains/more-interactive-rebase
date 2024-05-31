@@ -15,7 +15,15 @@ class BranchNavigationListener(private val project: Project) : KeyListener, Disp
      * arrow key press
      */
     override fun keyPressed(e: KeyEvent?) {
-        when (e?.keyCode) {
+        if(e?.isShiftDown!!){
+            when (e.keyCode) {
+                KeyEvent.VK_UP -> shiftUp()
+                KeyEvent.VK_DOWN -> shiftDown()
+            }
+            return
+        }
+
+        when (e.keyCode) {
             KeyEvent.VK_UP -> up()
             KeyEvent.VK_DOWN -> down()
         }
@@ -38,6 +46,38 @@ class BranchNavigationListener(private val project: Project) : KeyListener, Disp
     }
 
     private fun down() {
+        if (modelService.branchInfo.selectedCommits.size == 0) {
+            val commit = modelService.branchInfo.currentCommits[0]
+            commit.isSelected = true
+            modelService.addOrRemoveCommitSelection(commit)
+            return
+        }
+        var commit = modelService.branchInfo.selectedCommits.last()
+
+        val index = modelService.branchInfo.currentCommits.indexOf(commit)
+        modelService.branchInfo.clearSelectedCommits()
+        commit = modelService.branchInfo.currentCommits[index + 1]
+        commit.isSelected = true
+        modelService.addOrRemoveCommitSelection(commit)
+    }
+
+    private fun shiftUp() {
+        if (modelService.branchInfo.selectedCommits.size == 0) {
+            val commit = modelService.branchInfo.currentCommits.last()
+            commit.isSelected = true
+            modelService.addOrRemoveCommitSelection(commit)
+            return
+        }
+        var commit = modelService.branchInfo.selectedCommits.last()
+
+        val index = modelService.branchInfo.currentCommits.indexOf(commit)
+        modelService.branchInfo.clearSelectedCommits()
+        commit = modelService.branchInfo.currentCommits[index - 1]
+        commit.isSelected = true
+        modelService.addOrRemoveCommitSelection(commit)
+    }
+
+    private fun shiftDown() {
         if (modelService.branchInfo.selectedCommits.size == 0) {
             val commit = modelService.branchInfo.currentCommits[0]
             commit.isSelected = true
