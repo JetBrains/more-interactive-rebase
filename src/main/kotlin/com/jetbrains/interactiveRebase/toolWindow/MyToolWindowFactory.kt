@@ -27,10 +27,12 @@ class MyToolWindowFactory : ToolWindowFactory {
 
     class MyToolWindow(toolWindow: ToolWindow) {
         val content: JComponent
+
         init {
-            content = JPanel(BorderLayout()).apply {
-                add(JLabel("This is the side panel"), BorderLayout.CENTER)
-            }
+            content =
+                JPanel(BorderLayout()).apply {
+                    add(JLabel("This is the side panel"), BorderLayout.CENTER)
+                }
         }
     }
 }

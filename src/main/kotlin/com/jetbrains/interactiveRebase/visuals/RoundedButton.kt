@@ -7,7 +7,11 @@ import java.awt.RenderingHints
 import java.awt.geom.RoundRectangle2D
 import javax.swing.JButton
 
-class RoundedButton(private val text: String = "", var backgroundColor: Color = Palette.TRANSPARENT, private val foreground: Color = Palette.TRANSPARENT) : JButton() {
+class RoundedButton(
+    private val text: String = "",
+    var backgroundColor: Color = Palette.TRANSPARENT,
+    private val foreground: Color = Palette.TRANSPARENT,
+) : JButton() {
     internal var arcWidth = 12
     internal var arcHeight = 12
 

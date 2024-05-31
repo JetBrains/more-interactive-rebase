@@ -27,6 +27,6 @@ object Palette {
     public final val GRAYBUTTON = JBColor(Color(178, 172, 172), Color(89, 101, 103))
     public final val WHITETEXT = JBColor(Color(255, 255, 255), Color(255, 255, 255))
     public final val TRANSPARENT = JBColor(Color(0, 0, 0, 0), Color(0, 0, 0, 0))
-    public final val JETBRAINSHOVER = JBColor(Color(228, 228, 230),Color(83, 83, 96))
-    public final val JETBRAINSSELCTED = JBColor(Color(215, 225, 252),Color(69, 115, 232))
+    public final val JETBRAINSHOVER = JBColor(Color(228, 228, 230), Color(83, 83, 96))
+    public final val JETBRAINSSELCTED = JBColor(Color(215, 225, 252), Color(69, 115, 232))
 }

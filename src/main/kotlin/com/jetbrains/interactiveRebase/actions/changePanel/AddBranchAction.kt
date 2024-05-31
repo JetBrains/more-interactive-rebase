@@ -16,8 +16,8 @@ class AddBranchAction : AnAction("Add Branch", "Add another branch to the view",
         sidePanel.isVisible = !sidePanel.isVisible
         sidePanel.setVisible(sidePanel.isVisible)
 
-        //This toggles the icon of the add branch
-        //e.presentation.icon = if (sidePanel.isVisible) AllIcons.Actions.Exit else AllIcons.Actions.AddList
+        // This toggles the icon of the add branch
+        // e.presentation.icon = if (sidePanel.isVisible) AllIcons.Actions.Exit else AllIcons.Actions.AddList
     }
 
     override fun update(e: AnActionEvent) {

@@ -8,7 +8,7 @@ import com.jetbrains.interactiveRebase.listeners.SideBranchPanelListener
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 
-class SidePanel: JBPanel<JBPanel<*>>() {
+class SidePanel : JBPanel<JBPanel<*>>() {
     internal var isVisible: Boolean = false
     internal var branches: MutableList<String> = mutableListOf()
     internal var sideBranchPanels: MutableList<SideBranchPanel> = mutableListOf()
@@ -16,7 +16,7 @@ class SidePanel: JBPanel<JBPanel<*>>() {
     init {
         layout = GridBagLayout()
 
-        //TODO: replace these hardcoded values with actual branch names
+        // TODO: replace these hardcoded values with actual branch names
         branches = mutableListOf("Branch 1", "Branch 2", "Branch 3")
         updateBranchNames()
     }
@@ -33,8 +33,8 @@ class SidePanel: JBPanel<JBPanel<*>>() {
     /**
      * Updates the branch names in the panel.
      */
-    fun updateBranchNames(){
-        for (i in 0 until branches.size){
+    fun updateBranchNames() {
+        for (i in 0 until branches.size) {
             createSideBranchPanel(i)
         }
     }
@@ -49,7 +49,6 @@ class SidePanel: JBPanel<JBPanel<*>>() {
         addBranchListener(branch)
         addRemoveBranchButtonListener(branch)
 
-
         val gbc = getAlignmentForBranch(i)
         add(branch, gbc)
     }
@@ -57,7 +56,7 @@ class SidePanel: JBPanel<JBPanel<*>>() {
     /**
      * Adds a listener to the branch panel.
      */
-    fun addBranchListener(branch: SideBranchPanel){
+    fun addBranchListener(branch: SideBranchPanel) {
         val sideBranchPanelListener = SideBranchPanelListener(branch, this)
         branch.addMouseListener(sideBranchPanelListener)
         branch.addMouseMotionListener(sideBranchPanelListener)
@@ -67,7 +66,7 @@ class SidePanel: JBPanel<JBPanel<*>>() {
     /**
      * Adds a listener to the remove button of the branch panel.
      */
-    fun addRemoveBranchButtonListener(branch: SideBranchPanel){
+    fun addRemoveBranchButtonListener(branch: SideBranchPanel) {
         val removeListener = RemoveSideBranchListener(branch, this)
         branch.button.addMouseListener(removeListener)
         branch.button.addMouseMotionListener(removeListener)
@@ -76,7 +75,7 @@ class SidePanel: JBPanel<JBPanel<*>>() {
     /**
      * Returns the alignment for the button in the panel.
      */
-    fun getAlignmentForBranch(i: Int): GridBagConstraints{
+    fun getAlignmentForBranch(i: Int): GridBagConstraints {
         val gbc = GridBagConstraints()
         gbc.gridx = 0
         gbc.gridy = i
@@ -84,7 +83,7 @@ class SidePanel: JBPanel<JBPanel<*>>() {
         gbc.weighty = if (i == branches.size - 1) 1.0 else 0.0
         gbc.anchor = GridBagConstraints.NORTH
         gbc.fill = GridBagConstraints.HORIZONTAL
-        gbc.insets = JBUI.insets(2,4,1,4)
+        gbc.insets = JBUI.insets(2, 4, 1, 4)
 
         return gbc
     }
@@ -93,12 +92,14 @@ class SidePanel: JBPanel<JBPanel<*>>() {
      * Checks if the branch can be selected,
      * which mimics the idea of a radio button.
      */
-    fun canSelectBranch(sideBranchPanel: SideBranchPanel): Boolean{
-        if(sideBranchPanel.isSelected)
+    fun canSelectBranch(sideBranchPanel: SideBranchPanel): Boolean {
+        if (sideBranchPanel.isSelected) {
             return false
-        for(branch in sideBranchPanels){
-            if(branch != sideBranchPanel && branch.isSelected)
+        }
+        for (branch in sideBranchPanels) {
+            if (branch != sideBranchPanel && branch.isSelected) {
                 return false
+            }
         }
         return true
     }
@@ -107,18 +108,19 @@ class SidePanel: JBPanel<JBPanel<*>>() {
      * Grays out all branches, making them look
      * unavailable to select except the current one.
      */
-    fun makeBranchesUnavailableExceptCurrent(sideBranchPanel: SideBranchPanel){
-        for(branch in sideBranchPanels){
-            if(branch != sideBranchPanel)
+    fun makeBranchesUnavailableExceptCurrent(sideBranchPanel: SideBranchPanel) {
+        for (branch in sideBranchPanels) {
+            if (branch != sideBranchPanel) {
                 branch.grayOutText()
+            }
         }
     }
 
     /**
      * Resets all branches to their original state.
      */
-    fun resetAllBranchesVisually(){
-        for(branch in sideBranchPanels){
+    fun resetAllBranchesVisually() {
+        for (branch in sideBranchPanels) {
             branch.resetSideBranchPanelVisually()
         }
     }

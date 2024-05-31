@@ -7,12 +7,11 @@ import java.awt.Graphics2D
 import java.awt.RenderingHints
 import kotlin.properties.Delegates
 
-open class RoundedPanel: JBPanel<JBPanel<*>>() {
+open class RoundedPanel : JBPanel<JBPanel<*>>() {
     internal var cornerRadius by Delegates.notNull<Int>()
     internal lateinit var backgroundColor: Color
 
-
-    override fun paintComponent(g: Graphics) {
+    public override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
         val g2 = g as Graphics2D
 

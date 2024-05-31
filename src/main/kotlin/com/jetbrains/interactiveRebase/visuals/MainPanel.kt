@@ -17,7 +17,7 @@ import javax.swing.SwingConstants
 
 class MainPanel(
     private val project: Project,
-    private val branchInfo: BranchInfo
+    private val branchInfo: BranchInfo,
 ) :
     JBPanel<JBPanel<*>>(), Disposable {
     internal var commitInfoPanel = CommitInfoPanel(project)
@@ -127,11 +127,12 @@ class MainPanel(
                 secondComponent = commitInfoPanel
             }
 
-        val secondDivider = OnePixelSplitter(false, 0.18f).apply {
-            sidePanel.setVisible(false)
-            firstComponent = sidePanel
-            secondComponent = firstDivider
-        }
+        val secondDivider =
+            OnePixelSplitter(false, 0.18f).apply {
+                sidePanel.setVisible(false)
+                firstComponent = sidePanel
+                secondComponent = firstDivider
+            }
         val thirdDivider =
             OnePixelSplitter(true, 0.03f, 0.03f, 0.03f).apply {
                 firstComponent = headerPanel

@@ -12,7 +12,7 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import javax.swing.JLabel
 
-class SideBranchPanel(val branchName: String): RoundedPanel(), Disposable {
+class SideBranchPanel(val branchName: String) : RoundedPanel(), Disposable {
     var isSelected: Boolean = false
     lateinit var label: JLabel
     lateinit var button: RoundedButton
@@ -36,7 +36,7 @@ class SideBranchPanel(val branchName: String): RoundedPanel(), Disposable {
     /**
      * Adds the branch name to the panel
      */
-    internal fun addSideBranchLabel(){
+    internal fun addSideBranchLabel() {
         label = JBLabel(branchName)
 
         val gbc = GridBagConstraints()
@@ -52,7 +52,7 @@ class SideBranchPanel(val branchName: String): RoundedPanel(), Disposable {
     /**
      * Adds the button to remove the branch from the panel
      */
-    internal fun addRemoveBranchButton(){
+    internal fun addRemoveBranchButton() {
         button = RoundedButton()
 
         button.icon = AllIcons.General.Remove
@@ -72,7 +72,7 @@ class SideBranchPanel(val branchName: String): RoundedPanel(), Disposable {
      * Aligns the button to the right of the panel,
      * with a small margin from the right edge.
      */
-    internal fun getAlignmentForButton(): GridBagConstraints{
+    internal fun getAlignmentForButton(): GridBagConstraints {
         val gbc = GridBagConstraints()
         gbc.gridx = 1
         gbc.weightx = 0.1
@@ -84,8 +84,7 @@ class SideBranchPanel(val branchName: String): RoundedPanel(), Disposable {
     /**
      * Changes the color of the panel when the mouse hovers over it.
      */
-    internal fun onHover(){
-        this.isOpaque = true
+    internal fun onHover() {
         backgroundColor = Palette.JETBRAINSHOVER
         this.repaint()
         this.revalidate()
@@ -94,12 +93,12 @@ class SideBranchPanel(val branchName: String): RoundedPanel(), Disposable {
     /**
      * Resets the panel to its original state.
      */
-    internal fun resetSideBranchPanelVisually(){
+    internal fun resetSideBranchPanelVisually() {
         this.isOpaque = false
         this.isSelected = false
         this.button.isVisible = false
         this.label.foreground = JBColor.BLACK
-        backgroundColor =  Palette.TRANSPARENT
+        backgroundColor = Palette.TRANSPARENT
         this.repaint()
         this.revalidate()
     }
@@ -107,7 +106,7 @@ class SideBranchPanel(val branchName: String): RoundedPanel(), Disposable {
     /**
      * Changes the color of the panel when it is selected.
      */
-    internal fun selectBranch(){
+    internal fun selectBranch() {
         this.isOpaque = true
         backgroundColor = Palette.JETBRAINSSELCTED
         this.isSelected = true
@@ -120,14 +119,14 @@ class SideBranchPanel(val branchName: String): RoundedPanel(), Disposable {
     /**
      * Changes the color of the branch name (label) to gray.
      */
-    internal fun grayOutText(){
+    internal fun grayOutText() {
         this.label.foreground = Palette.GRAYBUTTON
     }
 
     /**
      * Changes the color of the button when the mouse hovers over it.
      */
-    internal fun buttonOnHover(){
+    internal fun buttonOnHover() {
         button.backgroundColor = backgroundColor.darker()
 
         button.repaint()
@@ -137,7 +136,7 @@ class SideBranchPanel(val branchName: String): RoundedPanel(), Disposable {
     /**
      * Resets the button to its original state.
      */
-    internal fun buttonOnHoverExit(){
+    internal fun buttonOnHoverExit() {
         button.backgroundColor = Palette.TRANSPARENT
 
         button.repaint()
@@ -146,6 +145,4 @@ class SideBranchPanel(val branchName: String): RoundedPanel(), Disposable {
 
     override fun dispose() {
     }
-
-
 }
