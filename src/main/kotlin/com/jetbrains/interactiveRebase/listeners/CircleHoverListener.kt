@@ -41,8 +41,12 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
      */
     override fun mouseClicked(e: MouseEvent?) {
         val modelService = circlePanel.commit.project.service<ModelService>()
-        circlePanel.commit.isSelected = !circlePanel.commit.isSelected
-        modelService.addOrRemoveCommitSelection(circlePanel.commit)
+        if(!circlePanel.commit.isSelected){
+            modelService.selectSingleCommit(circlePanel.commit)
+        }
+        else{
+            modelService.removeFromSelectedCommits(circlePanel.commit)
+        }
     }
 
     /**

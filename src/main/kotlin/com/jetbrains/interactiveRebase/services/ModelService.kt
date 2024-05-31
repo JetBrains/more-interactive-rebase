@@ -62,6 +62,49 @@ class ModelService(
         }
     }
 
+
+    /**
+     * Selects the single passed in
+     * commit by also deselecting all
+     * currently selected commits
+     */
+    fun selectSingleCommit(commit: CommitInfo) {
+        branchInfo.clearSelectedCommits()
+        addToSelectedCommits(commit)
+    }
+
+    /**
+     * Adds a commit to the list
+     * of selected commits without
+     * deselecting the rest of the
+     * commits
+     */
+    fun addToSelectedCommits(commit: CommitInfo) {
+        commit.isSelected = true
+        branchInfo.addSelectedCommits(commit)
+        commit.changes.forEach { change ->
+            if (change is FixupCommand || change is SquashCommand) {
+                val combinedCommits = project.service<ActionService>().getCombinedCommits(change)
+                branchInfo.selectedCommits.addAll(combinedCommits)
+            }
+        }
+    }
+
+    /**
+     * Removes commit from
+     * list of selected commits
+     */
+    fun removeFromSelectedCommits(commit: CommitInfo){
+        commit.isSelected = false
+        branchInfo.removeSelectedCommits( commit)
+        commit.changes.forEach { change ->
+            if (change is FixupCommand || change is SquashCommand) {
+                val combinedCommits = project.service<ActionService>().getCombinedCommits(change)
+                branchInfo.selectedCommits.addAll(combinedCommits)
+            }
+        }
+    }
+
     /**
      * Returns the selected
      * commits
