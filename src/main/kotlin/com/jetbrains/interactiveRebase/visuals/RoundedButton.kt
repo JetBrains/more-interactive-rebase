@@ -32,7 +32,4 @@ class RoundedButton(private val text: String, private val background: Color, pri
         setBackground(background)
         setForeground(foreground)
     }
-
-    override fun paintBorder(g: Graphics?) {
-    }
 }

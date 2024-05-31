@@ -127,7 +127,7 @@ class MainPanel(
                 secondComponent = commitInfoPanel
             }
 
-        val secondDivider = OnePixelSplitter(false, 0.2f).apply {
+        val secondDivider = OnePixelSplitter(false, 0.18f).apply {
             sidePanel.setVisible(false)
             firstComponent = sidePanel
             secondComponent = firstDivider
