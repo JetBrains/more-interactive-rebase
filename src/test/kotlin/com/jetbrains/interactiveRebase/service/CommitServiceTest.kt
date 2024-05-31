@@ -79,10 +79,10 @@ class CommitServiceTest : BasePlatformTestCase() {
 
         doAnswer {
             consumer.accept(commit)
-        }.`when`(utils).getCommitsOfBranch(anyCustom(), anyCustom())
+        }.`when`(utils).getCommitsOfBranch(anyCustom(), anyCustom(), anyCustom())
 
         val res = controlledCommitService.getDisplayableCommitsOfBranch(branchName, repo, consumer)
-        verify(utils).getCommitsOfBranch(anyCustom(), anyCustom())
+        verify(utils).getCommitsOfBranch(anyCustom(), anyCustom(), anyCustom())
         assertEquals(res, listOf(commit))
     }
 
@@ -121,7 +121,7 @@ class CommitServiceTest : BasePlatformTestCase() {
             consumerInside.accept(commit2)
         }.`when`(utils).getCommitDifferenceBetweenBranches(anyCustom(), anyCustom(), anyCustom(), anyCustom())
 
-        val res = controlledCommitService.getCommits()
+        val res = controlledCommitService.getCommits("current")
         assertEquals(res, listOf(commit1, commit2))
     }
 
@@ -142,9 +142,9 @@ class CommitServiceTest : BasePlatformTestCase() {
             val consumerInside = it.arguments[1] as CommitConsumer
             consumerInside.accept(commit1)
             consumerInside.accept(commit2)
-        }.`when`(utils).getCommitsOfBranch(anyCustom(), anyCustom())
+        }.`when`(utils).getCommitsOfBranch(anyCustom(), anyCustom(), anyCustom())
 
-        val res = controlledCommitService.getCommits()
+        val res = controlledCommitService.getCommits("current")
 
         assertEquals(res, listOf(commit1, commit2))
         assertEquals("current", controlledCommitService.referenceBranchName)
@@ -155,7 +155,7 @@ class CommitServiceTest : BasePlatformTestCase() {
         val cons = GeneralCommitConsumer()
         cons.consume(commitProvider.createCommit("fix tests"))
         controlledCommitService.handleMergedBranch(cons, "branch", repo)
-        verify(utils, never()).getCommitsOfBranch(repo, cons)
+        verify(utils, never()).getCommitsOfBranch(repo, cons, "branch")
     }
 
     fun testMergedBranchHandlingConsidersMerged() {
@@ -165,7 +165,19 @@ class CommitServiceTest : BasePlatformTestCase() {
             GitCommandResult(false, 0, listOf(), listOf("merged"))
         }.`when`(utils).runCommand(anyCustom())
         controlledCommitService.handleMergedBranch(cons, "merged", repo)
-        verify(utils).getCommitsOfBranch(repo, cons)
+        verify(utils).getCommitsOfBranch(repo, cons, "merged")
+    }
+
+    fun testGetCommitChecksIfRepoIsNull() {
+        doAnswer {
+            null
+        }.`when`(utils).getRepository()
+
+        val exception =
+            assertThrows<IRInaccessibleException> {
+                controlledCommitService.getCommits("current")
+            }
+        assertEquals(exception.message, "Repository cannot be accessed")
     }
 
     fun testGetCommitChecksIfBranchIsNull() {
@@ -176,7 +188,7 @@ class CommitServiceTest : BasePlatformTestCase() {
 
         val exception =
             assertThrows<IRInaccessibleException> {
-                controlledCommitService.getCommits()
+                controlledCommitService.getCommits("current")
             }
         assertEquals(exception.message, "Branch cannot be accessed")
     }

@@ -13,9 +13,9 @@ import git4idea.repo.GitRepository
 @Service(Service.Level.PROJECT)
 class CommitService(private val project: Project, private val gitUtils: IRGitUtils, private val branchSer: BranchService) {
     /**
-     * Usually the primary branch master or main, can be configured
+     * Usually the primary branch master or main, can be configured when adding a new branch
      */
-    var referenceBranchName = "main"
+    var referenceBranchName: String? = branchSer.getDefaultReferenceBranchName()
     constructor(project: Project) : this(project, IRGitUtils(project), BranchService(project))
 
     /**
@@ -24,15 +24,22 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
      * Reference branch is dynamically set to master or main according to the repo, if none or both exist,
      * we disregard the reference branch
      */
-    fun getCommits(): List<GitCommit> {
-        println(branchSer.getBranchesExceptCheckedOut())
+    fun getCommits(branchName: String): List<GitCommit> {
         val repo = gitUtils.getRepository()
-        val branchName = repo.currentBranchName ?: throw IRInaccessibleException("Branch cannot be accessed")
+//        val branchName = repo.currentBranchName ?: throw IRInaccessibleException("Branch cannot be accessed")
         val consumer = GeneralCommitConsumer()
 
-        referenceBranchName = branchSer.getDefaultReferenceBranchName() ?: branchName
+//        if (referenceBranchName == null) {
+//            referenceBranchName = branchName
+//        }
+
         return getDisplayableCommitsOfBranch(branchName, repo, consumer)
     }
+
+//    fun getCommitsWithReference(branchName: String, referenceBranchName : String) : List<GitCommit> {
+//        val consumer = GeneralCommitConsumer()
+//        return get
+//    }
 
     /**
      * Gets the commits in the given branch that are not on the reference branch, caps them to the maximum size at the consumer.
@@ -43,10 +50,10 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
         repo: GitRepository,
         consumer: CommitConsumer,
     ): List<GitCommit> {
-        if (branchName == referenceBranchName) {
-            gitUtils.getCommitsOfBranch(repo, consumer)
+        if (referenceBranchName == null) {
+            gitUtils.getCommitsOfBranch(repo, consumer, branchName)
         } else {
-            gitUtils.getCommitDifferenceBetweenBranches(branchName, referenceBranchName, repo, consumer)
+            gitUtils.getCommitDifferenceBetweenBranches(branchName, referenceBranchName!!, repo, consumer)
             handleMergedBranch(consumer, branchName, repo)
         }
         return consumer.commits
@@ -62,7 +69,7 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
         repo: GitRepository,
     ) {
         if (consumer.commits.isEmpty() && branchSer.isBranchMerged(branchName)) {
-            gitUtils.getCommitsOfBranch(repo, consumer)
+            gitUtils.getCommitsOfBranch(repo, consumer, branchName)
         }
     }
 
@@ -73,6 +80,18 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
         return commits.map { commit ->
             CommitInfo(commit, project, mutableListOf())
         }
+    }
+
+    /**
+     * Given a hash, returns the corresponding GitCommit, used to retrieve merging commit
+     */
+    fun turnHashToCommit(hash: String): GitCommit {
+        val consumer = GeneralCommitConsumer()
+        gitUtils.collectACommit(gitUtils.getRepository(), hash, consumer)
+        if (consumer.commits.isEmpty()) {
+            throw IRInaccessibleException("Commit hash not found")
+        }
+        return consumer.commits[0]
     }
 
     /**

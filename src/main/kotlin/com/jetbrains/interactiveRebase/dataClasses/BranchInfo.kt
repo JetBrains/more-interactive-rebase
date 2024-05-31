@@ -86,6 +86,10 @@ class BranchInfo(
         listeners.forEach { it.onCurrentCommitsChange(currentCommits) }
     }
 
+    override fun toString(): String {
+        return "BranchInfo(name='$name', initialCommits=$initialCommits, selectedCommits=$selectedCommits)"
+    }
+
     /**
      * Provides a listener
      * for changes in this class

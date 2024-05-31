@@ -11,6 +11,8 @@ import git4idea.commands.GitLineHandler
 
 @Service(Service.Level.PROJECT)
 class BranchService(private val project: Project, private val gitUtils: IRGitUtils) {
+//    private val commitService: CommitService = CommitService(project)
+
     constructor(project: Project) : this(project, IRGitUtils(project))
 
     /**
