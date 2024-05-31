@@ -15,6 +15,8 @@ class SidePanel: JBPanel<JBPanel<*>>() {
 
     init {
         layout = GridBagLayout()
+
+        //TODO: replace these hardcoded values with actual branch names
         branches = mutableListOf("Branch 1", "Branch 2", "Branch 3")
         updateBranchNames()
     }
@@ -28,25 +30,53 @@ class SidePanel: JBPanel<JBPanel<*>>() {
         repaint()
     }
 
+    /**
+     * Updates the branch names in the panel.
+     */
     fun updateBranchNames(){
         for (i in 0 until branches.size){
             createSideBranchPanel(i)
         }
     }
 
+    /**
+     * Creates a panel for a single branch name.
+     */
     fun createSideBranchPanel(i: Int) {
         val branch = SideBranchPanel(branches[i])
+        sideBranchPanels.add(branch)
 
+        addBranchListener(branch)
+        addRemoveBranchButtonListener(branch)
+
+
+        val gbc = getAlignmentForBranch(i)
+        add(branch, gbc)
+    }
+
+    /**
+     * Adds a listener to the branch panel.
+     */
+    fun addBranchListener(branch: SideBranchPanel){
         val sideBranchPanelListener = SideBranchPanelListener(branch, this)
         branch.addMouseListener(sideBranchPanelListener)
         branch.addMouseMotionListener(sideBranchPanelListener)
         Disposer.register(branch, sideBranchPanelListener)
+    }
 
-         val removeListener = RemoveSideBranchListener(branch, this)
+    /**
+     * Adds a listener to the remove button of the branch panel.
+     */
+    fun addRemoveBranchButtonListener(branch: SideBranchPanel){
+        val removeListener = RemoveSideBranchListener(branch, this)
         branch.button.addMouseListener(removeListener)
         branch.button.addMouseMotionListener(removeListener)
+    }
 
-        sideBranchPanels.add(branch)
+    /**
+     * Returns the alignment for the button in the panel.
+     */
+    fun getAlignmentForBranch(i: Int): GridBagConstraints{
         val gbc = GridBagConstraints()
         gbc.gridx = 0
         gbc.gridy = i
@@ -55,9 +85,14 @@ class SidePanel: JBPanel<JBPanel<*>>() {
         gbc.anchor = GridBagConstraints.NORTH
         gbc.fill = GridBagConstraints.HORIZONTAL
         gbc.insets = JBUI.insets(2,4,1,4)
-        add(branch, gbc)
+
+        return gbc
     }
 
+    /**
+     * Checks if the branch can be selected,
+     * which mimics the idea of a radio button.
+     */
     fun canSelectBranch(sideBranchPanel: SideBranchPanel): Boolean{
         if(sideBranchPanel.isSelected)
             return false
@@ -68,6 +103,10 @@ class SidePanel: JBPanel<JBPanel<*>>() {
         return true
     }
 
+    /**
+     * Grays out all branches, making them look
+     * unavailable to select except the current one.
+     */
     fun makeBranchesUnavailableExceptCurrent(sideBranchPanel: SideBranchPanel){
         for(branch in sideBranchPanels){
             if(branch != sideBranchPanel)
@@ -75,6 +114,9 @@ class SidePanel: JBPanel<JBPanel<*>>() {
         }
     }
 
+    /**
+     * Resets all branches to their original state.
+     */
     fun resetAllBranchesVisually(){
         for(branch in sideBranchPanels){
             branch.resetSideBranchPanelVisually()
