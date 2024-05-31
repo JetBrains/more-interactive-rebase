@@ -23,7 +23,7 @@ import javax.swing.JComponent
 class FixupAction :
     DumbAwareAction(
         "Fixup",
-        "Combine commits and set a default message",
+        "Combines commits into one, with a default message",
         AllIcons.Actions.ListFiles,
     ),
     CustomComponentAction {
@@ -40,44 +40,11 @@ class FixupAction :
     }
 
     override fun createCustomComponent(
-        presentation: Presentation,
-        place: String,
+            presentation: Presentation,
+            place: String,
     ): JComponent {
-        return object : ActionButton(this, presentation, place, Supplier { getMinimumSize(place) }) {
-            override fun updateToolTipText() {
-                val classesTabName =
-                    java.lang.String.join(
-                        "/",
-                        GotoClassPresentationUpdater.getActionTitlePluralized(),
-                    )
-                if (Registry.`is`("ide.helptooltip.enabled")) {
-                    HelpTooltip.dispose(this)
-                    HelpTooltip()
-                        .setTitle(myPresentation.text)
-                        .setShortcut("Alt+F")
-                        .setDescription("Combine commits")
-                        .installOn(this)
-                } else {
-                    toolTipText =
-                        IdeBundle.message(
-                            "search.everywhere.action.tooltip.text",
-                            shortcutText,
-                            classesTabName,
-                        )
-                }
-            }
-        }
-    }
+        return RebaseActionsGroup.makeTooltip(this, presentation, place, "Alt+F",
+                "Combines commits into one, with a default message")
 
-    private fun getMinimumSize(place: String): Dimension {
-        return if (isExperimentalToolbar(place)) {
-            ActionToolbar.experimentalToolbarMinimumButtonSize()
-        } else {
-            ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-        }
-    }
-
-    private fun isExperimentalToolbar(place: String): Boolean {
-        return ExperimentalUI.isNewUI() && ActionPlaces.MAIN_TOOLBAR == place
     }
 }

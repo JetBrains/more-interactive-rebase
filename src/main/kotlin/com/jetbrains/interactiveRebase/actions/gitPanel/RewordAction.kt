@@ -15,6 +15,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.ui.ExperimentalUI
+import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup.Companion.makeTooltip
 import com.jetbrains.interactiveRebase.services.ActionService
 import java.awt.Dimension
 import java.util.function.Supplier
@@ -23,10 +24,11 @@ import javax.swing.JComponent
 class RewordAction :
     DumbAwareAction(
         "Reword",
-        "Change the subject of a commit",
+        "Changes the subject of a commit",
         AllIcons.Actions.SuggestedRefactoringBulb,
     ),
     CustomComponentAction {
+
     override fun actionPerformed(e: AnActionEvent) {
         e.project?.service<ActionService>()?.takeRewordAction()
     }
@@ -43,37 +45,10 @@ class RewordAction :
         presentation: Presentation,
         place: String,
     ): JComponent {
-        return object : ActionButton(this, presentation, place, Supplier { getMinimumSize(place) }) {
-            override fun updateToolTipText() {
-                val classesTabName = java.lang.String.join("/", getActionTitlePluralized())
-                if (Registry.`is`("ide.helptooltip.enabled")) {
-                    HelpTooltip.dispose(this)
-                    HelpTooltip()
-                        .setTitle(myPresentation.text)
-                        .setShortcut("Alt+R")
-                        .setDescription("Reword a commit")
-                        .installOn(this)
-                } else {
-                    toolTipText =
-                        IdeBundle.message(
-                            "search.everywhere.action.tooltip.text",
-                            shortcutText,
-                            classesTabName,
-                        )
-                }
-            }
-        }
+        return makeTooltip( this, presentation, place, "Alt+R",
+                "Changes the subject of a commit")
+
     }
 
-    private fun getMinimumSize(place: String): Dimension {
-        return if (isExperimentalToolbar(place)) {
-            ActionToolbar.experimentalToolbarMinimumButtonSize()
-        } else {
-            ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-        }
-    }
 
-    private fun isExperimentalToolbar(place: String): Boolean {
-        return ExperimentalUI.isNewUI() && ActionPlaces.MAIN_TOOLBAR == place
-    }
 }

@@ -1,6 +1,7 @@
 import com.diffplug.spotless.LineEnding
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun properties(key: String) = providers.gradleProperty(key)
 fun environment(key: String) = providers.environmentVariable(key)
@@ -27,6 +28,7 @@ plugins {
     id("jacoco")
     id("pmd")
     id("info.solidsoft.pitest") version "1.15.0"
+    kotlin("jvm") version "2.0.0"
 }
 
 group = properties("pluginGroup").get()
@@ -46,6 +48,7 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.23.1")
     testImplementation("org.assertj:assertj-swing-junit:3.9.2")
     //testImplementation("junit:junit:4.12")
+    implementation(kotlin("stdlib-jdk8"))
 
 }
 
@@ -252,4 +255,12 @@ tasks.withType(Test::class) {
             }))
         }
     }
+}
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = "19"
+}
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = "19"
 }

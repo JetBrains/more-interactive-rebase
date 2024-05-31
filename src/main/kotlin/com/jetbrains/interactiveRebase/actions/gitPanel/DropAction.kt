@@ -21,7 +21,7 @@ import java.util.function.Supplier
 import javax.swing.JComponent
 
 class DropAction :
-    DumbAwareAction("Drop", "Remove a commit", AllIcons.Actions.DeleteTagHover),
+    DumbAwareAction("Drop", "Removes a commit from history", AllIcons.Actions.DeleteTagHover),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
         e.project?.service<ActionService>()?.takeDropAction()
@@ -36,44 +36,11 @@ class DropAction :
     }
 
     override fun createCustomComponent(
-        presentation: Presentation,
-        place: String,
+            presentation: Presentation,
+            place: String,
     ): JComponent {
-        return object : ActionButton(this, presentation, place, Supplier { getMinimumSize(place) }) {
-            override fun updateToolTipText() {
-                val classesTabName =
-                    java.lang.String.join(
-                        "/",
-                        GotoClassPresentationUpdater.getActionTitlePluralized(),
-                    )
-                if (Registry.`is`("ide.helptooltip.enabled")) {
-                    HelpTooltip.dispose(this)
-                    HelpTooltip()
-                        .setTitle(myPresentation.text)
-                        .setShortcut("Delete")
-                        .setDescription("Drop a commit")
-                        .installOn(this)
-                } else {
-                    toolTipText =
-                        IdeBundle.message(
-                            "search.everywhere.action.tooltip.text",
-                            shortcutText,
-                            classesTabName,
-                        )
-                }
-            }
-        }
-    }
+        return RebaseActionsGroup.makeTooltip(this, presentation, place, "Delete",
+                "Removes a commit from history")
 
-    private fun getMinimumSize(place: String): Dimension {
-        return if (isExperimentalToolbar(place)) {
-            ActionToolbar.experimentalToolbarMinimumButtonSize()
-        } else {
-            ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-        }
-    }
-
-    private fun isExperimentalToolbar(place: String): Boolean {
-        return ExperimentalUI.isNewUI() && ActionPlaces.MAIN_TOOLBAR == place
     }
 }
