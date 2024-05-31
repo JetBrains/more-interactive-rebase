@@ -6,17 +6,17 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.visuals.Palette
+import com.jetbrains.interactiveRebase.visuals.RoundedButton
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import javax.swing.JButton
 import javax.swing.JLabel
 
 class SideBranchPanel(val branchName: String): RoundedPanel(), Disposable {
     var isSelected: Boolean = false
     lateinit var label: JLabel
-    lateinit var button: JButton
+    lateinit var button: RoundedButton
 
     init {
         backgroundColor = background
@@ -28,11 +28,6 @@ class SideBranchPanel(val branchName: String): RoundedPanel(), Disposable {
         layout = GridBagLayout()
         addSideBranchLabel()
         addRemoveBranchButton()
-//        border = BorderFactory.createCompoundBorder(
-//            BorderFactory.createEmptyBorder(padding.top, padding.left, padding.bottom, padding.right),
-//            BorderFactory.createMatteBorder(0, 0, 1, 0, Color(0, 0, 0, 90))
-//        )
-//        border = BorderFactory.createMatteBorder(0, 0, 1, 0, Color(0,0,0, 90))
     }
 
     internal fun addSideBranchLabel(){
@@ -49,22 +44,18 @@ class SideBranchPanel(val branchName: String): RoundedPanel(), Disposable {
     }
 
     internal fun addRemoveBranchButton(){
-
-//        val icon = AllIcons.General.Remove as Icon
-        button = JButton()
-
-//        val removeListener = RemoveSideBranchListener(this, )
-//        button.addMouseListener(removeListener)
-//        button.addMouseMotionListener(removeListener)
-//        Disposer.register(button, removeListener)
+        button = RoundedButton("", Color(0,0,0,0), Color(0,0,0,0))
+//        button.action = RemoveBranchAction()
+        button.arcHeight = 5
+        button.arcWidth = 5
         button.icon = AllIcons.General.Remove
-        val iconSize = button.icon?.let { Dimension(it.iconWidth, it.iconHeight) }
+        val iconSize = button.icon?.let { Dimension((1.4 * it.iconWidth).toInt(), (1.4 * it.iconHeight).toInt()) }
 
         val gbc = GridBagConstraints()
         gbc.gridx = 1
         gbc.weightx = 0.1
         gbc.anchor = GridBagConstraints.LINE_END
-        gbc.insets = JBUI.insets(5, 5, 5, 10)
+        gbc.insets = JBUI.insetsRight(10)
         button.border = null
         button.preferredSize = iconSize
         button.isOpaque = false
@@ -104,14 +95,21 @@ class SideBranchPanel(val branchName: String): RoundedPanel(), Disposable {
         this.label.foreground = Palette.GRAYBUTTON
     }
 
-//    internal fun buttonOnHover(){
+    internal fun buttonOnHover(){
 //       button.isOpaque = true
-//        button.background = Palette.GRAYBUTTON
-//    }
-//    internal fun buttonOnHoverExit(){
-//        button.isOpaque = false
-//        button.background = background
-//    }
+        button.backgroundColor = Palette.DARKSHADOW.darker()
+        button.repaint()
+        button.revalidate()
+    }
+    internal fun buttonOnHoverExit(){
+        button.isOpaque = false
+        button.border = null
+        button.isOpaque = false
+        button.setContentAreaFilled(false)
+        button.backgroundColor = Color(0,0,0,0)
+        button.repaint()
+        button.revalidate()
+    }
 
     override fun dispose() {
     }
