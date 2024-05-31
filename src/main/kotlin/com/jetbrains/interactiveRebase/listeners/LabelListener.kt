@@ -22,10 +22,9 @@ class LabelListener(private val commit: CommitInfo) : MouseListener, Disposable 
             modelService.selectSingleCommit(commit)
         }
         if (e != null && e.clickCount == 1) {
-            if(!commit.isSelected){
+            if (!commit.isSelected) {
                 modelService.selectSingleCommit(commit)
-            }
-            else{
+            } else {
                 modelService.removeFromSelectedCommits(commit)
             }
         }

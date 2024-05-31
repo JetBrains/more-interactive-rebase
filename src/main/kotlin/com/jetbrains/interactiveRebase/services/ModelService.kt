@@ -62,7 +62,6 @@ class ModelService(
         }
     }
 
-
     /**
      * Selects the single passed in
      * commit by also deselecting all
@@ -94,9 +93,9 @@ class ModelService(
      * Removes commit from
      * list of selected commits
      */
-    fun removeFromSelectedCommits(commit: CommitInfo){
+    fun removeFromSelectedCommits(commit: CommitInfo) {
         commit.isSelected = false
-        branchInfo.removeSelectedCommits( commit)
+        branchInfo.removeSelectedCommits(commit)
         commit.changes.forEach { change ->
             if (change is FixupCommand || change is SquashCommand) {
                 val combinedCommits = project.service<ActionService>().getCombinedCommits(change)

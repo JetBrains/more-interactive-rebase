@@ -15,7 +15,7 @@ class BranchNavigationListener(project: Project) : KeyListener, Disposable {
      * arrow key press
      */
     override fun keyPressed(e: KeyEvent?) {
-        if(e?.isShiftDown!!){
+        if (e?.isShiftDown!!) {
             when (e.keyCode) {
                 KeyEvent.VK_UP -> shiftUp()
                 KeyEvent.VK_DOWN -> shiftDown()
@@ -43,7 +43,9 @@ class BranchNavigationListener(project: Project) : KeyListener, Disposable {
         var commit = modelService.branchInfo.selectedCommits.last()
 
         val index = modelService.branchInfo.currentCommits.indexOf(commit)
-        if(index == 0){
+        if (index == 0) {
+            commit = modelService.branchInfo.currentCommits[index]
+            modelService.selectSingleCommit(commit)
             return
         }
 
@@ -65,7 +67,9 @@ class BranchNavigationListener(project: Project) : KeyListener, Disposable {
         var commit = modelService.branchInfo.selectedCommits.last()
 
         val index = modelService.branchInfo.currentCommits.indexOf(commit)
-        if(index == modelService.branchInfo.currentCommits.size - 1){
+        if (index == modelService.branchInfo.currentCommits.size - 1) {
+            commit = modelService.branchInfo.currentCommits[index]
+            modelService.selectSingleCommit(commit)
             return
         }
 
@@ -88,19 +92,17 @@ class BranchNavigationListener(project: Project) : KeyListener, Disposable {
         val commit = modelService.branchInfo.selectedCommits.last()
 
         val index = modelService.branchInfo.currentCommits.indexOf(commit)
-        if(index == 0){
+        if (index == 0) {
             return
         }
 
         val nextCommit = modelService.branchInfo.currentCommits[index - 1]
-        if(!nextCommit.isSelected){
+        if (!nextCommit.isSelected) {
             modelService.addToSelectedCommits(nextCommit)
-        }
-
-        else{
+        } else {
             modelService.removeFromSelectedCommits(commit)
         }
-        }
+    }
 
     /**
      * Moves through the branch
@@ -117,16 +119,14 @@ class BranchNavigationListener(project: Project) : KeyListener, Disposable {
         val commit = modelService.branchInfo.selectedCommits.last()
 
         val index = modelService.branchInfo.currentCommits.indexOf(commit)
-        if(index == modelService.branchInfo.currentCommits.size - 1){
+        if (index == modelService.branchInfo.currentCommits.size - 1) {
             return
         }
 
         val nextCommit = modelService.branchInfo.currentCommits[index + 1]
-        if(!nextCommit.isSelected){
+        if (!nextCommit.isSelected) {
             modelService.addToSelectedCommits(nextCommit)
-        }
-
-        else{
+        } else {
             modelService.removeFromSelectedCommits(commit)
         }
     }
