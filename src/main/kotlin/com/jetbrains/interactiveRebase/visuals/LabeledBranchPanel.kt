@@ -60,6 +60,7 @@ class LabeledBranchPanel(
     init {
         branchNameLabel.horizontalAlignment = SwingConstants.CENTER
         layout = GridBagLayout()
+        isOpaque = false
         val gbc = GridBagConstraints()
 
         addComponents()
@@ -340,7 +341,7 @@ class LabeledBranchPanel(
         gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
         gbc.anchor = GridBagConstraints.CENTER
-        gbc.insets = Insets(5, 5, 5, 5)
+        gbc.insets = offsetBranchIfAdded()
     }
 
     /**
@@ -353,8 +354,19 @@ class LabeledBranchPanel(
         gbc.weightx = 0.0
         gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
-        gbc.insets = Insets(5, 5, 5, 5)
+        gbc.insets = offsetBranchIfAdded()
     }
+
+    /**
+     * If the branch panel displays an additional branch
+     * we offset the branch down.
+     */
+    private fun offsetBranchIfAdded(): Insets? =
+        if (branch.isPrimary) {
+            Insets(5, 5, 5, 5)
+        } else {
+            Insets((branchPanel.diameter * 2.5).toInt(), 5, 5, 5)
+        }
 
     /**
      * Sets the position of the branch name label
@@ -364,10 +376,10 @@ class LabeledBranchPanel(
         gbc.gridx = if (alignment == SwingConstants.LEFT) 0 else 1
         gbc.gridy = 0
         gbc.weightx = 0.0
-        gbc.weighty = 1.0
+        gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
         gbc.anchor = GridBagConstraints.SOUTH
-        gbc.insets = Insets(5, 5, 5, 5)
+        gbc.insets = Insets(branchPanel.diameter, 5, branchPanel.diameter, 5)
     }
 
     /**
