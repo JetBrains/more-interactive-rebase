@@ -6,7 +6,7 @@ class BranchInfo(
     var name: String = "",
     var initialCommits: List<CommitInfo> = listOf(),
     var selectedCommits: MutableList<CommitInfo> = mutableListOf(),
-    val isCheckedOut: Boolean = false,
+    var isPrimary: Boolean = false,
 ) {
     private val listeners: MutableList<Listener> = mutableListOf()
     internal var currentCommits: MutableList<CommitInfo> = initialCommits.toMutableList()

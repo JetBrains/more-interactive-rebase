@@ -22,7 +22,9 @@ class ModelService(
 ) : Disposable {
     constructor(project: Project, coroutineScope: CoroutineScope) : this(project, coroutineScope, project.service<CommitService>())
 
-    val branchInfo = BranchInfo(isCheckedOut = true)
+    val branchInfo = BranchInfo()
+    // TODO: remove?
+    val otherBranchInfo = BranchInfo()
     val graphInfo = GraphInfo(branchInfo)
     private val graphService = project.service<GraphService>()
 

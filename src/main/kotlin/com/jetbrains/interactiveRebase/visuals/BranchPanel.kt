@@ -38,7 +38,7 @@ class BranchPanel(
      */
     init {
         layout = GridBagLayout()
-
+        isOpaque = false
         updateCommits()
     }
 
@@ -110,7 +110,9 @@ class BranchPanel(
             drawLineBetweenCommits(i, g2d)
         }
 
-        drawBottomLine(g2d)
+        if (!branch.isPrimary) {
+            drawBottomLine(g2d)
+        }
     }
 
     /**
@@ -167,10 +169,8 @@ class BranchPanel(
 
         // Calculate line coordinates
         val x = width / 2
-        val startY = circle.y + circle.height / 2 + diameter / 2
-        val endY = nextCircle.y + circle.height / 2 + diameter / 2
-        val glueHeight = endY - startY - diameter
-        val glueY = startY + diameter / 2 + diameter / 2
+        val startY = circle.y + circle.height / 2
+        val endY = nextCircle.y + circle.height / 2
 
         g2d.color = color
         g2d.stroke = BasicStroke(2f)
@@ -178,7 +178,7 @@ class BranchPanel(
             x,
             startY,
             x,
-            glueY + glueHeight,
+            endY,
         )
 
         // Make line thicker
