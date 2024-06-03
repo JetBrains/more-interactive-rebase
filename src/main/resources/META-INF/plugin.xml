@@ -12,7 +12,6 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.jetbrains.interactiveRebase.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
         <fileEditorProvider implementation="com.jetbrains.interactiveRebase.providers.IRFileEditorProvider"/>
     </extensions>
     <applicationListeners>

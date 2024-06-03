@@ -60,7 +60,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.invoker.branchInfo = modelService.branchInfo
 
         branchInfo = modelService.branchInfo
-        mainPanel = MainPanel(project, branchInfo, modelService.invoker)
+        mainPanel = MainPanel(project, branchInfo)
         mainPanel.commitInfoPanel = mock(CommitInfoPanel::class.java)
         Mockito.doNothing().`when`(mainPanel.commitInfoPanel).commitsSelected(anyCustom())
         Mockito.doNothing().`when`(mainPanel.commitInfoPanel).repaint()
