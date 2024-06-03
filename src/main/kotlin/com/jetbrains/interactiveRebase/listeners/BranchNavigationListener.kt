@@ -7,8 +7,8 @@ import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 
-class BranchNavigationListener(project: Project) : KeyListener, Disposable {
-    private val modelService: ModelService = project.service<ModelService>()
+class BranchNavigationListener(project: Project, private val modelService: ModelService) : KeyListener, Disposable {
+    constructor(project: Project) : this(project, project.service<ModelService>())
 
     /**
      * Changes selected commit on
@@ -34,7 +34,7 @@ class BranchNavigationListener(project: Project) : KeyListener, Disposable {
      * selecting one single commit,
      * moves up
      */
-    private fun up() {
+    fun up() {
         if (modelService.branchInfo.selectedCommits.size == 0) {
             val commit = modelService.branchInfo.currentCommits.last()
             modelService.selectSingleCommit(commit)
@@ -58,7 +58,7 @@ class BranchNavigationListener(project: Project) : KeyListener, Disposable {
      * selecting one single commit,
      * moves down
      */
-    private fun down() {
+    fun down() {
         if (modelService.branchInfo.selectedCommits.size == 0) {
             val commit = modelService.branchInfo.currentCommits[0]
             modelService.selectSingleCommit(commit)
@@ -83,7 +83,7 @@ class BranchNavigationListener(project: Project) : KeyListener, Disposable {
      * to the list of selected
      * commits, moves up
      */
-    private fun shiftUp() {
+    fun shiftUp() {
         if (modelService.branchInfo.selectedCommits.size == 0) {
             val commit = modelService.branchInfo.currentCommits.last()
             modelService.addToSelectedCommits(commit)
@@ -110,7 +110,7 @@ class BranchNavigationListener(project: Project) : KeyListener, Disposable {
      * to the list of selected
      * commits, moves down
      */
-    private fun shiftDown() {
+    fun shiftDown() {
         if (modelService.branchInfo.selectedCommits.size == 0) {
             val commit = modelService.branchInfo.currentCommits[0]
             modelService.addToSelectedCommits(commit)
