@@ -23,7 +23,7 @@ class MainPanel(
     internal var commitInfoPanel = CommitInfoPanel(project)
     private var contentPanel: JBScrollPane
     internal var branchPanel: LabeledBranchPanel
-    internal var sidePanel: SidePanel
+    internal var sidePanel: JBScrollPane
     private val branchInfoListener: BranchInfo.Listener
     private val commitInfoListener: CommitInfo.Listener
 
@@ -111,8 +111,14 @@ class MainPanel(
         return scrollable
     }
 
-    fun createSidePanel(): SidePanel {
-        return SidePanel()
+    fun createSidePanel(): JBScrollPane {
+        val scrollable = JBScrollPane()
+
+        val sidePanel = SidePanel()
+        scrollable.setViewportView(sidePanel)
+        scrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
+        scrollable.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED)
+        return scrollable
     }
 
     /**
