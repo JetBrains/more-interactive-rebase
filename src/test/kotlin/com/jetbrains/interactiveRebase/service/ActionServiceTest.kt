@@ -55,9 +55,8 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService = ModelService(project, CoroutineScope(Dispatchers.EDT), commitService)
         modelService.branchInfo.initialCommits = mutableListOf(commitInfo1, commitInfo2)
         modelService.branchInfo.currentCommits = mutableListOf(commitInfo1, commitInfo2)
-        modelService.addOrRemoveCommitSelection(commitInfo1)
+        modelService.addToSelectedCommits(commitInfo1)
         modelService.branchInfo.setName("feature1")
-        modelService.branchInfo.addSelectedCommits(commitInfo1)
         modelService.invoker.branchInfo = modelService.branchInfo
 
         branchInfo = modelService.branchInfo
@@ -237,9 +236,8 @@ class ActionServiceTest : BasePlatformTestCase() {
 
     fun testTakeFixupActionMultipleCommits() {
         modelService.invoker.commands.clear()
-        commitInfo2.isSelected = true
 
-        modelService.addOrRemoveCommitSelection(commitInfo2)
+        modelService.addToSelectedCommits(commitInfo2)
         actionService.takeFixupAction()
 
         assertThat(modelService.invoker.commands[0]).isInstanceOf(FixupCommand::class.java)
@@ -250,9 +248,8 @@ class ActionServiceTest : BasePlatformTestCase() {
 
     fun testTakeSquashActionMultipleCommits() {
         modelService.invoker.commands.clear()
-        commitInfo2.isSelected = true
 
-        modelService.addOrRemoveCommitSelection(commitInfo2)
+        modelService.addToSelectedCommits(commitInfo2)
         actionService.takeSquashAction()
 
         assertThat(modelService.invoker.commands[0]).isInstanceOf(SquashCommand::class.java)

@@ -7,6 +7,7 @@ import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
+import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.BranchPanel
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
@@ -180,13 +181,6 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
         listener.mouseReleased(eventRelease)
         assertThat(commit.isDragged).isFalse()
         verify(listener).repositionOnDrop()
-        verify(listener, never()).markCommitAsReordered()
-
-        verify(parent.branch).updateCurrentCommits(
-            listener.initialIndex,
-            listener.currentIndex,
-            commit,
-        )
     }
 
     fun testMouseReleasedFalse() {
@@ -205,7 +199,6 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
         listener.mousePressed(eventPress)
         listener.mouseReleased(eventRelease)
         verify(listener, never()).repositionOnDrop()
-        verify(listener, never()).markCommitAsReordered()
 
         verify(parent.branch, never()).updateCurrentCommits(
             listener.initialIndex,
@@ -215,7 +208,7 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
     }
 
     fun testMarkCommitAsReordered() {
-        listener.markCommitAsReordered()
+        project.service<ModelService>().markCommitAsReordered(commit, 1, 1)
         verify(commit).setReorderedTo(true)
         verify(commit).addChange(ReorderCommand(1, 1))
         assertThat(invoker.commands.any { it is ReorderCommand }).isTrue()
