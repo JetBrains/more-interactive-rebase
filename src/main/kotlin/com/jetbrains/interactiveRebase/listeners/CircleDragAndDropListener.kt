@@ -5,8 +5,10 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
+import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
@@ -132,33 +134,15 @@ class CircleDragAndDropListener(
      * 3. update commitInfo
      */
     override fun mouseReleased(e: MouseEvent) {
+        val modelService = project.service<ModelService>()
         if (wasDragged) {
             commit.isDragged = false
             repositionOnDrop()
             if (initialIndex != currentIndex) {
-                markCommitAsReordered()
+                modelService.markCommitAsReordered(commit, initialIndex, currentIndex)
+                parent.branch.updateCurrentCommits(initialIndex, currentIndex, commit)
             }
-            parent.branch.updateCurrentCommits(initialIndex, currentIndex, commit)
         }
-    }
-
-    /**
-     * Marks a commit as a reordered by
-     * 1. sets the isReordered flag to true
-     * 2. adds a ReorderCommand
-     * to the visual changes applied to the commit
-     * 3. adds the Reorder Command to the Invoker
-     * that holds an overview of all staged changes.
-     */
-    internal fun markCommitAsReordered() {
-        commit.setReorderedTo(true)
-        val command =
-            ReorderCommand(
-                commits.size - initialIndex - 1,
-                commits.size - initialIndex - 1,
-            )
-        commit.addChange(command)
-        project.service<RebaseInvoker>().addCommand(command)
     }
 
     /**

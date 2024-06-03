@@ -8,6 +8,7 @@ import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.IRGitRefreshListener
 import git4idea.status.GitRefreshListener
@@ -37,29 +38,6 @@ class ModelService(
         fetchGraphInfo()
         populateLocalBranches()
         project.messageBus.connect(this).subscribe(GitRefreshListener.TOPIC, IRGitRefreshListener(project))
-    }
-
-    /**
-     * Adds or removes
-     * the commit from the
-     * list of selected commits
-     */
-    fun addOrRemoveCommitSelection(commit: CommitInfo) {
-        commit.changes.forEach { change ->
-            if (change is FixupCommand || change is SquashCommand) {
-                val combinedCommits = project.service<ActionService>().getCombinedCommits(change)
-                if (commit.isSelected) {
-                    branchInfo.selectedCommits.addAll(combinedCommits)
-                } else {
-                    branchInfo.selectedCommits.removeAll(combinedCommits)
-                }
-            }
-        }
-        if (commit.isSelected) {
-            branchInfo.addSelectedCommits(commit)
-        } else {
-            branchInfo.removeSelectedCommits(commit)
-        }
     }
 
     /**
@@ -102,6 +80,25 @@ class ModelService(
                 branchInfo.selectedCommits.addAll(combinedCommits)
             }
         }
+    }
+
+    /**
+     * Marks a commit as a reordered by
+     * 1. sets the isReordered flag to true
+     * 2. adds a ReorderCommand
+     * to the visual changes applied to the commit
+     * 3. adds the Reorder Command to the Invoker
+     * that holds an overview of all staged changes.
+     */
+    internal fun markCommitAsReordered(commit: CommitInfo, oldIndex: Int, newIndex: Int) {
+        commit.setReorderedTo(true)
+        val command =
+            ReorderCommand(
+                oldIndex,
+                newIndex
+            )
+        commit.addChange(command)
+        project.service<RebaseInvoker>().addCommand(command)
     }
 
     /**
