@@ -5,6 +5,7 @@ import com.jetbrains.interactiveRebase.actions.CreateEditorTabAction
 import com.jetbrains.interactiveRebase.actions.gitPanel.DropAction
 import com.jetbrains.interactiveRebase.actions.gitPanel.FixupAction
 import com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction
+import com.jetbrains.interactiveRebase.actions.gitPanel.SquashAction
 import com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction
 import com.jetbrains.interactiveRebase.integrationTests.IRGitPlatformTest
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.TestFile
@@ -230,6 +231,73 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
 
                 // here we check if the commit message is the one we set
                 assertThat(commitMessage).isEqualTo("I swear this is reworded:)\n")
+            }
+        }
+
+    fun testSquashCommits() =
+        runTest {
+            launch(Dispatchers.Main) {
+                // this opens the editor tab, and initializes everything
+                val openEditorTabAction = CreateEditorTabAction()
+                val testEvent = createTestEvent()
+                openEditorTabAction.actionPerformed(testEvent)
+
+                // this gets the current commits of the checked out branch
+                val modelService = project.service<ModelService>()
+                withContext(Dispatchers.IO) {
+                    sleep(1000)
+                }
+                assertThat(modelService.branchInfo.currentCommits).hasSize(4)
+
+                // this selects the last commit ("please work") and sets it up to be squashed
+                val commitToSquash = modelService.branchInfo.currentCommits[0]
+                commitToSquash.isSelected = true
+                modelService.addOrRemoveCommitSelection(commitToSquash)
+
+                // this selects the third-to-last commit ("IMHO") and sets it up to be squashed
+                val commitToSquashInto = modelService.branchInfo.currentCommits[2]
+                commitToSquashInto.isSelected = true
+                modelService.addOrRemoveCommitSelection(commitToSquashInto)
+
+                // this "sets up" the commits to be squashed, by enabling the text field
+                val squashAction = SquashAction()
+                val testEvent1 = createTestEvent()
+                squashAction.actionPerformed(testEvent1)
+
+                // here we pretend that we are a user inputting the data new commit message
+                // in the GUI, by getting the listener and setting the text field to the new message
+                val labeledBranchPanel = project.service<ActionService>().getLabeledBranchPanel()
+                val textField = labeledBranchPanel.getTextField(1)
+
+                val listener = textField.keyListeners[0] as TextFieldListener
+                assertThat(listener).isNotNull()
+
+                listener.textField.text = "squyshy"
+
+                // here we pretend we pressed enter after typing the new message
+                listener.processEnter()
+
+                // here we click the rebase button
+                val headerPanel = project.service<ActionService>().getHeaderPanel()
+                val changesActionsPanel = headerPanel.changeActionsPanel
+                val rebaseButton = changesActionsPanel.components[1] as RoundedButton
+                rebaseButton.doClick()
+
+                withContext(Dispatchers.IO) {
+                    sleep(1000)
+                }
+
+                // this gets the second-to-last commit message (as the commit hash has changed)
+                val commitMessage = repository.git("log --format=%B -n 1 HEAD~1")
+
+                withContext(Dispatchers.IO) {
+                    sleep(300)
+                }
+
+                assertThat(commitMessage).isEqualTo("squyshy\n")
+
+                val leftOverCommits = countCommitsSinceInitialCommit()
+                assertThat(leftOverCommits).isEqualTo(3)
             }
         }
 

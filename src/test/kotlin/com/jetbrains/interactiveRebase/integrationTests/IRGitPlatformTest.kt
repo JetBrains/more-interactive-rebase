@@ -7,7 +7,6 @@ import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.chec
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.createRepository
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.git
 import git4idea.repo.GitRepository
-import kotlinx.coroutines.newSingleThreadContext
 import java.io.File
 import java.lang.Thread.sleep
 
@@ -15,8 +14,6 @@ abstract class IRGitPlatformTest : VcsPlatformTest() {
     init {
         System.setProperty("idea.home.path", "/tmp")
     }
-
-    private val mainThreadSurrogate = newSingleThreadContext("testing thread")
 
     lateinit var repository: GitRepository
     var developmentBranch: String = "development"
@@ -35,7 +32,6 @@ abstract class IRGitPlatformTest : VcsPlatformTest() {
      * - creates a file and commits it
      */
     override fun setUp() {
-//        Dispatchers.setMain(mainThreadSurrogate)
         super.setUp()
         // This creates a new repository in the test project root
         repository = createRepository(project, projectNioRoot, true)
@@ -52,13 +48,6 @@ abstract class IRGitPlatformTest : VcsPlatformTest() {
         initialCommit = git("rev-list --max-parents=0 HEAD")
         sleep(500)
     }
-
-//    override fun tearDown() {
-//        super.tearDown()
-//
-//        Dispatchers.resetMain()
-//        mainThreadSurrogate.close()
-//    }
 
     /**
      * Debugging method that allows to see all commits in the checked out branch.
