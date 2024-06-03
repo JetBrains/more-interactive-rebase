@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
+import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
@@ -13,6 +14,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 import com.jetbrains.interactiveRebase.visuals.HeaderPanel
+import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.MainPanel
 
 @Service(Service.Level.PROJECT)
@@ -316,8 +318,13 @@ class ActionService(project: Project) {
         }
     }
 
-    fun getHeaderPanel(): HeaderPanel{
-        val wrapper =  mainPanel.getComponent(0) as OnePixelSplitter
+    fun getHeaderPanel(): HeaderPanel {
+        val wrapper = mainPanel.getComponent(0) as OnePixelSplitter
         return wrapper.firstComponent as HeaderPanel
+    }
+
+    fun getLabeledBranchPanel(): LabeledBranchPanel {
+        val content = mainPanel.contentPanel.viewport.view as JBPanel<*>
+        return content.getComponent(0) as LabeledBranchPanel
     }
 }
