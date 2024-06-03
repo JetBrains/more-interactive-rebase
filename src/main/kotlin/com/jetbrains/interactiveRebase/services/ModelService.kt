@@ -34,7 +34,7 @@ class ModelService(
      * to the GitRefreshListener
      */
     init {
-        fetchBranchInfo()
+        fetchGraphInfo()
         project.messageBus.connect(this).subscribe(GitRefreshListener.TOPIC, IRGitRefreshListener(project))
     }
 
@@ -78,22 +78,22 @@ class ModelService(
     }
 
     /**
-     * Fetches the branch
+     * Fetches and updates the graph
      * info inside a
      * coroutine
      */
-    fun fetchBranchInfo() {
+    fun fetchGraphInfo() {
         coroutineScope.launch {
             graphService.updateGraphInfo(graphInfo)
-//            graphService.updateBranchInfo(branchInfo, invoker)
-            println("grapph inof is now $graphInfo")
         }
     }
 
+    /**
+     * Populates the added branch field in the graph info with the given branch
+     */
     fun addBranchToGraphInfo(addedBranch: String) {
         coroutineScope.launch {
             graphService.addBranch(graphInfo, addedBranch)
-            println("added branch $graphInfo")
         }
     }
 

@@ -12,6 +12,6 @@ class IRGitRefreshListener(private val project: Project) : GitRefreshListener {
      * when the repository is updated
      */
     override fun repositoryUpdated(repository: GitRepository) {
-        project.service<ModelService>().fetchBranchInfo()
+        project.service<ModelService>().fetchGraphInfo()
     }
 }

@@ -2,7 +2,6 @@ package com.jetbrains.interactiveRebase.services
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
-import com.intellij.openapi.components.services
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
@@ -11,13 +10,25 @@ import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 
 @Service(Service.Level.PROJECT)
 class GraphService(private val project: Project) {
-    private val commitService = project.service<CommitService>()
+    private var commitService = project.service<CommitService>()
+    private val invoker = project.service<RebaseInvoker>()
 
+    /**
+     * Secondary constructor for testing
+     */
+    constructor(project: Project, commitService: CommitService) : this(project) {
+        this.commitService = commitService
+    }
+
+    /**
+     * Updates the main branch info to have reference as the added one
+     * Creates a new branch info for the added branch, taking main branch as reference
+     * Finds and adds the branching commit to the added branch
+     */
     fun addBranch(
         graphInfo: GraphInfo,
         addedBranch: String,
     ) {
-        println("in add branch to add $addedBranch")
         // first get commits of the added branch using the checked out branch as reference
         commitService.referenceBranchName = commitService.getBranchName()
         val newBranch = BranchInfo(addedBranch)
@@ -31,6 +42,10 @@ class GraphService(private val project: Project) {
         updateBranchInfo(graphInfo.mainBranch)
     }
 
+    /**
+     * Called from MethodService whenever the model needs to be updated,
+     * updates the main BranchInfo and the added one if it exists.
+     */
     fun updateGraphInfo(graphInfo: GraphInfo) {
         updateBranchInfo(graphInfo.mainBranch)
         if (graphInfo.addedBranch != null) {
@@ -38,20 +53,26 @@ class GraphService(private val project: Project) {
         }
     }
 
+    /**
+     * Given a commit, gets the parent commit as CommitInfo.
+     * Used when trying to find a branching commit after adding a branch
+     */
     fun getBranchingCommit(startingCommit: CommitInfo): CommitInfo {
         val parents = startingCommit.commit.parents
         if (parents.isEmpty() || parents.size > 1) {
             throw IRInaccessibleException("Branching-off commit cannot be displayed")
         }
         val parent = commitService.turnHashToCommit(parents[0].asString())
-        val ret = commitService.getCommitInfoForBranch(listOf(parent))[0]
-        println("got branching $ret")
-        return ret
+        return commitService.getCommitInfoForBranch(listOf(parent))[0]
     }
 
+    /**
+     * Given a branchInfo, re-fetches the commits, populates the branch info if it is the first time fetching
+     * Also includes the commit before branching off from the reference branch if includeBranchingCommit is true.
+     * Refactored form ModelService.
+     */
     fun updateBranchInfo(
         branchInfo: BranchInfo,
-        invoker: RebaseInvoker = project.service<RebaseInvoker>(),
         includeBranchingCommit: Boolean = false,
     ) {
         val name = branchInfo.name.ifEmpty { commitService.getBranchName() }
@@ -65,7 +86,6 @@ class GraphService(private val project: Project) {
             branchInfo.setCommits(commits)
             branchInfo.clearSelectedCommits()
             invoker.branchInfo = branchInfo
-            // invoker.createModel()
         }
     }
 

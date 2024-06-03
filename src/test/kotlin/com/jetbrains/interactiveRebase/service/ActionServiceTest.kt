@@ -25,6 +25,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 
@@ -45,7 +46,7 @@ class ActionServiceTest : BasePlatformTestCase() {
 
         Mockito.doAnswer {
             listOf(commitInfo1.commit)
-        }.`when`(commitService).getCommits()
+        }.`when`(commitService).getCommits(anyString())
 
         Mockito.doAnswer {
             "feature1"

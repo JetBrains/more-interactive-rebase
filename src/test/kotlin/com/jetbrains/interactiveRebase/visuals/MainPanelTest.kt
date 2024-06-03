@@ -63,7 +63,7 @@ class MainPanelTest : BasePlatformTestCase() {
 
     fun testUpdateMainComponentThread() {
         val mockService = mock(ModelService::class.java)
-        doNothing().`when`(mockService).fetchBranchInfo()
+        doNothing().`when`(mockService).fetchGraphInfo()
 
         assertEquals(1, mainPanel.componentCount)
         assertEquals(OnePixelSplitter::class.java, mainPanel.getComponent(0).javaClass)

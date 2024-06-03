@@ -10,10 +10,15 @@ import git4idea.commands.GitCommandResult
 import git4idea.commands.GitLineHandler
 
 @Service(Service.Level.PROJECT)
-class BranchService(private val project: Project, private val gitUtils: IRGitUtils) {
-//    private val commitService: CommitService = CommitService(project)
+class BranchService(private val project: Project) {
+    private var gitUtils: IRGitUtils = IRGitUtils(project)
 
-    constructor(project: Project) : this(project, IRGitUtils(project))
+    /**
+     * Secondary constructor for testing
+     */
+    constructor(project: Project, gitUtils: IRGitUtils) : this(project) {
+        this.gitUtils = gitUtils
+    }
 
     /**
      * Gets the primary branch name in the project. Return main or master
