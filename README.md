@@ -15,13 +15,13 @@ graphical visualization of the commit history and the changes you want to perfor
 ## 📋 Table of Contents
 
 1. ✨ [Features](#-features)
-2. ⚙️ [Installation](#-installation)
+2. ⚙ [Installation](#-installation)
 3.  ⚡ [Quick Start](#-quick-start)
 4. 🔗 [Dependencies](#-dependencies)
 5. 🤝 [Contributing](#-contributing)
 6. ❓ [Support](#-support)
-7. 🗺️ [Roadmap](#-roadmap)
-8. ✒️ [Authors and Acknowledgement](#-authors-and-acknowledgment)
+7. 🗺 [Roadmap](#-roadmap)
+8. ✒ [Authors and Acknowledgement](#-authors-and-acknowledgment)
 
 
 ## ✨ Features
@@ -34,7 +34,7 @@ A More Interactive Rebase offers the following functionality for a better user e
 
 [//]: # (Add short video here)
 
-## ⚙️ Installation
+## ⚙ Installation
 You can easily get started with setting up the plugin by following these guidelines:
 
 ### Guidelines for Setting up
@@ -146,7 +146,7 @@ If you want to contribute to our project please refer to the
 For any questions and difficulties, please refer to our [Support guide](SUPPORT.md).
 
 
-## 🗺️ Roadmap
+## 🗺 Roadmap
 Since the project is still under development, here you can see the plan for the foreseeable future. You can see
 the whole Roadmap via this [link](https://gitlab.ewi.tudelft.nl/groups/cse2000-software-project/2023-2024/cluster-p/12c/-/roadmap?state=all&sort=start_date_asc&layout=WEEKS&timeframe_range_type=CURRENT_QUARTER&progress=WEIGHT&show_progress=true&show_milestones=true&milestones_type=ALL&show_labels=false).
 Keep in mind that opening it requires access to the repository.
@@ -154,7 +154,7 @@ Keep in mind that opening it requires access to the repository.
 
 ![roadmap.png](Images/Roadmap 27.04.2024.png)
 
-## ✒️ Authors and Acknowledgment
+## ✒ Authors and Acknowledgment
 **Main contributors to the project are the members of our team:**
 * Marina Mădăraş
 * Diego Becerra Merodio
