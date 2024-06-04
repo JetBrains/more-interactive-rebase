@@ -61,8 +61,9 @@ class ModelService(
         branchInfo.addSelectedCommits(commit)
         commit.changes.forEach { change ->
             if (change is FixupCommand || change is SquashCommand) {
-                val combinedCommits = project.service<ActionService>().getCombinedCommits(change)
-                branchInfo.selectedCommits.addAll(combinedCommits)
+                project.service<ActionService>().getCombinedCommits(change).forEach{
+                    branchInfo.addSelectedCommits(it)
+                }
             }
         }
     }

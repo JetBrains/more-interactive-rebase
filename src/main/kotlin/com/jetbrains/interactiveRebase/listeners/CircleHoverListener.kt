@@ -87,7 +87,9 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
         modelService.getCurrentCommits()
             .subList(Integer.min(selectedIndex, commitIndex), Integer.max(selectedIndex + 1, commitIndex + 1))
             .forEach {
-                modelService.addToSelectedCommits(it)
+                if(it != selectedCommit){
+                    modelService.addToSelectedCommits(it)
+                }
             }
     }
 
