@@ -35,8 +35,6 @@ class GraphService(private val project: Project) {
         updateBranchInfo(newBranch, includeBranchingCommit = true)
         graphInfo.addedBranch = newBranch
 
-        println("updated added in graphInfo it is ${graphInfo.addedBranch} new branch is $newBranch")
-
         // update the checked-out branch using the added branch as reference
         commitService.referenceBranchName = addedBranch
         updateBranchInfo(graphInfo.mainBranch)
