@@ -86,6 +86,34 @@ class BranchInfo(
         listeners.forEach { it.onCurrentCommitsChange(currentCommits) }
     }
 
+    override fun toString(): String {
+        return "BranchInfo(name='$name', initialCommits=$initialCommits, selectedCommits=$selectedCommits)"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as BranchInfo
+
+        if (name != other.name) return false
+        if (initialCommits != other.initialCommits) return false
+        if (selectedCommits != other.selectedCommits) return false
+        if (isCheckedOut != other.isCheckedOut) return false
+        if (currentCommits != other.currentCommits) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + initialCommits.hashCode()
+        result = 31 * result + selectedCommits.hashCode()
+        result = 31 * result + isCheckedOut.hashCode()
+        result = 31 * result + currentCommits.hashCode()
+        return result
+    }
+
     /**
      * Provides a listener
      * for changes in this class

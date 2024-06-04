@@ -1,6 +1,7 @@
 package com.jetbrains.interactiveRebase.services
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
@@ -11,12 +12,21 @@ import git4idea.GitCommit
 import git4idea.repo.GitRepository
 
 @Service(Service.Level.PROJECT)
-class CommitService(private val project: Project, private val gitUtils: IRGitUtils, private val branchSer: BranchService) {
+class CommitService(private val project: Project) {
     /**
-     * Usually the primary branch master or main, can be configured
+     * Usually the primary branch master or main, can be configured when adding a new branch
      */
-    var referenceBranchName = "main"
-    constructor(project: Project) : this(project, IRGitUtils(project), BranchService(project))
+    var referenceBranchName: String = ""
+    private var gitUtils: IRGitUtils = IRGitUtils(project)
+    private var branchSer = project.service<BranchService>()
+
+    /**
+     * Secondary constructor for testing
+     */
+    constructor(project: Project, gitUtils: IRGitUtils, branchSer: BranchService) : this(project) {
+        this.gitUtils = gitUtils
+        this.branchSer = branchSer
+    }
 
     /**
      * Finds the current branch and returns all the commits that are on the current branch and not on the reference branch.
@@ -24,13 +34,14 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
      * Reference branch is dynamically set to master or main according to the repo, if none or both exist,
      * we disregard the reference branch
      */
-    fun getCommits(): List<GitCommit> {
-        println(branchSer.getBranchesExceptCheckedOut())
+    fun getCommits(branchName: String): List<GitCommit> {
         val repo = gitUtils.getRepository()
-        val branchName = repo.currentBranchName ?: throw IRInaccessibleException("Branch cannot be accessed")
         val consumer = GeneralCommitConsumer()
 
-        referenceBranchName = branchSer.getDefaultReferenceBranchName() ?: branchName
+        // if the reference branch is not set for the branch
+        if (referenceBranchName.isEmpty()) {
+            referenceBranchName = branchSer.getDefaultReferenceBranchName() ?: branchName
+        }
         return getDisplayableCommitsOfBranch(branchName, repo, consumer)
     }
 
@@ -43,8 +54,8 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
         repo: GitRepository,
         consumer: CommitConsumer,
     ): List<GitCommit> {
-        if (branchName == referenceBranchName) {
-            gitUtils.getCommitsOfBranch(repo, consumer)
+        if (referenceBranchName == branchName) {
+            gitUtils.getCommitsOfBranch(repo, consumer, branchName)
         } else {
             gitUtils.getCommitDifferenceBetweenBranches(branchName, referenceBranchName, repo, consumer)
             handleMergedBranch(consumer, branchName, repo)
@@ -62,7 +73,7 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
         repo: GitRepository,
     ) {
         if (consumer.commits.isEmpty() && branchSer.isBranchMerged(branchName)) {
-            gitUtils.getCommitsOfBranch(repo, consumer)
+            gitUtils.getCommitsOfBranch(repo, consumer, branchName)
         }
     }
 
@@ -73,6 +84,18 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
         return commits.map { commit ->
             CommitInfo(commit, project, mutableListOf())
         }
+    }
+
+    /**
+     * Given a hash, returns the corresponding GitCommit, used to retrieve merging commit
+     */
+    fun turnHashToCommit(hash: String): GitCommit {
+        val consumer = GeneralCommitConsumer()
+        gitUtils.collectACommit(gitUtils.getRepository(), hash, consumer)
+        if (consumer.commits.isEmpty()) {
+            throw IRInaccessibleException("Commit hash not found")
+        }
+        return consumer.commits[0]
     }
 
     /**

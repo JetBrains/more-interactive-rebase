@@ -10,6 +10,7 @@ import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.assertj.core.api.Assertions.assertThat
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
@@ -33,7 +34,7 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
 
         doAnswer {
             listOf(commit1.commit)
-        }.`when`(commitService).getCommits()
+        }.`when`(commitService).getCommits(anyString())
 
         doAnswer {
             "feature1"

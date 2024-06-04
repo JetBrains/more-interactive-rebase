@@ -6,6 +6,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.IRGitRefreshListener
@@ -21,7 +22,9 @@ class ModelService(
 ) : Disposable {
     constructor(project: Project, coroutineScope: CoroutineScope) : this(project, coroutineScope, project.service<CommitService>())
 
-    val branchInfo = BranchInfo()
+    val branchInfo = BranchInfo(isCheckedOut = true)
+    val graphInfo = GraphInfo(branchInfo)
+    private val graphService = project.service<GraphService>()
 
     internal val invoker = project.service<RebaseInvoker>()
 
@@ -31,7 +34,7 @@ class ModelService(
      * to the GitRefreshListener
      */
     init {
-        fetchBranchInfo()
+        fetchGraphInfo()
         project.messageBus.connect(this).subscribe(GitRefreshListener.TOPIC, IRGitRefreshListener(project))
     }
 
@@ -75,37 +78,23 @@ class ModelService(
     }
 
     /**
-     * Fetches the branch
+     * Fetches and updates the graph
      * info inside a
      * coroutine
      */
-    fun fetchBranchInfo() {
+    fun fetchGraphInfo() {
         coroutineScope.launch {
-            val name = commitService.getBranchName()
-            val commits = commitService.getCommitInfoForBranch(commitService.getCommits())
-            if (branchChange(name, commits)) {
-                branchInfo.setName(name)
-                branchInfo.setCommits(commits)
-                branchInfo.clearSelectedCommits()
-                invoker.branchInfo = branchInfo
-                // invoker.createModel()
-            }
+            graphService.updateGraphInfo(graphInfo)
         }
     }
 
     /**
-     * Checks if the fetched
-     * branch is equal
-     * to the current one
+     * Populates the added branch field in the graph info with the given branch
      */
-    private fun branchChange(
-        newName: String,
-        newCommits: List<CommitInfo>,
-    ): Boolean {
-        val commitsIds = branchInfo.initialCommits.map { it.commit.id }.toSet()
-        val newCommitsIds = newCommits.map { it.commit.id }.toSet()
-
-        return branchInfo.name != newName || commitsIds != newCommitsIds
+    fun addBranchToGraphInfo(addedBranch: String) {
+        coroutineScope.launch {
+            graphService.addBranch(graphInfo, addedBranch)
+        }
     }
 
     /**

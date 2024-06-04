@@ -21,8 +21,9 @@ class IRGitUtils(private val project: Project) {
      * Gets the GitRepository given the project
      */
     fun getRepository(): GitRepository {
-        return GitUtil.getRepositoryManager(project).getRepositoryForRoot(getRoot())
-            ?: throw IRInaccessibleException("Repository cannot be accessed")
+        return GitUtil.getRepositoryManager(
+            project,
+        ).getRepositoryForRoot(getRoot()) ?: throw IRInaccessibleException("Repository cannot be accessed")
     }
 
     /**
@@ -45,13 +46,25 @@ class IRGitUtils(private val project: Project) {
     }
 
     /**
+     * Given a hash, loads the commit as a GitCommit object
+     */
+    fun collectACommit(
+        repo: GitRepository,
+        hash: String,
+        consumer: Consumer<GitCommit>,
+    ) {
+        return GitHistoryUtils.loadDetails(project, repo.root, consumer, "-1", hash)
+    }
+
+    /**
      * Gets the commits of a branch regardless of a reference branch. Consumed by the given consumer
      */
     fun getCommitsOfBranch(
         repo: GitRepository,
         consumer: Consumer<GitCommit>,
+        branchName: String,
     ) {
-        GitHistoryUtils.loadDetails(project, repo.root, consumer)
+        GitHistoryUtils.loadDetails(project, repo.root, consumer, branchName)
     }
 
     /**

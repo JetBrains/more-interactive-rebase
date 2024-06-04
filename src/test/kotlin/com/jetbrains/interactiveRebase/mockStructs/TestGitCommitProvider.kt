@@ -12,12 +12,28 @@ import git4idea.history.GitCommitRequirements
 class TestGitCommitProvider(private val project: Project) {
     fun createCommit(subject: String): GitCommit {
         val author = MockVcsUserRegistry().users.first()
-        val hash = MockHash()
+        val hash = MockHash("example-hash")
         val root = MockVirtualFile("mock name")
         val message = "example long commit message"
         val commitRequirements = GitCommitRequirements()
         return GitCommit(
             project, hash, listOf(), 1000L, root, subject, author,
+            message, author, 1000L, listOf(), commitRequirements,
+        )
+    }
+
+    fun createCommitWithParent(
+        thisCommit: String,
+        vararg parents: String,
+    ): GitCommit {
+        val author = MockVcsUserRegistry().users.first()
+        val hash = MockHash("example-hash")
+        val root = MockVirtualFile("mock name")
+        val message = "example long commit message"
+        val commitRequirements = GitCommitRequirements()
+        val parentsList = parents.map { MockHash(it) }
+        return GitCommit(
+            project, hash, parentsList, 1000L, root, thisCommit, author,
             message, author, 1000L, listOf(), commitRequirements,
         )
     }
@@ -38,13 +54,13 @@ class TestGitCommitProvider(private val project: Project) {
         }
     }
 
-    private class MockHash : Hash {
+    class MockHash(private val string: String) : Hash {
         override fun asString(): String {
-            return "exampleHash"
+            return string
         }
 
         override fun toShortString(): String {
-            return "exampleShortHash"
+            return string
         }
     }
 }
