@@ -39,11 +39,37 @@ class BranchService(private val project: Project, private val gitUtils: IRGitUti
     fun isBranchMerged(branchName: String): Boolean {
         val params = listOf("--merged")
         val result = executeGitBranchCommand(params)
-        val branches: List<String> = result.getOutputOrThrow().split("\n")
+//        val branches: List<String> = result.getOutputOrThrow().split("\n")
+//
+//        val mergedBranches: List<String> = branches.map { it.trimMargin("*").trim() }
 
-        val mergedBranches: List<String> = branches.map { it.trimMargin("*").trim() }
-
+        val mergedBranches: List<String> = formatBranchList(result.getOutputOrThrow())
         return mergedBranches.contains(branchName)
+    }
+
+    /**
+     * Given the string output of terminal command, reformats to a list of branches
+     */
+    private fun formatBranchList(result: String): List<String> {
+        val branches: List<String> = result.split("\n")
+        return branches.map { it.trimMargin("*").trim() }.filter { it.isNotEmpty() }
+    }
+
+    /**
+     * Gets the list of local branches including the checked-out branch
+     */
+    fun getBranches(): List<String> {
+        val result: GitCommandResult = executeGitBranchCommand(listOf())
+        return formatBranchList(result.getOutputOrThrow())
+    }
+
+    /**
+     * Gets the local branch names except the checked out one
+     */
+    fun getBranchesExceptCheckedOut(): List<String> {
+        val repo = gitUtils.getRepository()
+        val branchName = repo.currentBranchName ?: throw IRInaccessibleException("Branch cannot be accessed")
+        return getBranches().filter { it != branchName }
     }
 
     /**

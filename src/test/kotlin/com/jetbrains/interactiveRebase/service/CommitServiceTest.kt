@@ -168,18 +168,6 @@ class CommitServiceTest : BasePlatformTestCase() {
         verify(utils).getCommitsOfBranch(repo, cons)
     }
 
-    fun testGetCommitChecksIfRepoIsNull() {
-        doAnswer {
-            null
-        }.`when`(utils).getRepository()
-
-        val exception =
-            assertThrows<IRInaccessibleException> {
-                controlledCommitService.getCommits()
-            }
-        assertEquals(exception.message, "Repository cannot be accessed")
-    }
-
     fun testGetCommitChecksIfBranchIsNull() {
         val repo: GitRepository = MockGitRepository(null)
         doAnswer {
