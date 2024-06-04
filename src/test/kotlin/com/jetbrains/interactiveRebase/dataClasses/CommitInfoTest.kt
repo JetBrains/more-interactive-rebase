@@ -65,7 +65,7 @@ class CommitInfoTest : BasePlatformTestCase() {
     }
 
     fun testSetDraggedTo() {
-        commitInfo.setDraggedTo(false)
+        commitInfo.isDragged = false
         assertFalse(commitInfo.isDragged)
     }
 
