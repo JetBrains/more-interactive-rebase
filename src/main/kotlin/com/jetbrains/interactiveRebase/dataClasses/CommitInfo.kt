@@ -79,8 +79,7 @@ data class CommitInfo(
     }
 
     /**
-     * Shows commitInfo in a human
-     * readable way
+     * Shows commitInfo in a human-readable way
      */
     override fun toString(): String {
         return "CommitInfo(commit=${commit.subject})"
