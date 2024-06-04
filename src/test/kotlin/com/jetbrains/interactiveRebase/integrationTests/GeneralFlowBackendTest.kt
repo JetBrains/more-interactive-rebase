@@ -201,7 +201,7 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
 
                 // here we pretend that we are a user inputting the data new commit message
                 // in the GUI, by getting the listener and setting the text field to the new message
-                val labeledBranchPanel = project.service<ActionService>().getLabeledBranchPanel()
+                val labeledBranchPanel = project.service<ActionService>().mainPanel.branchPanel
                 val textField = labeledBranchPanel.getTextField(1)
 
                 val listener = textField.keyListeners[0] as TextFieldListener
@@ -266,7 +266,7 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
 
                 // here we pretend that we are a user inputting the data new commit message
                 // in the GUI, by getting the listener and setting the text field to the new message
-                val labeledBranchPanel = project.service<ActionService>().getLabeledBranchPanel()
+                val labeledBranchPanel = project.service<ActionService>().mainPanel.branchPanel
                 val textField = labeledBranchPanel.getTextField(1)
 
                 val listener = textField.keyListeners[0] as TextFieldListener
