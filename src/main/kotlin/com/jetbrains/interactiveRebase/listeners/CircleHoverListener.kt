@@ -20,7 +20,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
 
     override fun mouseEntered(e: MouseEvent?) {
         if (e != null && circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
-            circlePanel.commit.setHoveredTo(true)
+            circlePanel.commit.isHovered = true
             circlePanel.repaint()
         }
     }
@@ -31,7 +31,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
 
     override fun mouseExited(e: MouseEvent?) {
         if (e != null && !circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
-            circlePanel.commit.setHoveredTo(false)
+            circlePanel.commit.isHovered = false
             circlePanel.repaint()
         }
     }

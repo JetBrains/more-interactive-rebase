@@ -60,7 +60,7 @@ class BranchInfo(
      * listeners
      */
     internal fun clearSelectedCommits() {
-        selectedCommits.forEach { it.setSelectedTo(false) }
+        selectedCommits.forEach { it.isSelected = false }
         selectedCommits.clear()
         listeners.forEach { it.onSelectedCommitChange(selectedCommits) }
     }

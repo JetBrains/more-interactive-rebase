@@ -141,6 +141,7 @@ class LabeledBranchPanel(
 
         val circles = branchPanel.circles
         messages.clear()
+        commitLabels.clear()
         for ((i, circle) in circles.withIndex()) {
             val commitLabel = generateCommitLabel(i, circle)
             val wrappedLabel = wrapLabelWithTextField(commitLabel, branch.currentCommits[i])
@@ -279,7 +280,9 @@ class LabeledBranchPanel(
         textField.background = textField.background.darker()
         textWrapper.isVisible = true
         labelWrapper.isVisible = false
-
+        SwingUtilities.invokeLater {
+            textField.requestFocusInWindow()
+        }
         listenForClickOutside(textField)
     }
 
@@ -389,6 +392,13 @@ class LabeledBranchPanel(
         labelPanelWrapper.removeAll()
         addComponents()
         revalidate()
+    }
+
+    fun getTextField(i: Int): RoundedTextField {
+        val message = messages[i]
+        val textWrapper = message.components[1] as JBPanel<*>
+        val textField = textWrapper.components[0] as RoundedTextField
+        return textField
     }
 
     override fun paintComponent(g: Graphics?) {

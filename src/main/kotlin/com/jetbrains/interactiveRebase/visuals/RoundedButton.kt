@@ -7,15 +7,19 @@ import java.awt.RenderingHints
 import java.awt.geom.RoundRectangle2D
 import javax.swing.JButton
 
-class RoundedButton(private val text: String, private val background: Color, private val foreground: Color) : JButton() {
-    private var arcWidth = 12
-    private var arcHeight = 12
+class RoundedButton(
+    private val text: String = "",
+    var backgroundColor: Color = Palette.TRANSPARENT,
+    private val foreground: Color = Palette.TRANSPARENT,
+) : JButton() {
+    internal var arcWidth = 12
+    internal var arcHeight = 12
 
     public override fun paintComponent(g: Graphics) {
         isContentAreaFilled = false
         val g2 = g as Graphics2D
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        g2.color = background
+        g2.color = backgroundColor
         g2.fill(
             RoundRectangle2D.Double(
                 1.0,
@@ -29,10 +33,7 @@ class RoundedButton(private val text: String, private val background: Color, pri
         super.paintComponent(g2)
         g2.dispose()
         setText(text)
-        setBackground(background)
+        setBackground(backgroundColor)
         setForeground(foreground)
-    }
-
-    override fun paintBorder(g: Graphics?) {
     }
 }

@@ -36,22 +36,6 @@ data class CommitInfo(
     }
 
     /**
-     * Sets isSelected to
-     * passed value
-     */
-    fun setSelectedTo(value: Boolean) {
-        isSelected = value
-    }
-
-    /**
-     * Sets isHovered to
-     * passed value
-     */
-    fun setHoveredTo(value: Boolean) {
-        isHovered = value
-    }
-
-    /**
      * Sets isTextFieldEnabled to
      * passed value and notifies
      * subscribers
@@ -67,13 +51,6 @@ data class CommitInfo(
     fun setReorderedTo(value: Boolean) {
         isReordered = value
         listeners.forEach { it.onCommitChange() }
-    }
-
-    /**
-     * Sets whether circle is dragged.
-     */
-    fun setDraggedTo(value: Boolean) {
-        isDragged = value
     }
 
     /**
@@ -102,8 +79,7 @@ data class CommitInfo(
     }
 
     /**
-     * Shows commitInfo in a human
-     * readable way
+     * Shows commitInfo in a human-readable way
      */
     override fun toString(): String {
         return "CommitInfo(commit=${commit.subject})"

@@ -13,7 +13,7 @@ import java.awt.RenderingHints
 import javax.swing.JTextField
 import javax.swing.border.AbstractBorder
 
-class RoundedTextField(private val commitInfo: CommitInfo, inputText: String, private val borderColor: JBColor) : JTextField(inputText) {
+class RoundedTextField(private val commitInfo: CommitInfo, inputText: String, borderColor: JBColor) : JTextField(inputText) {
     private val modelService = commitInfo.project.service<ModelService>()
 
     init {
@@ -30,7 +30,7 @@ class RoundedTextField(private val commitInfo: CommitInfo, inputText: String, pr
      */
     fun exitTextBox() {
         commitInfo.setTextFieldEnabledTo(false)
-        commitInfo.setSelectedTo(false)
+        commitInfo.isSelected = false
         modelService.branchInfo.clearSelectedCommits()
     }
 }

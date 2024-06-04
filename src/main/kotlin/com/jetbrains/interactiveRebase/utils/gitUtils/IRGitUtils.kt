@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.Consumer
+import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import git4idea.GitCommit
 import git4idea.GitUtil
 import git4idea.commands.Git
@@ -19,8 +20,9 @@ class IRGitUtils(private val project: Project) {
     /**
      * Gets the GitRepository given the project
      */
-    fun getRepository(): GitRepository? {
+    fun getRepository(): GitRepository {
         return GitUtil.getRepositoryManager(project).getRepositoryForRoot(getRoot())
+            ?: throw IRInaccessibleException("Repository cannot be accessed")
     }
 
     /**

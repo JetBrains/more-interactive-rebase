@@ -33,16 +33,6 @@ class CommitInfoTest : BasePlatformTestCase() {
         verify(listener, times(1)).onCommitChange()
     }
 
-    fun testSetSelectedTo() {
-        commitInfo.setSelectedTo(true)
-        assertTrue(commitInfo.isSelected)
-    }
-
-    fun testSetHoveredTo() {
-        commitInfo.setHoveredTo(true)
-        assertTrue(commitInfo.isHovered)
-    }
-
     fun testSetDoubleClickTo() {
         commitInfo.setTextFieldEnabledTo(true)
         assertTrue(commitInfo.isTextFieldEnabled)
@@ -50,13 +40,13 @@ class CommitInfoTest : BasePlatformTestCase() {
     }
 
     fun testFlipSelected() {
-        commitInfo.setSelectedTo(false)
+        commitInfo.isSelected = false
         commitInfo.flipSelected()
         assertTrue(commitInfo.isSelected)
     }
 
     fun testFlipHovered() {
-        commitInfo.setHoveredTo(false)
+        commitInfo.isHovered = false
         commitInfo.flipHovered()
         assertTrue(commitInfo.isHovered)
     }
@@ -66,5 +56,20 @@ class CommitInfoTest : BasePlatformTestCase() {
         commitInfo.flipDoubleClicked()
         assertTrue(commitInfo.isTextFieldEnabled)
         verify(listener, times(2)).onCommitChange()
+    }
+
+    fun testSetReorderTo() {
+        commitInfo.setReorderedTo(false)
+        assertFalse(commitInfo.isReordered)
+        verify(listener, times(1)).onCommitChange()
+    }
+
+    fun testSetDraggedTo() {
+        commitInfo.isDragged = false
+        assertFalse(commitInfo.isDragged)
+    }
+
+    fun testToString() {
+        assertEquals(commitInfo.toString(), "CommitInfo(commit=tests)")
     }
 }

@@ -14,13 +14,14 @@ graphical visualization of the commit history and the changes you want to perfor
 
 ## 📋 Table of Contents
 
-1. ✨ [Features](#features)
-2. ⚙️ [Installation](#-installation)
-3.  ⚡ [Quick Start](#-quick-start-)
+1. ✨ [Features](#-features)
+2. ⚙ [Installation](#-installation)
+3.  ⚡ [Quick Start](#-quick-start)
 4. 🔗 [Dependencies](#-dependencies)
-5. ❓ [Support](#-support)
-6. 🗺️ [Roadmap](#-roadmap)
-7. ✒️ [Authors and Acknowledgement](#authors-and-acknowledgment)
+5. 🤝 [Contributing](#-contributing)
+6. ❓ [Support](#-support)
+7. 🗺 [Roadmap](#-roadmap)
+8. ✒ [Authors and Acknowledgement](#-authors-and-acknowledgment)
 
 
 ## ✨ Features
@@ -33,7 +34,7 @@ A More Interactive Rebase offers the following functionality for a better user e
 
 [//]: # (Add short video here)
 
-##  ⚙️ Installation
+## ⚙ Installation
 You can easily get started with setting up the plugin by following these guidelines:
 
 ### Guidelines for Setting up
@@ -110,34 +111,42 @@ the oldest selected commit. After squashing, a text field opens for you to rewor
 ### IntelliJ OpenAPI
 In order for our Plugin to interact with the current JetBrains IDEs we are making use of the
 [Intellij Platform API](https://plugins.jetbrains.com/docs/intellij/explore-api.html). This streamlines the process of
-building a Plugin by offering extension points to already existing functionality.
+building a Plugin by offering extension points to already existing functionality. It is the framework on which 
+JetBrains' IDEs are based and provides a Virtual File System as a Component. The UI of this product is built using the
+UI framework of IntelliJ Platform, specifically custom classes that extend the Swing functionality. 
 
 ### git4idea
 To allow interaction with Git functionality, we use the [git4idea](https://plugins.jetbrains.com/plugin/13173-git)
-Plugin as a library.
+Plugin as a library. It provides API for calling the Interactive Rebase of Git. In order to establish
+the connection the folder git4ideaClasses in this project contains some of the git4Idea classes with the
+respective copy right.
 
 ### IntelliJ Community
 Our Plugin is compatible with [IntelliJ Community 2024.1](https://www.jetbrains.com/idea/download/other.html) and newer
-versions.
+versions. 
 ### Gradle
 For managing the dependencies during runtime and testing we use
 [Gradle 8.7](https://docs.gradle.org/8.7/release-notes.html). We have defined tasks for tools such as
 Jacoco and Spotless.
-
-
-
+### Kotlin
+The plugin was developed in Kotlin, used with Java SDK 17 to ensure backwards compatibility. 
+### Swing
+The UI of the plugin was developed with Swing.
+### Unit Testing
+The product is unit tested with the frameworks JUnit 5 and Mockito, and the library AssertJ. All test classes are
+extending the BasePlatformTestCase class of the intelliJ test Framework.
+### Integration Testing
+For system/integration testing the plugin uses
+ 
+## 🤝 Contributing
+If you want to contribute to our project please refer to the
+[Contributing Guide](CONTRIBUTING.md).
 
 ## ❓ Support
-If you are experiencing any difficulties, need help or want to report a bug feel free to contact one
-of our team members through email:
-* Marina Mădăraş - [M.Madaras@student.tudelft.nl](mailto:M.Madaras@student.tudelft.nl)
-* Diego Becerra Merodio - [D.BecerraMerodio@student.tudelft.nl](mailto:D.BecerraMerodio@student.tudelft.nl)
-* Aleksandra Savova - [A.Savova@student.tudelft.nl](mailto:A.Savova@student.tudelft.nl)
-* Ada Turgut - [A.Turgut@student.tudelft.nl](mailto:A.Turgut@student.tudelft.nl)
-* Galya Vergieva -  [G.Vergieva@student.tudelft.nl](mailto:G.Vergieva@student.tudelft.nl)
+For any questions and difficulties, please refer to our [Support guide](SUPPORT.md).
 
 
-## 🗺️ Roadmap
+## 🗺 Roadmap
 Since the project is still under development, here you can see the plan for the foreseeable future. You can see
 the whole Roadmap via this [link](https://gitlab.ewi.tudelft.nl/groups/cse2000-software-project/2023-2024/cluster-p/12c/-/roadmap?state=all&sort=start_date_asc&layout=WEEKS&timeframe_range_type=CURRENT_QUARTER&progress=WEIGHT&show_progress=true&show_milestones=true&milestones_type=ALL&show_labels=false).
 Keep in mind that opening it requires access to the repository.
@@ -145,7 +154,7 @@ Keep in mind that opening it requires access to the repository.
 
 ![roadmap.png](Images/Roadmap 27.04.2024.png)
 
-## ✒️ Authors and acknowledgment
+## ✒ Authors and Acknowledgment
 **Main contributors to the project are the members of our team:**
 * Marina Mădăraş
 * Diego Becerra Merodio

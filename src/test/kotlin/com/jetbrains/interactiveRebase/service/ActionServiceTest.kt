@@ -12,6 +12,7 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.ActionService
@@ -59,11 +60,10 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.invoker.branchInfo = modelService.branchInfo
 
         branchInfo = modelService.branchInfo
-        mainPanel = MainPanel(project, branchInfo, modelService.invoker)
+        mainPanel = MainPanel(project, branchInfo)
         mainPanel.commitInfoPanel = mock(CommitInfoPanel::class.java)
         Mockito.doNothing().`when`(mainPanel.commitInfoPanel).commitsSelected(anyCustom())
         Mockito.doNothing().`when`(mainPanel.commitInfoPanel).repaint()
-
         actionService = ActionService(project, modelService, modelService.invoker)
     }
 
@@ -235,27 +235,53 @@ class ActionServiceTest : BasePlatformTestCase() {
     }
 
     fun testTakeFixupActionMultipleCommits() {
+        modelService.invoker.commands.clear()
         commitInfo2.isSelected = true
 
         modelService.addOrRemoveCommitSelection(commitInfo2)
-
         actionService.takeFixupAction()
-        assertThat(commitInfo1.changes.size).isEqualTo(1)
-        assertThat(commitInfo2.changes.size).isEqualTo(1)
-        assertThat(modelService.invoker.commands[0])
+
+        assertThat(modelService.invoker.commands[0]).isInstanceOf(FixupCommand::class.java)
         val command = commitInfo1.changes[0] as FixupCommand
-        assertThat(command.parentCommit == commitInfo1)
-        assertThat(command.fixupCommits == listOf(commitInfo2))
+        assertThat(command.parentCommit).isEqualTo(commitInfo2)
+        assertThat(command.fixupCommits).isEqualTo(listOf(commitInfo1))
+    }
+
+    fun testTakeSquashActionMultipleCommits() {
+        modelService.invoker.commands.clear()
+        commitInfo2.isSelected = true
+
+        modelService.addOrRemoveCommitSelection(commitInfo2)
+        actionService.takeSquashAction()
+
+        assertThat(modelService.invoker.commands[0]).isInstanceOf(SquashCommand::class.java)
+        val command = commitInfo1.changes[0] as SquashCommand
+        assertThat(command.parentCommit).isEqualTo(commitInfo2)
+        assertThat(command.squashedCommits).isEqualTo(listOf(commitInfo1))
     }
 
     fun testTakeFixupActionSingleCommit() {
+        modelService.invoker.commands.clear()
         actionService.takeFixupAction()
         assertThat(commitInfo1.changes.size).isEqualTo(1)
         assertThat(commitInfo2.changes.size).isEqualTo(1)
-        assertThat(modelService.invoker.commands[0])
+        assertThat(modelService.invoker.commands[0]).isInstanceOf(FixupCommand::class.java)
         val command = commitInfo1.changes[0] as FixupCommand
-        assertThat(command.parentCommit == commitInfo1)
-        assertThat(command.fixupCommits == listOf(commitInfo2))
+        assertThat(command.parentCommit).isEqualTo(commitInfo2)
+        assertThat(command.fixupCommits).isEqualTo(listOf(commitInfo1))
+    }
+
+    fun testTakeSquashActionSingleCommit() {
+        modelService.invoker.commands.clear()
+        actionService.takeSquashAction()
+        assertThat(commitInfo1.changes).hasSize(1)
+        assertThat(commitInfo2.changes).hasSize(1)
+        assertThat(modelService.invoker.commands[0]).isInstanceOf(SquashCommand::class.java)
+        val command = modelService.invoker.commands[0] as SquashCommand
+        assertThat(commitInfo1.changes[0]).isEqualTo(command)
+        assertThat(commitInfo2.changes[0]).isEqualTo(command)
+        assertThat(command.parentCommit).isEqualTo(commitInfo2)
+        assertThat(command.squashedCommits).isEqualTo(listOf(commitInfo1))
     }
 
     fun testClearFixupOnPick() {
@@ -286,6 +312,15 @@ class ActionServiceTest : BasePlatformTestCase() {
 
         actionService.clearSquashOnPick(command1, commitInfo1)
         assertThat(modelService.branchInfo.currentCommits).isEqualTo(listOf(commitInfo2, commitInfo1))
+    }
+
+    fun testCombinedCommits() {
+        val squash = SquashCommand(commitInfo1, mutableListOf(commitInfo2), "new message")
+        assertThat(actionService.getCombinedCommits(squash)).isEqualTo(mutableListOf(commitInfo2))
+        val fixup = FixupCommand(commitInfo2, mutableListOf(commitInfo1))
+        assertThat(actionService.getCombinedCommits(fixup)).isEqualTo(mutableListOf(commitInfo1))
+        val neither = RewordCommand(commitInfo1, "new")
+        assertThat(actionService.getCombinedCommits(neither)).isEmpty()
     }
 
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)

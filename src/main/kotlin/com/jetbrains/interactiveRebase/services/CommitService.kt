@@ -25,9 +25,8 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
      * we disregard the reference branch
      */
     fun getCommits(): List<GitCommit> {
-        val repo =
-            gitUtils.getRepository()
-                ?: throw IRInaccessibleException("Repository cannot be accessed")
+        println(branchSer.getBranchesExceptCheckedOut())
+        val repo = gitUtils.getRepository()
         val branchName = repo.currentBranchName ?: throw IRInaccessibleException("Branch cannot be accessed")
         val consumer = GeneralCommitConsumer()
 
@@ -80,6 +79,6 @@ class CommitService(private val project: Project, private val gitUtils: IRGitUti
      * Gets branchname from utils
      */
     fun getBranchName(): String {
-        return gitUtils.getRepository()?.currentBranchName.toString()
+        return gitUtils.getRepository().currentBranchName.toString()
     }
 }

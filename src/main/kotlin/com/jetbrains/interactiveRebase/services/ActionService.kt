@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.ui.OnePixelSplitter
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
@@ -11,11 +12,14 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
+import com.jetbrains.interactiveRebase.visuals.HeaderPanel
+import com.jetbrains.interactiveRebase.visuals.MainPanel
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
     private var modelService = project.service<ModelService>()
     private var invoker = modelService.invoker
+    internal lateinit var mainPanel: MainPanel
 
     /**
      * Constructor for injection during testing
@@ -208,15 +212,19 @@ class ActionService(project: Project) {
         combineCommits(true)
     }
 
+    /**
+     * Takes fixup action and
+     * creates a fixup command
+     */
     fun takeFixupAction() {
         combineCommits(false)
     }
 
     /**
-     * Takes fixup action and
-     * creates a fixup command
+     * Used for squash or fixup,
+     * combines commits that are involved and turns them into their corresponding commands
      */
-    fun combineCommits(isSquash: Boolean) {
+    private fun combineCommits(isSquash: Boolean) {
         val selectedCommits: MutableList<CommitInfo> = modelService.getSelectedCommits()
         selectedCommits.sortBy { modelService.branchInfo.currentCommits.indexOf(it) }
         var parentCommit = selectedCommits.last()
@@ -235,18 +243,29 @@ class ActionService(project: Project) {
 
         fixupCommits.forEach {
                 commit ->
-            commit.isSelected = false
-            commit.isHovered = false
-            commit.isSquashed = true
-            modelService.branchInfo.currentCommits.remove(commit)
-
-            commit.addChange(command)
+            handleCombinedCommits(commit, command)
         }
 
         parentCommit.addChange(command)
+        parentCommit.isSelected = false
         modelService.branchInfo.clearSelectedCommits()
 
         invoker.addCommand(command)
+    }
+
+    /**
+     * For fixup and squashed commits, handles the flags for commits involved that are not the parent
+     */
+    private fun handleCombinedCommits(
+        commit: CommitInfo,
+        command: RebaseCommand,
+    ) {
+        commit.isSelected = false
+        commit.isHovered = false
+        commit.isSquashed = true
+        modelService.branchInfo.currentCommits.remove(commit)
+
+        commit.addChange(command)
     }
 
     /**
@@ -283,5 +302,22 @@ class ActionService(project: Project) {
             }
         }
         commit.changes.removeAll(changesToRemove)
+    }
+
+    /**
+     * Called to either get the fixupCommits or squashedCommits parameter of a command,
+     * to be used when fixup and squashed command is being used interchangeably
+     */
+    fun getCombinedCommits(change: RebaseCommand): List<CommitInfo> {
+        return when (change) {
+            is FixupCommand -> change.fixupCommits
+            is SquashCommand -> change.squashedCommits
+            else -> emptyList()
+        }
+    }
+
+    fun getHeaderPanel(): HeaderPanel {
+        val wrapper = mainPanel.getComponent(0) as OnePixelSplitter
+        return wrapper.firstComponent as HeaderPanel
     }
 }

@@ -11,12 +11,15 @@ class BranchInfoTest : BasePlatformTestCase() {
     private lateinit var branchInfo: BranchInfo
     private lateinit var listener: BranchInfo.Listener
     private lateinit var commit: CommitInfo
+    private lateinit var commit1: CommitInfo
 
     override fun setUp() {
         super.setUp()
         branchInfo = BranchInfo()
         val commitProvider = TestGitCommitProvider(project)
         commit = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf())
+        commit1 = CommitInfo(commitProvider.createCommit("tests1"), project, mutableListOf())
+
         listener =
             spy(
                 object : BranchInfo.Listener {
@@ -47,5 +50,12 @@ class BranchInfoTest : BasePlatformTestCase() {
         branchInfo.setCommits(listOf(commit))
         assertEquals(listOf(commit), branchInfo.currentCommits)
         verify(listener, times(1)).onCommitChange(listOf(commit))
+    }
+
+    fun testUpdateCurrentCommits() {
+        branchInfo.setCommits(listOf(commit, commit1))
+        branchInfo.updateCurrentCommits(1, 0, commit)
+        assertEquals(branchInfo.currentCommits[0], commit)
+        verify(listener, times(1)).onCurrentCommitsChange(branchInfo.currentCommits)
     }
 }

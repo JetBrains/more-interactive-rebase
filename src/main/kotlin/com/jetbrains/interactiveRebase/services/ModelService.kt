@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.IRGitRefreshListener
 import git4idea.status.GitRefreshListener
 import kotlinx.coroutines.CoroutineScope
@@ -41,11 +42,12 @@ class ModelService(
      */
     fun addOrRemoveCommitSelection(commit: CommitInfo) {
         commit.changes.forEach { change ->
-            if (change is FixupCommand) {
+            if (change is FixupCommand || change is SquashCommand) {
+                val combinedCommits = project.service<ActionService>().getCombinedCommits(change)
                 if (commit.isSelected) {
-                    branchInfo.selectedCommits.addAll(change.fixupCommits)
+                    branchInfo.selectedCommits.addAll(combinedCommits)
                 } else {
-                    branchInfo.selectedCommits.removeAll(change.fixupCommits)
+                    branchInfo.selectedCommits.removeAll(combinedCommits)
                 }
             }
         }
