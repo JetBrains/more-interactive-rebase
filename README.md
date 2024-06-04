@@ -34,7 +34,7 @@ A More Interactive Rebase offers the following functionality for a better user e
 
 [//]: # (Add short video here)
 
-##  ⚙️ Installation
+## ⚙️ Installation
 You can easily get started with setting up the plugin by following these guidelines:
 
 ### Guidelines for Setting up
@@ -154,7 +154,7 @@ Keep in mind that opening it requires access to the repository.
 
 ![roadmap.png](Images/Roadmap 27.04.2024.png)
 
-## ✒️ Authors and acknowledgment
+## ✒️ Authors and Acknowledgment
 **Main contributors to the project are the members of our team:**
 * Marina Mădăraş
 * Diego Becerra Merodio
