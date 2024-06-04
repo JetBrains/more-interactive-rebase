@@ -16,7 +16,7 @@ import javax.swing.JComponent
 class HeaderPanel(private val project: Project, private val actionManager: ActionManager = ActionManager.getInstance()) :
     JBPanel<JBPanel<*>>() {
     private val gitActionsPanel = JBPanel<JBPanel<*>>()
-    private val changeActionsPanel = JBPanel<JBPanel<*>>()
+    val changeActionsPanel = JBPanel<JBPanel<*>>()
     private val invoker = project.service<RebaseInvoker>()
 
     init {

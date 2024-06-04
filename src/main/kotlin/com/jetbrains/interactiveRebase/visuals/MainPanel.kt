@@ -21,7 +21,7 @@ class MainPanel(
 ) :
     JBPanel<JBPanel<*>>(), Disposable {
     internal var commitInfoPanel = CommitInfoPanel(project)
-    private var contentPanel: JBScrollPane
+    internal var contentPanel: JBScrollPane
     internal var branchPanel: LabeledBranchPanel
     internal var sidePanel: JBScrollPane
     private val branchInfoListener: BranchInfo.Listener

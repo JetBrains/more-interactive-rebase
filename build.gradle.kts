@@ -35,6 +35,14 @@ version = properties("pluginVersion").get()
 repositories {
     mavenCentral()
     gradlePluginPortal()
+
+    maven ("https://oss.sonatype.org/content/repositories/snapshots/" )
+    maven("https://www.jetbrains.com/intellij-repository/releases/")
+    maven("https://cache-redirector.jetbrains.com/intellij-dependencies")
+    maven("https://cache-redirector.jetbrains.com/download.jetbrains.com/teamcity-repository")
+    maven("https://cache-redirector.jetbrains.com/download-pgp-verifier")
+    maven("https://cache-redirector.jetbrains.com/packages.jetbrains.team/maven/p/grazi/grazie-platform-public")
+    maven("https://maven.pkg.jetbrains.space/public/p/ktor/eap/")
 }
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
@@ -46,7 +54,10 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.23.1")
     testImplementation("org.assertj:assertj-swing-junit:3.9.2")
     //testImplementation("junit:junit:4.12")
-
+    testImplementation("com.jetbrains.intellij.platform:vcs-test-framework:241.15989.150")
+    testImplementation("com.jetbrains.intellij.platform:test-framework:241.15989.150")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:2.0.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }
 
 kotlin {
