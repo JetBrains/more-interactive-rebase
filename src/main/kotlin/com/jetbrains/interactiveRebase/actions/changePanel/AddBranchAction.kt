@@ -2,12 +2,12 @@ package com.jetbrains.interactiveRebase.actions.changePanel
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
+import com.intellij.openapi.project.DumbAwareAction
 import com.jetbrains.interactiveRebase.services.ActionService
 
-class AddBranchAction : AnAction("Add Branch", "Add another branch to the view", AllIcons.Actions.AddList) {
+class AddBranchAction : DumbAwareAction("Add Branch", "Add another branch to the view", AllIcons.Actions.AddList) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val mainPanel = project.service<ActionService>().mainPanel

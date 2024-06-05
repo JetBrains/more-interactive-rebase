@@ -35,6 +35,7 @@ class ModelService(
      */
     init {
         fetchGraphInfo()
+        populateLocalBranches()
         project.messageBus.connect(this).subscribe(GitRefreshListener.TOPIC, IRGitRefreshListener(project))
     }
 
@@ -85,6 +86,16 @@ class ModelService(
     fun fetchGraphInfo() {
         coroutineScope.launch {
             graphService.updateGraphInfo(graphInfo)
+        }
+    }
+
+    /**
+     * Populates the GraphInfo field in order to be able to display the side panel of local branches
+     */
+    private fun populateLocalBranches() {
+        val branchService = project.service<BranchService>()
+        coroutineScope.launch {
+            graphInfo.branchList = branchService.getBranchesExceptCheckedOut().toMutableList()
         }
     }
 

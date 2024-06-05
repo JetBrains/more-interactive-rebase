@@ -114,7 +114,7 @@ class MainPanel(
     fun createSidePanel(): JBScrollPane {
         val scrollable = JBScrollPane()
 
-        val sidePanel = SidePanel()
+        val sidePanel = SidePanel(project)
         scrollable.setViewportView(sidePanel)
         scrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
         scrollable.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED)
