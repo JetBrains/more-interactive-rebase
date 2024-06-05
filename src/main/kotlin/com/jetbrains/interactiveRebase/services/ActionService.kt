@@ -316,6 +316,35 @@ class ActionService(project: Project) {
         }
     }
 
+    fun undoLastAction(){
+        val command = invoker.commands.removeLast()
+        invoker.undoneCommands.add(command)
+
+        val commitToBeUndone = command.commitOfCommand()
+        if(command is ReorderCommand)
+            undoReorder(commitToBeUndone, command)
+        commitToBeUndone.removeChange(command)
+    }
+
+    fun redoLastAction(){
+        val command = invoker.undoneCommands.removeLast()
+        invoker.commands.add(command)
+        val commitToBeRedone = command.commitOfCommand()
+        commitToBeRedone.addChange(command)
+        if(command is ReorderCommand)
+            redoReorder(commitToBeRedone, command)
+    }
+
+    internal fun undoReorder(commit: CommitInfo, command: ReorderCommand){
+        commit.setReorderedTo(false)
+        mainPanel.branchPanel.branch.updateCurrentCommits(command.newIndex, command.oldIndex, commit)
+    }
+
+    internal fun redoReorder(commit: CommitInfo, command: ReorderCommand){
+        commit.setReorderedTo(true)
+        mainPanel.branchPanel.branch.updateCurrentCommits(command.oldIndex, command.newIndex, commit)
+    }
+
     fun getHeaderPanel(): HeaderPanel {
         val wrapper = mainPanel.getComponent(0) as OnePixelSplitter
         return wrapper.firstComponent as HeaderPanel

@@ -36,6 +36,16 @@ data class CommitInfo(
     }
 
     /**
+     * Removes a change to the
+     * list of changes of the
+     * commit
+     */
+    fun removeChange(change: RebaseCommand) {
+        changes.remove(change)
+        listeners.forEach { it.onCommitChange() }
+    }
+
+    /**
      * Sets isTextFieldEnabled to
      * passed value and notifies
      * subscribers

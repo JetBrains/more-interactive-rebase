@@ -6,7 +6,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import java.awt.Point
@@ -140,6 +142,25 @@ class CircleDragAndDropListener(
                 parent.branch.updateCurrentCommits(initialIndex, currentIndex, commit)
             }
         }
+    }
+
+    /**
+     * Marks a commit as a reordered by
+     * 1. sets the isReordered flag to true
+     * 2. adds a ReorderCommand
+     * to the visual changes applied to the commit
+     * 3. adds the Reorder Command to the Invoker
+     * that holds an overview of all staged changes.
+     */
+    internal fun markCommitAsReordered() {
+        commit.setReorderedTo(true)
+        val command =
+            ReorderCommand(commit,
+                initialIndex,
+                currentIndex,
+            )
+        commit.addChange(command)
+        project.service<RebaseInvoker>().addCommand(command)
     }
 
     /**

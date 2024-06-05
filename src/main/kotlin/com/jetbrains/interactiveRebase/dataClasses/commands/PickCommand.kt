@@ -18,4 +18,8 @@ data class PickCommand(var commit: CommitInfo) : RebaseCommand() {
         branchInfo: BranchInfo,
     ) {
     }
+
+    override fun commitOfCommand(): CommitInfo {
+        return commit
+    }
 }

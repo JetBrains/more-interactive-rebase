@@ -22,6 +22,7 @@ class RebaseInvoker(val project: Project) {
      * that will be executed, once the rebase is initiated.
      */
     var commands = mutableListOf<RebaseCommand>()
+    var undoneCommands = mutableListOf<RebaseCommand>()
 
     /**
      * Creates a git model for the rebase, from the
