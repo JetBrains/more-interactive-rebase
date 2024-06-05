@@ -55,9 +55,13 @@ class ActionService(project: Project) {
 
     /**
      * Enables the Drop button
+     * depending on the number of selected commits
+     * and the state of the branch.
+     * Commits from the added branch cannot be dropped.
      */
     fun checkDrop(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
+                modelService.branchInfo.isEnabled &&
             modelService.getSelectedCommits().none { commit ->
                 commit.changes.any { change -> change is DropCommand }
             }
@@ -65,19 +69,27 @@ class ActionService(project: Project) {
 
     /**
      * Enables reword button
+     * depending on the number of selected commits
+     * and the state of the branch.
+     * Commits from the added branch cannot be reworded.
      */
     fun checkReword(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.getActualSelectedCommitsSize() == 1 &&
-            modelService.getSelectedCommits().none { commit ->
+                modelService.branchInfo.isEnabled &&
+                modelService.getSelectedCommits().none { commit ->
                 commit.changes.any { change -> change is DropCommand }
             }
     }
 
     /**
      * Enables stop-to-edit button
+     * depending on the number of selected commits
+     * and the state of the branch.
+     * Commits from the added branch cannot be edited.
      */
     fun checkStopToEdit(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
+                modelService.branchInfo.isEnabled &&
             modelService.getSelectedCommits().none { commit ->
                 commit.changes.any { change -> change is DropCommand }
             }
@@ -85,9 +97,13 @@ class ActionService(project: Project) {
 
     /**
      * Enables fixup or squash button
+     * depending on the number of selected commits
+     * and the state of the branch.
+     * Commits from the added branch cannot be squashed.
      */
     fun checkFixupOrSquash(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
+                modelService.branchInfo.isEnabled &&
             !(
                 modelService.branchInfo.selectedCommits.size==1 &&
                     invoker.branchInfo.currentCommits.reversed()
@@ -100,9 +116,14 @@ class ActionService(project: Project) {
 
     /**
      * Enables pick button
+     * depending on the number of selected commits
+     * and the state of the branch.
+     * Commits from the added branch cannot be picked.
      */
     fun checkPick(e: AnActionEvent) {
-        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty()
+        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
+                modelService.branchInfo.isEnabled
+
     }
 
     /**

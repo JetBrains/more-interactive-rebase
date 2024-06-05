@@ -24,7 +24,7 @@ class ModelService(
 
     val branchInfo = BranchInfo()
     // TODO: remove?
-    val otherBranchInfo = BranchInfo()
+//    val otherBranchInfo = BranchInfo()
     val graphInfo = GraphInfo(branchInfo)
     private val graphService = project.service<GraphService>()
 
@@ -52,15 +52,24 @@ class ModelService(
                 val combinedCommits = project.service<ActionService>().getCombinedCommits(change)
                 if (commit.isSelected) {
                     branchInfo.selectedCommits.addAll(combinedCommits)
+                    // TODO: remove
+//                    otherBranchInfo.selectedCommits.addAll(combinedCommits)
                 } else {
                     branchInfo.selectedCommits.removeAll(combinedCommits)
+                    // TODO: remove
+//                    otherBranchInfo.selectedCommits.removeAll(combinedCommits)
                 }
             }
         }
         if (commit.isSelected) {
             branchInfo.addSelectedCommits(commit)
+            // TODO: remove
+//            otherBranchInfo.addSelectedCommits(commit)
         } else {
             branchInfo.removeSelectedCommits(commit)
+            // TODO: remove
+//            otherBranchInfo.removeSelectedCommits(commit)
+
         }
     }
 

@@ -28,7 +28,7 @@ class DropCirclePanel(
 
         createCircle(diameter)
         val circleColor = if (commit.isSelected) Palette.GRAY.darker() else Palette.GRAY
-        val borderColor = if (commit.isSelected) Palette.BLUEBORDER.darker() else Palette.BLUEBORDER
+        val borderColor = if (commit.isSelected) Palette.BLUE_BORDER.darker() else Palette.BLUE_BORDER
 
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
         if (commit.isHovered) {

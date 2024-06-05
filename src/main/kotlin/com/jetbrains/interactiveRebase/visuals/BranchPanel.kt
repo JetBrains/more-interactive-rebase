@@ -180,16 +180,6 @@ class BranchPanel(
             x,
             endY,
         )
-
-        // Make line thicker
-//        val shadowOffset = 1
-//        g2d.color = color
-//        g2d.drawLine(
-//            x + diameter / 2 + shadowOffset,
-//            startY + shadowOffset,
-//            x + diameter / 2 + shadowOffset,
-//            glueY + glueHeight + shadowOffset,
-//        )
     }
 
     /**

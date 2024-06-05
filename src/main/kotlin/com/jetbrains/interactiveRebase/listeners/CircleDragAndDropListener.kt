@@ -93,7 +93,7 @@ class CircleDragAndDropListener(
      * 4. handle limited vertical movement (outside parent component)
      */
     override fun mouseDragged(e: MouseEvent) {
-        if (!commit.changes.any { it is DropCommand }) {
+        if (!commit.changes.any { it is DropCommand } && parent.branch.isEnabled) {
             wasDragged = true
             commit.isDragged = true
             val deltaY = e.yOnScreen - mousePosition.y

@@ -63,7 +63,7 @@ class DropCirclePanelTest : BasePlatformTestCase() {
 
         assertEquals(2, colorCaptor.allValues.size)
         colorEquals(colorCaptor.allValues[0], Palette.GRAY.darker().darker())
-        colorEquals(colorCaptor.allValues[1], Palette.BLUEBORDER.darker())
+        colorEquals(colorCaptor.allValues[1], Palette.BLUE_BORDER.darker())
     }
 
     fun testPaintCircleHovered() {
@@ -79,8 +79,8 @@ class DropCirclePanelTest : BasePlatformTestCase() {
 
         assertEquals(3, colorCaptor.allValues.size)
         colorEquals(Palette.GRAY, colorCaptor.allValues[0])
-        colorEquals(Palette.BLUEBORDER, colorCaptor.allValues[1])
-        colorEquals(Palette.BLUEBORDER, colorCaptor.allValues[1])
+        colorEquals(Palette.BLUE_BORDER, colorCaptor.allValues[1])
+        colorEquals(Palette.BLUE_BORDER, colorCaptor.allValues[1])
         colorEquals(JBColor.BLACK, colorCaptor.allValues[2])
     }
 

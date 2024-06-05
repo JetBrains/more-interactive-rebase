@@ -23,8 +23,8 @@ class StopToEditCirclePanel(
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
         createCircle(diameter)
-        val circleColor = if (commit.isSelected) Palette.DARKGRAY.darker() else Palette.JETBRAINSGRAY
-        val borderColor = if (commit.isSelected) Palette.BLUEBORDER.darker() else Palette.DARKBLUE
+        val circleColor = if (commit.isSelected) Palette.DARK_GRAY.darker() else Palette.JETBRAINS_GRAY
+        val borderColor = if (commit.isSelected) Palette.BLUE_BORDER.darker() else Palette.DARK_BLUE
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
 
         if (commit.isHovered) {

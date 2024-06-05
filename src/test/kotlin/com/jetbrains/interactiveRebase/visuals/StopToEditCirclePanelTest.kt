@@ -61,8 +61,8 @@ class StopToEditCirclePanelTest : BasePlatformTestCase() {
         verify(g, times(2)).color = colorCaptor.capture()
 
         assertEquals(2, colorCaptor.allValues.size)
-        colorEquals(colorCaptor.allValues[0], Palette.DARKGRAY.darker().darker())
-        colorEquals(colorCaptor.allValues[1], Palette.BLUEBORDER.darker())
+        colorEquals(colorCaptor.allValues[0], Palette.DARK_GRAY.darker().darker())
+        colorEquals(colorCaptor.allValues[1], Palette.BLUE_BORDER.darker())
     }
 
     fun testPaintCircleHovered() {
@@ -77,8 +77,8 @@ class StopToEditCirclePanelTest : BasePlatformTestCase() {
         verify(g, times(3)).color = colorCaptor.capture()
 
         assertEquals(3, colorCaptor.allValues.size)
-        colorEquals(Palette.JETBRAINSGRAY, colorCaptor.allValues[0])
-        colorEquals(Palette.DARKBLUE, colorCaptor.allValues[1])
+        colorEquals(Palette.JETBRAINS_GRAY, colorCaptor.allValues[0])
+        colorEquals(Palette.DARK_BLUE, colorCaptor.allValues[1])
         colorEquals(JBColor.BLACK, colorCaptor.allValues[2])
     }
 

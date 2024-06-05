@@ -12,14 +12,20 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
 import java.awt.LinearGradientPaint
+import java.awt.RenderingHints
+import java.awt.geom.CubicCurve2D
 import javax.swing.SwingConstants
 
+/**
+ * Draws one or two branches next to another
+ * from their diverging point onward
+ */
 class GraphPanel(
     val project: Project,
     mainBranch: BranchInfo,
     addedBranch: BranchInfo? = null,
     private val mainColor: JBColor = Palette.BLUE,
-    private val addedColor: JBColor = Palette.LIME,
+    private val addedColor: JBColor = Palette.LIME_GREEN,
 ) : JBPanel<JBPanel<*>>() {
     val mainBranchPanel: LabeledBranchPanel =
         LabeledBranchPanel(
@@ -39,6 +45,9 @@ class GraphPanel(
                     addedColor,
                     SwingConstants.LEFT,
                 )
+            // TODO: remove
+//            addedBranchPanel!!.border = BorderFactory.createLineBorder(JBColor.CYAN)
+//            mainBranchPanel.border = BorderFactory.createLineBorder(JBColor.YELLOW)
         }
 
         layout = GridBagLayout()
@@ -46,6 +55,10 @@ class GraphPanel(
         addBranches()
     }
 
+    /**
+     * Adds the two branches (as Labeled Branch Panels)
+     * to the graph panel
+     */
     private fun addBranches() {
         val gbc = GridBagConstraints()
         gbc.gridx = 0
@@ -69,11 +82,19 @@ class GraphPanel(
         add(addedBranchPanel!!, gbc)
     }
 
+    /**
+     * Draws the line from the diverging commit
+     * to the second branch
+     */
     public override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
         val g2d = g as Graphics2D
         g2d.color = Palette.BLUE
         g2d.stroke = BasicStroke(2f)
+        g2d.setRenderingHint(
+            RenderingHints.KEY_ANTIALIASING,
+            RenderingHints.VALUE_ANTIALIAS_ON,
+        )
 
         // Coordinates of the last circle of the main branch
         val (mainCircleCenterX, mainCircleCenterY) = centerCoordinatesOfLastMainCircle()
@@ -90,12 +111,19 @@ class GraphPanel(
                 addedCircleCenterY,
             )
 
-            g2d.drawLine(
-                mainCircleCenterX,
-                mainCircleCenterY,
-                addedCircleCenterX,
-                addedCircleCenterY,
+            val curve = CubicCurve2D.Float(
+                mainCircleCenterX.toFloat(),
+                mainCircleCenterY.toFloat(),
+                mainCircleCenterX.toFloat(),
+                mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 3 / 2,
+                mainCircleCenterX.toFloat(),
+                mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 3 / 2,
+                addedCircleCenterX.toFloat(),
+                addedCircleCenterY.toFloat()
             )
+
+
+            g2d.draw(curve)
         }
     }
 
@@ -119,9 +147,15 @@ class GraphPanel(
     private fun centerCoordinatesOfLastMainCircle(): Pair<Int, Int> {
         val mainLastCircle = mainBranchPanel.branchPanel.circles.last()
         val mainCircleCenterX =
-            mainBranchPanel.x + mainBranchPanel.branchPanel.x + mainLastCircle.x + mainLastCircle.width / 2
+            mainBranchPanel.x +                         // start of the labeled branch panel
+                    mainBranchPanel.branchPanel.x +     // start of the internal branch panel
+                    mainLastCircle.x +                  // start of the circle
+                    mainLastCircle.width / 2            // center of the circle
         val mainCircleCenterY =
-            mainBranchPanel.y + mainBranchPanel.branchPanel.y + mainLastCircle.y + mainLastCircle.height / 2
+            mainBranchPanel.y +                         // start of the labeled branch panel
+                    mainBranchPanel.branchPanel.y +     // start of the internal branch panel
+                    mainLastCircle.y +                  // start of the circle
+                    mainLastCircle.height / 2           // center of the circle
         return Pair(mainCircleCenterX, mainCircleCenterY)
     }
 
