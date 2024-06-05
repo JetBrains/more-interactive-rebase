@@ -59,7 +59,7 @@ class ModelService(
     fun addToSelectedCommits(commit: CommitInfo) {
         commit.isSelected = true
         branchInfo.addSelectedCommits(commit)
-        commit.changes.forEach { change ->
+        commit.getChangesAfterPick().forEach { change ->
             if (change is FixupCommand || change is SquashCommand) {
                 project.service<ActionService>().getCombinedCommits(change).forEach {
                     branchInfo.addSelectedCommits(it)

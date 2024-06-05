@@ -13,7 +13,7 @@ class UndoAction: AnAction("Undo", "Undo the last action", AllIcons.Actions.Undo
     }
 
     override fun update(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible = true
+        e.project?.service<ActionService>()?.checkUndo(e)
     }
     override fun getActionUpdateThread(): ActionUpdateThread {
         return ActionUpdateThread.EDT

@@ -56,7 +56,9 @@ class BranchPanel(
                 branch.currentCommits[i],
             )
 
-        if (commit.changes.any { it is DropCommand }) {
+        val visualChanges = commit.getChangesAfterPick()
+
+        if (visualChanges.any { it is DropCommand }) {
             circle =
                 DropCirclePanel(
                     diameter.toDouble(),
@@ -64,7 +66,7 @@ class BranchPanel(
                     color,
                     branch.currentCommits[i],
                 )
-        } else if (commit.changes.any { it is StopToEditCommand }) {
+        } else if (visualChanges.any { it is StopToEditCommand }) {
             circle =
                 StopToEditCirclePanel(
                     diameter.toDouble(),
@@ -72,7 +74,7 @@ class BranchPanel(
                     color,
                     branch.currentCommits[i],
                 )
-        } else if (commit.changes.any { it is SquashCommand } || commit.changes.any { it is FixupCommand }) {
+        } else if (visualChanges.any { it is SquashCommand } || visualChanges.any { it is FixupCommand }) {
             circle =
                 SquashedCirclePanel(
                     diameter.toDouble(),

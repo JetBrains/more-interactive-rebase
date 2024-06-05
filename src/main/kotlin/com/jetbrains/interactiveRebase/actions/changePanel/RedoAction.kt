@@ -12,7 +12,7 @@ class RedoAction: AnAction("Redo", "Undo the last action", AllIcons.Actions.Redo
         e.project?.service<ActionService>()?.redoLastAction()
     }
     override fun update(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible = true
+        e.project?.service<ActionService>()?.checkRedo(e)
     }
     override fun getActionUpdateThread(): ActionUpdateThread {
         return ActionUpdateThread.EDT

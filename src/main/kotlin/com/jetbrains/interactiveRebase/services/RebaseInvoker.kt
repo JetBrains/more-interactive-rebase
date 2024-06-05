@@ -47,7 +47,7 @@ class RebaseInvoker(val project: Project) {
     fun expandCurrentCommits() {
         val commits = branchInfo.currentCommits.toMutableList()
         for (commitInfo in branchInfo.currentCommits) {
-            for (command in commitInfo.changes) {
+            for (command in commitInfo.getChangesAfterPick()) {
                 if (command is SquashCommand) {
                     val parentCommit = command.parentCommit
                     val parentIndex = commits.indexOfFirst { it == parentCommit }

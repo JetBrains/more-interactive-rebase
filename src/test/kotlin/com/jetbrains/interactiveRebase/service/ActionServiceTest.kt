@@ -189,7 +189,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     fun testPerformPickAction() {
         // setup the commands
         val command1 = SquashCommand(commitInfo1, mutableListOf(commitInfo2), "lol")
-        val command2 = ReorderCommand(1, 2)
+        val command2 = ReorderCommand(commitInfo1,1, 2)
         commitInfo1.addChange(command1)
         commitInfo1.addChange(command2)
         commitInfo1.isSelected = true
@@ -215,7 +215,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     fun testResetAllChangesAction() {
         // setup the commands
         val command1 = DropCommand(commitInfo1)
-        val command2 = ReorderCommand(1, 2)
+        val command2 = ReorderCommand(commitInfo1,1, 2)
         commitInfo1.addChange(command1)
         commitInfo1.addChange(command2)
         commitInfo1.isSelected = true

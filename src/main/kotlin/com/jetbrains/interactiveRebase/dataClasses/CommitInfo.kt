@@ -2,6 +2,7 @@ package com.jetbrains.interactiveRebase.dataClasses
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
+import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import git4idea.GitCommit
 
@@ -86,6 +87,15 @@ data class CommitInfo(
     fun flipDoubleClicked() {
         isTextFieldEnabled = !isTextFieldEnabled
         listeners.forEach { it.onCommitChange() }
+    }
+
+    fun getChangesAfterPick(): List<RebaseCommand> {
+        val indexOfPick = changes.indexOfLast { it is PickCommand }
+        return if (indexOfPick != -1) {
+            changes.subList(indexOfPick, changes.size)
+        } else {
+            changes
+        }
     }
 
     /**

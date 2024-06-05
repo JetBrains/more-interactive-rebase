@@ -8,6 +8,7 @@ import com.intellij.ui.OnePixelSplitter
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
@@ -36,6 +37,7 @@ class ActionService(project: Project) {
         modelService.branchInfo.selectedCommits.forEach {
             it.setTextFieldEnabledTo(true)
         }
+        invoker.undoneCommands.clear()
     }
 
     /**
@@ -51,6 +53,7 @@ class ActionService(project: Project) {
         }
 
         modelService.branchInfo.clearSelectedCommits()
+        invoker.undoneCommands.clear()
     }
 
     /**
@@ -59,7 +62,7 @@ class ActionService(project: Project) {
     fun checkDrop(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
             modelService.getSelectedCommits().none { commit ->
-                commit.changes.any { change -> change is DropCommand }
+                commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
     }
 
@@ -69,7 +72,7 @@ class ActionService(project: Project) {
     fun checkReword(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.getActualSelectedCommitsSize() == 1 &&
             modelService.getSelectedCommits().none { commit ->
-                commit.changes.any { change -> change is DropCommand }
+                commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
     }
 
@@ -79,7 +82,7 @@ class ActionService(project: Project) {
     fun checkStopToEdit(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
             modelService.getSelectedCommits().none { commit ->
-                commit.changes.any { change -> change is DropCommand }
+                commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
     }
 
@@ -94,7 +97,7 @@ class ActionService(project: Project) {
                         .indexOf(modelService.branchInfo.selectedCommits[0])==0
             ) &&
             modelService.getSelectedCommits().none { commit ->
-                commit.changes.any { change -> change is DropCommand }
+                commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
     }
 
@@ -117,6 +120,7 @@ class ActionService(project: Project) {
             invoker.addCommand(command)
         }
         modelService.branchInfo.clearSelectedCommits()
+        invoker.undoneCommands.clear()
     }
 
     /**
@@ -125,8 +129,9 @@ class ActionService(project: Project) {
      */
     fun performPickAction() {
         val commits = modelService.getSelectedCommits()
+        val changesToAdd = mutableListOf<Pair<CommitInfo, PickCommand>>()
         commits.forEach { commitInfo ->
-            val changes = commitInfo.changes.iterator()
+            val changes = commitInfo.getChangesAfterPick().iterator()
             while (changes.hasNext()) {
                 val change = changes.next()
                 if (change is FixupCommand && change.parentCommit == commitInfo) {
@@ -136,10 +141,15 @@ class ActionService(project: Project) {
                     clearSquashOnPick(change, commitInfo)
                 }
                 if (change !is ReorderCommand) {
-                    invoker.removeCommand(change)
-                    changes.remove()
+                    val pickCommand = PickCommand(commitInfo)
+                    changesToAdd.add(commitInfo to pickCommand)
                 }
             }
+
+        }
+        changesToAdd.forEach { (commitInfo, pickCommand) ->
+            commitInfo.addChange(pickCommand)
+            invoker.addCommand(pickCommand)
         }
         modelService.branchInfo.clearSelectedCommits()
     }
@@ -154,7 +164,6 @@ class ActionService(project: Project) {
         change.fixupCommits.forEach {
                 fixupCommit ->
             fixupCommit.isSquashed = false
-            fixupCommit.changes.clear()
         }
         val parentCommit = change.parentCommit
         val parentIndex = modelService.getCurrentCommits().indexOfFirst { it == parentCommit }
@@ -174,7 +183,6 @@ class ActionService(project: Project) {
         change.squashedCommits.forEach {
                 squashedCommit ->
             squashedCommit.isSquashed = false
-            squashedCommit.changes.clear()
         }
         val parentCommit = change.parentCommit
         val parentIndex = modelService.getCurrentCommits().indexOfFirst { it == parentCommit }
@@ -210,6 +218,7 @@ class ActionService(project: Project) {
      */
     fun takeSquashAction() {
         combineCommits(true)
+        invoker.undoneCommands.clear()
     }
 
     /**
@@ -218,6 +227,7 @@ class ActionService(project: Project) {
      */
     fun takeFixupAction() {
         combineCommits(false)
+        invoker.undoneCommands.clear()
     }
 
     /**
@@ -295,7 +305,7 @@ class ActionService(project: Project) {
      */
     private fun removeSquashFixChange(commit: CommitInfo) {
         val changesToRemove = mutableListOf<RebaseCommand>()
-        commit.changes.forEach {
+        commit.getChangesAfterPick().forEach {
             if (it is FixupCommand || it is SquashCommand) {
                 modelService.invoker.removeCommand(it)
                 changesToRemove.add(it)
@@ -321,9 +331,15 @@ class ActionService(project: Project) {
         invoker.undoneCommands.add(command)
 
         val commitToBeUndone = command.commitOfCommand()
+        commitToBeUndone.removeChange(command)
         if(command is ReorderCommand)
             undoReorder(commitToBeUndone, command)
-        commitToBeUndone.removeChange(command)
+        if(command is SquashCommand)
+            undoSquash(command)
+        if(command is FixupCommand)
+            undoFixup(command)
+        removePickFromSquashedCommits(commitToBeUndone)
+        modelService.branchInfo.clearSelectedCommits()
     }
 
     fun redoLastAction(){
@@ -333,7 +349,85 @@ class ActionService(project: Project) {
         commitToBeRedone.addChange(command)
         if(command is ReorderCommand)
             redoReorder(commitToBeRedone, command)
+        if(command is SquashCommand)
+            redoSquash(command)
+        if(command is FixupCommand)
+            redoFixup(command)
+        modelService.branchInfo.clearSelectedCommits()
     }
+
+    internal fun undoSquash(command: SquashCommand){
+        val parentCommit = command.parentCommit
+        parentCommit.isSquashed = false
+        command.squashedCommits.forEach {
+            it.isSquashed = false
+            removeSquashFixChange(it)
+        }
+        parentCommit.removeChange(command)
+        parentCommit.setTextFieldEnabledTo(false)
+        val currentCommits =  modelService.branchInfo.currentCommits
+        currentCommits.addAll(
+            currentCommits.indexOf(parentCommit),
+            command.squashedCommits
+        )
+    }
+
+    internal fun undoFixup(command: FixupCommand){
+        val parentCommit = command.parentCommit
+        parentCommit.isSquashed = false
+        command.fixupCommits.forEach {
+            it.isSquashed = false
+            removeSquashFixChange(it)
+        }
+        parentCommit.removeChange(command)
+        parentCommit.setTextFieldEnabledTo(false)
+        val currentCommits =  modelService.branchInfo.currentCommits
+        currentCommits.addAll(
+            currentCommits.indexOf(parentCommit),
+            command.fixupCommits
+        )
+    }
+
+    internal fun redoSquash(command: SquashCommand){
+        command.squashedCommits.forEach {
+            handleCombinedCommits(it, command)
+        }
+    }
+
+    internal fun redoFixup(command: FixupCommand){
+        command.fixupCommits.forEach {
+            handleCombinedCommits(it, command)
+        }
+    }
+
+    internal fun removePickFromSquashedCommits(commit: CommitInfo){
+        val squashy = commit.changes.lastOrNull { it is SquashCommand } as? SquashCommand
+        val fixy = commit.changes.lastOrNull { it is FixupCommand } as? FixupCommand
+        if(squashy != null){
+        squashy.squashedCommits.forEach {
+            it.isSquashed = true
+            val pickCommand = it.changes.lastOrNull() as? PickCommand
+            if(pickCommand != null){
+                it.removeChange(pickCommand)
+                modelService.invoker.removeCommand(pickCommand)
+                modelService.branchInfo.currentCommits.remove(it)
+            }
+        }
+        }
+        if(fixy != null){
+            fixy.fixupCommits.forEach {
+                it.isSquashed = true
+                val pickCommand = it.changes.lastOrNull() as? PickCommand
+                if(pickCommand != null){
+                    it.removeChange(pickCommand)
+                    modelService.invoker.removeCommand(pickCommand)
+                    modelService.branchInfo.currentCommits.remove(it)
+                }
+            }
+        }
+    }
+
+
 
     internal fun undoReorder(commit: CommitInfo, command: ReorderCommand){
         commit.setReorderedTo(false)
@@ -343,6 +437,14 @@ class ActionService(project: Project) {
     internal fun redoReorder(commit: CommitInfo, command: ReorderCommand){
         commit.setReorderedTo(true)
         mainPanel.branchPanel.branch.updateCurrentCommits(command.oldIndex, command.newIndex, commit)
+    }
+
+    fun checkUndo(e: AnActionEvent){
+        e.presentation.isEnabled = invoker.commands.isNotEmpty()
+    }
+
+    fun checkRedo(e: AnActionEvent){
+        e.presentation.isEnabled = invoker.undoneCommands.isNotEmpty()
     }
 
     fun getHeaderPanel(): HeaderPanel {
