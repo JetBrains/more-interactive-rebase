@@ -120,6 +120,15 @@ class ModelService(
     }
 
     /**
+     * Removes the added branch field in the graph info
+     */
+    fun removeSecondBranchFromGraphInfo() {
+        coroutineScope.launch {
+            graphService.removeBranch(graphInfo)
+        }
+    }
+
+    /**
      * Dispose routine
      */
     override fun dispose() {

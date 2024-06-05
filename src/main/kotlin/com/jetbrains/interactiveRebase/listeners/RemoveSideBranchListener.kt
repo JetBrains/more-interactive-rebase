@@ -16,9 +16,8 @@ class RemoveSideBranchListener(private val project: Project, val sideBranchPanel
      */
     override fun mouseClicked(e: MouseEvent?) {
         val modelService = project.service<ModelService>()
-        val graphService = project.service<GraphService>()
 
-        graphService.removeBranch(modelService.graphInfo)
+        modelService.removeSecondBranchFromGraphInfo()
         parent.resetAllBranchesVisually()
     }
 

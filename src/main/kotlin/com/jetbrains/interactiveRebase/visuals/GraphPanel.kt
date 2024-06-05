@@ -188,6 +188,7 @@ class GraphPanel(
             mainColor,
         )
 
+        addedBranchPanel = null
         if (graphInfo.addedBranch != null) {
             addedBranchPanel =
                 createLabeledBranchPanel(
