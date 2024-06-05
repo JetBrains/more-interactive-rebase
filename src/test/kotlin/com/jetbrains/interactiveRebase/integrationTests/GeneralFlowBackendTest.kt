@@ -55,6 +55,7 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
                 withContext(Dispatchers.IO) {
                     sleep(1000)
                 }
+                assertThat(modelService.branchInfo.name).isEqualTo("development")
                 assertThat(modelService.branchInfo.currentCommits).hasSize(4)
 
                 // this selects the last commit and sets it up to be dropped
@@ -96,6 +97,7 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
                 withContext(Dispatchers.IO) {
                     sleep(1000)
                 }
+                assertThat(modelService.branchInfo.name).isEqualTo("development")
                 assertThat(modelService.branchInfo.currentCommits).hasSize(4)
 
                 // in the case where only 1 commit is selected
@@ -135,6 +137,7 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
                 withContext(Dispatchers.IO) {
                     sleep(1000)
                 }
+                assertThat(modelService.branchInfo.name).isEqualTo("development")
                 assertThat(modelService.branchInfo.currentCommits).hasSize(4)
 
                 // this selects the second-to-last commit and sets it up to be edited
@@ -183,6 +186,7 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
                 withContext(Dispatchers.IO) {
                     sleep(1000)
                 }
+                assertThat(modelService.branchInfo.name).isEqualTo("development")
                 assertThat(modelService.branchInfo.currentCommits).hasSize(4)
 
                 // this selects the second-to-last commit
@@ -242,6 +246,7 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
                 withContext(Dispatchers.IO) {
                     sleep(1000)
                 }
+                assertThat(modelService.branchInfo.name).isEqualTo("development")
                 assertThat(modelService.branchInfo.currentCommits).hasSize(4)
 
                 // this selects the last commit ("please work") and sets it up to be squashed

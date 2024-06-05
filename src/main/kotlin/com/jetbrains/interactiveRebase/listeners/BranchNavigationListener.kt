@@ -50,7 +50,7 @@ class BranchNavigationListener(project: Project, private val modelService: Model
             modelService.selectSingleCommit(commit)
             return
         }
-        var commit = modelService.branchInfo.selectedCommits.last()
+        var commit = modelService.getLastSelectedCommit()
 
         val index = modelService.branchInfo.currentCommits.indexOf(commit)
         if (index == 0) {
@@ -74,7 +74,7 @@ class BranchNavigationListener(project: Project, private val modelService: Model
             modelService.selectSingleCommit(commit)
             return
         }
-        var commit = modelService.branchInfo.selectedCommits.last()
+        var commit = modelService.getLastSelectedCommit()
 
         val index = modelService.branchInfo.currentCommits.indexOf(commit)
         if (index == modelService.branchInfo.currentCommits.size - 1) {
@@ -99,7 +99,7 @@ class BranchNavigationListener(project: Project, private val modelService: Model
             modelService.addToSelectedCommits(commit)
             return
         }
-        val commit = modelService.branchInfo.selectedCommits.last()
+        val commit = modelService.getLastSelectedCommit()
 
         val index = modelService.branchInfo.currentCommits.indexOf(commit)
         if (index == 0) {
@@ -126,7 +126,7 @@ class BranchNavigationListener(project: Project, private val modelService: Model
             modelService.addToSelectedCommits(commit)
             return
         }
-        val commit = modelService.branchInfo.selectedCommits.last()
+        val commit = modelService.getLastSelectedCommit()
 
         val index = modelService.branchInfo.currentCommits.indexOf(commit)
         if (index == modelService.branchInfo.currentCommits.size - 1) {
@@ -168,7 +168,7 @@ class BranchNavigationListener(project: Project, private val modelService: Model
      * commits, moves down
      */
     fun altDown() {
-        modelService.getSelectedCommits().sortBy { -modelService.branchInfo.indexOfCommit(it) }
+        modelService.getSelectedCommits().sortBy { modelService.branchInfo.indexOfCommit(it) }
         modelService.getSelectedCommits().reversed().forEach {
                 commit ->
             if (!commit.isSquashed) {

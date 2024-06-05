@@ -115,6 +115,22 @@ class ModelService(
     }
 
     /**
+     * Returns the last commit that is selected
+     * but is not squashed or fixed up
+     */
+    fun getLastSelectedCommit(): CommitInfo {
+        var commit = branchInfo.selectedCommits.last()
+
+        // Ensure that the commit we are moving is actually displayed
+        while (commit.isSquashed) {
+            val index = branchInfo.selectedCommits.indexOf(commit)
+            commit = branchInfo.selectedCommits[index - 1]
+        }
+
+        return commit
+    }
+
+    /**
      * Returns the current
      * displayed commits
      */
