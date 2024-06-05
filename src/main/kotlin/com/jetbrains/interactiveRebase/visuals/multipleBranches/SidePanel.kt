@@ -8,16 +8,16 @@ import com.jetbrains.interactiveRebase.listeners.SideBranchPanelListener
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 
-class SidePanel : JBPanel<JBPanel<*>>() {
+class SidePanel(var branches: MutableList<String>) : JBPanel<JBPanel<*>>() {
     internal var isVisible: Boolean = false
-    internal var branches: MutableList<String> = mutableListOf()
+
+//    internal var branches: MutableList<String> = mutableListOf()
     internal var sideBranchPanels: MutableList<SideBranchPanel> = mutableListOf()
+//    internal var modelService: ModelService = project.service<ModelService>()
 
     init {
         layout = GridBagLayout()
 
-        // TODO: replace these hardcoded values with actual branch names
-        branches = mutableListOf("Branch 1", "Branch 2", "Branch 3")
         updateBranchNames()
     }
 
