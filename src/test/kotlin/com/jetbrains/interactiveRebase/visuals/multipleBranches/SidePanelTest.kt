@@ -9,14 +9,22 @@ import java.awt.GridBagConstraints
 class SidePanelTest : BasePlatformTestCase() {
     val branches = mutableListOf("Branch 1", "Branch 2", "Branch 3")
 
+    init {
+        System.setProperty("idea.home.path", "/tmp")
+    }
+
+    override fun setUp() {
+        super.setUp()
+    }
+
     fun testSetVisible() {
-        val sidePanel = SidePanel(project)
+        val sidePanel = SidePanel(branches)
         sidePanel.isVisible = true
         assertTrue(sidePanel.isVisible)
     }
 
     fun testUpdateBranchNames() {
-        val sidePanel = SidePanel(project)
+        val sidePanel = SidePanel(branches)
         assertThat(sidePanel.sideBranchPanels.size).isEqualTo(3)
         assertThat(sidePanel.sideBranchPanels[0].branchName).isEqualTo("Branch 1")
         assertThat(sidePanel.sideBranchPanels[1].branchName).isEqualTo("Branch 2")
@@ -32,7 +40,7 @@ class SidePanelTest : BasePlatformTestCase() {
     }
 
     fun testGetAlignmentForBranch() {
-        val sidePanel = SidePanel(project)
+        val sidePanel = SidePanel(branches)
         val gbc = sidePanel.getAlignmentForBranch(0)
         assertThat(gbc.gridx).isEqualTo(0)
         assertThat(gbc.gridy).isEqualTo(0)
@@ -44,7 +52,7 @@ class SidePanelTest : BasePlatformTestCase() {
     }
 
     fun testGetAlignmentForBranchLastBRanchName() {
-        val sidePanel = SidePanel(project)
+        val sidePanel = SidePanel(branches)
         val gbc = sidePanel.getAlignmentForBranch(branches.size - 1)
         assertThat(gbc.gridx).isEqualTo(0)
         assertThat(gbc.gridy).isEqualTo(2)
@@ -56,26 +64,27 @@ class SidePanelTest : BasePlatformTestCase() {
     }
 
     fun testCanSelectBranchIsAlreadySelected() {
-        val sidePanel = SidePanel(project)
+        val sidePanel = SidePanel(branches)
         sidePanel.sideBranchPanels[0].isSelected = true
         assertThat(sidePanel.canSelectBranch(sidePanel.sideBranchPanels[0])).isFalse()
     }
 
     fun testCanSelectBranchIsAnotherSelected() {
-        val sidePanel = SidePanel(project)
+        val sidePanel = SidePanel(branches)
+        sidePanel.branches = branches
         sidePanel.sideBranchPanels[0].isSelected = true
 
         assertThat(sidePanel.canSelectBranch(sidePanel.sideBranchPanels[1])).isFalse()
     }
 
     fun testCanSelectBranchIsNotSelected() {
-        val sidePanel = SidePanel(project)
-
+        val sidePanel = SidePanel(branches)
+        sidePanel.branches = branches
         assertThat(sidePanel.canSelectBranch(sidePanel.sideBranchPanels[0])).isTrue()
     }
 
     fun testCanSelectBranchEmptyList() {
-        val sidePanel = SidePanel(project)
+        val sidePanel = SidePanel(branches)
 
         sidePanel.branches.clear()
 
@@ -83,8 +92,8 @@ class SidePanelTest : BasePlatformTestCase() {
     }
 
     fun testMakeBranchesUnavailable() {
-        val sidePanel = SidePanel(project)
-
+        val sidePanel = SidePanel(branches)
+        sidePanel.branches = branches
         sidePanel.sideBranchPanels[0].isSelected = true
         sidePanel.makeBranchesUnavailableExceptCurrent(sidePanel.sideBranchPanels[0])
 
@@ -94,7 +103,8 @@ class SidePanelTest : BasePlatformTestCase() {
     }
 
     fun testResetAllBranchesVisually() {
-        val sidePanel = SidePanel(project)
+        val sidePanel = SidePanel(branches)
+        sidePanel.branches = branches
         sidePanel.resetAllBranchesVisually()
         assertThat(sidePanel.sideBranchPanels[0].backgroundColor).isEqualTo(Palette.TRANSPARENT)
         assertThat(sidePanel.sideBranchPanels[1].backgroundColor).isEqualTo(Palette.TRANSPARENT)

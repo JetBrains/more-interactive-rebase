@@ -16,7 +16,7 @@ class RemoveSideBranchListenerTest : BasePlatformTestCase() {
     override fun setUp() {
         super.setUp()
         sideBranchPanel = SideBranchPanel("main")
-        parent = SidePanel(project)
+        parent = SidePanel(mutableListOf("feature", "bugfix"))
         parent.sideBranchPanels.add(sideBranchPanel)
         parent.sideBranchPanels.add(SideBranchPanel("feature"))
         parent.sideBranchPanels.add(SideBranchPanel("bugfix"))

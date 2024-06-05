@@ -1,26 +1,23 @@
 package com.jetbrains.interactiveRebase.visuals.multipleBranches
 
-import com.intellij.openapi.components.service
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.listeners.RemoveSideBranchListener
 import com.jetbrains.interactiveRebase.listeners.SideBranchPanelListener
-import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 
-class SidePanel(project: Project) : JBPanel<JBPanel<*>>() {
+class SidePanel(var branches: MutableList<String>) : JBPanel<JBPanel<*>>() {
     internal var isVisible: Boolean = false
-    internal var branches: MutableList<String> = mutableListOf()
+
+//    internal var branches: MutableList<String> = mutableListOf()
     internal var sideBranchPanels: MutableList<SideBranchPanel> = mutableListOf()
-    internal var modelService: ModelService = project.service<ModelService>()
+//    internal var modelService: ModelService = project.service<ModelService>()
 
     init {
         layout = GridBagLayout()
 
-        branches = modelService.graphInfo.branchList
         updateBranchNames()
     }
 
