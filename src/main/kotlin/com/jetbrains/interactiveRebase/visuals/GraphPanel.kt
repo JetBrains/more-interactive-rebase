@@ -28,23 +28,14 @@ class GraphPanel(
     private val addedColor: JBColor = Palette.LIME_GREEN,
 ) : JBPanel<JBPanel<*>>() {
     val mainBranchPanel: LabeledBranchPanel =
-        LabeledBranchPanel(
-            project,
-            mainBranch,
-            mainColor,
-            SwingConstants.RIGHT,
-        )
+        createLabeledBranchPanel(mainBranch, SwingConstants.RIGHT)
+
     var addedBranchPanel: LabeledBranchPanel? = null
 
     init {
         if (addedBranch != null) {
             addedBranchPanel =
-                LabeledBranchPanel(
-                    project,
-                    addedBranch,
-                    addedColor,
-                    SwingConstants.LEFT,
-                )
+                createLabeledBranchPanel(addedBranch, SwingConstants.LEFT)
             // TODO: remove
 //            addedBranchPanel!!.border = BorderFactory.createLineBorder(JBColor.CYAN)
 //            mainBranchPanel.border = BorderFactory.createLineBorder(JBColor.YELLOW)
@@ -54,6 +45,21 @@ class GraphPanel(
 
         addBranches()
     }
+
+    /**
+     * Creates a panel representing the branch
+     * with all the corresponding commit names and branch name
+     * with a specified orientation of the labels (left/right alignment)
+     */
+    private fun createLabeledBranchPanel(
+        mainBranch: BranchInfo,
+        alignment: Int,
+    ) = LabeledBranchPanel(
+        project,
+        mainBranch,
+        mainColor,
+        alignment,
+    )
 
     /**
      * Adds the two branches (as Labeled Branch Panels)
@@ -79,7 +85,9 @@ class GraphPanel(
                 0,
             )
 
-        add(addedBranchPanel!!, gbc)
+        if (addedBranchPanel != null) {
+            add(addedBranchPanel!!, gbc)
+        }
     }
 
     /**
@@ -111,17 +119,17 @@ class GraphPanel(
                 addedCircleCenterY,
             )
 
-            val curve = CubicCurve2D.Float(
-                mainCircleCenterX.toFloat(),
-                mainCircleCenterY.toFloat(),
-                mainCircleCenterX.toFloat(),
-                mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 3 / 2,
-                mainCircleCenterX.toFloat(),
-                mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 3 / 2,
-                addedCircleCenterX.toFloat(),
-                addedCircleCenterY.toFloat()
-            )
-
+            val curve =
+                CubicCurve2D.Float(
+                    mainCircleCenterX.toFloat(),
+                    mainCircleCenterY.toFloat(),
+                    mainCircleCenterX.toFloat(),
+                    mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 3 / 2,
+                    mainCircleCenterX.toFloat(),
+                    mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 3 / 2,
+                    addedCircleCenterX.toFloat(),
+                    addedCircleCenterY.toFloat(),
+                )
 
             g2d.draw(curve)
         }
@@ -131,7 +139,7 @@ class GraphPanel(
      * Find the coordinates of the center
      * of the last circle of the primary (checked out) branch
      */
-    private fun centerCoordinatesOfLastAddedCircle(): Pair<Int, Int> {
+    fun centerCoordinatesOfLastAddedCircle(): Pair<Int, Int> {
         val addedLastCircle = addedBranchPanel!!.branchPanel.circles.last()
         val addedCircleCenterX =
             addedBranchPanel!!.x + addedBranchPanel!!.branchPanel.x + addedLastCircle.x + addedLastCircle.width / 2
@@ -144,18 +152,18 @@ class GraphPanel(
      * Find the coordinates of the center
      * of the last circle of the added (not checked out) branch
      */
-    private fun centerCoordinatesOfLastMainCircle(): Pair<Int, Int> {
+    fun centerCoordinatesOfLastMainCircle(): Pair<Int, Int> {
         val mainLastCircle = mainBranchPanel.branchPanel.circles.last()
         val mainCircleCenterX =
-            mainBranchPanel.x +                         // start of the labeled branch panel
-                    mainBranchPanel.branchPanel.x +     // start of the internal branch panel
-                    mainLastCircle.x +                  // start of the circle
-                    mainLastCircle.width / 2            // center of the circle
+            mainBranchPanel.x + // start of the labeled branch panel
+                mainBranchPanel.branchPanel.x + // start of the internal branch panel
+                mainLastCircle.x + // start of the circle
+                mainLastCircle.width / 2 // center of the circle
         val mainCircleCenterY =
-            mainBranchPanel.y +                         // start of the labeled branch panel
-                    mainBranchPanel.branchPanel.y +     // start of the internal branch panel
-                    mainLastCircle.y +                  // start of the circle
-                    mainLastCircle.height / 2           // center of the circle
+            mainBranchPanel.y + // start of the labeled branch panel
+                mainBranchPanel.branchPanel.y + // start of the internal branch panel
+                mainLastCircle.y + // start of the circle
+                mainLastCircle.height / 2 // center of the circle
         return Pair(mainCircleCenterX, mainCircleCenterY)
     }
 
@@ -169,10 +177,9 @@ class GraphPanel(
         startY: Int,
         endX: Int,
         endY: Int,
+        fractions: FloatArray = floatArrayOf(0.0f, 0.8f),
+        colors: Array<Color> = arrayOf(mainColor, addedColor),
     ) {
-        val fractions = floatArrayOf(0.0f, 0.8f)
-        val colors = arrayOf<Color>(mainColor, addedColor)
-
         g2d.paint =
             LinearGradientPaint(
                 startX.toFloat(),

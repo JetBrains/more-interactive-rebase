@@ -61,7 +61,7 @@ class ActionService(project: Project) {
      */
     fun checkDrop(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-                modelService.branchInfo.isEnabled &&
+            modelService.branchInfo.isEnabled &&
             modelService.getSelectedCommits().none { commit ->
                 commit.changes.any { change -> change is DropCommand }
             }
@@ -75,8 +75,8 @@ class ActionService(project: Project) {
      */
     fun checkReword(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.getActualSelectedCommitsSize() == 1 &&
-                modelService.branchInfo.isEnabled &&
-                modelService.getSelectedCommits().none { commit ->
+            modelService.branchInfo.isEnabled &&
+            modelService.getSelectedCommits().none { commit ->
                 commit.changes.any { change -> change is DropCommand }
             }
     }
@@ -89,7 +89,7 @@ class ActionService(project: Project) {
      */
     fun checkStopToEdit(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-                modelService.branchInfo.isEnabled &&
+            modelService.branchInfo.isEnabled &&
             modelService.getSelectedCommits().none { commit ->
                 commit.changes.any { change -> change is DropCommand }
             }
@@ -103,7 +103,7 @@ class ActionService(project: Project) {
      */
     fun checkFixupOrSquash(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-                modelService.branchInfo.isEnabled &&
+            modelService.branchInfo.isEnabled &&
             !(
                 modelService.branchInfo.selectedCommits.size==1 &&
                     invoker.branchInfo.currentCommits.reversed()
@@ -122,8 +122,7 @@ class ActionService(project: Project) {
      */
     fun checkPick(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-                modelService.branchInfo.isEnabled
-
+            modelService.branchInfo.isEnabled
     }
 
     /**

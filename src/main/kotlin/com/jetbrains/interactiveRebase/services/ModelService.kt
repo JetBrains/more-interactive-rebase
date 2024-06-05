@@ -68,7 +68,6 @@ class ModelService(
             branchInfo.removeSelectedCommits(commit)
             // TODO: remove
 //            otherBranchInfo.removeSelectedCommits(commit)
-
         }
     }
 
