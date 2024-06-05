@@ -61,7 +61,7 @@ class ModelService(
         branchInfo.addSelectedCommits(commit)
         commit.changes.forEach { change ->
             if (change is FixupCommand || change is SquashCommand) {
-                project.service<ActionService>().getCombinedCommits(change).forEach{
+                project.service<ActionService>().getCombinedCommits(change).forEach {
                     branchInfo.addSelectedCommits(it)
                 }
             }
@@ -91,12 +91,16 @@ class ModelService(
      * 3. adds the Reorder Command to the Invoker
      * that holds an overview of all staged changes.
      */
-    internal fun markCommitAsReordered(commit: CommitInfo, oldIndex: Int, newIndex: Int) {
+    internal fun markCommitAsReordered(
+        commit: CommitInfo,
+        oldIndex: Int,
+        newIndex: Int,
+    ) {
         commit.setReorderedTo(true)
         val command =
             ReorderCommand(
                 oldIndex,
-                newIndex
+                newIndex,
             )
         commit.addChange(command)
         project.service<RebaseInvoker>().addCommand(command)

@@ -25,7 +25,7 @@ class BranchNavigationListener(project: Project, private val modelService: Model
             return
         }
 
-        if(e.isAltDown){
+        if (e.isAltDown) {
             when (e.keyCode) {
                 KeyEvent.VK_UP -> altUp()
                 KeyEvent.VK_DOWN -> altDown()
@@ -150,8 +150,8 @@ class BranchNavigationListener(project: Project, private val modelService: Model
     fun altUp() {
         modelService.getSelectedCommits().sortBy { modelService.branchInfo.indexOfCommit(it) }
         modelService.getSelectedCommits().forEach {
-            commit ->
-            if(!commit.isSquashed){
+                commit ->
+            if (!commit.isSquashed) {
                 val oldIndex = modelService.branchInfo.currentCommits.indexOf(commit)
                 val newIndex = max(oldIndex - 1, 0)
 
@@ -168,10 +168,10 @@ class BranchNavigationListener(project: Project, private val modelService: Model
      * commits, moves down
      */
     fun altDown() {
-        modelService.getSelectedCommits().sortBy { - modelService.branchInfo.indexOfCommit(it) }
+        modelService.getSelectedCommits().sortBy { -modelService.branchInfo.indexOfCommit(it) }
         modelService.getSelectedCommits().reversed().forEach {
                 commit ->
-            if(!commit.isSquashed){
+            if (!commit.isSquashed) {
                 val oldIndex = modelService.branchInfo.currentCommits.indexOf(commit)
                 val newIndex = min(oldIndex + 1, modelService.branchInfo.currentCommits.size - 1)
 

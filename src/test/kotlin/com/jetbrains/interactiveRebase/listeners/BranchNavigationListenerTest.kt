@@ -32,7 +32,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
 
         val commitService = mock(CommitService::class.java)
 
-        `when`(commitService.getCommits()).thenReturn(listOf(commit4.commit, commit3.commit, commit2.commit, commit1.commit))
+        `when`(commitService.getCommits("my branch")).thenReturn(listOf(commit4.commit, commit3.commit, commit2.commit, commit1.commit))
 
         `when`(commitService.getBranchName()).thenReturn("my branch")
 
