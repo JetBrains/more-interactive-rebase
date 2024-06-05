@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.listeners
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.visuals.BranchPanel
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -40,9 +41,10 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
      * Select a commit upon a click.
      */
     override fun mouseClicked(e: MouseEvent?) {
+        val branchInfo = (circlePanel.parent as BranchPanel).branch
         val modelService = circlePanel.commit.project.service<ModelService>()
         circlePanel.commit.isSelected = !circlePanel.commit.isSelected
-        modelService.addOrRemoveCommitSelection(circlePanel.commit)
+        modelService.addOrRemoveCommitSelection(circlePanel.commit, branchInfo)
     }
 
     /**

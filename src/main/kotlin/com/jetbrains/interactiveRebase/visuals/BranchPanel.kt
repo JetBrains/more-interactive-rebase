@@ -22,7 +22,7 @@ import java.awt.RenderingHints
  * - lines connecting the commits
  */
 class BranchPanel(
-    private val branch: BranchInfo,
+    val branch: BranchInfo,
     val color: JBColor,
 ) : JBPanel<JBPanel<*>>() {
     val diameter = 30
