@@ -54,13 +54,13 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
      * At the moment, the buttons are hardcoded, but we will replace them with icons and listeners later.
      */
     fun addChangeButtons(buttonPanel: JBPanel<JBPanel<*>>) {
-        val rebaseButton = RoundedButton("Rebase", Palette.BLUEBUTTON, Palette.WHITETEXT)
+        val rebaseButton = RoundedButton("Rebase", Palette.BLUE_BUTTON, Palette.WHITE_TEXT)
 
         rebaseButton.addActionListener {
             invoker.createModel()
             invoker.executeCommands()
         }
-        val resetButton = RoundedButton("Reset", Palette.GRAYBUTTON, Palette.WHITETEXT)
+        val resetButton = RoundedButton("Reset", Palette.GRAY_BUTTON, Palette.WHITE_TEXT)
 
         resetButton.addActionListener { project.service<ActionService>().resetAllChangesAction() }
 

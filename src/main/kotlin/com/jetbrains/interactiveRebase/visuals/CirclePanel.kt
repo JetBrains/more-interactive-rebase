@@ -84,11 +84,11 @@ open class CirclePanel(
             }
         val borderColor =
             if (commit.isSelected) {
-                Palette.BLUEBORDER.darker()
+                Palette.BLUE_BORDER.darker()
             } else if (commit.isDragged || commit.isReordered) {
                 color.darker()
             } else {
-                Palette.DARKBLUE
+                Palette.DARK_BLUE
             }
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
 //        if (commit.isDragged) {
