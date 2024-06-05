@@ -114,7 +114,7 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
         backgroundColor = Palette.JETBRAINS_SELECTED
         this.isSelected = true
         this.button.isVisible = true
-        project.service<ModelService>().addBranchToGraphInfo(branchName)
+        project.service<ModelService>().addSecondBranchToGraphInfo(branchName)
 
         this.repaint()
         this.revalidate()

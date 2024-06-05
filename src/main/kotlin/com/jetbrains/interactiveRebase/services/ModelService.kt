@@ -113,7 +113,7 @@ class ModelService(
     /**
      * Populates the added branch field in the graph info with the given branch
      */
-    fun addBranchToGraphInfo(addedBranch: String) {
+    fun addSecondBranchToGraphInfo(addedBranch: String) {
         coroutineScope.launch {
             graphService.addBranch(graphInfo, addedBranch)
         }
