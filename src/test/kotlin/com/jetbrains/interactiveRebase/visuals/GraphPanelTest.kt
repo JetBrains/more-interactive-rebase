@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.ArgumentMatchers.any
@@ -28,9 +29,14 @@ class GraphPanelTest : BasePlatformTestCase() {
     private lateinit var commit6: CommitInfo
     private lateinit var branchInfo: BranchInfo
     private lateinit var otherBranchInfo: BranchInfo
+    private lateinit var graphInfo: GraphInfo
     private lateinit var mainCirclePanel: CirclePanel
     private lateinit var addedCirclePanel: CirclePanel
     private lateinit var graphPanel: GraphPanel
+
+    init {
+        System.setProperty("idea.home.path", "/tmp")
+    }
 
     override fun setUp() {
         super.setUp()
@@ -60,7 +66,9 @@ class GraphPanelTest : BasePlatformTestCase() {
         `when`(addedCirclePanel.width).thenReturn(35)
         `when`(addedCirclePanel.height).thenReturn(45)
 
-        graphPanel = GraphPanel(project)
+        graphInfo = GraphInfo(branchInfo, otherBranchInfo)
+
+        graphPanel = GraphPanel(project, graphInfo)
         graphPanel.mainBranchPanel.branchPanel.circles = mutableListOf(mainCirclePanel)
         graphPanel.addedBranchPanel!!.branchPanel.circles = mutableListOf(addedCirclePanel)
     }

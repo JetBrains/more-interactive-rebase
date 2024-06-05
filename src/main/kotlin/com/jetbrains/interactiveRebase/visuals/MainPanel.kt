@@ -116,7 +116,7 @@ class MainPanel(
             otherBranchInfo!!.isEnabled = false
         }
         return GraphPanel(
-            project
+            project,
         )
     }
 

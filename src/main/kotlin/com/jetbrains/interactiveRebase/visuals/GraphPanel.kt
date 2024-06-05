@@ -25,26 +25,29 @@ import javax.swing.SwingConstants
  */
 class GraphPanel(
     val project: Project,
-//    graphInfo: GraphInfo,
-//    mainBranch: BranchInfo,
-//    addedBranch: BranchInfo? = null,
+    graphInfo: GraphInfo = project.service<ModelService>().graphInfo,
     private val mainColor: JBColor = Palette.BLUE,
     private val addedColor: JBColor = Palette.LIME_GREEN,
 ) : JBPanel<JBPanel<*>>() {
-    val mainBranch = project.service<ModelService>().graphInfo.mainBranch
-    val addedBranch = project.service<ModelService>().graphInfo.addedBranch
+    private val mainBranch = graphInfo.mainBranch
+    private val addedBranch = graphInfo.addedBranch
     val mainBranchPanel: LabeledBranchPanel =
-        createLabeledBranchPanel(mainBranch, SwingConstants.RIGHT)
+        createLabeledBranchPanel(
+            mainBranch,
+            SwingConstants.RIGHT,
+            mainColor,
+        )
 
     var addedBranchPanel: LabeledBranchPanel? = null
 
     init {
         if (addedBranch != null) {
             addedBranchPanel =
-                createLabeledBranchPanel(addedBranch, SwingConstants.LEFT)
-            // TODO: remove
-//            addedBranchPanel!!.border = BorderFactory.createLineBorder(JBColor.CYAN)
-//            mainBranchPanel.border = BorderFactory.createLineBorder(JBColor.YELLOW)
+                createLabeledBranchPanel(
+                    addedBranch,
+                    SwingConstants.LEFT,
+                    addedColor,
+                )
         }
 
         layout = GridBagLayout()
@@ -60,10 +63,11 @@ class GraphPanel(
     private fun createLabeledBranchPanel(
         mainBranch: BranchInfo,
         alignment: Int,
+        color: JBColor,
     ) = LabeledBranchPanel(
         project,
         mainBranch,
-        mainColor,
+        color,
         alignment,
     )
 
@@ -130,9 +134,9 @@ class GraphPanel(
                     mainCircleCenterX.toFloat(),
                     mainCircleCenterY.toFloat(),
                     mainCircleCenterX.toFloat(),
-                    mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 3 / 2,
+                    mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 2,
                     mainCircleCenterX.toFloat(),
-                    mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 3 / 2,
+                    mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 2,
                     addedCircleCenterX.toFloat(),
                     addedCircleCenterY.toFloat(),
                 )
