@@ -1,9 +1,12 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
+import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Graphics
@@ -22,11 +25,14 @@ import javax.swing.SwingConstants
  */
 class GraphPanel(
     val project: Project,
-    mainBranch: BranchInfo,
-    addedBranch: BranchInfo? = null,
+//    graphInfo: GraphInfo,
+//    mainBranch: BranchInfo,
+//    addedBranch: BranchInfo? = null,
     private val mainColor: JBColor = Palette.BLUE,
     private val addedColor: JBColor = Palette.LIME_GREEN,
 ) : JBPanel<JBPanel<*>>() {
+    val mainBranch = project.service<ModelService>().graphInfo.mainBranch
+    val addedBranch = project.service<ModelService>().graphInfo.addedBranch
     val mainBranchPanel: LabeledBranchPanel =
         createLabeledBranchPanel(mainBranch, SwingConstants.RIGHT)
 

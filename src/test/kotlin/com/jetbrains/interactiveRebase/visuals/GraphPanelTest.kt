@@ -60,7 +60,7 @@ class GraphPanelTest : BasePlatformTestCase() {
         `when`(addedCirclePanel.width).thenReturn(35)
         `when`(addedCirclePanel.height).thenReturn(45)
 
-        graphPanel = GraphPanel(project, branchInfo, otherBranchInfo)
+        graphPanel = GraphPanel(project)
         graphPanel.mainBranchPanel.branchPanel.circles = mutableListOf(mainCirclePanel)
         graphPanel.addedBranchPanel!!.branchPanel.circles = mutableListOf(addedCirclePanel)
     }
@@ -70,7 +70,7 @@ class GraphPanelTest : BasePlatformTestCase() {
     }
 
     fun testCreateGraphPanelWithoutAddedBranch() {
-        val panel = GraphPanel(project, branchInfo)
+        val panel = GraphPanel(project)
         assertNotNull(panel)
         assertNotNull(panel.mainBranchPanel)
         assertNull(panel.addedBranchPanel)

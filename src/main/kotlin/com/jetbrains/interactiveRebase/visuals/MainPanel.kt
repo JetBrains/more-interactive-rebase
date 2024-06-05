@@ -9,6 +9,7 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.SidePanel
 import java.awt.BorderLayout
@@ -19,26 +20,27 @@ import javax.swing.SwingConstants
 
 class MainPanel(
     private val project: Project,
-    private val branchInfo: BranchInfo,
-    private var otherBranchInfo: BranchInfo? = null,
 ) :
     JBPanel<JBPanel<*>>(), Disposable {
     internal var commitInfoPanel = CommitInfoPanel(project)
     internal var contentPanel: JBScrollPane
     internal var branchPanel: LabeledBranchPanel
-    internal var otherBranchPanel: LabeledBranchPanel
+    internal var otherBranchPanel: LabeledBranchPanel?
     internal var sidePanel: JBScrollPane
     internal var graphPanel: GraphPanel
     private val branchInfoListener: BranchInfo.Listener
     private val otherBranchInfoListener: BranchInfo.Listener
     private val commitInfoListener: CommitInfo.Listener
+    private val graphInfo: GraphInfo = project.service<ModelService>().graphInfo
+    private val branchInfo: BranchInfo = graphInfo.mainBranch
+    private var otherBranchInfo: BranchInfo? = graphInfo.addedBranch
 
     init {
 //        branchPanel = createBranchPanel()
 //        Disposer.register(this, branchPanel)
         graphPanel = createGraphPanel()
         branchPanel = graphPanel.mainBranchPanel
-        otherBranchPanel = graphPanel.addedBranchPanel!!
+        otherBranchPanel = graphPanel.addedBranchPanel
 
         contentPanel = createContentPanel()
         sidePanel = createSidePanel()
@@ -71,21 +73,21 @@ class MainPanel(
         otherBranchInfoListener =
             object : BranchInfo.Listener {
                 override fun onNameChange(newName: String) {
-                    otherBranchPanel.updateBranchName()
+                    otherBranchPanel?.updateBranchName()
                 }
 
                 override fun onCommitChange(commits: List<CommitInfo>) {
-                    otherBranchPanel.updateCommits()
+                    otherBranchPanel?.updateCommits()
                     registerCommitListener()
                 }
 
                 override fun onSelectedCommitChange(selectedCommits: MutableList<CommitInfo>) {
-                    otherBranchPanel.updateCommits()
+                    otherBranchPanel?.updateCommits()
                     commitInfoPanel.commitsSelected(selectedCommits.map { it.commit })
                 }
 
                 override fun onCurrentCommitsChange(currentCommits: MutableList<CommitInfo>) {
-                    otherBranchPanel.updateCommits()
+                    otherBranchPanel?.updateCommits()
                     registerCommitListener()
                 }
             }
@@ -98,7 +100,7 @@ class MainPanel(
             }
 
         branchInfo.addListener(branchInfoListener)
-        otherBranchInfo!!.addListener(otherBranchInfoListener)
+        otherBranchInfo?.addListener(otherBranchInfoListener)
         registerCommitListener()
 
         Disposer.register(this, branchInfoListener)
@@ -111,12 +113,10 @@ class MainPanel(
     fun createGraphPanel(): GraphPanel {
         if (otherBranchInfo != null) {
             branchInfo.isPrimary = true
-//            otherBranchInfo!!.isEnabled = false
+            otherBranchInfo!!.isEnabled = false
         }
         return GraphPanel(
-            project,
-            branchInfo,
-            otherBranchInfo,
+            project
         )
     }
 
@@ -201,7 +201,7 @@ class MainPanel(
         branchInfo.currentCommits.forEach {
             it.addListener(commitInfoListener)
         }
-        otherBranchInfo!!.currentCommits.forEach {
+        otherBranchInfo?.currentCommits?.forEach {
             it.addListener(commitInfoListener)
         }
     }
