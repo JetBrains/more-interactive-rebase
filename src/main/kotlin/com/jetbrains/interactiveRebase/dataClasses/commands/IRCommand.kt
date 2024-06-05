@@ -1,12 +1,18 @@
 package com.jetbrains.interactiveRebase.dataClasses.commands
 
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
-import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
-data class FixupCommand(var parentCommit: CommitInfo, val fixupCommits: MutableList<CommitInfo>) :
-    IRCommand() {
+/**
+ * This is the abstract class for all the commands
+ * that will be executed during the rebase process.
+ *
+ * This class is the base class for all the commands
+ * that will be executed during the rebase process.
+ */
+
+sealed class IRCommand() {
     /**
      * This method is to set up connection with the
      * Interactive Rebase mechanism.
@@ -14,16 +20,8 @@ data class FixupCommand(var parentCommit: CommitInfo, val fixupCommits: MutableL
      * This will be called within the RebaseInvoker,
      * once the actual rebase is initiated through the rebase button.
      */
-    override fun execute(
+    internal abstract fun execute(
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
-    ) {
-        val fixups = fixupCommits + parentCommit
-        val commitIndices =
-            fixups.map {
-                    c ->
-                branchInfo.currentCommits.reversed().indexOf(c)
-            }.reversed()
-        model.unite(commitIndices)
-    }
+    )
 }

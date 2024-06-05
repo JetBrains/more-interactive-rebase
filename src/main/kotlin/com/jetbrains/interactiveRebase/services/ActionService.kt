@@ -6,12 +6,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.*
 import com.jetbrains.interactiveRebase.visuals.HeaderPanel
 import com.jetbrains.interactiveRebase.visuals.MainPanel
 
@@ -50,6 +45,16 @@ class ActionService(project: Project) {
             invoker.addCommand(command)
         }
 
+        modelService.branchInfo.clearSelectedCommits()
+    }
+
+
+    fun takeNormalRebaseAction() {
+
+        val command = modelService.graphInfo.addedBranch?.currentCommits?.get(1)?.let { RebaseCommand(it) }
+        if(command!=null){
+            invoker.addCommand(command)
+        }
         modelService.branchInfo.clearSelectedCommits()
     }
 
@@ -254,7 +259,7 @@ class ActionService(project: Project) {
         }
         selectedCommits.remove(parentCommit)
         val fixupCommits = cleanSelectedCommits(parentCommit, selectedCommits)
-        var command: RebaseCommand = FixupCommand(parentCommit, fixupCommits)
+        var command: IRCommand = FixupCommand(parentCommit, fixupCommits)
 
         if (isSquash) {
             command = SquashCommand(parentCommit, fixupCommits, parentCommit.commit.subject)
@@ -277,8 +282,8 @@ class ActionService(project: Project) {
      * For fixup and squashed commits, handles the flags for commits involved that are not the parent
      */
     private fun handleCombinedCommits(
-        commit: CommitInfo,
-        command: RebaseCommand,
+            commit: CommitInfo,
+            command: IRCommand,
     ) {
         commit.isSelected = false
         commit.isHovered = false
@@ -314,7 +319,7 @@ class ActionService(project: Project) {
      * and the invoker
      */
     private fun removeSquashFixChange(commit: CommitInfo) {
-        val changesToRemove = mutableListOf<RebaseCommand>()
+        val changesToRemove = mutableListOf<IRCommand>()
         commit.changes.forEach {
             if (it is FixupCommand || it is SquashCommand) {
                 modelService.invoker.removeCommand(it)
@@ -328,7 +333,7 @@ class ActionService(project: Project) {
      * Called to either get the fixupCommits or squashedCommits parameter of a command,
      * to be used when fixup and squashed command is being used interchangeably
      */
-    fun getCombinedCommits(change: RebaseCommand): List<CommitInfo> {
+    fun getCombinedCommits(change: IRCommand): List<CommitInfo> {
         return when (change) {
             is FixupCommand -> change.fixupCommits
             is SquashCommand -> change.squashedCommits

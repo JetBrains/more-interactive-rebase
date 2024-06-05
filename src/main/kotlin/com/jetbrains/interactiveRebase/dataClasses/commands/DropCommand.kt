@@ -5,7 +5,7 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
-data class DropCommand(var commit: CommitInfo) : RebaseCommand() {
+data class DropCommand(var commit: CommitInfo) : IRCommand() {
     /**
      * This method is to set up connection with the
      * Interactive Rebase mechanism.

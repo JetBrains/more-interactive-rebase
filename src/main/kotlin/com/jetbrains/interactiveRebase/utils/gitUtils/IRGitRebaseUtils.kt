@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.vcs.log.VcsShortCommitDetails
 import com.intellij.vcs.log.impl.VcsCommitMetadataImpl
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4idea.GitUtil
 import git4idea.branch.GitRebaseParams
 import git4idea.i18n.GitBundle
@@ -30,7 +31,7 @@ class IRGitRebaseUtils(private val project: Project) {
      * TODO(optimize and refactor)
      */
     internal fun rebase(
-        commit: VcsCommitMetadataImpl,
+        commit: String,
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
     ) {
         object : Task.Backgroundable(project, GitBundle.message("rebase.progress.indicator.preparing.title")) {
@@ -44,7 +45,7 @@ class IRGitRebaseUtils(private val project: Project) {
      * Calls the rebase functionality in the git4idea rebase. Runs the task in the background.
      */
     internal fun startInteractiveRebase(
-        commit: VcsShortCommitDetails,
+        commit: String,
         editorHandler: GitRebaseEditorHandler? = null,
     ) {
         object : Task.Backgroundable(project, GitBundle.message("rebase.progress.indicator.title")) {
@@ -53,7 +54,7 @@ class IRGitRebaseUtils(private val project: Project) {
                     repo?.vcs?.let {
                         GitRebaseParams.editCommits(
                             it.version,
-                            commit.parents.first().asString(),
+                            commit,
                             editorHandler,
                             false,
                         )

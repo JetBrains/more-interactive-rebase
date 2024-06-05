@@ -2,19 +2,19 @@ package com.jetbrains.interactiveRebase.dataClasses
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
-import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.IRCommand
 import git4idea.GitCommit
 
 data class CommitInfo(
-    val commit: GitCommit,
-    val project: Project,
-    val changes: MutableList<RebaseCommand> = mutableListOf(),
-    var isSelected: Boolean = false,
-    var isHovered: Boolean = false,
-    var isTextFieldEnabled: Boolean = false,
-    var isSquashed: Boolean = false,
-    var isReordered: Boolean = false,
-    var isDragged: Boolean = false,
+        val commit: GitCommit,
+        val project: Project,
+        val changes: MutableList<IRCommand> = mutableListOf(),
+        var isSelected: Boolean = false,
+        var isHovered: Boolean = false,
+        var isTextFieldEnabled: Boolean = false,
+        var isSquashed: Boolean = false,
+        var isReordered: Boolean = false,
+        var isDragged: Boolean = false,
 ) {
     internal val listeners: MutableList<Listener> = mutableListOf()
 
@@ -30,7 +30,7 @@ data class CommitInfo(
      * list of changes of the
      * commit
      */
-    fun addChange(change: RebaseCommand) {
+    fun addChange(change: IRCommand) {
         changes.add(change)
         listeners.forEach { it.onCommitChange() }
     }

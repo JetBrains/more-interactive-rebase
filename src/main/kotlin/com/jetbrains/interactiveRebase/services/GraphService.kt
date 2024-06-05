@@ -64,7 +64,7 @@ class GraphService(private val project: Project) {
      */
     fun getBranchingCommit(startingCommit: CommitInfo): CommitInfo {
         val parents = startingCommit.commit.parents
-        if (parents.isEmpty() || parents.size > 1) {
+        if (parents.isEmpty()) {
             throw IRInaccessibleException("Branching-off commit cannot be displayed")
         }
         val parent = commitService.turnHashToCommit(parents[0].asString())
