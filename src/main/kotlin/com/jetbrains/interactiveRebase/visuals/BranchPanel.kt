@@ -29,7 +29,7 @@ class BranchPanel(
     val borderSize = 1f
     private var size = branch.currentCommits.size
 
-    val circles: MutableList<CirclePanel> = mutableListOf()
+    var circles: MutableList<CirclePanel> = mutableListOf()
 
     /**
      * Makes a branch panel with vertical orientation
