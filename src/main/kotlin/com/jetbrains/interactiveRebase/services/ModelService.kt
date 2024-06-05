@@ -23,6 +23,7 @@ class ModelService(
     constructor(project: Project, coroutineScope: CoroutineScope) : this(project, coroutineScope, project.service<CommitService>())
 
     val branchInfo = BranchInfo()
+
     // TODO: remove?
 //    val otherBranchInfo = BranchInfo()
     val graphInfo = GraphInfo(branchInfo)

@@ -2,9 +2,12 @@ package com.jetbrains.interactiveRebase.visuals.multipleBranches
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
+import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.Palette
 import com.jetbrains.interactiveRebase.visuals.RoundedButton
 import java.awt.Dimension
@@ -12,7 +15,7 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import javax.swing.JLabel
 
-class SideBranchPanel(val branchName: String) : RoundedPanel(), Disposable {
+class SideBranchPanel(val branchName: String, val project: Project) : RoundedPanel(), Disposable {
     var isSelected: Boolean = false
     lateinit var label: JLabel
     lateinit var button: RoundedButton
@@ -111,6 +114,7 @@ class SideBranchPanel(val branchName: String) : RoundedPanel(), Disposable {
         backgroundColor = Palette.JETBRAINS_SELECTED
         this.isSelected = true
         this.button.isVisible = true
+        project.service<ModelService>().addBranchToGraphInfo(branchName)
 
         this.repaint()
         this.revalidate()

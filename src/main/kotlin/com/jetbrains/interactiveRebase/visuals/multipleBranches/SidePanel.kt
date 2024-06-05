@@ -1,5 +1,6 @@
 package com.jetbrains.interactiveRebase.visuals.multipleBranches
 
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
@@ -8,16 +9,15 @@ import com.jetbrains.interactiveRebase.listeners.SideBranchPanelListener
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 
-class SidePanel : JBPanel<JBPanel<*>>() {
+class SidePanel(var branches: MutableList<String>, val project: Project) : JBPanel<JBPanel<*>>() {
     internal var isVisible: Boolean = false
-    internal var branches: MutableList<String> = mutableListOf()
+
+//    internal var branches: MutableList<String> = mutableListOf()
     internal var sideBranchPanels: MutableList<SideBranchPanel> = mutableListOf()
 
     init {
         layout = GridBagLayout()
 
-        // TODO: replace these hardcoded values with actual branch names
-        branches = mutableListOf("Branch 1", "Branch 2", "Branch 3")
         updateBranchNames()
     }
 
@@ -43,7 +43,7 @@ class SidePanel : JBPanel<JBPanel<*>>() {
      * Creates a panel for a single branch name.
      */
     fun createSideBranchPanel(i: Int) {
-        val branch = SideBranchPanel(branches[i])
+        val branch = SideBranchPanel(branches[i], project)
         sideBranchPanels.add(branch)
 
         addBranchListener(branch)
