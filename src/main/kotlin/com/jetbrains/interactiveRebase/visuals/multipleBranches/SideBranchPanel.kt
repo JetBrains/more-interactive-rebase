@@ -85,7 +85,7 @@ class SideBranchPanel(val branchName: String) : RoundedPanel(), Disposable {
      * Changes the color of the panel when the mouse hovers over it.
      */
     internal fun onHover() {
-        backgroundColor = Palette.JETBRAINSHOVER
+        backgroundColor = Palette.JETBRAINS_HOVER
         this.repaint()
         this.revalidate()
     }
@@ -108,7 +108,7 @@ class SideBranchPanel(val branchName: String) : RoundedPanel(), Disposable {
      */
     internal fun selectBranch() {
         this.isOpaque = true
-        backgroundColor = Palette.JETBRAINSSELCTED
+        backgroundColor = Palette.JETBRAINS_SELECTED
         this.isSelected = true
         this.button.isVisible = true
 
@@ -120,7 +120,7 @@ class SideBranchPanel(val branchName: String) : RoundedPanel(), Disposable {
      * Changes the color of the branch name (label) to gray.
      */
     internal fun grayOutText() {
-        this.label.foreground = Palette.GRAYBUTTON
+        this.label.foreground = Palette.GRAY_BUTTON
     }
 
     /**

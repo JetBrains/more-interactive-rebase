@@ -51,7 +51,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
     fun testOnHover() {
         val sideBranchPanel = SideBranchPanel(branchName)
         sideBranchPanel.onHover()
-        assertThat(sideBranchPanel.backgroundColor).isEqualTo(Palette.JETBRAINSHOVER)
+        assertThat(sideBranchPanel.backgroundColor).isEqualTo(Palette.JETBRAINS_HOVER)
     }
 
     fun testGrayOutText() {

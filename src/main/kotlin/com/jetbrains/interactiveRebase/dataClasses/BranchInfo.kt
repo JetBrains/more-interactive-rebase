@@ -100,7 +100,7 @@ class BranchInfo(
         if (name != other.name) return false
         if (initialCommits != other.initialCommits) return false
         if (selectedCommits != other.selectedCommits) return false
-        if (isCheckedOut != other.isCheckedOut) return false
+        if (isPrimary != other.isPrimary) return false
         if (currentCommits != other.currentCommits) return false
 
         return true
@@ -110,7 +110,7 @@ class BranchInfo(
         var result = name.hashCode()
         result = 31 * result + initialCommits.hashCode()
         result = 31 * result + selectedCommits.hashCode()
-        result = 31 * result + isCheckedOut.hashCode()
+        result = 31 * result + isPrimary.hashCode()
         result = 31 * result + currentCommits.hashCode()
         return result
     }
