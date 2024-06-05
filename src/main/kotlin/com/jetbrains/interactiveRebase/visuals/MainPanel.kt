@@ -24,23 +24,17 @@ class MainPanel(
     JBPanel<JBPanel<*>>(), Disposable {
     internal var commitInfoPanel = CommitInfoPanel(project)
     internal var contentPanel: JBScrollPane
-    internal var branchPanel: LabeledBranchPanel
-    internal var otherBranchPanel: LabeledBranchPanel?
     internal var sidePanel: JBScrollPane
     internal var graphPanel: GraphPanel
+    private val graphInfoListener: GraphInfo.Listener
     private val branchInfoListener: BranchInfo.Listener
-    private val otherBranchInfoListener: BranchInfo.Listener
     private val commitInfoListener: CommitInfo.Listener
     private val graphInfo: GraphInfo = project.service<ModelService>().graphInfo
     private val branchInfo: BranchInfo = graphInfo.mainBranch
     private var otherBranchInfo: BranchInfo? = graphInfo.addedBranch
 
     init {
-//        branchPanel = createBranchPanel()
-//        Disposer.register(this, branchPanel)
         graphPanel = createGraphPanel()
-        branchPanel = graphPanel.mainBranchPanel
-        otherBranchPanel = graphPanel.addedBranchPanel
 
         contentPanel = createContentPanel()
         sidePanel = createSidePanel()
@@ -48,46 +42,31 @@ class MainPanel(
         this.layout = BorderLayout()
         createMainPanel()
 
-        branchInfoListener =
-            object : BranchInfo.Listener {
-                override fun onNameChange(newName: String) {
-                    branchPanel.updateBranchName()
-                }
-
-                override fun onCommitChange(commits: List<CommitInfo>) {
-                    branchPanel.updateCommits()
-                    registerCommitListener()
-                }
-
-                override fun onSelectedCommitChange(selectedCommits: MutableList<CommitInfo>) {
-                    branchPanel.updateCommits()
-                    commitInfoPanel.commitsSelected(selectedCommits.map { it.commit })
-                }
-
-                override fun onCurrentCommitsChange(currentCommits: MutableList<CommitInfo>) {
-                    branchPanel.updateCommits()
-                    registerCommitListener()
+        graphInfoListener =
+            object : GraphInfo.Listener {
+                override fun onBranchChange() {
+                    graphPanel.updateGraphPanel()
                 }
             }
 
-        otherBranchInfoListener =
+        branchInfoListener =
             object : BranchInfo.Listener {
                 override fun onNameChange(newName: String) {
-                    otherBranchPanel?.updateBranchName()
+                    graphPanel.mainBranchPanel.updateBranchName()
                 }
 
                 override fun onCommitChange(commits: List<CommitInfo>) {
-                    otherBranchPanel?.updateCommits()
+                    graphPanel.updateGraphPanel()
                     registerCommitListener()
                 }
 
                 override fun onSelectedCommitChange(selectedCommits: MutableList<CommitInfo>) {
-                    otherBranchPanel?.updateCommits()
+                    graphPanel.mainBranchPanel.updateCommits()
                     commitInfoPanel.commitsSelected(selectedCommits.map { it.commit })
                 }
 
                 override fun onCurrentCommitsChange(currentCommits: MutableList<CommitInfo>) {
-                    otherBranchPanel?.updateCommits()
+                    graphPanel.mainBranchPanel.updateCommits()
                     registerCommitListener()
                 }
             }
@@ -95,12 +74,12 @@ class MainPanel(
         commitInfoListener =
             object : CommitInfo.Listener {
                 override fun onCommitChange() {
-                    branchPanel.updateCommits()
+                    graphPanel.mainBranchPanel.updateCommits()
                 }
             }
 
+        graphInfo.addListener(graphInfoListener)
         branchInfo.addListener(branchInfoListener)
-        otherBranchInfo?.addListener(otherBranchInfoListener)
         registerCommitListener()
 
         Disposer.register(this, branchInfoListener)

@@ -20,7 +20,7 @@ class RemoveSideBranchListenerTest : BasePlatformTestCase() {
         parent.sideBranchPanels.add(sideBranchPanel)
         parent.sideBranchPanels.add(SideBranchPanel("feature", project))
         parent.sideBranchPanels.add(SideBranchPanel("bugfix", project))
-        removeSideBranchListener = RemoveSideBranchListener(sideBranchPanel, parent)
+        removeSideBranchListener = RemoveSideBranchListener(project, sideBranchPanel, parent)
         mouseEvent = MouseEvent(sideBranchPanel, 0, 0, 0, 0, 0, 0, false)
     }
 

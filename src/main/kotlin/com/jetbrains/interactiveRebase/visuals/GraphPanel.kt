@@ -25,15 +25,13 @@ import javax.swing.SwingConstants
  */
 class GraphPanel(
     val project: Project,
-    graphInfo: GraphInfo = project.service<ModelService>().graphInfo,
+    val graphInfo: GraphInfo = project.service<ModelService>().graphInfo,
     private val mainColor: JBColor = Palette.BLUE,
     private val addedColor: JBColor = Palette.LIME_GREEN,
 ) : JBPanel<JBPanel<*>>() {
-    private val mainBranch = graphInfo.mainBranch
-    private val addedBranch = graphInfo.addedBranch
-    val mainBranchPanel: LabeledBranchPanel =
+    var mainBranchPanel: LabeledBranchPanel =
         createLabeledBranchPanel(
-            mainBranch,
+            graphInfo.mainBranch,
             SwingConstants.RIGHT,
             mainColor,
         )
@@ -41,10 +39,10 @@ class GraphPanel(
     var addedBranchPanel: LabeledBranchPanel? = null
 
     init {
-        if (addedBranch != null) {
+        if (graphInfo.addedBranch != null) {
             addedBranchPanel =
                 createLabeledBranchPanel(
-                    addedBranch,
+                    graphInfo.addedBranch!!,
                     SwingConstants.LEFT,
                     addedColor,
                 )
@@ -175,6 +173,32 @@ class GraphPanel(
                 mainLastCircle.y + // start of the circle
                 mainLastCircle.height / 2 // center of the circle
         return Pair(mainCircleCenterX, mainCircleCenterY)
+    }
+
+    /**
+     * Update branch panels
+     */
+    fun updateGraphPanel(){
+        removeAll()
+
+        mainBranchPanel =
+        createLabeledBranchPanel(
+            graphInfo.mainBranch,
+            SwingConstants.RIGHT,
+            mainColor,
+        )
+
+        if (graphInfo.addedBranch != null) {
+            addedBranchPanel =
+                createLabeledBranchPanel(
+                    graphInfo.addedBranch!!,
+                    SwingConstants.LEFT,
+                    addedColor,
+                )
+        }
+
+        addBranches()
+        revalidate()
     }
 
     /**
