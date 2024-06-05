@@ -35,7 +35,7 @@
             <action id="com.jetbrains.interactiveRebase.actions.changePanel.RedoAction"
                     class="com.jetbrains.interactiveRebase.actions.changePanel.RedoAction" text="RedoAction"
                     description="Redo the last action you took">
-                <keyboard-shortcut first-keystroke="ctrl Y" keymap="$default"/>
+                <keyboard-shortcut first-keystroke="ctrl shift Z" keymap="$default"/>
             </action>
 
             <separator/>

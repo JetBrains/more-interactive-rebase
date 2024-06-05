@@ -129,7 +129,6 @@ class ActionService(project: Project) {
      */
     fun performPickAction() {
         val commits = modelService.getSelectedCommits()
-        val changesToAdd = mutableListOf<Pair<CommitInfo, PickCommand>>()
         commits.forEach { commitInfo ->
             val changes = commitInfo.getChangesAfterPick().iterator()
             while (changes.hasNext()) {
@@ -140,16 +139,11 @@ class ActionService(project: Project) {
                 if (change is SquashCommand && change.parentCommit == commitInfo) {
                     clearSquashOnPick(change, commitInfo)
                 }
-                if (change !is ReorderCommand) {
-                    val pickCommand = PickCommand(commitInfo)
-                    changesToAdd.add(commitInfo to pickCommand)
-                }
             }
-
-        }
-        changesToAdd.forEach { (commitInfo, pickCommand) ->
+            val pickCommand = PickCommand(commitInfo)
             commitInfo.addChange(pickCommand)
             invoker.addCommand(pickCommand)
+
         }
         modelService.branchInfo.clearSelectedCommits()
     }
@@ -210,6 +204,7 @@ class ActionService(project: Project) {
             commitInfo.isHovered = false
         }
         invoker.branchInfo.clearSelectedCommits()
+        invoker.undoneCommands.clear()
     }
 
     /**
@@ -326,123 +321,184 @@ class ActionService(project: Project) {
         }
     }
 
+    /**
+     * Undoes the last action performed by the user.
+     * It removes the last command from the list of commands
+     * in the invoker, and adds it to a list of "undone" commands.
+     *
+     * The list of undone commands gets cleared when a new action is performed.
+     */
     fun undoLastAction(){
         val command = invoker.commands.removeLast()
-        invoker.undoneCommands.add(command)
-
         val commitToBeUndone = command.commitOfCommand()
-        commitToBeUndone.removeChange(command)
+
         if(command is ReorderCommand)
             undoReorder(commitToBeUndone, command)
         if(command is SquashCommand)
-            undoSquash(command)
+            undoSquashOrFixup(command, command.squashedCommits, command.parentCommit)
         if(command is FixupCommand)
-            undoFixup(command)
-        removePickFromSquashedCommits(commitToBeUndone)
+            undoSquashOrFixup(command, command.fixupCommits, command.parentCommit)
+        if(command is PickCommand)
+            removePickFromSquashOrFixup(commitToBeUndone)
+
+        commitToBeUndone.removeChange(command)
+        invoker.undoneCommands.add(command)
+
         modelService.branchInfo.clearSelectedCommits()
     }
 
+    /**
+     * Redoes the last action performed by the user.
+     * It removes the last command from the list of "undone" commands
+     * in the invoker, and adds it back to the list of commands.
+     */
     fun redoLastAction(){
         val command = invoker.undoneCommands.removeLast()
-        invoker.commands.add(command)
         val commitToBeRedone = command.commitOfCommand()
-        commitToBeRedone.addChange(command)
+
         if(command is ReorderCommand)
             redoReorder(commitToBeRedone, command)
         if(command is SquashCommand)
             redoSquash(command)
         if(command is FixupCommand)
             redoFixup(command)
+        if(command is PickCommand)
+            redoPick(commitToBeRedone)
+
+        commitToBeRedone.addChange(command)
+        invoker.commands.add(command)
+
         modelService.branchInfo.clearSelectedCommits()
     }
 
-    internal fun undoSquash(command: SquashCommand){
-        val parentCommit = command.parentCommit
+
+    /**
+     * If the last undone action that was performed by the user was a pick,
+     * it checks whether the commit was previously squashed or fixed up.
+     *
+     * If it was, it deals with it in such a way that the squashed or fixed up commits
+     * disappear again from the graph, and they are also picked.
+     */
+    fun redoPick(commit: CommitInfo){
+        val squashy = commit.changes.lastOrNull { it is SquashCommand } as? SquashCommand
+        val fixy = commit.changes.lastOrNull { it is FixupCommand } as? FixupCommand
+
+        if(squashy != null){
+            clearSquashOnPick(squashy, commit)
+            squashy.squashedCommits.forEach {
+                it.addChange(PickCommand(it))
+            }
+        }
+
+        if(fixy != null){
+            clearFixupOnPick(fixy, commit)
+            fixy.fixupCommits.forEach {
+                it.addChange(PickCommand(it))
+            }
+        }
+    }
+
+    /**
+     * If the command is a squash or fixup command, it undoes it,
+     * by marking the squashed or fixed up commits as not squashed,
+     * removing the command from the commits and adding back the commits to tha graph.
+     */
+    internal fun undoSquashOrFixup(command: RebaseCommand, commits: List<CommitInfo>, parentCommit: CommitInfo) {
         parentCommit.isSquashed = false
-        command.squashedCommits.forEach {
+        commits.forEach {
             it.isSquashed = false
             removeSquashFixChange(it)
         }
         parentCommit.removeChange(command)
         parentCommit.setTextFieldEnabledTo(false)
-        val currentCommits =  modelService.branchInfo.currentCommits
+
+        val currentCommits = modelService.branchInfo.currentCommits
         currentCommits.addAll(
             currentCommits.indexOf(parentCommit),
-            command.squashedCommits
+            commits
         )
     }
 
-    internal fun undoFixup(command: FixupCommand){
-        val parentCommit = command.parentCommit
-        parentCommit.isSquashed = false
-        command.fixupCommits.forEach {
-            it.isSquashed = false
-            removeSquashFixChange(it)
-        }
-        parentCommit.removeChange(command)
-        parentCommit.setTextFieldEnabledTo(false)
-        val currentCommits =  modelService.branchInfo.currentCommits
-        currentCommits.addAll(
-            currentCommits.indexOf(parentCommit),
-            command.fixupCommits
-        )
-    }
-
+    /**
+     * If the undone action is a squash command, we need to add back the logic
+     * for hiding the squashed commits.
+     */
     internal fun redoSquash(command: SquashCommand){
         command.squashedCommits.forEach {
             handleCombinedCommits(it, command)
         }
     }
 
+    /**
+     * If the undone action is a fixup command, we need to add back the logic
+     * for hiding the fixed up commits.
+     */
     internal fun redoFixup(command: FixupCommand){
         command.fixupCommits.forEach {
             handleCombinedCommits(it, command)
         }
     }
 
-    internal fun removePickFromSquashedCommits(commit: CommitInfo){
+    /**
+     * If the last undone action that was performed by the user was a pick,
+     * it checks whether the commit was previously squashed or fixed up.
+     *
+     */
+    internal fun removePickFromSquashOrFixup(commit: CommitInfo) {
         val squashy = commit.changes.lastOrNull { it is SquashCommand } as? SquashCommand
         val fixy = commit.changes.lastOrNull { it is FixupCommand } as? FixupCommand
-        if(squashy != null){
-        squashy.squashedCommits.forEach {
+
+        squashy?.let {
+            removePickFromSquashed(it.squashedCommits)
+        }
+        fixy?.let {
+            removePickFromSquashed(it.fixupCommits)
+        }
+    }
+
+    /**
+     * This removes all "traces" of the commits being picked from the squashed or fixed up commits.
+     */
+    internal fun removePickFromSquashed(commits: List<CommitInfo>) {
+        commits.forEach {
             it.isSquashed = true
             val pickCommand = it.changes.lastOrNull() as? PickCommand
-            if(pickCommand != null){
-                it.removeChange(pickCommand)
-                modelService.invoker.removeCommand(pickCommand)
+            pickCommand?.let { command ->
+                it.removeChange(command)
+                modelService.invoker.removeCommand(command)
                 modelService.branchInfo.currentCommits.remove(it)
-            }
-        }
-        }
-        if(fixy != null){
-            fixy.fixupCommits.forEach {
-                it.isSquashed = true
-                val pickCommand = it.changes.lastOrNull() as? PickCommand
-                if(pickCommand != null){
-                    it.removeChange(pickCommand)
-                    modelService.invoker.removeCommand(pickCommand)
-                    modelService.branchInfo.currentCommits.remove(it)
-                }
             }
         }
     }
 
-
-
+    /**
+     * If the last action that was performed by the user was a reorder,
+     * this reorders to the initial state.
+     */
     internal fun undoReorder(commit: CommitInfo, command: ReorderCommand){
         commit.setReorderedTo(false)
         mainPanel.branchPanel.branch.updateCurrentCommits(command.newIndex, command.oldIndex, commit)
     }
 
+    /**
+     * If the last undone action that was performed by the user was a reorder,
+     * this reorders to the previous state.
+     */
     internal fun redoReorder(commit: CommitInfo, command: ReorderCommand){
         commit.setReorderedTo(true)
         mainPanel.branchPanel.branch.updateCurrentCommits(command.oldIndex, command.newIndex, commit)
     }
 
+    /**
+     * The undo button should be enabled if there are any actions to undo.
+     */
     fun checkUndo(e: AnActionEvent){
         e.presentation.isEnabled = invoker.commands.isNotEmpty()
     }
 
+    /**
+     * The redo button should be enabled if there are any actions to redo.
+     */
     fun checkRedo(e: AnActionEvent){
         e.presentation.isEnabled = invoker.undoneCommands.isNotEmpty()
     }
