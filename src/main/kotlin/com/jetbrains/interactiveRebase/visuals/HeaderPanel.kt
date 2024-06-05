@@ -68,8 +68,8 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
 
         var normalButton = RoundedButton("Normal", Palette.GRAY_BUTTON, Palette.WHITE_TEXT)
         normalButton.addActionListener {
-            project.service<ModelService>().addBranchToGraphInfo("main")
-            println(project.service<ModelService>().graphInfo)
+//            project.service<ModelService>().addBranchToGraphInfo("main")
+//            println(project.service<ModelService>().graphInfo)
             project.service<ActionService>().takeNormalRebaseAction() }
         buttonPanel.add(normalButton)
         buttonPanel.add(resetButton)

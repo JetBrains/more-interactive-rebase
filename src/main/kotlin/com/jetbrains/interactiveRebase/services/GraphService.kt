@@ -90,7 +90,8 @@ class GraphService(private val project: Project) {
             branchInfo.setName(name)
             branchInfo.setCommits(commits)
             branchInfo.clearSelectedCommits()
-            invoker.branchInfo = branchInfo
+            if (branchInfo.isEnabled) {
+            invoker.branchInfo = branchInfo}
         }
     }
 

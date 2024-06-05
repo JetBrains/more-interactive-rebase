@@ -13,8 +13,6 @@ import git4ideaClasses.IRGitModel
 @Service(Service.Level.PROJECT)
 class RebaseInvoker(val project: Project) {
     var branchInfo = BranchInfo()
-
-//    var otherBranchInfo = BranchInfo()
     internal lateinit var model: IRGitModel<GitRebaseEntryGeneratedUsingLog>
 
     /**
