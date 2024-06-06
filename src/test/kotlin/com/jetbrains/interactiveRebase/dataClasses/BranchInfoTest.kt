@@ -13,6 +13,10 @@ class BranchInfoTest : BasePlatformTestCase() {
     private lateinit var commit: CommitInfo
     private lateinit var commit1: CommitInfo
 
+    init {
+        System.setProperty("idea.home.path", "/tmp")
+    }
+
     override fun setUp() {
         super.setUp()
         branchInfo = BranchInfo()

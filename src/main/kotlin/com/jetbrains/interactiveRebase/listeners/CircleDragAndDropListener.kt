@@ -155,7 +155,8 @@ class CircleDragAndDropListener(
     internal fun markCommitAsReordered() {
         commit.setReorderedTo(true)
         val command =
-            ReorderCommand(commit,
+            ReorderCommand(
+                commit,
                 initialIndex,
                 currentIndex,
             )

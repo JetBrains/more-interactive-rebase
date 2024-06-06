@@ -24,6 +24,10 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
     private lateinit var listener: CircleHoverListener
     private lateinit var commit1: CommitInfo
 
+    init {
+        System.setProperty("idea.home.path", "/tmp")
+    }
+
     override fun setUp() {
         super.setUp()
         circlePanel = mock(CirclePanel::class.java)

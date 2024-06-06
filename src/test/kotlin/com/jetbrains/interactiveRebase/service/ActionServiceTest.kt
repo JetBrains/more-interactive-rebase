@@ -196,7 +196,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     fun testPerformPickAction() {
         // setup the commands
         val command1 = SquashCommand(commitInfo1, mutableListOf(commitInfo2), "lol")
-        val command2 = ReorderCommand(commitInfo1,1, 2)
+        val command2 = ReorderCommand(commitInfo1, 1, 2)
         commitInfo1.addChange(command1)
         commitInfo1.addChange(command2)
         commitInfo1.isSelected = true
@@ -215,6 +215,26 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(modelService.branchInfo.selectedCommits.size).isEqualTo(0)
     }
 
+    fun testPerformPickActionForFixUp() {
+        modelService.invoker.undoneCommands.clear()
+        modelService.invoker.commands.clear()
+
+        val command1 = FixupCommand(commitInfo1, mutableListOf(commitInfo2))
+
+        commitInfo1.addChange(command1)
+        commitInfo2.addChange(command1)
+
+        commitInfo1.isSelected = true
+
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo1)
+        modelService.invoker.addCommand(command1)
+
+        actionService.performPickAction()
+        assertThat(modelService.invoker.commands.size).isEqualTo(2)
+
+        assertThat(modelService.branchInfo.currentCommits).isEqualTo(mutableListOf(commitInfo2, commitInfo1))
+    }
+
     fun testPerformPickActionWithEmptyList() {
         actionService.performPickAction()
         assertThat(modelService.branchInfo.selectedCommits.size).isEqualTo(0)
@@ -223,7 +243,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     fun testResetAllChangesAction() {
         // setup the commands
         val command1 = DropCommand(commitInfo1)
-        val command2 = ReorderCommand(commitInfo1,1, 2)
+        val command2 = ReorderCommand(commitInfo1, 1, 2)
         commitInfo1.addChange(command1)
         commitInfo1.addChange(command2)
         commitInfo1.isSelected = true
@@ -329,13 +349,15 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(actionService.getCombinedCommits(neither)).isEmpty()
     }
 
-    fun testCheckUndoDisabled(){
+    fun testCheckUndoDisabled() {
+        modelService.invoker.commands.clear()
         val testEvent = createTestEvent()
         actionService.checkUndo(testEvent)
         assertThat(testEvent.presentation.isEnabled).isFalse()
     }
 
-    fun testCheckUndoEnabled(){
+    fun testCheckUndoEnabled() {
+        modelService.invoker.commands.clear()
         val command1 = RewordCommand(commitInfo1, "reorderTest")
         modelService.invoker.addCommand(command1)
         val testEvent = createTestEvent()
@@ -343,13 +365,14 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(testEvent.presentation.isEnabled).isTrue()
     }
 
-    fun testCheckRedoDisabled(){
+    fun testCheckRedoDisabled() {
+        modelService.invoker.undoneCommands.clear()
         val testEvent = createTestEvent()
         actionService.checkRedo(testEvent)
         assertThat(testEvent.presentation.isEnabled).isFalse()
     }
 
-    fun testCheckRedoEnabled(){
+    fun testCheckRedoEnabled() {
         val command1 = RewordCommand(commitInfo1, "reorderTest")
         modelService.invoker.undoneCommands.add(command1)
         val testEvent = createTestEvent()
@@ -357,7 +380,9 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(testEvent.presentation.isEnabled).isTrue()
     }
 
-    fun testUndoReorder(){
+    fun testUndoReorder() {
+        modelService.invoker.undoneCommands.clear()
+        modelService.invoker.commands.clear()
         val command1 = RewordCommand(commitInfo1, "reorderTest")
         val command2 = ReorderCommand(commitInfo1, 0, 1)
         commitInfo1.addChange(command1)
@@ -373,7 +398,9 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(modelService.branchInfo.currentCommits).isEqualTo(mutableListOf(commitInfo1, commitInfo2))
     }
 
-    fun testRedoReorder(){
+    fun testRedoReorder() {
+        modelService.invoker.undoneCommands.clear()
+        modelService.invoker.commands.clear()
         val command1 = RewordCommand(commitInfo1, "reorderTest")
         val command2 = ReorderCommand(commitInfo1, 1, 0)
         commitInfo1.addChange(command1)
@@ -387,6 +414,174 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(modelService.invoker.undoneCommands.size).isEqualTo(0)
 
         assertThat(modelService.branchInfo.currentCommits).isEqualTo(mutableListOf(commitInfo1, commitInfo2))
+    }
+
+    fun testUndoPickWithSquashBefore() {
+        modelService.invoker.undoneCommands.clear()
+        modelService.invoker.commands.clear()
+
+        val command1 = SquashCommand(commitInfo1, mutableListOf(commitInfo2), "new message")
+        val command2 = PickCommand(commitInfo1)
+        val command3 = PickCommand(commitInfo2)
+
+        commitInfo1.addChange(command1)
+        commitInfo2.addChange(command1)
+        commitInfo1.addChange(command2)
+        commitInfo2.addChange(command3)
+
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo2, commitInfo1)
+        modelService.invoker.addCommand(command1)
+        modelService.invoker.addCommand(command3)
+
+        actionService.undoLastAction()
+        assertThat(modelService.invoker.commands.size).isEqualTo(1)
+        assertThat(modelService.invoker.undoneCommands.size).isEqualTo(1)
+
+        assertThat(modelService.branchInfo.currentCommits).isEqualTo(mutableListOf(commitInfo1))
+    }
+
+    fun testUndoPickWithFixupBefore() {
+        modelService.invoker.undoneCommands.clear()
+        modelService.invoker.commands.clear()
+
+        val command1 = FixupCommand(commitInfo1, mutableListOf(commitInfo2))
+        val command2 = PickCommand(commitInfo1)
+        val command3 = PickCommand(commitInfo2)
+
+        commitInfo1.addChange(command1)
+        commitInfo2.addChange(command1)
+        commitInfo1.addChange(command2)
+        commitInfo2.addChange(command3)
+
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo2, commitInfo1)
+        modelService.invoker.addCommand(command1)
+        modelService.invoker.addCommand(command3)
+
+        actionService.undoLastAction()
+        assertThat(modelService.invoker.commands.size).isEqualTo(1)
+        assertThat(modelService.invoker.undoneCommands.size).isEqualTo(1)
+
+        assertThat(modelService.branchInfo.currentCommits).isEqualTo(mutableListOf(commitInfo1))
+    }
+
+    fun testUndoSquash() {
+        modelService.invoker.undoneCommands.clear()
+        modelService.invoker.commands.clear()
+
+        val command1 = SquashCommand(commitInfo1, mutableListOf(commitInfo2), "new message")
+
+        commitInfo1.addChange(command1)
+        commitInfo2.addChange(command1)
+
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo1)
+        modelService.invoker.addCommand(command1)
+
+        actionService.undoLastAction()
+        assertThat(modelService.invoker.commands.size).isEqualTo(0)
+        assertThat(modelService.invoker.undoneCommands.size).isEqualTo(1)
+
+        assertThat(modelService.branchInfo.currentCommits).isEqualTo(mutableListOf(commitInfo2, commitInfo1))
+    }
+
+    fun testUndoFixup() {
+        modelService.invoker.undoneCommands.clear()
+        modelService.invoker.commands.clear()
+
+        val command1 = FixupCommand(commitInfo1, mutableListOf(commitInfo2))
+
+        commitInfo1.addChange(command1)
+        commitInfo2.addChange(command1)
+
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo1)
+        modelService.invoker.addCommand(command1)
+
+        actionService.undoLastAction()
+        assertThat(modelService.invoker.commands.size).isEqualTo(0)
+        assertThat(modelService.invoker.undoneCommands.size).isEqualTo(1)
+
+        assertThat(modelService.branchInfo.currentCommits).isEqualTo(mutableListOf(commitInfo2, commitInfo1))
+    }
+
+    fun testRedoPick() {
+        modelService.invoker.undoneCommands.clear()
+        modelService.invoker.commands.clear()
+
+        val command1 = SquashCommand(commitInfo1, mutableListOf(commitInfo2), "new message")
+        val command2 = PickCommand(commitInfo1)
+
+        commitInfo1.addChange(command1)
+        commitInfo2.addChange(command1)
+
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo1)
+        modelService.invoker.addCommand(command1)
+        modelService.invoker.undoneCommands.add(command2)
+
+        actionService.redoLastAction()
+        assertThat(modelService.invoker.commands.size).isEqualTo(2)
+        assertThat(modelService.invoker.undoneCommands.size).isEqualTo(0)
+
+        assertThat(modelService.branchInfo.currentCommits).isEqualTo(mutableListOf(commitInfo2, commitInfo1))
+    }
+
+    fun testRedoPickWithFixup() {
+        modelService.invoker.undoneCommands.clear()
+        modelService.invoker.commands.clear()
+
+        val command1 = FixupCommand(commitInfo1, mutableListOf(commitInfo2))
+        val command2 = PickCommand(commitInfo1)
+
+        commitInfo1.addChange(command1)
+        commitInfo2.addChange(command1)
+
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo1)
+        modelService.invoker.addCommand(command1)
+        modelService.invoker.undoneCommands.add(command2)
+
+        actionService.redoLastAction()
+        assertThat(modelService.invoker.commands.size).isEqualTo(2)
+        assertThat(modelService.invoker.undoneCommands.size).isEqualTo(0)
+
+        assertThat(modelService.branchInfo.currentCommits).isEqualTo(mutableListOf(commitInfo2, commitInfo1))
+    }
+
+    fun testRedoFixup() {
+        modelService.invoker.undoneCommands.clear()
+        modelService.invoker.commands.clear()
+
+        val command1 = FixupCommand(commitInfo1, mutableListOf(commitInfo2))
+
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo2, commitInfo1)
+        modelService.invoker.undoneCommands.add(command1)
+
+        actionService.redoLastAction()
+        assertThat(modelService.invoker.commands.size).isEqualTo(1)
+        assertThat(modelService.invoker.undoneCommands.size).isEqualTo(0)
+
+        assertThat(modelService.branchInfo.currentCommits).isEqualTo(mutableListOf(commitInfo1))
+    }
+
+    fun testRedoSquash() {
+        modelService.invoker.undoneCommands.clear()
+        modelService.invoker.commands.clear()
+
+        val command1 = SquashCommand(commitInfo1, mutableListOf(commitInfo2), "new message")
+
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo2, commitInfo1)
+        modelService.invoker.undoneCommands.add(command1)
+
+        actionService.redoLastAction()
+        assertThat(modelService.invoker.commands.size).isEqualTo(1)
+        assertThat(modelService.invoker.undoneCommands.size).isEqualTo(0)
+
+        assertThat(modelService.branchInfo.currentCommits).isEqualTo(mutableListOf(commitInfo1))
+    }
+
+    fun testRemovePickFromSquashed() {
+        modelService.invoker.undoneCommands.clear()
+        modelService.invoker.commands.clear()
+        modelService.invoker.commands.add(DropCommand(commitInfo1))
+        actionService.removePickFromSquashed(listOf(commitInfo1, commitInfo2))
+        assertThat(modelService.invoker.commands.size).isEqualTo(1)
     }
 
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)

@@ -18,7 +18,7 @@ import com.jetbrains.interactiveRebase.visuals.MainPanel
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
-    private var modelService = project.service<ModelService>()
+    internal var modelService = project.service<ModelService>()
     private var invoker = modelService.invoker
     internal lateinit var mainPanel: MainPanel
 
@@ -143,7 +143,6 @@ class ActionService(project: Project) {
             val pickCommand = PickCommand(commitInfo)
             commitInfo.addChange(pickCommand)
             invoker.addCommand(pickCommand)
-
         }
         modelService.branchInfo.clearSelectedCommits()
     }
@@ -328,18 +327,22 @@ class ActionService(project: Project) {
      *
      * The list of undone commands gets cleared when a new action is performed.
      */
-    fun undoLastAction(){
+    fun undoLastAction() {
         val command = invoker.commands.removeLast()
         val commitToBeUndone = command.commitOfCommand()
 
-        if(command is ReorderCommand)
+        if (command is ReorderCommand) {
             undoReorder(commitToBeUndone, command)
-        if(command is SquashCommand)
+        }
+        if (command is SquashCommand) {
             undoSquashOrFixup(command, command.squashedCommits, command.parentCommit)
-        if(command is FixupCommand)
+        }
+        if (command is FixupCommand) {
             undoSquashOrFixup(command, command.fixupCommits, command.parentCommit)
-        if(command is PickCommand)
+        }
+        if (command is PickCommand) {
             removePickFromSquashOrFixup(commitToBeUndone)
+        }
 
         commitToBeUndone.removeChange(command)
         invoker.undoneCommands.add(command)
@@ -352,25 +355,28 @@ class ActionService(project: Project) {
      * It removes the last command from the list of "undone" commands
      * in the invoker, and adds it back to the list of commands.
      */
-    fun redoLastAction(){
+    fun redoLastAction() {
         val command = invoker.undoneCommands.removeLast()
         val commitToBeRedone = command.commitOfCommand()
 
-        if(command is ReorderCommand)
+        if (command is ReorderCommand) {
             redoReorder(commitToBeRedone, command)
-        if(command is SquashCommand)
+        }
+        if (command is SquashCommand) {
             redoSquash(command)
-        if(command is FixupCommand)
+        }
+        if (command is FixupCommand) {
             redoFixup(command)
-        if(command is PickCommand)
+        }
+        if (command is PickCommand) {
             redoPick(commitToBeRedone)
+        }
 
         commitToBeRedone.addChange(command)
         invoker.commands.add(command)
 
         modelService.branchInfo.clearSelectedCommits()
     }
-
 
     /**
      * If the last undone action that was performed by the user was a pick,
@@ -379,18 +385,18 @@ class ActionService(project: Project) {
      * If it was, it deals with it in such a way that the squashed or fixed up commits
      * disappear again from the graph, and they are also picked.
      */
-    fun redoPick(commit: CommitInfo){
+    fun redoPick(commit: CommitInfo) {
         val squashy = commit.changes.lastOrNull { it is SquashCommand } as? SquashCommand
         val fixy = commit.changes.lastOrNull { it is FixupCommand } as? FixupCommand
 
-        if(squashy != null){
+        if (squashy != null) {
             clearSquashOnPick(squashy, commit)
             squashy.squashedCommits.forEach {
                 it.addChange(PickCommand(it))
             }
         }
 
-        if(fixy != null){
+        if (fixy != null) {
             clearFixupOnPick(fixy, commit)
             fixy.fixupCommits.forEach {
                 it.addChange(PickCommand(it))
@@ -403,7 +409,11 @@ class ActionService(project: Project) {
      * by marking the squashed or fixed up commits as not squashed,
      * removing the command from the commits and adding back the commits to tha graph.
      */
-    internal fun undoSquashOrFixup(command: RebaseCommand, commits: List<CommitInfo>, parentCommit: CommitInfo) {
+    internal fun undoSquashOrFixup(
+        command: RebaseCommand,
+        commits: List<CommitInfo>,
+        parentCommit: CommitInfo,
+    ) {
         parentCommit.isSquashed = false
         commits.forEach {
             it.isSquashed = false
@@ -415,7 +425,7 @@ class ActionService(project: Project) {
         val currentCommits = modelService.branchInfo.currentCommits
         currentCommits.addAll(
             currentCommits.indexOf(parentCommit),
-            commits
+            commits,
         )
     }
 
@@ -423,7 +433,7 @@ class ActionService(project: Project) {
      * If the undone action is a squash command, we need to add back the logic
      * for hiding the squashed commits.
      */
-    internal fun redoSquash(command: SquashCommand){
+    internal fun redoSquash(command: SquashCommand) {
         command.squashedCommits.forEach {
             handleCombinedCommits(it, command)
         }
@@ -433,7 +443,7 @@ class ActionService(project: Project) {
      * If the undone action is a fixup command, we need to add back the logic
      * for hiding the fixed up commits.
      */
-    internal fun redoFixup(command: FixupCommand){
+    internal fun redoFixup(command: FixupCommand) {
         command.fixupCommits.forEach {
             handleCombinedCommits(it, command)
         }
@@ -475,7 +485,10 @@ class ActionService(project: Project) {
      * If the last action that was performed by the user was a reorder,
      * this reorders to the initial state.
      */
-    internal fun undoReorder(commit: CommitInfo, command: ReorderCommand){
+    internal fun undoReorder(
+        commit: CommitInfo,
+        command: ReorderCommand,
+    ) {
         commit.setReorderedTo(false)
         mainPanel.branchPanel.branch.updateCurrentCommits(command.newIndex, command.oldIndex, commit)
     }
@@ -484,7 +497,10 @@ class ActionService(project: Project) {
      * If the last undone action that was performed by the user was a reorder,
      * this reorders to the previous state.
      */
-    internal fun redoReorder(commit: CommitInfo, command: ReorderCommand){
+    internal fun redoReorder(
+        commit: CommitInfo,
+        command: ReorderCommand,
+    ) {
         commit.setReorderedTo(true)
         mainPanel.branchPanel.branch.updateCurrentCommits(command.oldIndex, command.newIndex, commit)
     }
@@ -492,14 +508,14 @@ class ActionService(project: Project) {
     /**
      * The undo button should be enabled if there are any actions to undo.
      */
-    fun checkUndo(e: AnActionEvent){
+    fun checkUndo(e: AnActionEvent) {
         e.presentation.isEnabled = invoker.commands.isNotEmpty()
     }
 
     /**
      * The redo button should be enabled if there are any actions to redo.
      */
-    fun checkRedo(e: AnActionEvent){
+    fun checkRedo(e: AnActionEvent) {
         e.presentation.isEnabled = invoker.undoneCommands.isNotEmpty()
     }
 

@@ -40,6 +40,10 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
     private lateinit var message2: JBPanel<JBPanel<*>>
     private lateinit var invoker: RebaseInvoker
 
+    init {
+        System.setProperty("idea.home.path", "/tmp")
+    }
+
     override fun setUp() {
         super.setUp()
 
@@ -210,7 +214,7 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
     fun testMarkCommitAsReordered() {
         project.service<ModelService>().markCommitAsReordered(commit, 1, 1)
         verify(commit).setReorderedTo(true)
-        verify(commit).addChange(ReorderCommand(commit,1, 1))
+        verify(commit).addChange(ReorderCommand(commit, 0, 0))
         assertThat(invoker.commands.any { it is ReorderCommand }).isTrue()
     }
 

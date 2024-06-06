@@ -7,7 +7,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.services.ActionService
 
-class UndoAction: AnAction("Undo", "Undo the last action", AllIcons.Actions.Undo) {
+class UndoAction : AnAction("Undo", "Undo the last action", AllIcons.Actions.Undo) {
     override fun actionPerformed(e: AnActionEvent) {
         e.project?.service<ActionService>()?.undoLastAction()
     }
@@ -15,6 +15,7 @@ class UndoAction: AnAction("Undo", "Undo the last action", AllIcons.Actions.Undo
     override fun update(e: AnActionEvent) {
         e.project?.service<ActionService>()?.checkUndo(e)
     }
+
     override fun getActionUpdateThread(): ActionUpdateThread {
         return ActionUpdateThread.EDT
     }
