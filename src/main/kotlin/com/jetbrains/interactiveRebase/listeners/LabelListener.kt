@@ -8,8 +8,8 @@ import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 
-class LabelListener(private val commitInfo: CommitInfo) : MouseListener, Disposable {
-    private val project = commitInfo.project
+class LabelListener(private val commit: CommitInfo) : MouseListener, Disposable {
+    private val project = commit.project
     private val modelService = project.service<ModelService>()
 
     /**
@@ -17,14 +17,16 @@ class LabelListener(private val commitInfo: CommitInfo) : MouseListener, Disposa
      * If clicked once, selects or deselects commit
      */
     override fun mouseClicked(e: MouseEvent?) {
-        if (e != null && e.clickCount >= 2 && !commitInfo.changes.any { change -> change is DropCommand }) {
-            commitInfo.setTextFieldEnabledTo(true)
-            commitInfo.isSelected = true
-            modelService.addOrRemoveCommitSelection(commitInfo)
+        if (e != null && e.clickCount >= 2 && !commit.changes.any { change -> change is DropCommand }) {
+            commit.setTextFieldEnabledTo(true)
+            modelService.selectSingleCommit(commit)
         }
         if (e != null && e.clickCount == 1) {
-            commitInfo.isSelected = !commitInfo.isSelected
-            modelService.addOrRemoveCommitSelection(commitInfo)
+            if (!commit.isSelected) {
+                modelService.selectSingleCommit(commit)
+            } else {
+                modelService.removeFromSelectedCommits(commit)
+            }
         }
     }
 

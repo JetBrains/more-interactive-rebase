@@ -40,6 +40,7 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
 
         file2.write("bruuuuuh")
         commit4 = addCommit("please work")
+        sleep(1200)
     }
 
     fun testDropCommit() =
@@ -55,13 +56,12 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
                 withContext(Dispatchers.IO) {
                     sleep(1000)
                 }
+                assertThat(modelService.branchInfo.name).isEqualTo("development")
                 assertThat(modelService.branchInfo.currentCommits).hasSize(4)
 
                 // this selects the last commit and sets it up to be dropped
                 val commitToDrop = modelService.branchInfo.currentCommits[0]
-
-                commitToDrop.isSelected = true
-                modelService.addOrRemoveCommitSelection(commitToDrop)
+                modelService.addToSelectedCommits(commitToDrop)
 
                 val dropAction = DropAction()
                 val testEvent1 = createTestEvent()
@@ -98,12 +98,12 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
                 withContext(Dispatchers.IO) {
                     sleep(1000)
                 }
+                assertThat(modelService.branchInfo.name).isEqualTo("development")
                 assertThat(modelService.branchInfo.currentCommits).hasSize(4)
 
                 // in the case where only 1 commit is selected
                 val commitToSquash = modelService.branchInfo.currentCommits[1]
-                commitToSquash.isSelected = true
-                modelService.addOrRemoveCommitSelection(commitToSquash)
+                modelService.addToSelectedCommits(commitToSquash)
 
                 // this selects the last commit and sets it up to be fixed up with its previous commit
                 val fixupAction = FixupAction()
@@ -138,12 +138,12 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
                 withContext(Dispatchers.IO) {
                     sleep(1000)
                 }
+                assertThat(modelService.branchInfo.name).isEqualTo("development")
                 assertThat(modelService.branchInfo.currentCommits).hasSize(4)
 
                 // this selects the second-to-last commit and sets it up to be edited
                 val commitToEdit = modelService.branchInfo.currentCommits[1]
-                commitToEdit.isSelected = true
-                modelService.addOrRemoveCommitSelection(commitToEdit)
+                modelService.addToSelectedCommits(commitToEdit)
 
                 val editAction = StopToEditAction()
                 val testEvent1 = createTestEvent()
@@ -187,12 +187,12 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
                 withContext(Dispatchers.IO) {
                     sleep(1000)
                 }
+                assertThat(modelService.branchInfo.name).isEqualTo("development")
                 assertThat(modelService.branchInfo.currentCommits).hasSize(4)
 
                 // this selects the second-to-last commit
                 val commitToEdit = modelService.branchInfo.currentCommits[1]
-                commitToEdit.isSelected = true
-                modelService.addOrRemoveCommitSelection(commitToEdit)
+                modelService.addToSelectedCommits(commitToEdit)
 
                 // this "sets up" the commit to be reworded, by enabling the text field
                 val rewordAction = RewordAction()
@@ -247,17 +247,18 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
                 withContext(Dispatchers.IO) {
                     sleep(1000)
                 }
+                assertThat(modelService.branchInfo.name).isEqualTo("development")
                 assertThat(modelService.branchInfo.currentCommits).hasSize(4)
 
                 // this selects the last commit ("please work") and sets it up to be squashed
                 val commitToSquash = modelService.branchInfo.currentCommits[0]
                 commitToSquash.isSelected = true
-                modelService.addOrRemoveCommitSelection(commitToSquash)
+                modelService.addToSelectedCommits(commitToSquash)
 
                 // this selects the third-to-last commit ("IMHO") and sets it up to be squashed
                 val commitToSquashInto = modelService.branchInfo.currentCommits[2]
                 commitToSquashInto.isSelected = true
-                modelService.addOrRemoveCommitSelection(commitToSquashInto)
+                modelService.addToSelectedCommits(commitToSquashInto)
 
                 // this "sets up" the commits to be squashed, by enabling the text field
                 val squashAction = SquashAction()

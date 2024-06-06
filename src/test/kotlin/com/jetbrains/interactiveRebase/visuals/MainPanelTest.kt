@@ -37,9 +37,8 @@ class MainPanelTest : BasePlatformTestCase() {
 
     fun testAddOrRemoveCommitSelection() {
         val commit1 = CommitInfo(TestGitCommitProvider(project).createCommit("my commit"), project, mutableListOf())
-        commit1.isSelected = true
 
-        modelService.addOrRemoveCommitSelection(commit1)
+        modelService.addToSelectedCommits(commit1)
         assertEquals(modelService.branchInfo.selectedCommits, listOf(commit1))
     }
 
@@ -48,7 +47,7 @@ class MainPanelTest : BasePlatformTestCase() {
         `when`(commit1.isSelected).thenReturn(false)
         modelService.branchInfo.selectedCommits = mutableListOf(commit1)
 
-        modelService.addOrRemoveCommitSelection(commit1)
+        modelService.removeFromSelectedCommits(commit1)
         assertEquals(modelService.branchInfo.selectedCommits.size, 0)
     }
 

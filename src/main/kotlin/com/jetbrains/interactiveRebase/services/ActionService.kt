@@ -226,7 +226,7 @@ class ActionService(project: Project) {
      */
     private fun combineCommits(isSquash: Boolean) {
         val selectedCommits: MutableList<CommitInfo> = modelService.getSelectedCommits()
-        selectedCommits.sortBy { modelService.branchInfo.currentCommits.indexOf(it) }
+        selectedCommits.sortBy { modelService.branchInfo.indexOfCommit(it) }
         var parentCommit = selectedCommits.last()
         if (modelService.branchInfo.getActualSelectedCommitsSize() == 1) {
             val selectedIndex = modelService.getCurrentCommits().indexOf(selectedCommits[0])
