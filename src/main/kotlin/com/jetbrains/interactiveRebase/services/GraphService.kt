@@ -31,7 +31,7 @@ class GraphService(private val project: Project) {
     ) {
         // first get commits of the added branch using the checked out branch as reference
         commitService.referenceBranchName = commitService.getBranchName()
-        val newBranch = BranchInfo(addedBranch, isPrimary = false, isEnabled = false)
+        val newBranch = BranchInfo(addedBranch, isPrimary = false, isWriteable = false)
         updateBranchInfo(newBranch, includeBranchingCommit = true)
 
         // update the checked-out branch using the added branch as reference

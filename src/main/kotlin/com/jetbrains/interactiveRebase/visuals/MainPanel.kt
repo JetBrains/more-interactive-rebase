@@ -16,7 +16,6 @@ import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import javax.swing.ScrollPaneConstants
-import javax.swing.SwingConstants
 
 class MainPanel(
     private val project: Project,
@@ -66,7 +65,8 @@ class MainPanel(
                 }
 
                 override fun onCurrentCommitsChange(currentCommits: MutableList<CommitInfo>) {
-                    graphPanel.mainBranchPanel.updateCommits()
+//                    graphPanel.mainBranchPanel.updateCommits()
+                    graphPanel.updateGraphPanel()
                     registerCommitListener()
                 }
             }
@@ -92,22 +92,10 @@ class MainPanel(
     fun createGraphPanel(): GraphPanel {
         if (otherBranchInfo != null) {
             branchInfo.isPrimary = true
-            otherBranchInfo!!.isEnabled = false
+            otherBranchInfo!!.isWriteable = false
         }
         return GraphPanel(
             project,
-        )
-    }
-
-    /**
-     * Creates a branch panel.
-     */
-    fun createBranchPanel(): LabeledBranchPanel {
-        return LabeledBranchPanel(
-            project,
-            branchInfo,
-            Palette.BLUE,
-            SwingConstants.RIGHT,
         )
     }
 

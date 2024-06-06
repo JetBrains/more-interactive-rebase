@@ -9,7 +9,7 @@ data class GraphInfo(var mainBranch: BranchInfo, var addedBranch: BranchInfo? = 
 
     internal fun addListener(listener: Listener) = listeners.add(listener)
 
-    internal fun changeAddedBranch(branch: BranchInfo?){
+    internal fun changeAddedBranch(branch: BranchInfo?)  {
         addedBranch = branch
         listeners.forEach { it.onBranchChange() }
     }

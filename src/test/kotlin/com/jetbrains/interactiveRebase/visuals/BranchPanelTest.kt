@@ -52,7 +52,7 @@ class BranchPanelTest : BasePlatformTestCase() {
     }
 
     fun testColor() {
-        assertEquals(branchPanel.color, JBColor.BLUE)
+        assertEquals(branchPanel.colorTheme, JBColor.BLUE)
     }
 
     fun testBranchSize() {

@@ -23,7 +23,7 @@ import java.awt.RenderingHints
  */
 class BranchPanel(
     private val branch: BranchInfo,
-    val color: JBColor,
+    val colorTheme: Palette.Theme,
 ) : JBPanel<JBPanel<*>>() {
     val diameter = 30
     val borderSize = 1f
@@ -52,7 +52,7 @@ class BranchPanel(
             CirclePanel(
                 diameter.toDouble(),
                 borderSize,
-                color,
+                colorTheme,
                 branch.currentCommits[i],
             )
 
@@ -61,7 +61,7 @@ class BranchPanel(
                 DropCirclePanel(
                     diameter.toDouble(),
                     borderSize,
-                    color,
+                    colorTheme,
                     branch.currentCommits[i],
                 )
         } else if (commit.changes.any { it is StopToEditCommand }) {
@@ -69,7 +69,7 @@ class BranchPanel(
                 StopToEditCirclePanel(
                     diameter.toDouble(),
                     borderSize,
-                    color,
+                    colorTheme,
                     branch.currentCommits[i],
                 )
         } else if (commit.changes.any { it is SquashCommand } || commit.changes.any { it is FixupCommand }) {
@@ -77,7 +77,7 @@ class BranchPanel(
                 SquashedCirclePanel(
                     diameter.toDouble(),
                     borderSize,
-                    color,
+                    colorTheme,
                     branch.currentCommits[i],
                 )
         }
@@ -106,7 +106,7 @@ class BranchPanel(
         for (i in 0 until size - 1) {
             // Make line brush
             g2d.stroke = BasicStroke(borderSize)
-            g2d.color = color
+            g2d.color = colorTheme.regularCircleColor
             drawLineBetweenCommits(i, g2d)
         }
 
@@ -142,7 +142,7 @@ class BranchPanel(
         endY: Int,
     ) {
         val fractions = floatArrayOf(0.0f, 0.5f)
-        val colors = arrayOf<Color>(color, JBColor.PanelBackground)
+        val colors = arrayOf<Color>(colorTheme.regularCircleColor, JBColor.PanelBackground)
 
         g2d.paint =
             LinearGradientPaint(
@@ -172,7 +172,7 @@ class BranchPanel(
         val startY = circle.y + circle.height / 2
         val endY = nextCircle.y + circle.height / 2
 
-        g2d.color = color
+        g2d.color = colorTheme.regularCircleColor
         g2d.stroke = BasicStroke(2f)
         g2d.drawLine(
             x,
