@@ -1,20 +1,29 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionGroup
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.OnePixelSplitter
+import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
+import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.listeners.BranchNavigationListener
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.SidePanel
-import java.awt.BorderLayout
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
+import groovyjarjarantlr4.v4.runtime.misc.Nullable
+import org.jetbrains.annotations.NotNull
+import java.awt.*
+import java.util.*
+import javax.swing.JComponent
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingConstants
 
@@ -74,9 +83,41 @@ class MainPanel(
         registerCommitListener()
         this.addKeyListener(branchNavigationListener)
 
+        val actionManager = ActionManager.getInstance()
+        val actionsGroup =
+                actionManager.getAction(
+                        "com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup",
+                ) as RebaseActionsGroup
+
+        contextMenu(this, actionsGroup, ActionPlaces.EDITOR_TAB, actionManager)
+
         Disposer.register(this, branchInfoListener)
         Disposer.register(this, commitInfoListener)
         Disposer.register(this, branchNavigationListener)
+    }
+
+    fun contextMenu(@NotNull component : JComponent,
+                    @NotNull group : ActionGroup,
+                    @NotNull place : String,
+                    @Nullable actionManager : ActionManager,
+                    //@NotNull  condition : ShowPopupPredicate
+    ): PopupHandler {
+//        if (ApplicationManager.getApplication() == null) {
+//            return PopupHandler.EMPTY_HANDLER
+//        }
+
+        val handler: PopupHandler = object : PopupHandler() {
+            override fun invokePopup(comp: Component?, x: Int, y: Int) {
+               // if (condition.shouldShowPopup(comp, x, y)) {
+                    val manager = actionManager
+                    val popupMenu = manager.createActionPopupMenu(place, group)
+                    popupMenu.component.show(comp, x, y)
+               // }
+            }
+        }
+        component.addMouseListener(handler)
+        return handler
+
     }
 
     /**
