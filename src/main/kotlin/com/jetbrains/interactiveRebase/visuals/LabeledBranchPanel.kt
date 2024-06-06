@@ -91,7 +91,9 @@ class LabeledBranchPanel(
                 }
             }
 
-        branch.currentCommits[i].changes.forEach {
+        val visualChanges = branch.currentCommits[i].getChangesAfterPick()
+
+        visualChanges.forEach {
             if (it is RewordCommand) {
                 commitLabel.text = TextStyle.addStyling(it.newMessage, TextStyle.ITALIC)
                 commitLabel.foreground = JBColor.BLUE
@@ -291,7 +293,7 @@ class LabeledBranchPanel(
         commitInfo: CommitInfo,
         textField: JTextField,
     ) {
-        commitInfo.changes.forEach {
+        commitInfo.getChangesAfterPick().forEach {
                 command ->
             if (command is SquashCommand) {
                 listener.strategy = SquashTextStrategy(command, textField)

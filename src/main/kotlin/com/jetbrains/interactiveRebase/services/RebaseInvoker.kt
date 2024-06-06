@@ -22,6 +22,7 @@ class RebaseInvoker(val project: Project) {
      * that will be executed, once the rebase is initiated.
      */
     var commands = mutableListOf<RebaseCommand>()
+    var undoneCommands = mutableListOf<RebaseCommand>()
 
     /**
      * Creates a git model for the rebase, from the
@@ -46,7 +47,7 @@ class RebaseInvoker(val project: Project) {
     fun expandCurrentCommits() {
         val commits = branchInfo.currentCommits.toMutableList()
         for (commitInfo in branchInfo.currentCommits) {
-            for (command in commitInfo.changes) {
+            for (command in commitInfo.getChangesAfterPick()) {
                 if (command is SquashCommand) {
                     val parentCommit = command.parentCommit
                     val parentIndex = commits.indexOfFirst { it == parentCommit }

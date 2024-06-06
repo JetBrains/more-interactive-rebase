@@ -59,7 +59,7 @@ class ModelService(
     fun addToSelectedCommits(commit: CommitInfo) {
         commit.isSelected = true
         branchInfo.addSelectedCommits(commit)
-        commit.changes.forEach { change ->
+        commit.getChangesAfterPick().forEach { change ->
             if (change is FixupCommand || change is SquashCommand) {
                 project.service<ActionService>().getCombinedCommits(change).forEach {
                     branchInfo.addSelectedCommits(it)
@@ -75,7 +75,7 @@ class ModelService(
     fun removeFromSelectedCommits(commit: CommitInfo) {
         commit.isSelected = false
         branchInfo.removeSelectedCommits(commit)
-        commit.changes.forEach { change ->
+        commit.getChangesAfterPick().forEach { change ->
             if (change is FixupCommand || change is SquashCommand) {
                 val combinedCommits = project.service<ActionService>().getCombinedCommits(change)
                 branchInfo.selectedCommits.addAll(combinedCommits)
@@ -99,6 +99,7 @@ class ModelService(
         commit.setReorderedTo(true)
         val command =
             ReorderCommand(
+                commit,
                 oldIndex,
                 newIndex,
             )
