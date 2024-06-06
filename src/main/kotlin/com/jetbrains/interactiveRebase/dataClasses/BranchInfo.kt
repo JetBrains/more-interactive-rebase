@@ -53,7 +53,7 @@ class BranchInfo(
      */
     internal fun removeSelectedCommits(commit: CommitInfo) {
         selectedCommits.remove(commit)
-        commit.changes.forEach {
+        commit.getChangesAfterPick().forEach {
                 change ->
             if (change is SquashCommand) {
                 change.squashedCommits.forEach { selectedCommits.remove(it) }
@@ -137,7 +137,7 @@ class BranchInfo(
         var ret = currentCommits.indexOf(commit)
 
         if (commit.isSquashed) {
-            commit.changes.forEach {
+            commit.getChangesAfterPick().forEach {
                 if (it is FixupCommand) {
                     ret = currentCommits.indexOf(it.parentCommit)
                 } else if (it is SquashCommand) {

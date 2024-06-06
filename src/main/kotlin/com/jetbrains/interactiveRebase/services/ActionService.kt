@@ -128,7 +128,7 @@ class ActionService(project: Project) {
      * similar to the logic in the git to-do file for rebasing
      */
     fun performPickAction() {
-        val commits = modelService.getSelectedCommits()
+        val commits = modelService.getSelectedCommits().reversed()
         commits.forEach { commitInfo ->
             val changes = commitInfo.getChangesAfterPick().iterator()
             while (changes.hasNext()) {
@@ -459,9 +459,11 @@ class ActionService(project: Project) {
         val fixy = commit.changes.lastOrNull { it is FixupCommand } as? FixupCommand
 
         squashy?.let {
+            commit.isSquashed = true
             removePickFromSquashed(it.squashedCommits)
         }
         fixy?.let {
+            commit.isSquashed = true
             removePickFromSquashed(it.fixupCommits)
         }
     }
