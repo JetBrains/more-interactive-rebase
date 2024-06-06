@@ -1,11 +1,15 @@
 package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.intellij.ui.PopupHandler
+import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
-import java.awt.event.MouseAdapter
+import java.awt.Component
 import java.awt.event.MouseEvent
 
 /**
@@ -13,15 +17,22 @@ import java.awt.event.MouseEvent
  * Involves the implementation of three methods for different type of
  * mouse actions that all reflect different parts of a "hover" action
  */
-class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter(), Disposable {
+
+class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler(), Disposable {
     val commit: CommitInfo = circlePanel.commit
+
 
     /**
      * Highlight the circle if the mouse enters the encapsulating rectangle and
      * is within the drawn circle.
      */
+    val actionManager = ActionManager.getInstance()
+    val actionsGroup = actionManager.getAction(
+                    "com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup",
+            ) as RebaseActionsGroup
 
-    override fun mouseEntered(e: MouseEvent?) {
+
+    override fun mouseEntered(e: MouseEvent) {
         if (e != null && circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
             circlePanel.commit.isHovered = true
             circlePanel.repaint()
@@ -32,7 +43,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
      * Remove hovering if the mouse exits the encapsulating rectangle.
      */
 
-    override fun mouseExited(e: MouseEvent?) {
+    override fun mouseExited(e: MouseEvent) {
         if (e != null && !circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
             circlePanel.commit.isHovered = false
             circlePanel.repaint()
@@ -42,6 +53,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
     /**
      * Select a commit upon a click.
      */
+
     override fun mouseClicked(e: MouseEvent?) {
         val modelService = commit.project.service<ModelService>()
         if (e?.isShiftDown!!) {
@@ -57,6 +69,22 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
         } else {
             modelService.removeFromSelectedCommits(circlePanel.commit)
         }
+    }
+
+
+    override fun mousePressed(e: MouseEvent) {
+        if (e.isPopupTrigger) {
+            invokePopup(e.component, e.x, e.y)
+            e.consume()
+        }
+    }
+
+    override fun mouseReleased(e: MouseEvent) {
+        if (e.isPopupTrigger) {
+            invokePopup(e.component, e.x, e.y)
+            e.consume()
+        }
+
     }
 
     /**
@@ -104,6 +132,10 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
         } else {
             modelService.removeFromSelectedCommits(commit)
         }
+    }
+    override fun invokePopup(comp: Component?, x: Int, y: Int) {
+        val popupMenu = actionManager.createActionPopupMenu(ActionPlaces.EDITOR_TAB, actionsGroup)
+        popupMenu.component.show(comp, x, y)
     }
 
     override fun dispose() {
