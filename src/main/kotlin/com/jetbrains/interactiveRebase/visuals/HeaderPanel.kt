@@ -2,9 +2,11 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.actions.ButtonActions.RebaseAction
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
@@ -54,17 +56,24 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
      * At the moment, the buttons are hardcoded, but we will replace them with icons and listeners later.
      */
     fun addChangeButtons(buttonPanel: JBPanel<JBPanel<*>>) {
-        val rebaseButton = RoundedButton("Rebase", Palette.BLUEBUTTON, Palette.WHITETEXT)
-
-        rebaseButton.addActionListener {
-            invoker.createModel()
-            invoker.executeCommands()
+        val group = DefaultActionGroup().apply {
+            add(RebaseAction())
         }
-        val resetButton = RoundedButton("Reset", Palette.GRAYBUTTON, Palette.WHITETEXT)
+        val toolbar = actionManager.createActionToolbar(ActionPlaces.EDITOR_TAB, group, true)
+        val toolbarComponent: JComponent = toolbar.component
+        toolbar.targetComponent = buttonPanel
+        buttonPanel.add(toolbarComponent)
+        //val rebaseButton = RoundedButton("Rebase", Palette.BLUEBUTTON, Palette.WHITETEXT)
 
-        resetButton.addActionListener { project.service<ActionService>().resetAllChangesAction() }
+//        rebaseButton.addActionListener {
+//            invoker.createModel()
+//            invoker.executeCommands()
+//        }
+//        val resetButton = RoundedButton("Reset", Palette.GRAYBUTTON, Palette.WHITETEXT)
+//
+//        resetButton.addActionListener { project.service<ActionService>().resetAllChangesAction() }
 
-        buttonPanel.add(resetButton)
-        buttonPanel.add(rebaseButton)
+        //buttonPanel.add(resetButton)
+        //buttonPanel.add(rebaseButton)
     }
 }
