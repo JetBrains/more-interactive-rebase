@@ -47,7 +47,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
         if (e?.isShiftDown!!) {
             shiftClick()
             return
-        } else if (e.isMetaDown) {
+        } else if (e.isMetaDown || e.isControlDown) {
             controlClick()
             return
         }
