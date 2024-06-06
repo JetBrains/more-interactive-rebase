@@ -14,6 +14,7 @@ class SideBranchPanelListener(val sideBranchPanel: SideBranchPanel, val parent: 
         if (parent.canSelectBranch(sideBranchPanel)) {
             sideBranchPanel.onHover()
         }
+        e?.consume()
     }
 
     /**
@@ -23,6 +24,7 @@ class SideBranchPanelListener(val sideBranchPanel: SideBranchPanel, val parent: 
         if (parent.canSelectBranch(sideBranchPanel)) {
             parent.resetAllBranchesVisually()
         }
+        e?.consume()
     }
 
     /**
@@ -37,6 +39,7 @@ class SideBranchPanelListener(val sideBranchPanel: SideBranchPanel, val parent: 
             // We possibly don't want to unselect the branch only by a single click on the panel, TBD
             parent.resetAllBranchesVisually()
         }
+        e?.consume()
     }
 
     override fun dispose() {

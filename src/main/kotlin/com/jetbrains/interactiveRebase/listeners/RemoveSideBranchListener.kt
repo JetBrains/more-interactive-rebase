@@ -12,6 +12,7 @@ class RemoveSideBranchListener(val sideBranchPanel: SideBranchPanel, val parent:
      */
     override fun mouseClicked(e: MouseEvent?) {
         parent.resetAllBranchesVisually()
+        e?.consume()
     }
 
     /**
@@ -19,6 +20,7 @@ class RemoveSideBranchListener(val sideBranchPanel: SideBranchPanel, val parent:
      */
     override fun mouseEntered(e: MouseEvent?) {
         sideBranchPanel.buttonOnHover()
+        e?.consume()
     }
 
     /**
@@ -26,5 +28,6 @@ class RemoveSideBranchListener(val sideBranchPanel: SideBranchPanel, val parent:
      */
     override fun mouseExited(e: MouseEvent?) {
         sideBranchPanel.buttonOnHoverExit()
+        e?.consume()
     }
 }

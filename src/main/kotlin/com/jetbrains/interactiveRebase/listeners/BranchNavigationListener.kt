@@ -22,6 +22,7 @@ class BranchNavigationListener(project: Project, private val modelService: Model
                 KeyEvent.VK_UP -> shiftUp()
                 KeyEvent.VK_DOWN -> shiftDown()
             }
+            e.consume()
             return
         }
 
@@ -30,6 +31,7 @@ class BranchNavigationListener(project: Project, private val modelService: Model
                 KeyEvent.VK_UP -> altUp()
                 KeyEvent.VK_DOWN -> altDown()
             }
+            e.consume()
             return
         }
 
@@ -37,6 +39,7 @@ class BranchNavigationListener(project: Project, private val modelService: Model
             KeyEvent.VK_UP -> up()
             KeyEvent.VK_DOWN -> down()
         }
+        e.consume()
     }
 
     /**

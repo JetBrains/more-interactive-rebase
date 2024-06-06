@@ -28,6 +28,7 @@ class LabelListener(private val commit: CommitInfo) : MouseListener, Disposable 
                 modelService.removeFromSelectedCommits(commit)
             }
         }
+        e?.consume()
     }
 
     override fun mousePressed(e: MouseEvent?) {}

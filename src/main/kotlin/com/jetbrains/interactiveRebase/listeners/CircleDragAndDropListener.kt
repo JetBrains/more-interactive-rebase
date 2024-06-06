@@ -84,6 +84,7 @@ class CircleDragAndDropListener(
             messages.map { m ->
                 Point(m.x, m.y)
             }.toMutableList()
+        e.consume()
     }
 
     /**
@@ -115,6 +116,7 @@ class CircleDragAndDropListener(
             // Handle visual indication of movement limits
             indicateLimitedVerticalMovement(newCircleY)
         }
+        e.consume()
     }
 
     /**
@@ -124,6 +126,7 @@ class CircleDragAndDropListener(
     internal fun updateMousePosition(e: MouseEvent) {
         mousePosition.x = e.xOnScreen
         mousePosition.y = e.yOnScreen
+        e.consume()
     }
 
     /**
@@ -142,6 +145,7 @@ class CircleDragAndDropListener(
                 parent.branch.updateCurrentCommits(initialIndex, currentIndex, commit)
             }
         }
+        e.consume()
     }
 
     /**
