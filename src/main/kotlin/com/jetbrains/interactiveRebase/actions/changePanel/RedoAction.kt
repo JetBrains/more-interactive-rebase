@@ -2,7 +2,6 @@ package com.jetbrains.interactiveRebase.actions.changePanel
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
@@ -12,8 +11,9 @@ import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
 import javax.swing.JComponent
 
-class RedoAction : DumbAwareAction("Redo",  "Redo the last action", AllIcons.Actions.Redo),
-        CustomComponentAction {
+class RedoAction :
+    DumbAwareAction("Redo", "Redo the last action", AllIcons.Actions.Redo),
+    CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
         e.project?.service<ActionService>()?.redoLastAction()
     }
@@ -27,15 +27,15 @@ class RedoAction : DumbAwareAction("Redo",  "Redo the last action", AllIcons.Act
     }
 
     override fun createCustomComponent(
-            presentation: Presentation,
-            place: String,
+        presentation: Presentation,
+        place: String,
     ): JComponent {
         return RebaseActionsGroup.makeTooltip(
-                this,
-                presentation,
-                place,
-                "Ctrl+Shift+Z",
-                "Redo the last action",
+            this,
+            presentation,
+            place,
+            "Ctrl+Shift+Z",
+            "Redo the last action",
         )
     }
 }

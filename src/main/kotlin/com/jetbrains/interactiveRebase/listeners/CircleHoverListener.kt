@@ -4,9 +4,9 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.components.service
-import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.intellij.ui.PopupHandler
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import java.awt.Component
@@ -21,16 +21,15 @@ import java.awt.event.MouseEvent
 class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler(), Disposable {
     val commit: CommitInfo = circlePanel.commit
 
-
     /**
      * Highlight the circle if the mouse enters the encapsulating rectangle and
      * is within the drawn circle.
      */
     private val actionManager = ActionManager.getInstance()
-    private val actionsGroup = actionManager.getAction(
-                    "com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup",
-            ) as RebaseActionsGroup
-
+    private val actionsGroup =
+        actionManager.getAction(
+            "com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup",
+        ) as RebaseActionsGroup
 
     override fun mouseEntered(e: MouseEvent?) {
         if (e != null && circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
@@ -52,12 +51,11 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
         }
     }
 
-
     /**
      * Select a commit upon a click.
      */
     override fun mouseClicked(e: MouseEvent?) {
-        if(e!=null){
+        if (e != null) {
             val modelService = commit.project.service<ModelService>()
             if (e.isShiftDown) {
                 shiftClick()
@@ -68,7 +66,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
                 println("CTRL")
                 return
             }
-            if(e.button==MouseEvent.BUTTON1){
+            if (e.button == MouseEvent.BUTTON1) {
                 if (!circlePanel.commit.isSelected || modelService.branchInfo.getActualSelectedCommitsSize() > 1) {
                     modelService.selectSingleCommit(circlePanel.commit)
                 } else {
@@ -84,7 +82,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
      * Open context menu
      */
     override fun mousePressed(e: MouseEvent?) {
-        if (e!=null && e.isPopupTrigger) {
+        if (e != null && e.isPopupTrigger) {
             invokePopup(e.component, e.x, e.y)
             e.consume()
         }
@@ -94,11 +92,10 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
      * Open context menu
      */
     override fun mouseReleased(e: MouseEvent?) {
-        if (e!=null && e.isPopupTrigger) {
+        if (e != null && e.isPopupTrigger) {
             invokePopup(e.component, e.x, e.y)
             e.consume()
         }
-
     }
 
     /**
@@ -148,7 +145,12 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
             modelService.removeFromSelectedCommits(commit)
         }
     }
-    override fun invokePopup(comp: Component?, x: Int, y: Int) {
+
+    override fun invokePopup(
+        comp: Component?,
+        x: Int,
+        y: Int,
+    ) {
         val popupMenu = actionManager.createActionPopupMenu(ActionPlaces.EDITOR_TAB, actionsGroup)
         popupMenu.component.show(comp, x, y)
     }

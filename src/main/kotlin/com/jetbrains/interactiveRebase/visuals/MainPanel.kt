@@ -1,31 +1,20 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.actionSystem.ActionGroup
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.OnePixelSplitter
-import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
-import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.listeners.BranchNavigationListener
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.SidePanel
-import groovyjarjarantlr4.v4.runtime.misc.Nullable
-import org.jetbrains.annotations.NotNull
 import java.awt.BorderLayout
-import java.awt.Component
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import java.awt.event.MouseEvent
-import java.awt.event.MouseListener
-import javax.swing.JComponent
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingConstants
 
@@ -89,7 +78,6 @@ class MainPanel(
         Disposer.register(this, commitInfoListener)
         Disposer.register(this, branchNavigationListener)
     }
-
 
     /**
      * Creates a branch panel.

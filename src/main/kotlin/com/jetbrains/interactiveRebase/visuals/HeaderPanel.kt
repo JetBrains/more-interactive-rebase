@@ -12,8 +12,6 @@ import java.awt.BorderLayout
 import java.awt.Graphics
 import javax.swing.BoxLayout
 import javax.swing.JComponent
-import javax.swing.JPopupMenu
-import javax.swing.JToolBar.Separator
 
 class HeaderPanel(private val project: Project, private val actionManager: ActionManager = ActionManager.getInstance()) :
     JBPanel<JBPanel<*>>() {
