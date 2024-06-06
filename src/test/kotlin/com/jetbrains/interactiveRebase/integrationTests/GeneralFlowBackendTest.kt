@@ -40,6 +40,7 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
 
         file2.write("bruuuuuh")
         commit4 = addCommit("please work")
+        sleep(1200)
     }
 
     fun testDropCommit() =
