@@ -27,18 +27,6 @@ class RebaseActionsGroup : DefaultActionGroup() {
     }
 
     companion object {
-        internal fun getMinimumSize(place: String): Dimension {
-            return if (isExperimentalToolbar(place)) {
-                ActionToolbar.experimentalToolbarMinimumButtonSize()
-            } else {
-                ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-            }
-        }
-
-        private fun isExperimentalToolbar(place: String): Boolean {
-            return ExperimentalUI.isNewUI() && ActionPlaces.MAIN_TOOLBAR == place
-        }
-
         internal fun makeTooltip(
             action: AnAction,
             presentation: Presentation,
@@ -46,7 +34,8 @@ class RebaseActionsGroup : DefaultActionGroup() {
             shortcut: String,
             description: String,
         ): JComponent {
-            return object : ActionButton(action, presentation, place, Supplier { getMinimumSize(place) }) {
+            return object : ActionButton(action, presentation, place, Supplier {
+                ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE }) {
                 override fun updateToolTipText() {
                     val classesTabName =
                         java.lang.String.join(

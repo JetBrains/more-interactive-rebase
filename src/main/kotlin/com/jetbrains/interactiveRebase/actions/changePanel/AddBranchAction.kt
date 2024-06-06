@@ -4,10 +4,16 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.components.service
+import com.intellij.openapi.project.DumbAwareAction
+import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
+import javax.swing.JComponent
 
-class AddBranchAction : AnAction("Add Branch", "Add another branch to the view", AllIcons.Actions.AddList) {
+class AddBranchAction :  DumbAwareAction("Add Branch",  "Add another branch to the view",
+        AllIcons.Actions.AddList), CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val mainPanel = project.service<ActionService>().mainPanel
@@ -27,5 +33,18 @@ class AddBranchAction : AnAction("Add Branch", "Add another branch to the view",
 
     override fun getActionUpdateThread(): ActionUpdateThread {
         return ActionUpdateThread.EDT
+    }
+
+    override fun createCustomComponent(
+            presentation: Presentation,
+            place: String,
+    ): JComponent {
+        return RebaseActionsGroup.makeTooltip(
+                this,
+                presentation,
+                place,
+                "Alt+A",
+                "Add another branch to the view",
+        )
     }
 }

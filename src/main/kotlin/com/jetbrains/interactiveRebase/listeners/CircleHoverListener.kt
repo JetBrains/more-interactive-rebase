@@ -32,7 +32,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
             ) as RebaseActionsGroup
 
 
-    override fun mouseEntered(e: MouseEvent) {
+    override fun mouseEntered(e: MouseEvent?) {
         if (e != null && circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
             circlePanel.commit.isHovered = true
             circlePanel.repaint()
@@ -44,7 +44,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
      * Remove hovering if the mouse exits the encapsulating rectangle.
      */
 
-    override fun mouseExited(e: MouseEvent) {
+    override fun mouseExited(e: MouseEvent?) {
         if (e != null && !circlePanel.circle.contains(e.x.toDouble(), e.y.toDouble())) {
             circlePanel.commit.isHovered = false
             circlePanel.repaint()

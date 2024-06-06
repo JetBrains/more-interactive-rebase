@@ -12,6 +12,8 @@ import java.awt.BorderLayout
 import java.awt.Graphics
 import javax.swing.BoxLayout
 import javax.swing.JComponent
+import javax.swing.JPopupMenu
+import javax.swing.JToolBar.Separator
 
 class HeaderPanel(private val project: Project, private val actionManager: ActionManager = ActionManager.getInstance()) :
     JBPanel<JBPanel<*>>() {
@@ -41,7 +43,7 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
     private fun addGitButtons(buttonPanel: JBPanel<JBPanel<*>>) {
         val actionsGroup =
             actionManager.getAction(
-                "com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup",
+                "ActionsGroup",
             ) as RebaseActionsGroup
         val toolbar = actionManager.createActionToolbar(ActionPlaces.EDITOR_TAB, actionsGroup, true)
         val toolbarComponent: JComponent = toolbar.component
