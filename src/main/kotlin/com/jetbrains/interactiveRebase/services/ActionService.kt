@@ -338,6 +338,7 @@ class ActionService(project: Project) {
      * The list of undone commands gets cleared when a new action is performed.
      */
     fun undoLastAction() {
+        if (invoker.commands.isEmpty()) return
         val command = invoker.commands.removeLast()
         val commitToBeUndone = command.commitOfCommand()
 
@@ -366,6 +367,7 @@ class ActionService(project: Project) {
      * in the invoker, and adds it back to the list of commands.
      */
     fun redoLastAction() {
+        if (invoker.undoneCommands.isEmpty()) return
         val command = invoker.undoneCommands.removeLast()
         val commitToBeRedone = command.commitOfCommand()
 
