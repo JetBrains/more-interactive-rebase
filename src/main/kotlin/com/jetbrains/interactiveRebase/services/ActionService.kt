@@ -34,26 +34,30 @@ class ActionService(project: Project) {
      * Enables the text field once the Reword button on the toolbar is pressed
      */
     fun takeRewordAction() {
-        modelService.branchInfo.selectedCommits.forEach {
-            it.setTextFieldEnabledTo(true)
-        }
         invoker.undoneCommands.clear()
+        modelService.branchInfo.selectedCommits.forEach {
+            if (!it.isSquashed) {
+                it.setTextFieldEnabledTo(true)
+            }
+        }
     }
 
     /**
      * Makes a drop change once the Drop button is clicked
      */
     fun takeDropAction() {
+        invoker.undoneCommands.clear()
         val commits = modelService.getSelectedCommits()
         commits.forEach {
                 commitInfo ->
-            val command = DropCommand(commitInfo)
-            commitInfo.addChange(command)
-            invoker.addCommand(command)
+            if (!commitInfo.isSquashed) {
+                val command = DropCommand(commitInfo)
+                commitInfo.addChange(command)
+                invoker.addCommand(command)
+            }
         }
 
         modelService.branchInfo.clearSelectedCommits()
-        invoker.undoneCommands.clear()
     }
 
     /**
@@ -115,9 +119,11 @@ class ActionService(project: Project) {
         val commits = modelService.getSelectedCommits()
         commits.forEach {
                 commitInfo ->
-            val command = StopToEditCommand(commitInfo)
-            commitInfo.addChange(command)
-            invoker.addCommand(command)
+            if (!commitInfo.isSquashed) {
+                val command = StopToEditCommand(commitInfo)
+                commitInfo.addChange(command)
+                invoker.addCommand(command)
+            }
         }
         modelService.branchInfo.clearSelectedCommits()
         invoker.undoneCommands.clear()
@@ -128,6 +134,7 @@ class ActionService(project: Project) {
      * similar to the logic in the git to-do file for rebasing
      */
     fun performPickAction() {
+        invoker.undoneCommands.clear()
         val commits = modelService.getSelectedCommits().reversed()
         commits.forEach { commitInfo ->
             val changes = commitInfo.getChangesAfterPick().iterator()
@@ -190,6 +197,7 @@ class ActionService(project: Project) {
      */
     fun resetAllChangesAction() {
         invoker.commands = mutableListOf()
+        invoker.undoneCommands.clear()
         val currentBranchInfo = invoker.branchInfo
         invoker.branchInfo.currentCommits = currentBranchInfo.initialCommits.toMutableList()
         invoker.branchInfo.initialCommits.forEach {
@@ -203,7 +211,6 @@ class ActionService(project: Project) {
             commitInfo.isHovered = false
         }
         invoker.branchInfo.clearSelectedCommits()
-        invoker.undoneCommands.clear()
     }
 
     /**
@@ -211,8 +218,8 @@ class ActionService(project: Project) {
      * creates a squash command
      */
     fun takeSquashAction() {
-        combineCommits(true)
         invoker.undoneCommands.clear()
+        combineCommits(true)
     }
 
     /**
@@ -220,8 +227,8 @@ class ActionService(project: Project) {
      * creates a fixup command
      */
     fun takeFixupAction() {
-        combineCommits(false)
         invoker.undoneCommands.clear()
+        combineCommits(false)
     }
 
     /**
@@ -302,6 +309,9 @@ class ActionService(project: Project) {
         commit.getChangesAfterPick().forEach {
             if (it is FixupCommand || it is SquashCommand) {
                 modelService.invoker.removeCommand(it)
+                if (modelService.invoker.undoneCommands.contains(it)) {
+                    modelService.invoker.undoneCommands.remove(it)
+                }
                 changesToRemove.add(it)
             }
         }
@@ -459,11 +469,9 @@ class ActionService(project: Project) {
         val fixy = commit.changes.lastOrNull { it is FixupCommand } as? FixupCommand
 
         squashy?.let {
-            commit.isSquashed = true
             removePickFromSquashed(it.squashedCommits)
         }
         fixy?.let {
-            commit.isSquashed = true
             removePickFromSquashed(it.fixupCommits)
         }
     }

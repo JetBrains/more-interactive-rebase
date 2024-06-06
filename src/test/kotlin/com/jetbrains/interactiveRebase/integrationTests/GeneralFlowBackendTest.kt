@@ -181,7 +181,9 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
                 val openEditorTabAction = CreateEditorTabAction()
                 val testEvent = createTestEvent()
                 openEditorTabAction.actionPerformed(testEvent)
-
+                withContext(Dispatchers.IO) {
+                    sleep(1000)
+                }
                 // this gets the current commits of the checked out branch
                 val modelService = project.service<ModelService>()
                 withContext(Dispatchers.IO) {
