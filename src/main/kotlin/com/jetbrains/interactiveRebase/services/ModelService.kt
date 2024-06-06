@@ -46,30 +46,23 @@ class ModelService(
      * Adds or removes
      * the commit from the
      * list of selected commits
+     * The BranchInfo that the added commit belongs to can be controlled in the case of
      */
-    fun addOrRemoveCommitSelection(commit: CommitInfo) {
+    fun addOrRemoveCommitSelection(commit: CommitInfo, branchInfo : BranchInfo = this.branchInfo) {
         commit.changes.forEach { change ->
             if (change is FixupCommand || change is SquashCommand) {
                 val combinedCommits = project.service<ActionService>().getCombinedCommits(change)
                 if (commit.isSelected) {
                     branchInfo.selectedCommits.addAll(combinedCommits)
-                    // TODO: remove
-//                    otherBranchInfo.selectedCommits.addAll(combinedCommits)
                 } else {
                     branchInfo.selectedCommits.removeAll(combinedCommits)
-                    // TODO: remove
-//                    otherBranchInfo.selectedCommits.removeAll(combinedCommits)
                 }
             }
         }
         if (commit.isSelected) {
             branchInfo.addSelectedCommits(commit)
-            // TODO: remove
-//            otherBranchInfo.addSelectedCommits(commit)
         } else {
             branchInfo.removeSelectedCommits(commit)
-            // TODO: remove
-//            otherBranchInfo.removeSelectedCommits(commit)
         }
     }
 

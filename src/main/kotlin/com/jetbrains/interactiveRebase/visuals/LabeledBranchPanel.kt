@@ -8,6 +8,7 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
+import com.intellij.ui.util.maximumHeight
 import com.intellij.ui.util.minimumWidth
 import com.intellij.ui.util.preferredHeight
 import com.intellij.ui.util.preferredWidth
@@ -79,7 +80,7 @@ class LabeledBranchPanel(
      */
     private fun LabeledBranchPanel.addCommitNames(
         gbc: GridBagConstraints,
-        offset: Int = 100,
+        offset: Int = 5,
     ) {
         setCommitNamesPosition(gbc, offset)
         add(labelPanelWrapper, gbc)
@@ -91,7 +92,7 @@ class LabeledBranchPanel(
      */
     private fun LabeledBranchPanel.addBranchOfCommits(
         gbc: GridBagConstraints,
-        offset: Int = 100,
+        offset: Int = 5,
     ) {
         setBranchPosition(gbc, offset)
         add(branchPanel, gbc)
@@ -112,7 +113,7 @@ class LabeledBranchPanel(
      * Call when you want to change alignment of
      * secondary branch
      */
-    fun addComponentsForSecondaryBranchWithOffset(offset: Int = 100) {
+    fun addBranchWithVerticalOffset(offset: Int = 5) {
         remove(labelPanelWrapper)
         remove(branchPanel)
         val gbc = GridBagConstraints()
@@ -131,11 +132,7 @@ class LabeledBranchPanel(
     ): JBLabel {
         val truncatedMessage = truncateMessage(i)
 
-        val commitLabel =
-            object : JBLabel(truncatedMessage), Disposable {
-                override fun dispose() {
-                }
-            }
+        val commitLabel = JBLabel(truncatedMessage)
 
         branch.currentCommits[i].changes.forEach {
             if (it is RewordCommand) {
@@ -206,6 +203,9 @@ class LabeledBranchPanel(
                     circle.preferredHeight,
                 )
             val gbc = gridCellForCircle(i, circles)
+            if (i == 0) {
+                gbc.insets.top = branchPanel.diameter
+            }
             labelPanelWrapper.add(wrappedLabel, gbc)
             commitLabels.add(commitLabel)
 
@@ -421,11 +421,8 @@ class LabeledBranchPanel(
      * we offset the branch down.
      */
     private fun offsetBranchIfAdded(offset: Int): Insets =
-        if (!branch.isWriteable) {
-            Insets(offset, 5, 5, 5)
-        } else {
-            Insets(5, 5, 5, 5)
-        }
+        Insets(offset, 5, branchPanel.diameter, 5)
+
 
     /**
      * Sets the position of the branch name label

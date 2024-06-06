@@ -22,7 +22,7 @@ import java.awt.RenderingHints
  * - lines connecting the commits
  */
 class BranchPanel(
-    private val branch: BranchInfo,
+    val branch: BranchInfo,
     val colorTheme: Palette.Theme,
 ) : JBPanel<JBPanel<*>>() {
     val diameter = 30
@@ -202,6 +202,13 @@ class BranchPanel(
             gbc.weighty = if (i == size - 1) 1.0 else 0.0
             gbc.anchor = GridBagConstraints.NORTH
             gbc.fill = GridBagConstraints.HORIZONTAL
+
+            if(i == 0) {
+                gbc.insets.top = diameter
+            }
+            if(i == size - 1) {
+                gbc.insets.bottom = diameter
+            }
             add(circle, gbc)
         }
         revalidate()

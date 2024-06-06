@@ -71,8 +71,8 @@ open class CirclePanel(
         var circleColor: Color =
             if (commit.isDragged) {
                 colorTheme.draggedCircleColor
-            } else if (commit.isReordered) {
-                colorTheme.reorderedCircleColor
+//            } else if (commit.isReordered) {
+//                colorTheme.reorderedCircleColor
             } else {
                 colorTheme.regularCircleColor
             }

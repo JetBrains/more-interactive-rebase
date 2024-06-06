@@ -41,13 +41,6 @@ class MainPanel(
         this.layout = BorderLayout()
         createMainPanel()
 
-        graphInfoListener =
-            object : GraphInfo.Listener {
-                override fun onBranchChange() {
-                    graphPanel.updateGraphPanel()
-                }
-            }
-
         branchInfoListener =
             object : BranchInfo.Listener {
                 override fun onNameChange(newName: String) {
@@ -60,21 +53,28 @@ class MainPanel(
                 }
 
                 override fun onSelectedCommitChange(selectedCommits: MutableList<CommitInfo>) {
-                    graphPanel.mainBranchPanel.updateCommits()
+                    graphPanel.updateGraphPanel()
                     commitInfoPanel.commitsSelected(selectedCommits.map { it.commit })
                 }
 
                 override fun onCurrentCommitsChange(currentCommits: MutableList<CommitInfo>) {
-//                    graphPanel.mainBranchPanel.updateCommits()
                     graphPanel.updateGraphPanel()
                     registerCommitListener()
+                }
+            }
+
+        graphInfoListener =
+            object : GraphInfo.Listener {
+                override fun onBranchChange() {
+                    graphPanel.updateGraphPanel()
+                    graphInfo.addedBranch?.addListener(branchInfoListener)
                 }
             }
 
         commitInfoListener =
             object : CommitInfo.Listener {
                 override fun onCommitChange() {
-                    graphPanel.mainBranchPanel.updateCommits()
+                    graphPanel.updateGraphPanel()
                 }
             }
 

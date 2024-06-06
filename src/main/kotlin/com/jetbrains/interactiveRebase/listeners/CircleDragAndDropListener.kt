@@ -64,12 +64,6 @@ class CircleDragAndDropListener(
     init {
         SwingUtilities.invokeLater {
             maxY = parent.branchPanel.height - circle.height
-
-            // Restrict movement of circles down if
-            // the branch is the checked out primary branch
-//            if (parent.branch.isPrimary) {
-//                maxY = circlesPositions.last().y + circles.last().height
-//            }
         }
     }
 
@@ -100,6 +94,7 @@ class CircleDragAndDropListener(
      * 4. handle limited vertical movement (outside parent component)
      */
     override fun mouseDragged(e: MouseEvent) {
+        maxY = parent.branchPanel.height - circle.height
         if (!commit.changes.any { it is DropCommand } && parent.branch.isWriteable) {
             wasDragged = true
             commit.isDragged = true
@@ -119,7 +114,7 @@ class CircleDragAndDropListener(
             }
 
             // Handle visual indication of movement limits
-            indicateLimitedVerticalMovement(newCircleY)
+//            indicateLimitedVerticalMovement(newCircleY)
 
             (parent.parent as GraphPanel).repaint()
         }
@@ -148,6 +143,11 @@ class CircleDragAndDropListener(
                 markCommitAsReordered()
             }
             parent.branch.updateCurrentCommits(initialIndex, currentIndex, commit)
+            if(parent.parent != null) {
+                (parent.parent as GraphPanel).updateGraphPanel()
+            }
+        }
+        if(parent.parent != null) {
             (parent.parent as GraphPanel).repaint()
         }
     }

@@ -36,7 +36,7 @@ class BranchPanelTest : BasePlatformTestCase() {
         commit3 = CommitInfo(mock(GitCommit::class.java), project, mutableListOf())
         val branch = BranchInfo("branch", mutableListOf(commit1, commit2, commit3))
         branch.currentCommits = mutableListOf(commit1, commit2, commit3)
-        branchPanel = spy(BranchPanel(branch, JBColor.BLUE))
+        branchPanel = spy(BranchPanel(branch, Palette.BLUE_THEME))
 
         commit2.changes.add(StopToEditCommand(commit2))
         commit3.changes.add(DropCommand(commit3))
@@ -52,7 +52,7 @@ class BranchPanelTest : BasePlatformTestCase() {
     }
 
     fun testColor() {
-        assertEquals(branchPanel.colorTheme, JBColor.BLUE)
+        assertEquals(branchPanel.colorTheme, Palette.BLUE_THEME)
     }
 
     fun testBranchSize() {

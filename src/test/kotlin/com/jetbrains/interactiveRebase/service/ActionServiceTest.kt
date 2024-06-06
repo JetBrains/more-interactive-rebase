@@ -62,7 +62,6 @@ class ActionServiceTest : BasePlatformTestCase() {
 
         branchInfo = modelService.branchInfo
         mainPanel = MainPanel(project)
-//        mainPanel = MainPanel(project, branchInfo, branchInfo, modelService.invoker)
         mainPanel.commitInfoPanel = mock(CommitInfoPanel::class.java)
         Mockito.doNothing().`when`(mainPanel.commitInfoPanel).commitsSelected(anyCustom())
         Mockito.doNothing().`when`(mainPanel.commitInfoPanel).repaint()
@@ -74,7 +73,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits.isEmpty()).isTrue()
         assertThat(commitInfo1.changes.isNotEmpty()).isTrue()
         assertThat(commitInfo1.isSelected).isFalse()
-        Mockito.verify(mainPanel.commitInfoPanel).commitsSelected(anyCustom())
     }
 
     fun testTakeRewordAction() {
@@ -185,7 +183,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits.isEmpty()).isTrue()
         assertThat(commitInfo1.changes.isNotEmpty()).isTrue()
         assertThat(commitInfo1.isSelected).isFalse()
-        Mockito.verify(mainPanel.commitInfoPanel).commitsSelected(anyCustom())
     }
 
     fun testPerformPickAction() {

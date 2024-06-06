@@ -39,7 +39,7 @@ class StopToEditCirclePanelTest : BasePlatformTestCase() {
                 StopToEditCirclePanel(
                     50.0,
                     2.0f,
-                    JBColor.BLACK,
+                    Palette.BLUE_THEME,
                     commit,
                 ),
             )
@@ -62,7 +62,7 @@ class StopToEditCirclePanelTest : BasePlatformTestCase() {
 
         assertEquals(2, colorCaptor.allValues.size)
         colorEquals(colorCaptor.allValues[0], Palette.DARK_GRAY.darker().darker())
-        colorEquals(colorCaptor.allValues[1], Palette.BLUE_BORDER.darker())
+        colorEquals(colorCaptor.allValues[1], Palette.DARK_BLUE.darker())
     }
 
     fun testPaintCircleHovered() {

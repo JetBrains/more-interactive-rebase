@@ -61,10 +61,19 @@ class ActionService(project: Project) {
      */
     fun checkDrop(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            modelService.branchInfo.isWriteable &&
+            !areDisabledCommitsSelected() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.changes.any { change -> change is DropCommand }
             }
+    }
+
+    /**
+     * Returns true if the there are currently any selected commits on the added branch,
+     * false otherwise or if there is no added branch
+     */
+    private fun areDisabledCommitsSelected() : Boolean {
+        val added = modelService.graphInfo.addedBranch
+        return (added != null && added.selectedCommits.isNotEmpty())
     }
 
     /**
@@ -75,7 +84,7 @@ class ActionService(project: Project) {
      */
     fun checkReword(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.getActualSelectedCommitsSize() == 1 &&
-            modelService.branchInfo.isWriteable &&
+                !areDisabledCommitsSelected() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.changes.any { change -> change is DropCommand }
             }
@@ -89,7 +98,7 @@ class ActionService(project: Project) {
      */
     fun checkStopToEdit(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            modelService.branchInfo.isWriteable &&
+                !areDisabledCommitsSelected() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.changes.any { change -> change is DropCommand }
             }
@@ -103,7 +112,7 @@ class ActionService(project: Project) {
      */
     fun checkFixupOrSquash(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            modelService.branchInfo.isWriteable &&
+                !areDisabledCommitsSelected() &&
             !(
                 modelService.branchInfo.selectedCommits.size==1 &&
                     invoker.branchInfo.currentCommits.reversed()
@@ -122,7 +131,7 @@ class ActionService(project: Project) {
      */
     fun checkPick(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            modelService.branchInfo.isWriteable
+                !areDisabledCommitsSelected()
     }
 
     /**

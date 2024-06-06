@@ -14,11 +14,11 @@ enum class TextStyle {
          */
         fun getStyleTag(style: TextStyle): Pair<String, String> {
             return when (style) {
-                ITALIC -> Pair("<i>", "</i>")
-                BOLD -> Pair("<b>", "</b>")
-                CROSSED -> Pair("<strike>", "</strike>")
-                LEFT_ALIGNMENT -> Pair("<body style='\"text-align: left;\"'>", "</body>")
-                RIGHT_ALIGNMENT -> Pair("<body style='\"text-align: right;\"'>", "</body>")
+                ITALIC -> Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><i>", "</i></span>")
+                BOLD -> Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><b>", "</b></span>")
+                CROSSED -> Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><strike>", "</strike></span>")
+                LEFT_ALIGNMENT -> Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;'><body>", "</body></span>")
+                RIGHT_ALIGNMENT -> Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right;'><body>", "</body></span>")
             }
         }
 
@@ -46,3 +46,4 @@ enum class TextStyle {
         }
     }
 }
+

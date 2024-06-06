@@ -126,18 +126,17 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
             }
         }
 
-    fun testStopToEditCommit() =
-        runTest {
-            launch(Dispatchers.Main) {
+    fun testStopToEditCommit()
+    {
                 // this opens the editor tab, and initializes everything
                 val openEditorTabAction = CreateEditorTabAction()
                 val testEvent = createTestEvent()
                 openEditorTabAction.actionPerformed(testEvent)
 
                 val modelService = project.service<ModelService>()
-                withContext(Dispatchers.IO) {
+//                withContext(Dispatchers.IO) {
                     sleep(1000)
-                }
+//                }
                 assertThat(modelService.branchInfo.currentCommits).hasSize(4)
 
                 // this selects the second-to-last commit and sets it up to be edited
@@ -155,9 +154,9 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
                 val rebaseButton = changesActionsPanel.components[1] as RoundedButton
                 rebaseButton.doClick()
 
-                withContext(Dispatchers.IO) {
+//                withContext(Dispatchers.IO) {
                     sleep(1000)
-                }
+//                }
                 // this checks that the rebase was paused
                 val statusOutput = repository.git("status")
                 assertThat(statusOutput).contains("edit " + commit3.substring(0, 7) + " Cool stuff")
@@ -165,13 +164,13 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
                 // this continues the rebase
                 repository.git("rebase --continue")
 
-                withContext(Dispatchers.IO) {
+//                withContext(Dispatchers.IO) {
                     sleep(1000)
-                }
+//                }
                 // this checks that the rebase was continued and finished
                 val leftOverCommits = countCommitsSinceInitialCommit()
                 assertThat(leftOverCommits).isEqualTo(4)
-            }
+
         }
 
     fun testRewordCommit() =
@@ -201,7 +200,7 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
 
                 // here we pretend that we are a user inputting the data new commit message
                 // in the GUI, by getting the listener and setting the text field to the new message
-                val labeledBranchPanel = project.service<ActionService>().mainPanel.branchPanel
+                val labeledBranchPanel = project.service<ActionService>().mainPanel.graphPanel.mainBranchPanel
                 val textField = labeledBranchPanel.getTextField(1)
 
                 val listener = textField.keyListeners[0] as TextFieldListener
@@ -266,7 +265,7 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
 
                 // here we pretend that we are a user inputting the data new commit message
                 // in the GUI, by getting the listener and setting the text field to the new message
-                val labeledBranchPanel = project.service<ActionService>().mainPanel.branchPanel
+                val labeledBranchPanel = project.service<ActionService>().mainPanel.graphPanel.mainBranchPanel
                 val textField = labeledBranchPanel.getTextField(1)
 
                 val listener = textField.keyListeners[0] as TextFieldListener

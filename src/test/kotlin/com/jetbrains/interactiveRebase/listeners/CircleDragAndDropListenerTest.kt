@@ -10,6 +10,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.BranchPanel
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
+import com.jetbrains.interactiveRebase.visuals.GraphPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
 import org.assertj.core.api.Assertions.assertThat
@@ -39,6 +40,10 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
     private lateinit var message2: JBPanel<JBPanel<*>>
     private lateinit var invoker: RebaseInvoker
 
+    init {
+        System.setProperty("idea.home.path", "/tmp")
+    }
+
     override fun setUp() {
         super.setUp()
 
@@ -64,6 +69,7 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
         circles = mutableListOf(circle, other)
         branch = mock(BranchInfo()::class.java)
         `when`(branch.currentCommits).thenReturn(mutableListOf(commit, otherCommit))
+        `when`(branch.isWriteable).thenReturn(true)
 
         message1 =
             mock(JBPanel<JBPanel<*>>()::class.java).apply {
@@ -90,6 +96,7 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
         `when`(parent.messages).thenReturn(messages)
         `when`(parent.commitLabels).thenReturn(mutableListOf(label, otherLabel))
         `when`(parent.branchPanel).thenReturn(branchPanel)
+        `when`(parent.parent).thenReturn(mock(GraphPanel::class.java))
 
         listener = spy(CircleDragAndDropListener(project, circle, circles, parent))
     }
@@ -141,7 +148,6 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
         verify(listener, never()).repositionOnDrag()
         assertThat(listener.currentIndex).isEqualTo(0)
         verify(parent, never()).repaint()
-        verify(listener).indicateLimitedVerticalMovement(30)
     }
 
     fun testMousePosition() {
@@ -157,7 +163,6 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
     }
 
     fun testMouseReleasedTrue() {
-        listener.wasDragged = true
 
         val eventPress =
             mock(MouseEvent::class.java).apply {
@@ -177,6 +182,7 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
 
         listener.mousePressed(eventPress)
         listener.mouseDragged(eventDrag)
+        listener.wasDragged = true
         listener.mouseReleased(eventRelease)
         assertThat(commit.isDragged).isFalse()
         verify(listener).repositionOnDrop()
@@ -237,9 +243,9 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
     }
 
     fun testUpdateNeighbors() {
-        val circle0 = CirclePanel(20.0, 1f, Palette.BLUE, commit)
-        val circle1 = CirclePanel(20.0, 1f, Palette.BLUE, commit)
-        val circle2 = CirclePanel(20.0, 1f, Palette.BLUE, commit)
+        val circle0 = CirclePanel(20.0, 1f, Palette.BLUE_THEME, commit)
+        val circle1 = CirclePanel(20.0, 1f, Palette.BLUE_THEME, commit)
+        val circle2 = CirclePanel(20.0, 1f, Palette.BLUE_THEME, commit)
         listener =
             spy(
                 CircleDragAndDropListener(
@@ -282,10 +288,10 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
     }
 
     fun testRepositionOnDrop() {
-        val circle0 = CirclePanel(20.0, 1f, Palette.BLUE, commit)
-        val circle1 = CirclePanel(20.0, 1f, Palette.BLUE, commit)
-        val circle2 = CirclePanel(20.0, 1f, Palette.BLUE, commit)
-        val circle3 = CirclePanel(20.0, 1f, Palette.BLUE, commit)
+        val circle0 = CirclePanel(20.0, 1f, Palette.BLUE_THEME, commit)
+        val circle1 = CirclePanel(20.0, 1f, Palette.BLUE_THEME, commit)
+        val circle2 = CirclePanel(20.0, 1f, Palette.BLUE_THEME, commit)
+        val circle3 = CirclePanel(20.0, 1f, Palette.BLUE_THEME, commit)
         listener =
             spy(
                 CircleDragAndDropListener(

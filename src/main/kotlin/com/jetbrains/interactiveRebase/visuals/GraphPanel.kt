@@ -79,10 +79,11 @@ class GraphPanel(
     private fun addBranches() {
         val gbc = GridBagConstraints()
 
-        addFirstBranchToTheView(gbc)
+        val (offsetMain, offsetAdded) = computeVerticalOffsets()
+        addFirstBranchToTheView(gbc, offsetMain)
 
         if (addedBranchPanel != null) {
-            addSecondBranchToTheView(gbc)
+            addSecondBranchToTheView(gbc, offsetAdded)
         }
     }
 
@@ -90,11 +91,33 @@ class GraphPanel(
      * Adds the second branch to the view
      * for visualization
      */
-    private fun GraphPanel.addSecondBranchToTheView(gbc: GridBagConstraints) {
+    private fun GraphPanel.addSecondBranchToTheView(gbc: GridBagConstraints, offset: Int) {
         alignSecondBranch(gbc)
-        val offset = computeVerticalOffsetOfSecondBranch()
-        addedBranchPanel!!.addComponentsForSecondaryBranchWithOffset(offset)
+        addedBranchPanel!!.addBranchWithVerticalOffset(offset)
         add(addedBranchPanel!!, gbc)
+    }
+
+    /**
+     * Computes what offset is necessary for both of the branches
+     * to be properly aligned.
+     * That is, the added branch always has
+     * a lower position than the primary branch.
+     * The default padding is 5 px.
+     */
+    private fun computeVerticalOffsets(): Pair<Int, Int> {
+        val offset = computeVerticalOffsetOfSecondBranch()
+        var offsetMain = offset
+        var offsetAdded = offset
+        if (offset == 0) {
+            offsetMain = 5
+            offsetAdded = 5
+        } else if (offset < 0) {
+            offsetMain = -offsetMain
+            offsetAdded = 5
+        } else {
+            offsetMain = 5
+        }
+        return Pair(offsetMain, offsetAdded)
     }
 
     /**
@@ -107,17 +130,16 @@ class GraphPanel(
         val mainCircleCount = mainBranchPanel.branchPanel.circles.size
         val addedCircleCount = addedBranchPanel?.branchPanel?.circles?.size ?: 0
         val difference = mainCircleCount - addedCircleCount + 2
-        val circle = mainBranchPanel.branchPanel.circles.last()
-
-        return difference * (circle.diameter * 2).toInt()
+        return difference * mainBranchPanel.branchPanel.diameter * 2
     }
 
     /**
      * Adds the main branch to the view
      * for visualization
      */
-    private fun GraphPanel.addFirstBranchToTheView(gbc: GridBagConstraints) {
+    private fun GraphPanel.addFirstBranchToTheView(gbc: GridBagConstraints, offset: Int) {
         alignPrimaryBranch(gbc)
+        mainBranchPanel.addBranchWithVerticalOffset(offset)
         add(mainBranchPanel, gbc)
     }
 
@@ -235,14 +257,14 @@ class GraphPanel(
         val mainLastCircle = mainBranchPanel.branchPanel.circles.last()
         val mainCircleCenterX =
             mainBranchPanel.x + // start of the labeled branch panel
-                mainBranchPanel.branchPanel.x + // start of the internal branch panel
-                mainLastCircle.x + // start of the circle
-                mainLastCircle.width / 2 // center of the circle
+                    mainBranchPanel.branchPanel.x + // start of the internal branch panel
+                    mainLastCircle.x + // start of the circle
+                    mainLastCircle.width / 2 // center of the circle
         val mainCircleCenterY =
             mainBranchPanel.y + // start of the labeled branch panel
-                mainBranchPanel.branchPanel.y + // start of the internal branch panel
-                mainLastCircle.y + // start of the circle
-                mainLastCircle.height / 2 // center of the circle
+                    mainBranchPanel.branchPanel.y + // start of the internal branch panel
+                    mainLastCircle.y + // start of the circle
+                    mainLastCircle.height / 2 // center of the circle
         return Pair(mainCircleCenterX, mainCircleCenterY)
     }
 
@@ -271,6 +293,7 @@ class GraphPanel(
 
         addBranches()
         revalidate()
+        repaint()
     }
 
     /**

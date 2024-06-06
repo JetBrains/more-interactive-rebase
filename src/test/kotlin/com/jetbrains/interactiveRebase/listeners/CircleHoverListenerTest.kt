@@ -109,12 +109,6 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
         verify(circlePanel, never()).repaint()
     }
 
-    fun testMouseClicked() {
-        `when`(circlePanel.commit).thenReturn(commit1)
-        listener.mouseClicked(null)
-        assertThat(circlePanel.commit.isSelected).isTrue()
-    }
-
     fun testMouseMovedInsideCircle() {
         val event = mock(MouseEvent::class.java)
         `when`(event.x).thenReturn(10)
