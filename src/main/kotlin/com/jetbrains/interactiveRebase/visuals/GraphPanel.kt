@@ -76,7 +76,7 @@ class GraphPanel(
      * Adds the two branches (as Labeled Branch Panels)
      * to the graph panel
      */
-    private fun addBranches() {
+    internal fun addBranches() {
         val gbc = GridBagConstraints()
 
         val (offsetMain, offsetAdded) = computeVerticalOffsets()
@@ -109,16 +109,12 @@ class GraphPanel(
      */
     private fun computeVerticalOffsets(): Pair<Int, Int> {
         val offset = computeVerticalOffsetOfSecondBranch()
-        var offsetMain = offset
-        var offsetAdded = offset
-        if (offset == 0) {
-            offsetMain = 5
-            offsetAdded = 5
-        } else if (offset < 0) {
-            offsetMain = -offsetMain
-            offsetAdded = 5
-        } else {
-            offsetMain = 5
+        var offsetMain = 5
+        var offsetAdded = 5
+        if (offset < 0) {
+            offsetMain = -offset
+        } else if (offset > 0) {
+            offsetAdded = offset
         }
         return Pair(offsetMain, offsetAdded)
     }
@@ -236,7 +232,7 @@ class GraphPanel(
             // If added branch is not rendered because the screen is too small
             // coordinates appear to be 0
             // Hence, we don't draw the line in this case
-            if (addedCircleCenterX != 0 && addedCircleCenterY != 0) {
+            if (Pair(addedCircleCenterX, addedCircleCenterY) != Pair(0, 0)) {
                 g2d.draw(curve)
             }
         }

@@ -29,7 +29,7 @@ abstract class IRGitPlatformTest : VcsPlatformTest() {
      * - checks out the "development" branch
      * - creates a file and commits it
      */
-    override fun setUp(){
+    override fun setUp()  {
         super.setUp()
         // This creates a new repository in the test project root
         repository = createRepository(project, projectNioRoot, true)
@@ -63,6 +63,7 @@ abstract class IRGitPlatformTest : VcsPlatformTest() {
     fun GitRepository.getAllCommits(): List<String> =
         git(project, "log --pretty=format:%H")
             .lines()
-            .filter { it.isNotBlank()
+            .filter {
+                it.isNotBlank()
             }
 }

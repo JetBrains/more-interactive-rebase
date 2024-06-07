@@ -3,15 +3,10 @@ import com.intellij.openapi.components.service
 import com.intellij.testFramework.TestActionEvent.createTestEvent
 import com.jetbrains.interactiveRebase.actions.CreateEditorTabAction
 import com.jetbrains.interactiveRebase.actions.gitPanel.DropAction
-import com.jetbrains.interactiveRebase.actions.gitPanel.FixupAction
-import com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction
-import com.jetbrains.interactiveRebase.actions.gitPanel.SquashAction
-import com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction
 import com.jetbrains.interactiveRebase.integrationTests.IRGitPlatformTest
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.TestFile
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.addCommit
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.git
-import com.jetbrains.interactiveRebase.listeners.TextFieldListener
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.RoundedButton
