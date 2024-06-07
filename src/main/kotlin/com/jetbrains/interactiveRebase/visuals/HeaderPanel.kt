@@ -65,15 +65,14 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
         buttonPanel.add(toolbarComponent)
         //val rebaseButton = RoundedButton("Rebase", Palette.BLUEBUTTON, Palette.WHITETEXT)
 
-//        rebaseButton.addActionListener {
-//            invoker.createModel()
-//            invoker.executeCommands()
-//        }
+//
 //        val resetButton = RoundedButton("Reset", Palette.GRAYBUTTON, Palette.WHITETEXT)
 //
 //        resetButton.addActionListener { project.service<ActionService>().resetAllChangesAction() }
 
         //buttonPanel.add(resetButton)
         //buttonPanel.add(rebaseButton)
+
+
     }
 }

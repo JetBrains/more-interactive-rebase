@@ -113,6 +113,13 @@ class ActionService(project: Project) {
     }
 
     /**
+     * Enables rebase button
+     */
+    fun checkRebase(e: AnActionEvent) {
+        e.presentation.isEnabled = invoker.commands.size!=0
+    }
+
+    /**
      * Adds a visual change for a commit that has to be stopped to edit
      */
     fun takeStopToEditAction() {
