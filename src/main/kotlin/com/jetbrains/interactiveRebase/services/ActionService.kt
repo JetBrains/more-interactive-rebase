@@ -6,6 +6,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
@@ -103,6 +104,13 @@ class ActionService(project: Project) {
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
+                && (modelService.getSelectedCommits().size == 1
+                && checkParentNotCollapsed(modelService.getSelectedCommits()[0]))
+    }
+
+    fun checkParentNotCollapsed(commit: CommitInfo): Boolean {
+        val index = modelService.branchInfo.currentCommits.indexOf(commit)
+        return !modelService.branchInfo.currentCommits[index+1].isCollapsed
     }
 
     /**
@@ -531,8 +539,90 @@ class ActionService(project: Project) {
         e.presentation.isEnabled = invoker.undoneCommands.isNotEmpty()
     }
 
+    fun checkCollapse(e: AnActionEvent) {
+        // check if there are any already collapsed commits
+        val currentCommits = modelService.getCurrentCommits()
+        if(modelService.branchInfo.initialCommits.size <= 7){
+            e.presentation.isEnabled = false
+            return
+        }
+
+        if(currentCommits.any { it.isCollapsed }){
+            e.presentation.isEnabled = false
+            return
+        }
+        if(modelService.branchInfo.getActualSelectedCommitsSize() == 1){
+            e.presentation.isEnabled = false
+            return
+        }
+
+        if(modelService.getSelectedCommits().isEmpty()){
+            e.presentation.isEnabled = true
+            return
+        }
+
+        e.presentation.isEnabled = checkSelectedCommitsAreInARange()
+    }
+
+    fun checkSelectedCommitsAreInARange():Boolean{
+        var selectedCommits = modelService.getSelectedCommits()
+        val currentCommits = modelService.getCurrentCommits()
+
+        var indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
+        var indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
+
+        if(indexFirstCommit > indexLastCommit){
+            indexLastCommit = indexFirstCommit.also { indexFirstCommit = indexLastCommit }
+            selectedCommits = selectedCommits.reversed().toMutableList()
+        }
+
+        val commitsOfRange = currentCommits.subList(indexFirstCommit, indexLastCommit+1)
+        selectedCommits = selectedCommits.filter { !it.isSquashed }.toMutableList()
+//        val set1 = commitsOfRange.toSet()
+//        val set2 = selectedCommits.filter { !it.isSquashed }.toSet()
+        val res = commitsOfRange.containsAll(selectedCommits)
+        return res
+    }
+
+    fun expandCollapsedCommits(parentCommit: CommitInfo){
+        if(!parentCommit.isCollapsed) return
+        parentCommit.isCollapsed = false
+        val collapseCommand = parentCommit.changes.filterIsInstance<CollapseCommand>().lastOrNull() as CollapseCommand
+        if(collapseCommand == null) return
+
+        parentCommit.removeChange(collapseCommand)
+        val index = modelService.branchInfo.currentCommits.indexOf(parentCommit)
+        val collapsedCommits = collapseCommand.collapsedCommits
+        collapsedCommits.forEach {
+            it.isCollapsed = false
+            it.removeChange(collapseCommand)
+        }
+        modelService.branchInfo.addCommitsToCurrentCommits(index, collapsedCommits)
+    }
+
+    fun takeCollapseAction(){
+        val selectedCommits = modelService.getSelectedCommits()
+        selectedCommits.sortBy { modelService.branchInfo.indexOfCommit(it) }
+        if(modelService.getSelectedCommits().isEmpty()){
+            modelService.branchInfo.collapseCommits()
+        }
+        else{
+            val currentCommits = modelService.getCurrentCommits()
+            var indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
+            var indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
+
+            if(indexFirstCommit > indexLastCommit){
+                indexLastCommit = indexFirstCommit.also { indexFirstCommit = indexLastCommit }
+            }
+
+            modelService.branchInfo.collapseCommits(indexFirstCommit, indexLastCommit)
+        }
+    }
+
     fun getHeaderPanel(): HeaderPanel {
         val wrapper = mainPanel.getComponent(0) as OnePixelSplitter
         return wrapper.firstComponent as HeaderPanel
     }
+
+
 }

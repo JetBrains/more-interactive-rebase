@@ -57,6 +57,7 @@ class ModelService(
      * commits
      */
     fun addToSelectedCommits(commit: CommitInfo) {
+        if(commit.isCollapsed) return
         commit.isSelected = true
         branchInfo.addSelectedCommits(commit)
         commit.getChangesAfterPick().forEach { change ->
@@ -73,6 +74,7 @@ class ModelService(
      * list of selected commits
      */
     fun removeFromSelectedCommits(commit: CommitInfo) {
+        if(commit.isCollapsed) return
         commit.isSelected = false
         branchInfo.removeSelectedCommits(commit)
         commit.getChangesAfterPick().forEach { change ->
@@ -113,6 +115,35 @@ class ModelService(
      */
     fun getSelectedCommits(): MutableList<CommitInfo> {
         return branchInfo.selectedCommits
+    }
+
+    fun getLowestSelectedCommit(): CommitInfo {
+        var commit = branchInfo.selectedCommits[0]
+        var index = branchInfo.currentCommits.indexOf(commit)
+
+        branchInfo.selectedCommits.forEach {
+            if (branchInfo.currentCommits.indexOf(it) > index && !it.isSquashed) {
+                commit = it
+                index = branchInfo.currentCommits.indexOf(it)
+            }
+        }
+
+        return commit
+    }
+
+
+    fun getHighestSelectedCommit(): CommitInfo {
+        var commit = branchInfo.selectedCommits[0]
+        var index = branchInfo.currentCommits.indexOf(commit)
+
+        branchInfo.selectedCommits.forEach {
+            if (branchInfo.currentCommits.indexOf(it) < index && !it.isSquashed) {
+                commit = it
+                index = branchInfo.currentCommits.indexOf(it)
+            }
+        }
+
+        return commit
     }
 
     /**

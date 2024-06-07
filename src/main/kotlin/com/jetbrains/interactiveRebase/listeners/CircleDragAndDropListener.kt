@@ -5,6 +5,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.services.ModelService
@@ -94,7 +95,7 @@ class CircleDragAndDropListener(
      * 4. handle limited vertical movement (outside parent component)
      */
     override fun mouseDragged(e: MouseEvent) {
-        if (!commit.getChangesAfterPick().any { it is DropCommand }) {
+        if (!commit.getChangesAfterPick().any { it is DropCommand || it is CollapseCommand }) {
             wasDragged = true
             commit.isDragged = true
             val deltaY = e.yOnScreen - mousePosition.y

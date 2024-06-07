@@ -211,10 +211,6 @@ class BranchPanel(
         removeAll()
         circles.clear()
 
-        if(branch.currentCommits.size > 7){
-            prepareCommitsForCollapsing()
-        }
-
         size = branch.currentCommits.size
 
         for (i in 0 until size) {
@@ -233,6 +229,7 @@ class BranchPanel(
     }
 
     fun prepareCommitsForCollapsing(){
+        if(branch.currentCommits.size < 7) return
         val sizey = branch.currentCommits.size
         val newCurrentCommits = branch.currentCommits.subList(0,5) + branch.currentCommits.subList(sizey-2, sizey)
 
@@ -240,9 +237,14 @@ class BranchPanel(
         val parentOfCollapsedCommit = branch.currentCommits[sizey - 2]
 
         val collapsedCommand = CollapseCommand(parentOfCollapsedCommit, collapsedCommits.toMutableList())
-        parentOfCollapsedCommit.changes.add(collapsedCommand)
-        collapsedCommits.forEach { it.changes.add(collapsedCommand)}
 
+        parentOfCollapsedCommit.changes.add(collapsedCommand)
+        parentOfCollapsedCommit.isCollapsed = true
+
+        collapsedCommits.forEach {
+            it.changes.add(collapsedCommand)
+            it.isCollapsed = true
+        }
         branch.currentCommits = newCurrentCommits.toMutableList()
     }
 }
