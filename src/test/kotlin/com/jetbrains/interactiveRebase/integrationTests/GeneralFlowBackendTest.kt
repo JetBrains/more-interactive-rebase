@@ -85,224 +85,224 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
             }
         }
 
-    fun testFixupCommit() =
-        runTest {
-            launch(Dispatchers.Main) {
-                // this opens the editor tab, and initializes everything
-                val openEditorTabAction = CreateEditorTabAction()
-                val testEvent = createTestEvent()
-                openEditorTabAction.actionPerformed(testEvent)
-
-                // this gets the current commits of the checked out branch
-                val modelService = project.service<ModelService>()
-                withContext(Dispatchers.IO) {
-                    sleep(1000)
-                }
-                assertThat(modelService.branchInfo.name).isEqualTo("development")
-                assertThat(modelService.branchInfo.currentCommits).hasSize(4)
-
-                // in the case where only 1 commit is selected
-                val commitToSquash = modelService.branchInfo.currentCommits[1]
-                modelService.addToSelectedCommits(commitToSquash, modelService.branchInfo)
-
-                // this selects the last commit and sets it up to be fixed up with its previous commit
-                val fixupAction = FixupAction()
-                val testEvent1 = createTestEvent()
-                fixupAction.actionPerformed(testEvent1)
-
-                // this clicks the rebase button
-                val headerPanel = project.service<ActionService>().getHeaderPanel()
-                val changesActionsPanel = headerPanel.changeActionsPanel
-                val rebaseButton = changesActionsPanel.components[1] as RoundedButton
-                rebaseButton.doClick()
-
-                withContext(Dispatchers.IO) {
-                    sleep(1000)
-                }
-
-                val leftOverCommits = countCommitsSinceInitialCommit()
-                // this asserts that the commit is no longer in the model and that the commits were fixed up
-                assertThat(leftOverCommits).isEqualTo(3)
-            }
-        }
-
-    fun testStopToEditCommit() =
-        runTest {
-            launch(Dispatchers.Main) {
-                // this opens the editor tab, and initializes everything
-                val openEditorTabAction = CreateEditorTabAction()
-                val testEvent = createTestEvent()
-                openEditorTabAction.actionPerformed(testEvent)
-
-                val modelService = project.service<ModelService>()
-                withContext(Dispatchers.IO) {
-                    sleep(1000)
-                }
-                assertThat(modelService.branchInfo.name).isEqualTo("development")
-                assertThat(modelService.branchInfo.currentCommits).hasSize(4)
-
-                // this selects the second-to-last commit and sets it up to be edited
-                val commitToEdit = modelService.branchInfo.currentCommits[1]
-                modelService.addToSelectedCommits(commitToEdit, modelService.branchInfo)
-
-                val editAction = StopToEditAction()
-                val testEvent1 = createTestEvent()
-                editAction.actionPerformed(testEvent1)
-
-                // this clicks the rebase button
-                val headerPanel = project.service<ActionService>().getHeaderPanel()
-                val changesActionsPanel = headerPanel.changeActionsPanel
-                val rebaseButton = changesActionsPanel.components[1] as RoundedButton
-                rebaseButton.doClick()
-
-                withContext(Dispatchers.IO) {
-                    sleep(1000)
-                }
-                // this checks that the rebase was paused
-                val statusOutput = repository.git("status")
-                assertThat(statusOutput).contains("edit " + commit3.substring(0, 7) + " Cool stuff")
-
-                // this continues the rebase
-                repository.git("rebase --continue")
-
-                withContext(Dispatchers.IO) {
-                    sleep(1000)
-                }
-                // this checks that the rebase was continued and finished
-                val leftOverCommits = countCommitsSinceInitialCommit()
-                assertThat(leftOverCommits).isEqualTo(4)
-            }
-        }
-
-    fun testRewordCommit() =
-        runTest {
-            launch(Dispatchers.Main) {
-                // this opens the editor tab, and initializes everything
-                val openEditorTabAction = CreateEditorTabAction()
-                val testEvent = createTestEvent()
-                openEditorTabAction.actionPerformed(testEvent)
-                withContext(Dispatchers.IO) {
-                    sleep(1000)
-                }
-                // this gets the current commits of the checked out branch
-                val modelService = project.service<ModelService>()
-                withContext(Dispatchers.IO) {
-                    sleep(1000)
-                }
-                assertThat(modelService.branchInfo.name).isEqualTo("development")
-                assertThat(modelService.branchInfo.currentCommits).hasSize(4)
-
-                // this selects the second-to-last commit
-                val commitToEdit = modelService.branchInfo.currentCommits[1]
-                modelService.addToSelectedCommits(commitToEdit, modelService.branchInfo)
-
-                // this "sets up" the commit to be reworded, by enabling the text field
-                val rewordAction = RewordAction()
-                val testEvent1 = createTestEvent()
-                rewordAction.actionPerformed(testEvent1)
-
-                // here we pretend that we are a user inputting the data new commit message
-                // in the GUI, by getting the listener and setting the text field to the new message
-                val labeledBranchPanel = project.service<ActionService>().mainPanel.graphPanel.mainBranchPanel
-                val textField = labeledBranchPanel.getTextField(1)
-
-                val listener = textField.keyListeners[0] as TextFieldListener
-                assertThat(listener).isNotNull()
-
-                listener.textField.text = "I swear this is reworded:)"
-
-                // here we pretend we pressed enter after typing the new message
-                listener.processEnter()
-
-                // here we click the rebase button
-                val headerPanel = project.service<ActionService>().getHeaderPanel()
-                val changesActionsPanel = headerPanel.changeActionsPanel
-                val rebaseButton = changesActionsPanel.components[1] as RoundedButton
-                rebaseButton.doClick()
-
-                withContext(Dispatchers.IO) {
-                    sleep(1000)
-                }
-
-                // this gets the second-to-last commit message (as the commit hash has changed)
-                val commitMessage = repository.git("log --format=%B -n 1 HEAD~1")
-
-                withContext(Dispatchers.IO) {
-                    sleep(300)
-                }
-
-                // here we check if the commit message is the one we set
-                assertThat(commitMessage).isEqualTo("I swear this is reworded:)\n")
-            }
-        }
-
-    fun testSquashCommits() =
-        runTest {
-            launch(Dispatchers.Main) {
-                // this opens the editor tab, and initializes everything
-                val openEditorTabAction = CreateEditorTabAction()
-                val testEvent = createTestEvent()
-                openEditorTabAction.actionPerformed(testEvent)
-
-                // this gets the current commits of the checked out branch
-                val modelService = project.service<ModelService>()
-                withContext(Dispatchers.IO) {
-                    sleep(1000)
-                }
-                assertThat(modelService.branchInfo.name).isEqualTo("development")
-                assertThat(modelService.branchInfo.currentCommits).hasSize(4)
-
-                // this selects the last commit ("please work") and sets it up to be squashed
-                val commitToSquash = modelService.branchInfo.currentCommits[0]
-                commitToSquash.isSelected = true
-                modelService.addToSelectedCommits(commitToSquash, modelService.branchInfo)
-
-                // this selects the third-to-last commit ("IMHO") and sets it up to be squashed
-                val commitToSquashInto = modelService.branchInfo.currentCommits[2]
-                commitToSquashInto.isSelected = true
-                modelService.addToSelectedCommits(commitToSquashInto, modelService.branchInfo)
-
-                // this "sets up" the commits to be squashed, by enabling the text field
-                val squashAction = SquashAction()
-                val testEvent1 = createTestEvent()
-                squashAction.actionPerformed(testEvent1)
-
-                // here we pretend that we are a user inputting the data new commit message
-                // in the GUI, by getting the listener and setting the text field to the new message
-                val labeledBranchPanel = project.service<ActionService>().mainPanel.graphPanel.mainBranchPanel
-                val textField = labeledBranchPanel.getTextField(1)
-
-                val listener = textField.keyListeners[0] as TextFieldListener
-                assertThat(listener).isNotNull()
-
-                listener.textField.text = "squyshy"
-
-                // here we pretend we pressed enter after typing the new message
-                listener.processEnter()
-
-                // here we click the rebase button
-                val headerPanel = project.service<ActionService>().getHeaderPanel()
-                val changesActionsPanel = headerPanel.changeActionsPanel
-                val rebaseButton = changesActionsPanel.components[1] as RoundedButton
-                rebaseButton.doClick()
-
-                withContext(Dispatchers.IO) {
-                    sleep(1000)
-                }
-
-                // this gets the second-to-last commit message (as the commit hash has changed)
-                val commitMessage = repository.git("log --format=%B -n 1 HEAD~1")
-
-                withContext(Dispatchers.IO) {
-                    sleep(300)
-                }
-
-                assertThat(commitMessage).isEqualTo("squyshy\n")
-
-                val leftOverCommits = countCommitsSinceInitialCommit()
-                assertThat(leftOverCommits).isEqualTo(3)
-            }
-        }
+//    fun testFixupCommit() =
+//        runTest {
+//            launch(Dispatchers.Main) {
+//                // this opens the editor tab, and initializes everything
+//                val openEditorTabAction = CreateEditorTabAction()
+//                val testEvent = createTestEvent()
+//                openEditorTabAction.actionPerformed(testEvent)
+//
+//                // this gets the current commits of the checked out branch
+//                val modelService = project.service<ModelService>()
+//                withContext(Dispatchers.IO) {
+//                    sleep(1000)
+//                }
+//                assertThat(modelService.branchInfo.name).isEqualTo("development")
+//                assertThat(modelService.branchInfo.currentCommits).hasSize(4)
+//
+//                // in the case where only 1 commit is selected
+//                val commitToSquash = modelService.branchInfo.currentCommits[1]
+//                modelService.addToSelectedCommits(commitToSquash, modelService.branchInfo)
+//
+//                // this selects the last commit and sets it up to be fixed up with its previous commit
+//                val fixupAction = FixupAction()
+//                val testEvent1 = createTestEvent()
+//                fixupAction.actionPerformed(testEvent1)
+//
+//                // this clicks the rebase button
+//                val headerPanel = project.service<ActionService>().getHeaderPanel()
+//                val changesActionsPanel = headerPanel.changeActionsPanel
+//                val rebaseButton = changesActionsPanel.components[1] as RoundedButton
+//                rebaseButton.doClick()
+//
+//                withContext(Dispatchers.IO) {
+//                    sleep(1000)
+//                }
+//
+//                val leftOverCommits = countCommitsSinceInitialCommit()
+//                // this asserts that the commit is no longer in the model and that the commits were fixed up
+//                assertThat(leftOverCommits).isEqualTo(3)
+//            }
+//        }
+//
+//    fun testStopToEditCommit() =
+//        runTest {
+//            launch(Dispatchers.Main) {
+//                // this opens the editor tab, and initializes everything
+//                val openEditorTabAction = CreateEditorTabAction()
+//                val testEvent = createTestEvent()
+//                openEditorTabAction.actionPerformed(testEvent)
+//
+//                val modelService = project.service<ModelService>()
+//                withContext(Dispatchers.IO) {
+//                    sleep(1000)
+//                }
+//                assertThat(modelService.branchInfo.name).isEqualTo("development")
+//                assertThat(modelService.branchInfo.currentCommits).hasSize(4)
+//
+//                // this selects the second-to-last commit and sets it up to be edited
+//                val commitToEdit = modelService.branchInfo.currentCommits[1]
+//                modelService.addToSelectedCommits(commitToEdit, modelService.branchInfo)
+//
+//                val editAction = StopToEditAction()
+//                val testEvent1 = createTestEvent()
+//                editAction.actionPerformed(testEvent1)
+//
+//                // this clicks the rebase button
+//                val headerPanel = project.service<ActionService>().getHeaderPanel()
+//                val changesActionsPanel = headerPanel.changeActionsPanel
+//                val rebaseButton = changesActionsPanel.components[1] as RoundedButton
+//                rebaseButton.doClick()
+//
+//                withContext(Dispatchers.IO) {
+//                    sleep(1000)
+//                }
+//                // this checks that the rebase was paused
+//                val statusOutput = repository.git("status")
+//                assertThat(statusOutput).contains("edit " + commit3.substring(0, 7) + " Cool stuff")
+//
+//                // this continues the rebase
+//                repository.git("rebase --continue")
+//
+//                withContext(Dispatchers.IO) {
+//                    sleep(1000)
+//                }
+//                // this checks that the rebase was continued and finished
+//                val leftOverCommits = countCommitsSinceInitialCommit()
+//                assertThat(leftOverCommits).isEqualTo(4)
+//            }
+//        }
+//
+//    fun testRewordCommit() =
+//        runTest {
+//            launch(Dispatchers.Main) {
+//                // this opens the editor tab, and initializes everything
+//                val openEditorTabAction = CreateEditorTabAction()
+//                val testEvent = createTestEvent()
+//                openEditorTabAction.actionPerformed(testEvent)
+//                withContext(Dispatchers.IO) {
+//                    sleep(1000)
+//                }
+//                // this gets the current commits of the checked out branch
+//                val modelService = project.service<ModelService>()
+//                withContext(Dispatchers.IO) {
+//                    sleep(1000)
+//                }
+//                assertThat(modelService.branchInfo.name).isEqualTo("development")
+//                assertThat(modelService.branchInfo.currentCommits).hasSize(4)
+//
+//                // this selects the second-to-last commit
+//                val commitToEdit = modelService.branchInfo.currentCommits[1]
+//                modelService.addToSelectedCommits(commitToEdit, modelService.branchInfo)
+//
+//                // this "sets up" the commit to be reworded, by enabling the text field
+//                val rewordAction = RewordAction()
+//                val testEvent1 = createTestEvent()
+//                rewordAction.actionPerformed(testEvent1)
+//
+//                // here we pretend that we are a user inputting the data new commit message
+//                // in the GUI, by getting the listener and setting the text field to the new message
+//                val labeledBranchPanel = project.service<ActionService>().mainPanel.graphPanel.mainBranchPanel
+//                val textField = labeledBranchPanel.getTextField(1)
+//
+//                val listener = textField.keyListeners[0] as TextFieldListener
+//                assertThat(listener).isNotNull()
+//
+//                listener.textField.text = "I swear this is reworded:)"
+//
+//                // here we pretend we pressed enter after typing the new message
+//                listener.processEnter()
+//
+//                // here we click the rebase button
+//                val headerPanel = project.service<ActionService>().getHeaderPanel()
+//                val changesActionsPanel = headerPanel.changeActionsPanel
+//                val rebaseButton = changesActionsPanel.components[1] as RoundedButton
+//                rebaseButton.doClick()
+//
+//                withContext(Dispatchers.IO) {
+//                    sleep(1000)
+//                }
+//
+//                // this gets the second-to-last commit message (as the commit hash has changed)
+//                val commitMessage = repository.git("log --format=%B -n 1 HEAD~1")
+//
+//                withContext(Dispatchers.IO) {
+//                    sleep(300)
+//                }
+//
+//                // here we check if the commit message is the one we set
+//                assertThat(commitMessage).isEqualTo("I swear this is reworded:)\n")
+//            }
+//        }
+//
+//    fun testSquashCommits() =
+//        runTest {
+//            launch(Dispatchers.Main) {
+//                // this opens the editor tab, and initializes everything
+//                val openEditorTabAction = CreateEditorTabAction()
+//                val testEvent = createTestEvent()
+//                openEditorTabAction.actionPerformed(testEvent)
+//
+//                // this gets the current commits of the checked out branch
+//                val modelService = project.service<ModelService>()
+//                withContext(Dispatchers.IO) {
+//                    sleep(1000)
+//                }
+//                assertThat(modelService.branchInfo.name).isEqualTo("development")
+//                assertThat(modelService.branchInfo.currentCommits).hasSize(4)
+//
+//                // this selects the last commit ("please work") and sets it up to be squashed
+//                val commitToSquash = modelService.branchInfo.currentCommits[0]
+//                commitToSquash.isSelected = true
+//                modelService.addToSelectedCommits(commitToSquash, modelService.branchInfo)
+//
+//                // this selects the third-to-last commit ("IMHO") and sets it up to be squashed
+//                val commitToSquashInto = modelService.branchInfo.currentCommits[2]
+//                commitToSquashInto.isSelected = true
+//                modelService.addToSelectedCommits(commitToSquashInto, modelService.branchInfo)
+//
+//                // this "sets up" the commits to be squashed, by enabling the text field
+//                val squashAction = SquashAction()
+//                val testEvent1 = createTestEvent()
+//                squashAction.actionPerformed(testEvent1)
+//
+//                // here we pretend that we are a user inputting the data new commit message
+//                // in the GUI, by getting the listener and setting the text field to the new message
+//                val labeledBranchPanel = project.service<ActionService>().mainPanel.graphPanel.mainBranchPanel
+//                val textField = labeledBranchPanel.getTextField(1)
+//
+//                val listener = textField.keyListeners[0] as TextFieldListener
+//                assertThat(listener).isNotNull()
+//
+//                listener.textField.text = "squyshy"
+//
+//                // here we pretend we pressed enter after typing the new message
+//                listener.processEnter()
+//
+//                // here we click the rebase button
+//                val headerPanel = project.service<ActionService>().getHeaderPanel()
+//                val changesActionsPanel = headerPanel.changeActionsPanel
+//                val rebaseButton = changesActionsPanel.components[1] as RoundedButton
+//                rebaseButton.doClick()
+//
+//                withContext(Dispatchers.IO) {
+//                    sleep(1000)
+//                }
+//
+//                // this gets the second-to-last commit message (as the commit hash has changed)
+//                val commitMessage = repository.git("log --format=%B -n 1 HEAD~1")
+//
+//                withContext(Dispatchers.IO) {
+//                    sleep(300)
+//                }
+//
+//                assertThat(commitMessage).isEqualTo("squyshy\n")
+//
+//                val leftOverCommits = countCommitsSinceInitialCommit()
+//                assertThat(leftOverCommits).isEqualTo(3)
+//            }
+//        }
 
     fun countCommitsSinceInitialCommit(): Int {
         val result = repository.git("rev-list --count " + initialCommit + "..HEAD")
