@@ -10,9 +10,10 @@ import git4idea.repo.GitRepository
 import java.io.File
 
 abstract class IRGitPlatformTest : VcsPlatformTest() {
-    //    init {
-//        System.setProperty("idea.home.path", "/tmp")
-//    }
+    init {
+        System.setProperty("idea.home.path", "/tmp")
+    }
+
     lateinit var repository: GitRepository
     var developmentBranch: String = "development"
 
@@ -33,12 +34,10 @@ abstract class IRGitPlatformTest : VcsPlatformTest() {
         super.setUp()
         // This creates a new repository in the test project root
         repository = createRepository(project, projectNioRoot, true)
-        Thread.sleep(3000)
 
         // This creates a new branch called "development",
         // and leaves the state to the new branch (checked out on branch "development")
         repository.checkoutNew(developmentBranch)
-        Thread.sleep(3000)
 
         // This creates a new file in the repository and commits it to "development" branch
         file1 = TestFile(repository, File(projectRoot.path, "file1.txt"))
@@ -48,22 +47,11 @@ abstract class IRGitPlatformTest : VcsPlatformTest() {
         initialCommit = git("rev-list --max-parents=0 HEAD")
     }
 
-    private fun checkRepositoryInitialized() {
-        // Check if repository exists
-        check(::repository.isInitialized) { "Repository has not been initialized." }
-
-        // Check if initial commit has been made
-        initialCommit = git("rev-list --max-parents=0 HEAD")
-        check(initialCommit.isNotEmpty()) { "Initial commit has not been made." }
-    }
-
     /**
      * Debugging method that allows to see all commits in the checked out branch.
      */
     fun GitRepository.getAllCommits(): List<String> =
         git(project, "log --pretty=format:%H")
             .lines()
-            .filter {
-                it.isNotBlank()
-            }
+            .filter { it.isNotBlank() }
 }

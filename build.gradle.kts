@@ -1,7 +1,6 @@
 import com.diffplug.spotless.LineEnding
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
-import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 fun properties(key: String) = providers.gradleProperty(key)
 fun environment(key: String) = providers.environmentVariable(key)
@@ -10,10 +9,8 @@ buildscript {
     repositories {
         mavenCentral()
         //Needed only for SNAPSHOT versions
-        maven ("https://oss.sonatype.org/content/repositories/snapshots/" )
-        gradlePluginPortal()
+        //maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
     }
-
     dependencies {
         classpath("info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.15.0")
     }
@@ -22,9 +19,7 @@ buildscript {
 plugins {
     id("java")
     alias(libs.plugins.kotlin)
-//    alias(libs.plugins.gradleIntelliJPlugin)
-    id("org.jetbrains.intellij.platform") version "2.0.0-beta3"
-
+    alias(libs.plugins.gradleIntelliJPlugin)
     alias(libs.plugins.changelog)
     alias(libs.plugins.qodana)
     alias(libs.plugins.kover)
@@ -40,6 +35,7 @@ version = properties("pluginVersion").get()
 repositories {
     mavenCentral()
     gradlePluginPortal()
+
     maven ("https://oss.sonatype.org/content/repositories/snapshots/" )
     maven("https://www.jetbrains.com/intellij-repository/releases/")
     maven("https://cache-redirector.jetbrains.com/intellij-dependencies")
@@ -47,10 +43,6 @@ repositories {
     maven("https://cache-redirector.jetbrains.com/download-pgp-verifier")
     maven("https://cache-redirector.jetbrains.com/packages.jetbrains.team/maven/p/grazi/grazie-platform-public")
     maven("https://maven.pkg.jetbrains.space/public/p/ktor/eap/")
-
-    intellijPlatform {
-        defaultRepositories()
-    }
 }
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
@@ -61,22 +53,11 @@ dependencies {
     testImplementation("org.mockito:mockito-core:3.12.4")
     testImplementation("org.assertj:assertj-core:3.23.1")
     testImplementation("org.assertj:assertj-swing-junit:3.9.2")
-    testImplementation("junit:junit:4.12")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:2.0.0")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    //testImplementation("junit:junit:4.12")
     testImplementation("com.jetbrains.intellij.platform:vcs-test-framework:241.15989.150")
     testImplementation("com.jetbrains.intellij.platform:test-framework:241.15989.150")
-
-    intellijPlatform{
-        intellijIdeaCommunity(properties("platformVersion"))
-//        instrumentationTools()
-//        bundledPlugin("com.intellij.java")
-//        create(properties("platformType"),properties("platformVersion"))
-//        plugins(properties("platformPlugins").map { it.split(',').map(String::trim).filter(String::isNotEmpty) })
-        testFramework(TestFrameworkType.Platform.JUnit4)
-        bundledPlugin("Git4Idea")
-//        plugins = properties("platformPlugins").map { it.split(',').map(String::trim).filter(String::isNotEmpty) }
-    }
+    testImplementation("org.jetbrains.kotlin:kotlin-test:2.0.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }
 
 kotlin {
@@ -84,27 +65,14 @@ kotlin {
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
-intellijPlatform {
-    pluginConfiguration{
-        name = properties("pluginName")
-        version = properties("platformVersion")
-    }
-
-//    version = properties("platformVersion")
-
+intellij {
+    pluginName = properties("pluginName")
+    version = properties("platformVersion")
+    type = properties("platformType")
     instrumentCode = false
-    // Plugin Dependencies. Uses platformPlugins property from the gradle.properties file.
-
+    // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
+    plugins = properties("platformPlugins").map { it.split(',').map(String::trim).filter(String::isNotEmpty) }
 }
-//intellijPlatform {
-//    pluginName = properties("pluginName")
-//    version = properties("platformVersion")
-//    type = properties("platformType")
-//    instrumentCode = false
-//
-//    // Plugin Dependencies. Uses platformPlugins property from the gradle.properties file.
-//    plugins = properties("platformPlugins").map { it.split(',').map(String::trim).filter(String::isNotEmpty) }
-//}
 
 // Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
 changelog {
@@ -220,19 +188,13 @@ tasks {
 
     test {
         useJUnit()
-        systemProperties["idea.home.path"] = intellijPlatform.platformPath.toString()
         jacoco {
             enabled = true
             finalizedBy(jacocoTestCoverageVerification)
 
         }
-        testLogging{
-            showExceptions = true
-            showCauses = true
-            showStackTraces = true
-        }
         pitest {
-            targetClasses.set(setOf("com.jetbrains.interactiveRebase.")) //by default "${project.group}."
+            targetClasses.set(setOf("com.jetbrains.interactiveRebase.*")) //by default "${project.group}.*"
             pitestVersion.set("1.15.0") //not needed when a default PIT version should be used
             threads.set(4)
             outputFormats.set(setOf("XML", "HTML"))
@@ -251,8 +213,8 @@ tasks {
             rule {
                 enabled = true
                 element = "CLASS"
-                includes =  listOf("com.jetbrains.interactiveRebase.")
-                excludes = listOf("git4ideaClasses.")
+                includes =  listOf("com.jetbrains.interactiveRebase.**")
+                excludes = listOf("git4ideaClasses.**")
 
 
                 limit {
@@ -268,8 +230,10 @@ tasks {
 tasks.withType(Test::class) {
     configure<JacocoTaskExtension> {
         isIncludeNoLocationClasses = true
-        includes = listOf("com.jetbrains.interactiveRebase.")
-        excludes = listOf("git4ideaClasses.")
+        includes = listOf("com.jetbrains.interactiveRebase.**")
+        excludes = listOf("git4ideaClasses.**")
+
+
     }
 
     tasks.withType<JacocoCoverageVerification> {
@@ -284,7 +248,7 @@ tasks.withType(Test::class) {
         afterEvaluate {
             classDirectories.setFrom(files(classDirectories.files.map {
                 fileTree(it).apply {
-                    exclude("git4ideaClasses/")
+                    exclude("git4ideaClasses/**")
                 }
             }))
         }
@@ -294,7 +258,7 @@ tasks.withType(Test::class) {
         afterEvaluate {
             classDirectories.setFrom(files(classDirectories.files.map {
                 fileTree(it).apply {
-                    exclude("git4ideaClasses/")
+                    exclude("git4ideaClasses/**")
                 }
             }))
         }
