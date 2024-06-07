@@ -29,7 +29,7 @@ abstract class IRGitPlatformTest : VcsPlatformTest() {
      * - checks out the "development" branch
      * - creates a file and commits it
      */
-    override fun setUp()  {
+    override fun setUp() {
         super.setUp()
         // This creates a new repository in the test project root
         repository = createRepository(project, projectNioRoot, true)
