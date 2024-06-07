@@ -8,6 +8,7 @@ import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.IRGitRefreshListener
 import git4idea.status.GitRefreshListener
@@ -23,9 +24,6 @@ class ModelService(
     constructor(project: Project, coroutineScope: CoroutineScope) : this(project, coroutineScope, project.service<CommitService>())
 
     val branchInfo = BranchInfo()
-
-    // TODO: remove?
-//    val otherBranchInfo = BranchInfo()
     val graphInfo = GraphInfo(branchInfo)
     private val graphService = project.service<GraphService>()
 
@@ -43,27 +41,80 @@ class ModelService(
     }
 
     /**
-     * Adds or removes
-     * the commit from the
-     * list of selected commits
-     * The BranchInfo that the added commit belongs to can be controlled in the case of
+     * Selects the single passed in
+     * commit by also deselecting all
+     * currently selected commits
      */
-    fun addOrRemoveCommitSelection(commit: CommitInfo, branchInfo : BranchInfo = this.branchInfo) {
-        commit.changes.forEach { change ->
+    fun selectSingleCommit(
+        commit: CommitInfo,
+        branchInfo: BranchInfo,
+    ) {
+        branchInfo.clearSelectedCommits()
+        addToSelectedCommits(commit, branchInfo)
+    }
+
+    /**
+     * Adds a commit to the list
+     * of selected commits without
+     * deselecting the rest of the
+     * commits
+     */
+    fun addToSelectedCommits(
+        commit: CommitInfo,
+        branchInfo: BranchInfo,
+    ) {
+        commit.isSelected = true
+        branchInfo.addSelectedCommits(commit)
+        commit.getChangesAfterPick().forEach { change ->
             if (change is FixupCommand || change is SquashCommand) {
-                val combinedCommits = project.service<ActionService>().getCombinedCommits(change)
-                if (commit.isSelected) {
-                    branchInfo.selectedCommits.addAll(combinedCommits)
-                } else {
-                    branchInfo.selectedCommits.removeAll(combinedCommits)
+                project.service<ActionService>().getCombinedCommits(change).forEach {
+                    branchInfo.addSelectedCommits(it)
                 }
             }
         }
-        if (commit.isSelected) {
-            branchInfo.addSelectedCommits(commit)
-        } else {
-            branchInfo.removeSelectedCommits(commit)
+    }
+
+    /**
+     * Removes commit from
+     * list of selected commits
+     * for a given branch
+     */
+    fun removeFromSelectedCommits(
+        commit: CommitInfo,
+        branchInfo: BranchInfo,
+    ) {
+        commit.isSelected = false
+        branchInfo.removeSelectedCommits(commit)
+        commit.getChangesAfterPick().forEach { change ->
+            if (change is FixupCommand || change is SquashCommand) {
+                val combinedCommits = project.service<ActionService>().getCombinedCommits(change)
+                branchInfo.selectedCommits.addAll(combinedCommits)
+            }
         }
+    }
+
+    /**
+     * Marks a commit as a reordered by
+     * 1. sets the isReordered flag to true
+     * 2. adds a ReorderCommand
+     * to the visual changes applied to the commit
+     * 3. adds the Reorder Command to the Invoker
+     * that holds an overview of all staged changes.
+     */
+    internal fun markCommitAsReordered(
+        commit: CommitInfo,
+        oldIndex: Int,
+        newIndex: Int,
+    ) {
+        commit.setReorderedTo(true)
+        val command =
+            ReorderCommand(
+                commit,
+                oldIndex,
+                newIndex,
+            )
+        commit.addChange(command)
+        project.service<RebaseInvoker>().addCommand(command)
     }
 
     /**
@@ -72,6 +123,22 @@ class ModelService(
      */
     fun getSelectedCommits(): MutableList<CommitInfo> {
         return branchInfo.selectedCommits
+    }
+
+    /**
+     * Returns the last commit that is selected
+     * but is not squashed or fixed up
+     */
+    fun getLastSelectedCommit(branchInfo: BranchInfo): CommitInfo {
+        var commit = branchInfo.selectedCommits.last()
+
+        // Ensure that the commit we are moving is actually displayed
+        while (commit.isSquashed) {
+            val index = branchInfo.selectedCommits.indexOf(commit)
+            commit = branchInfo.selectedCommits[index - 1]
+        }
+
+        return commit
     }
 
     /**

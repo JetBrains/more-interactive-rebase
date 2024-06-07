@@ -27,6 +27,16 @@
                     class="com.jetbrains.interactiveRebase.actions.changePanel.AddBranchAction" text="AddBranchAction"
                     description="Add another branch to the view">
             </action>
+            <action id="com.jetbrains.interactiveRebase.actions.changePanel.UndoAction"
+                    class="com.jetbrains.interactiveRebase.actions.changePanel.UndoAction" text="UndoAction"
+                    description="Undo the last action you took">
+                <keyboard-shortcut first-keystroke="ctrl Z" keymap="$default"/>
+            </action>
+            <action id="com.jetbrains.interactiveRebase.actions.changePanel.RedoAction"
+                    class="com.jetbrains.interactiveRebase.actions.changePanel.RedoAction" text="RedoAction"
+                    description="Redo the last action you took">
+                <keyboard-shortcut first-keystroke="ctrl shift Z" keymap="$default"/>
+            </action>
 
             <separator/>
             <action id="com.jetbrains.interactiveRebase.actions.gitPanel.PickAction"

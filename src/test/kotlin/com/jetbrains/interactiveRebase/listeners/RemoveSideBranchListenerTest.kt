@@ -13,6 +13,10 @@ class RemoveSideBranchListenerTest : BasePlatformTestCase() {
     lateinit var removeSideBranchListener: RemoveSideBranchListener
     lateinit var mouseEvent: MouseEvent
 
+    init {
+        System.setProperty("idea.home.path", "/tmp")
+    }
+
     override fun setUp() {
         super.setUp()
         sideBranchPanel = SideBranchPanel("main", project)

@@ -20,7 +20,9 @@ class TextStyleTest : BasePlatformTestCase() {
         val bold = TextStyle.getStyleTag(TextStyle.BOLD)
         assertThat(bold).isEqualTo(Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><b>", "</b></span>"))
         val cross = TextStyle.getStyleTag(TextStyle.CROSSED)
-        assertThat(cross).isEqualTo(Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><strike>", "</strike></span>"))
+        assertThat(
+            cross,
+        ).isEqualTo(Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><strike>", "</strike></span>"))
     }
 
     fun testAddStylingAddsToNotStyled() {
@@ -31,6 +33,8 @@ class TextStyleTest : BasePlatformTestCase() {
     fun testAddStylingToStyled() {
         assertThat(
             TextStyle.addStyling("<html><b>add style</b></html>", TextStyle.ITALIC),
-        ).isEqualTo("<html><span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><i><b>add style</b></i></span></html>")
+        ).isEqualTo(
+            "<html><span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><i><b>add style</b></i></span></html>",
+        )
     }
 }

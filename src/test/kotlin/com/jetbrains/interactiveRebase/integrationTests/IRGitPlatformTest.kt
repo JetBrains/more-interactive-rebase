@@ -8,7 +8,6 @@ import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.crea
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.git
 import git4idea.repo.GitRepository
 import java.io.File
-import java.lang.Thread.sleep
 
 abstract class IRGitPlatformTest : VcsPlatformTest() {
     init {
@@ -46,7 +45,6 @@ abstract class IRGitPlatformTest : VcsPlatformTest() {
         commit1 = addCommit("Changed file")
 
         initialCommit = git("rev-list --max-parents=0 HEAD")
-        sleep(500)
     }
 
     /**

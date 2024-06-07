@@ -1,7 +1,6 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.intellij.ui.JBColor
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand

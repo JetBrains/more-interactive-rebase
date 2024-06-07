@@ -91,7 +91,10 @@ class GraphPanel(
      * Adds the second branch to the view
      * for visualization
      */
-    private fun GraphPanel.addSecondBranchToTheView(gbc: GridBagConstraints, offset: Int) {
+    private fun GraphPanel.addSecondBranchToTheView(
+        gbc: GridBagConstraints,
+        offset: Int,
+    ) {
         alignSecondBranch(gbc)
         addedBranchPanel!!.addBranchWithVerticalOffset(offset)
         add(addedBranchPanel!!, gbc)
@@ -137,7 +140,10 @@ class GraphPanel(
      * Adds the main branch to the view
      * for visualization
      */
-    private fun GraphPanel.addFirstBranchToTheView(gbc: GridBagConstraints, offset: Int) {
+    private fun GraphPanel.addFirstBranchToTheView(
+        gbc: GridBagConstraints,
+        offset: Int,
+    ) {
         alignPrimaryBranch(gbc)
         mainBranchPanel.addBranchWithVerticalOffset(offset)
         add(mainBranchPanel, gbc)
@@ -254,17 +260,21 @@ class GraphPanel(
      * of the last circle of the added (not checked out) branch
      */
     fun centerCoordinatesOfLastMainCircle(): Pair<Int, Int> {
-        val mainLastCircle = mainBranchPanel.branchPanel.circles.last()
-        val mainCircleCenterX =
-            mainBranchPanel.x + // start of the labeled branch panel
-                    mainBranchPanel.branchPanel.x + // start of the internal branch panel
-                    mainLastCircle.x + // start of the circle
-                    mainLastCircle.width / 2 // center of the circle
-        val mainCircleCenterY =
-            mainBranchPanel.y + // start of the labeled branch panel
-                    mainBranchPanel.branchPanel.y + // start of the internal branch panel
-                    mainLastCircle.y + // start of the circle
-                    mainLastCircle.height / 2 // center of the circle
+        var mainCircleCenterX = 0
+        var mainCircleCenterY = 0
+        if (mainBranchPanel.branchPanel.circles.isNotEmpty()) {
+            val mainLastCircle = mainBranchPanel.branchPanel.circles.last()
+            mainCircleCenterX =
+                mainBranchPanel.x + // start of the labeled branch panel
+                mainBranchPanel.branchPanel.x + // start of the internal branch panel
+                mainLastCircle.x + // start of the circle
+                mainLastCircle.width / 2 // center of the circle
+            mainCircleCenterY =
+                mainBranchPanel.y + // start of the labeled branch panel
+                mainBranchPanel.branchPanel.y + // start of the internal branch panel
+                mainLastCircle.y + // start of the circle
+                mainLastCircle.height / 2 // center of the circle
+        }
         return Pair(mainCircleCenterX, mainCircleCenterY)
     }
 

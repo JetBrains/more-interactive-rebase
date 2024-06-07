@@ -8,7 +8,6 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
-import com.intellij.ui.util.maximumHeight
 import com.intellij.ui.util.minimumWidth
 import com.intellij.ui.util.preferredHeight
 import com.intellij.ui.util.preferredWidth
@@ -134,7 +133,9 @@ class LabeledBranchPanel(
 
         val commitLabel = JBLabel(truncatedMessage)
 
-        branch.currentCommits[i].changes.forEach {
+        val visualChanges = branch.currentCommits[i].getChangesAfterPick()
+
+        visualChanges.forEach {
             if (it is RewordCommand) {
                 commitLabel.text = TextStyle.addStyling(it.newMessage, TextStyle.ITALIC)
                 commitLabel.foreground = JBColor.BLUE
@@ -282,7 +283,7 @@ class LabeledBranchPanel(
         textLabelWrapper.add(labelWrapper)
         textLabelWrapper.add(textWrapper)
 
-        val labelListener = LabelListener(commitInfo)
+        val labelListener = LabelListener(commitInfo, branch)
         commitLabel.addMouseListener(labelListener)
 
         if (commitLabel is Disposable) {
@@ -345,7 +346,7 @@ class LabeledBranchPanel(
         commitInfo: CommitInfo,
         textField: JTextField,
     ) {
-        commitInfo.changes.forEach {
+        commitInfo.getChangesAfterPick().forEach {
                 command ->
             if (command is SquashCommand) {
                 listener.strategy = SquashTextStrategy(command, textField)
@@ -420,9 +421,7 @@ class LabeledBranchPanel(
      * If the branch panel displays an additional branch
      * we offset the branch down.
      */
-    private fun offsetBranchIfAdded(offset: Int): Insets =
-        Insets(offset, 5, branchPanel.diameter, 5)
-
+    private fun offsetBranchIfAdded(offset: Int): Insets = Insets(offset, 5, branchPanel.diameter, 5)
 
     /**
      * Sets the position of the branch name label

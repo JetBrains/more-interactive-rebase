@@ -16,9 +16,21 @@ enum class TextStyle {
             return when (style) {
                 ITALIC -> Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><i>", "</i></span>")
                 BOLD -> Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><b>", "</b></span>")
-                CROSSED -> Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><strike>", "</strike></span>")
-                LEFT_ALIGNMENT -> Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;'><body>", "</body></span>")
-                RIGHT_ALIGNMENT -> Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right;'><body>", "</body></span>")
+                CROSSED ->
+                    Pair(
+                        "<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><strike>",
+                        "</strike></span>",
+                    )
+                LEFT_ALIGNMENT ->
+                    Pair(
+                        "<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;'><body>",
+                        "</body></span>",
+                    )
+                RIGHT_ALIGNMENT ->
+                    Pair(
+                        "<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right;'><body>",
+                        "</body></span>",
+                    )
             }
         }
 
@@ -46,4 +58,3 @@ enum class TextStyle {
         }
     }
 }
-

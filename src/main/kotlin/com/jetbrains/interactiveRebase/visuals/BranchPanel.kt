@@ -56,7 +56,9 @@ class BranchPanel(
                 branch.currentCommits[i],
             )
 
-        if (commit.changes.any { it is DropCommand }) {
+        val visualChanges = commit.getChangesAfterPick()
+
+        if (visualChanges.any { it is DropCommand }) {
             circle =
                 DropCirclePanel(
                     diameter.toDouble(),
@@ -64,7 +66,7 @@ class BranchPanel(
                     colorTheme,
                     branch.currentCommits[i],
                 )
-        } else if (commit.changes.any { it is StopToEditCommand }) {
+        } else if (visualChanges.any { it is StopToEditCommand }) {
             circle =
                 StopToEditCirclePanel(
                     diameter.toDouble(),
@@ -72,7 +74,7 @@ class BranchPanel(
                     colorTheme,
                     branch.currentCommits[i],
                 )
-        } else if (commit.changes.any { it is SquashCommand } || commit.changes.any { it is FixupCommand }) {
+        } else if (visualChanges.any { it is SquashCommand } || visualChanges.any { it is FixupCommand }) {
             circle =
                 SquashedCirclePanel(
                     diameter.toDouble(),
@@ -203,10 +205,10 @@ class BranchPanel(
             gbc.anchor = GridBagConstraints.NORTH
             gbc.fill = GridBagConstraints.HORIZONTAL
 
-            if(i == 0) {
+            if (i == 0) {
                 gbc.insets.top = diameter
             }
-            if(i == size - 1) {
+            if (i == size - 1) {
                 gbc.insets.bottom = diameter
             }
             add(circle, gbc)

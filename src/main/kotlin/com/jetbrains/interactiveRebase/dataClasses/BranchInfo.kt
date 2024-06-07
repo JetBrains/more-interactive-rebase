@@ -1,6 +1,8 @@
 package com.jetbrains.interactiveRebase.dataClasses
 
 import com.intellij.openapi.Disposable
+import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 
 class BranchInfo(
     var name: String = "",
@@ -52,6 +54,14 @@ class BranchInfo(
      */
     internal fun removeSelectedCommits(commit: CommitInfo) {
         selectedCommits.remove(commit)
+        commit.getChangesAfterPick().forEach {
+                change ->
+            if (change is SquashCommand) {
+                change.squashedCommits.forEach { selectedCommits.remove(it) }
+            } else if (change is FixupCommand) {
+                change.fixupCommits.forEach { selectedCommits.remove(it) }
+            }
+        }
         listeners.forEach { it.onSelectedCommitChange(selectedCommits) }
     }
 
@@ -77,6 +87,10 @@ class BranchInfo(
         return size
     }
 
+    /**
+     * Updates the order of the current
+     * commits
+     */
     internal fun updateCurrentCommits(
         oldIndex: Int,
         newIndex: Int,
@@ -113,6 +127,27 @@ class BranchInfo(
         result = 31 * result + isPrimary.hashCode()
         result = 31 * result + currentCommits.hashCode()
         return result
+    }
+
+    /**
+     * Gets the index of the current commit
+     * taking into account squashed commits
+     */
+
+    internal fun indexOfCommit(commit: CommitInfo): Int {
+        var ret = currentCommits.indexOf(commit)
+
+        if (commit.isSquashed) {
+            commit.getChangesAfterPick().forEach {
+                if (it is FixupCommand) {
+                    ret = currentCommits.indexOf(it.parentCommit)
+                } else if (it is SquashCommand) {
+                    ret = currentCommits.indexOf(it.parentCommit)
+                }
+            }
+        }
+
+        return ret
     }
 
     /**

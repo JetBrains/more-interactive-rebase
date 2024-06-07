@@ -1,7 +1,6 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
@@ -103,8 +102,9 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         commit1.isSelected = true
         val label = labeledBranch.generateCommitLabel(0, circle)
         assertThat(label.text).isEqualTo(
-            "<html><span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><b>"
-                    + commit1.commit.subject + "</b></span></html>")
+            "<html><span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><b>" +
+                commit1.commit.subject + "</b></span></html>",
+        )
     }
 
     fun testWrapsLabelWithTextField() {
