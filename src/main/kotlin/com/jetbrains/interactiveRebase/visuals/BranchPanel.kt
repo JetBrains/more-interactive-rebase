@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
@@ -58,10 +59,18 @@ class BranchPanel(
 
         val visualChanges = commit.getChangesAfterPick()
 
-        if (visualChanges.any { it is DropCommand }) {
+        if (visualChanges.any { it is CollapseCommand }){
+            circle = CollapseCirclePanel(
+                diameter.toDouble(),
+                4f,
+                color,
+                branch.currentCommits[i],
+            )
+        }
+        else if (visualChanges.any { it is DropCommand }) {
             circle =
                 DropCirclePanel(
-                    diameter.toDouble(),
+                    (diameter + 2).toDouble(),
                     borderSize,
                     color,
                     branch.currentCommits[i],
@@ -202,6 +211,10 @@ class BranchPanel(
         removeAll()
         circles.clear()
 
+        if(branch.currentCommits.size > 7){
+            prepareCommitsForCollapsing()
+        }
+
         size = branch.currentCommits.size
 
         for (i in 0 until size) {
@@ -217,5 +230,19 @@ class BranchPanel(
             add(circle, gbc)
         }
         revalidate()
+    }
+
+    fun prepareCommitsForCollapsing(){
+        val sizey = branch.currentCommits.size
+        val newCurrentCommits = branch.currentCommits.subList(0,5) + branch.currentCommits.subList(sizey-2, sizey)
+
+        val collapsedCommits = branch.currentCommits.subList(5, sizey - 2)
+        val parentOfCollapsedCommit = branch.currentCommits[sizey - 2]
+
+        val collapsedCommand = CollapseCommand(parentOfCollapsedCommit, collapsedCommits.toMutableList())
+        parentOfCollapsedCommit.changes.add(collapsedCommand)
+        collapsedCommits.forEach { it.changes.add(collapsedCommand)}
+
+        branch.currentCommits = newCurrentCommits.toMutableList()
     }
 }

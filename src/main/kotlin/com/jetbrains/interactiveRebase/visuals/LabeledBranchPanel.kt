@@ -14,6 +14,7 @@ import com.intellij.ui.util.preferredWidth
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
@@ -92,7 +93,9 @@ class LabeledBranchPanel(
             }
 
         val visualChanges = branch.currentCommits[i].getChangesAfterPick()
-
+        if (visualChanges.any { it is CollapseCommand })
+            commitLabel.text = ""
+        else{
         visualChanges.forEach {
             if (it is RewordCommand) {
                 commitLabel.text = TextStyle.addStyling(it.newMessage, TextStyle.ITALIC)
@@ -115,7 +118,7 @@ class LabeledBranchPanel(
 
         if (branch.currentCommits[i].isSelected) {
             commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.BOLD)
-        }
+        }}
         commitLabel.labelFor = circle
         commitLabel.horizontalAlignment = alignment
         commitLabel.verticalTextPosition = SwingConstants.CENTER
