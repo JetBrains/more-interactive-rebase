@@ -168,9 +168,9 @@ class BranchInfo(
         if (commit.isSquashed) {
             commit.getChangesAfterPick().forEach {
                 if (it is FixupCommand) {
-                    ret = currentCommits.indexOf(it.parentCommit)
+                    ret = currentCommits.indexOf(it.parentCommit) - 1
                 } else if (it is SquashCommand) {
-                    ret = currentCommits.indexOf(it.parentCommit)
+                    ret = currentCommits.indexOf(it.parentCommit) - 1
                 }
             }
         }

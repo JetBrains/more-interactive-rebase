@@ -95,21 +95,28 @@ class ActionService(project: Project) {
      * Enables fixup or squash button
      */
     fun checkFixupOrSquash(e: AnActionEvent) {
-        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !(
+        val notEmpty = modelService.branchInfo.selectedCommits.isNotEmpty()
+        val notFirstCommit = !(
                 modelService.branchInfo.selectedCommits.size==1 &&
-                    invoker.branchInfo.currentCommits.reversed()
-                        .indexOf(modelService.branchInfo.selectedCommits[0])==0
-            ) &&
-            modelService.getSelectedCommits().none { commit ->
-                commit.getChangesAfterPick().any { change -> change is DropCommand }
-            }
-                && (modelService.getSelectedCommits().size == 1
-                && checkParentNotCollapsed(modelService.getSelectedCommits()[0]))
+                        modelService.branchInfo.currentCommits.reversed()
+                            .indexOf(modelService.branchInfo.selectedCommits[0])==0
+                )
+        val notDropped = modelService.getSelectedCommits().none { commit ->
+            commit.getChangesAfterPick().any { change -> change is DropCommand }
+        }
+
+
+        val notCollapsed = checkParentNotCollapsed()
+
+        e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && notCollapsed
     }
 
-    fun checkParentNotCollapsed(commit: CommitInfo): Boolean {
+    fun checkParentNotCollapsed(): Boolean {
+        if(modelService.branchInfo.getActualSelectedCommitsSize() != 1) return true
+
+        val commit = modelService.getSelectedCommits().last()
         val index = modelService.branchInfo.currentCommits.indexOf(commit)
+
         return !modelService.branchInfo.currentCommits[index+1].isCollapsed
     }
 
@@ -248,7 +255,7 @@ class ActionService(project: Project) {
         selectedCommits.sortBy { modelService.branchInfo.indexOfCommit(it) }
         var parentCommit = selectedCommits.last()
         if (modelService.branchInfo.getActualSelectedCommitsSize() == 1) {
-            val selectedIndex = modelService.getCurrentCommits().indexOf(selectedCommits[0])
+            val selectedIndex = modelService.getCurrentCommits().indexOf(parentCommit)
             parentCommit = modelService.getCurrentCommits()[selectedIndex + 1]
         }
         selectedCommits.remove(parentCommit)
@@ -568,18 +575,11 @@ class ActionService(project: Project) {
         var selectedCommits = modelService.getSelectedCommits()
         val currentCommits = modelService.getCurrentCommits()
 
-        var indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
-        var indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
-
-        if(indexFirstCommit > indexLastCommit){
-            indexLastCommit = indexFirstCommit.also { indexFirstCommit = indexLastCommit }
-            selectedCommits = selectedCommits.reversed().toMutableList()
-        }
+        val indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
+        val indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
 
         val commitsOfRange = currentCommits.subList(indexFirstCommit, indexLastCommit+1)
         selectedCommits = selectedCommits.filter { !it.isSquashed }.toMutableList()
-//        val set1 = commitsOfRange.toSet()
-//        val set2 = selectedCommits.filter { !it.isSquashed }.toSet()
         val res = commitsOfRange.containsAll(selectedCommits)
         return res
     }
@@ -603,17 +603,14 @@ class ActionService(project: Project) {
     fun takeCollapseAction(){
         val selectedCommits = modelService.getSelectedCommits()
         selectedCommits.sortBy { modelService.branchInfo.indexOfCommit(it) }
+
         if(modelService.getSelectedCommits().isEmpty()){
             modelService.branchInfo.collapseCommits()
         }
         else{
             val currentCommits = modelService.getCurrentCommits()
-            var indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
-            var indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
-
-            if(indexFirstCommit > indexLastCommit){
-                indexLastCommit = indexFirstCommit.also { indexFirstCommit = indexLastCommit }
-            }
+            val indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
+            val indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
 
             modelService.branchInfo.collapseCommits(indexFirstCommit, indexLastCommit)
         }
