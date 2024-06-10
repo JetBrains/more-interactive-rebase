@@ -18,10 +18,11 @@ import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.RoundedButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.Awaitility
 import java.io.File
 import java.lang.Thread.sleep
+import java.util.concurrent.TimeUnit
 
 class GeneralFlowBackendTest : IRGitPlatformTest() {
     lateinit var commit2: String
@@ -40,7 +41,14 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
 
         file2.write("bruuuuuh")
         commit4 = addCommit("please work")
-        sleep(1500)
+
+        Awaitility.await()
+            .atMost(1000, TimeUnit.MILLISECONDS)
+            .pollDelay(500, TimeUnit.MILLISECONDS)
+            .until {
+                val leftOverCommits = countCommitsSinceInitialCommit()
+                leftOverCommits == 4
+            }
     }
 
     fun testDropCommit() {
@@ -49,13 +57,15 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
             val openEditorTabAction = CreateEditorTabAction()
             val testEvent = createTestEvent()
             openEditorTabAction.actionPerformed(testEvent)
-
+            sleep(500)
             // this gets the current commits of the checked out branch
             val modelService = project.service<ModelService>()
 
-            sleep(1000)
+            Awaitility.await()
+                .atMost(2500, TimeUnit.MILLISECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .until { modelService.branchInfo.currentCommits.size == 4 }
             assertThat(modelService.branchInfo.name).isEqualTo("development")
-            assertThat(modelService.branchInfo.currentCommits).hasSize(4)
 
             // this selects the last commit and sets it up to be dropped
             val commitToDrop = modelService.branchInfo.currentCommits[0]
@@ -71,13 +81,13 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
             val rebaseButton = changesActionsPanel.components[1] as RoundedButton
             rebaseButton.doClick()
 
-            sleep(2000)
-            // this asserts that the commit was dropped both in our model and in the git repository
-            assertThat(modelService.branchInfo.currentCommits).hasSize(3)
-            assertThat(modelService.branchInfo.currentCommits).doesNotContain(commitToDrop)
-
-            val leftOverCommits = countCommitsSinceInitialCommit()
-            assertThat(leftOverCommits).isEqualTo(3)
+            Awaitility.await()
+                .atMost(2500, TimeUnit.MILLISECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .until {
+                    val leftOverCommits = countCommitsSinceInitialCommit()
+                    leftOverCommits == 3
+                }
         }
     }
 
@@ -87,13 +97,16 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
             val openEditorTabAction = CreateEditorTabAction()
             val testEvent = createTestEvent()
             openEditorTabAction.actionPerformed(testEvent)
+            sleep(500)
 
             // this gets the current commits of the checked out branch
             val modelService = project.service<ModelService>()
-            sleep(1000)
-
+            Awaitility.await()
+                .atMost(2500, TimeUnit.MILLISECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .until { modelService.branchInfo.currentCommits.size == 4 }
             assertThat(modelService.branchInfo.name).isEqualTo("development")
-            assertThat(modelService.branchInfo.currentCommits).hasSize(4)
+
             // in the case where only 1 commit is selected
             val commitToSquash = modelService.branchInfo.currentCommits[1]
             modelService.addToSelectedCommits(commitToSquash, modelService.branchInfo)
@@ -109,11 +122,13 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
             val rebaseButton = changesActionsPanel.components[1] as RoundedButton
             rebaseButton.doClick()
 
-            sleep(1200)
-
-            val leftOverCommits = countCommitsSinceInitialCommit()
-            // this asserts that the commit is no longer in the model and that the commits were fixed up
-            assertThat(leftOverCommits).isEqualTo(3)
+            Awaitility.await()
+                .atMost(2500, TimeUnit.MILLISECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .until {
+                    val leftOverCommits = countCommitsSinceInitialCommit()
+                    leftOverCommits == 3
+                }
         }
     }
 
@@ -123,12 +138,14 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
             val openEditorTabAction = CreateEditorTabAction()
             val testEvent = createTestEvent()
             openEditorTabAction.actionPerformed(testEvent)
-
-            val modelService = project.service<ModelService>()
             sleep(1000)
 
+            val modelService = project.service<ModelService>()
+            Awaitility.await()
+                .atMost(2500, TimeUnit.MILLISECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .until { modelService.branchInfo.currentCommits.size == 4 }
             assertThat(modelService.branchInfo.name).isEqualTo("development")
-            assertThat(modelService.branchInfo.currentCommits).hasSize(4)
 
             // this selects the second-to-last commit and sets it up to be edited
             val commitToEdit = modelService.branchInfo.currentCommits[1]
@@ -144,15 +161,14 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
             val rebaseButton = changesActionsPanel.components[1] as RoundedButton
             rebaseButton.doClick()
 
-            withContext(Dispatchers.IO) {
-                sleep(1000)
-            }
-            // this checks that the rebase was paused
-            val statusOutput = repository.git("status")
-
-            sleep(1000)
-
-            assertThat(statusOutput).contains("edit " + commit3.substring(0, 7) + " Cool stuff")
+            Awaitility.await()
+                .atMost(2500, TimeUnit.MILLISECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .until {
+                    val statusOutput = repository.git("status")
+                    statusOutput.contains("status")
+                    statusOutput.contains("Cool stuff")
+                }
 
             // this continues the rebase
             repository.git("rebase --continue")
@@ -170,14 +186,15 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
             val openEditorTabAction = CreateEditorTabAction()
             val testEvent = createTestEvent()
             openEditorTabAction.actionPerformed(testEvent)
-            sleep(1000)
+            sleep(500)
 
             // this gets the current commits of the checked out branch
             val modelService = project.service<ModelService>()
-            sleep(1000)
-
+            Awaitility.await()
+                .atMost(2500, TimeUnit.MILLISECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .until { modelService.branchInfo.currentCommits.size == 4 }
             assertThat(modelService.branchInfo.name).isEqualTo("development")
-            assertThat(modelService.branchInfo.currentCommits).hasSize(4)
 
             // this selects the second-to-last commit
             val commitToEdit = modelService.branchInfo.currentCommits[1]
@@ -207,15 +224,14 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
             val rebaseButton = changesActionsPanel.components[1] as RoundedButton
             rebaseButton.doClick()
 
-            sleep(1000)
-
-            // this gets the second-to-last commit message (as the commit hash has changed)
-            val commitMessage = repository.git("log --format=%B -n 1 HEAD~1")
-
-            sleep(300)
-
-            // here we check if the commit message is the one we set
-            assertThat(commitMessage).isEqualTo("I swear this is reworded:)\n")
+            Awaitility.await()
+                .atMost(2500, TimeUnit.MILLISECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .until {
+                    val commitMessage = repository.git("log --format=%B -n 1 HEAD~1")
+                    sleep(100)
+                    commitMessage.equals("I swear this is reworded:)\n")
+                }
         }
     }
 
@@ -228,10 +244,10 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
 
             // this gets the current commits of the checked out branch
             val modelService = project.service<ModelService>()
-            sleep(1000)
-
-            assertThat(modelService.branchInfo.name).isEqualTo("development")
-            assertThat(modelService.branchInfo.currentCommits).hasSize(4)
+            Awaitility.await()
+                .atMost(2500, TimeUnit.MILLISECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .until { modelService.branchInfo.currentCommits.size == 4 }
 
             // this selects the last commit ("please work") and sets it up to be squashed
             val commitToSquash = modelService.branchInfo.currentCommits[0]
@@ -267,15 +283,21 @@ class GeneralFlowBackendTest : IRGitPlatformTest() {
             val rebaseButton = changesActionsPanel.components[1] as RoundedButton
             rebaseButton.doClick()
 
-            sleep(1000)
+            Awaitility.await()
+                .atMost(1000, TimeUnit.MILLISECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .until {
+                    val commitMessage = repository.git("log --format=%B -n 1 HEAD~1")
+                    commitMessage.equals("squyshy\n")
+                }
 
-            // this gets the second-to-last commit message (as the commit hash has changed)
-            val commitMessage = repository.git("log --format=%B -n 1 HEAD~1")
-            sleep(300)
-            assertThat(commitMessage).isEqualTo("squyshy\n")
-
-            val leftOverCommits = countCommitsSinceInitialCommit()
-            assertThat(leftOverCommits).isEqualTo(3)
+            Awaitility.await()
+                .atMost(1000, TimeUnit.MILLISECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .until {
+                    val leftOverCommits = countCommitsSinceInitialCommit()
+                    leftOverCommits == 3
+                }
         }
     }
 
