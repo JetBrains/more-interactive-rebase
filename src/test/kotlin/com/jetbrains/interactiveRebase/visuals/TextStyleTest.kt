@@ -16,20 +16,25 @@ class TextStyleTest : BasePlatformTestCase() {
 
     fun testGetStyleChecks() {
         val ital = TextStyle.getStyleTag(TextStyle.ITALIC)
-        assertThat(ital).isEqualTo(Pair("<i>", "</i>"))
+        assertThat(ital).isEqualTo(Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><i>", "</i></span>"))
         val bold = TextStyle.getStyleTag(TextStyle.BOLD)
-        assertThat(bold).isEqualTo(Pair("<b>", "</b>"))
+        assertThat(bold).isEqualTo(Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><b>", "</b></span>"))
         val cross = TextStyle.getStyleTag(TextStyle.CROSSED)
-        assertThat(cross).isEqualTo(Pair("<strike>", "</strike>"))
+        assertThat(
+            cross,
+        ).isEqualTo(Pair("<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><strike>", "</strike></span>"))
     }
 
     fun testAddStylingAddsToNotStyled() {
-        assertThat(TextStyle.addStyling("add ", TextStyle.BOLD)).isEqualTo("<html><b>add </b></html>")
+        assertThat(TextStyle.addStyling("add ", TextStyle.BOLD))
+            .isEqualTo("<html><span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><b>add </b></span></html>")
     }
 
     fun testAddStylingToStyled() {
         assertThat(
             TextStyle.addStyling("<html><b>add style</b></html>", TextStyle.ITALIC),
-        ).isEqualTo("<html><i><b>add style</b></i></html>")
+        ).isEqualTo(
+            "<html><span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><i><b>add style</b></i></span></html>",
+        )
     }
 }

@@ -63,19 +63,36 @@ class ActionService(project: Project) {
 
     /**
      * Enables the Drop button
+     * depending on the number of selected commits
+     * and the state of the branch.
+     * Commits from the added branch cannot be dropped.
      */
     fun checkDrop(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
+            !areDisabledCommitsSelected() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
     }
 
     /**
+     * Returns true if the there are currently any selected commits on the added branch,
+     * false otherwise or if there is no added branch
+     */
+    private fun areDisabledCommitsSelected(): Boolean {
+        val added = modelService.graphInfo.addedBranch
+        return (added != null && added.selectedCommits.isNotEmpty())
+    }
+
+    /**
      * Enables reword button
+     * depending on the number of selected commits
+     * and the state of the branch.
+     * Commits from the added branch cannot be reworded.
      */
     fun checkReword(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.getActualSelectedCommitsSize() == 1 &&
+            !areDisabledCommitsSelected() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
@@ -83,9 +100,13 @@ class ActionService(project: Project) {
 
     /**
      * Enables stop-to-edit button
+     * depending on the number of selected commits
+     * and the state of the branch.
+     * Commits from the added branch cannot be edited.
      */
     fun checkStopToEdit(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
+            !areDisabledCommitsSelected() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
@@ -93,6 +114,9 @@ class ActionService(project: Project) {
 
     /**
      * Enables fixup or squash button
+     * depending on the number of selected commits
+     * and the state of the branch.
+     * Commits from the added branch cannot be squashed.
      */
     fun checkFixupOrSquash(e: AnActionEvent) {
         val notEmpty = modelService.branchInfo.selectedCommits.isNotEmpty()
@@ -109,7 +133,7 @@ class ActionService(project: Project) {
 
         val notCollapsed = checkParentNotCollapsed()
 
-        e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && notCollapsed
+        e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && notCollapsed && !areDisabledCommitsSelected()
     }
 
     fun checkParentNotCollapsed(): Boolean {
@@ -124,9 +148,13 @@ class ActionService(project: Project) {
 
     /**
      * Enables pick button
+     * depending on the number of selected commits
+     * and the state of the branch.
+     * Commits from the added branch cannot be picked.
      */
     fun checkPick(e: AnActionEvent) {
-        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty()
+        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
+            !areDisabledCommitsSelected()
     }
 
     /**
@@ -519,7 +547,7 @@ class ActionService(project: Project) {
         command: ReorderCommand,
     ) {
         commit.setReorderedTo(false)
-        mainPanel.branchPanel.branch.updateCurrentCommits(command.newIndex, command.oldIndex, commit)
+        mainPanel.graphPanel.mainBranchPanel.branch.updateCurrentCommits(command.newIndex, command.oldIndex, commit)
     }
 
     /**
@@ -531,7 +559,7 @@ class ActionService(project: Project) {
         command: ReorderCommand,
     ) {
         commit.setReorderedTo(true)
-        mainPanel.branchPanel.branch.updateCurrentCommits(command.oldIndex, command.newIndex, commit)
+        mainPanel.graphPanel.mainBranchPanel.branch.updateCurrentCommits(command.oldIndex, command.newIndex, commit)
     }
 
     /**

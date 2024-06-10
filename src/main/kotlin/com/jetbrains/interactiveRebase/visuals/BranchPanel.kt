@@ -23,14 +23,14 @@ import java.awt.RenderingHints
  * - lines connecting the commits
  */
 class BranchPanel(
-    private val branch: BranchInfo,
-    val color: JBColor,
+    val branch: BranchInfo,
+    val colorTheme: Palette.Theme,
 ) : JBPanel<JBPanel<*>>() {
     val diameter = 30
     val borderSize = 1f
     private var size = branch.currentCommits.size
 
-    val circles: MutableList<CirclePanel> = mutableListOf()
+    var circles: MutableList<CirclePanel> = mutableListOf()
 
     /**
      * Makes a branch panel with vertical orientation
@@ -39,7 +39,7 @@ class BranchPanel(
      */
     init {
         layout = GridBagLayout()
-
+        isOpaque = false
         updateCommits()
     }
 
@@ -53,7 +53,7 @@ class BranchPanel(
             CirclePanel(
                 diameter.toDouble(),
                 borderSize,
-                color,
+                colorTheme,
                 branch.currentCommits[i],
             )
 
@@ -72,7 +72,7 @@ class BranchPanel(
                 DropCirclePanel(
                     (diameter + 2).toDouble(),
                     borderSize,
-                    color,
+                    colorTheme,
                     branch.currentCommits[i],
                 )
         } else if (visualChanges.any { it is StopToEditCommand }) {
@@ -80,7 +80,7 @@ class BranchPanel(
                 StopToEditCirclePanel(
                     diameter.toDouble(),
                     borderSize,
-                    color,
+                    colorTheme,
                     branch.currentCommits[i],
                 )
         } else if (visualChanges.any { it is SquashCommand } || visualChanges.any { it is FixupCommand }) {
@@ -88,7 +88,7 @@ class BranchPanel(
                 SquashedCirclePanel(
                     diameter.toDouble(),
                     borderSize,
-                    color,
+                    colorTheme,
                     branch.currentCommits[i],
                 )
         }
@@ -117,11 +117,13 @@ class BranchPanel(
         for (i in 0 until size - 1) {
             // Make line brush
             g2d.stroke = BasicStroke(borderSize)
-            g2d.color = color
+            g2d.color = colorTheme.regularCircleColor
             drawLineBetweenCommits(i, g2d)
         }
 
-        drawBottomLine(g2d)
+        if (!branch.isPrimary) {
+            drawBottomLine(g2d)
+        }
     }
 
     /**
@@ -151,7 +153,7 @@ class BranchPanel(
         endY: Int,
     ) {
         val fractions = floatArrayOf(0.0f, 0.5f)
-        val colors = arrayOf<Color>(color, JBColor.PanelBackground)
+        val colors = arrayOf<Color>(colorTheme.regularCircleColor, JBColor.PanelBackground)
 
         g2d.paint =
             LinearGradientPaint(
@@ -178,29 +180,17 @@ class BranchPanel(
 
         // Calculate line coordinates
         val x = width / 2
-        val startY = circle.y + circle.height / 2 + diameter / 2
-        val endY = nextCircle.y + circle.height / 2 + diameter / 2
-        val glueHeight = endY - startY - diameter
-        val glueY = startY + diameter / 2 + diameter / 2
+        val startY = circle.y + circle.height / 2
+        val endY = nextCircle.y + circle.height / 2
 
-        g2d.color = color
+        g2d.color = colorTheme.regularCircleColor
         g2d.stroke = BasicStroke(2f)
         g2d.drawLine(
             x,
             startY,
             x,
-            glueY + glueHeight,
+            endY,
         )
-
-        // Make line thicker
-//        val shadowOffset = 1
-//        g2d.color = color
-//        g2d.drawLine(
-//            x + diameter / 2 + shadowOffset,
-//            startY + shadowOffset,
-//            x + diameter / 2 + shadowOffset,
-//            glueY + glueHeight + shadowOffset,
-//        )
     }
 
     /**
@@ -223,6 +213,13 @@ class BranchPanel(
             gbc.weighty = if (i == size - 1) 1.0 else 0.0
             gbc.anchor = GridBagConstraints.NORTH
             gbc.fill = GridBagConstraints.HORIZONTAL
+
+            if (i == 0) {
+                gbc.insets.top = diameter
+            }
+            if (i == size - 1) {
+                gbc.insets.bottom = diameter
+            }
             add(circle, gbc)
         }
         revalidate()

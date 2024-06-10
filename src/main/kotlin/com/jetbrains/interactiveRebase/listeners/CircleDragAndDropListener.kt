@@ -11,6 +11,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
+import com.jetbrains.interactiveRebase.visuals.GraphPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import java.awt.Point
 import java.awt.event.ActionEvent
@@ -95,7 +96,10 @@ class CircleDragAndDropListener(
      * 4. handle limited vertical movement (outside parent component)
      */
     override fun mouseDragged(e: MouseEvent) {
-        if (!commit.getChangesAfterPick().any { it is DropCommand || it is CollapseCommand }) {
+        maxY = parent.branchPanel.height - circle.height
+        if (!commit.getChangesAfterPick().any { it is DropCommand || it is CollapseCommand} &&
+            parent.branch.isWriteable
+        ) {
             wasDragged = true
             commit.isDragged = true
             val deltaY = e.yOnScreen - mousePosition.y
@@ -114,7 +118,9 @@ class CircleDragAndDropListener(
             }
 
             // Handle visual indication of movement limits
-            indicateLimitedVerticalMovement(newCircleY)
+//            indicateLimitedVerticalMovement(newCircleY)
+
+            (parent.parent as GraphPanel).repaint()
         }
     }
 
@@ -142,6 +148,8 @@ class CircleDragAndDropListener(
                 modelService.markCommitAsReordered(commit, initialIndex, currentIndex)
                 parent.branch.updateCurrentCommits(initialIndex, currentIndex, commit)
             }
+            (parent.parent as GraphPanel?)?.updateGraphPanel()
+            (parent.parent as GraphPanel?)?.repaint()
         }
     }
 

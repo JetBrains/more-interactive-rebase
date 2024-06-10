@@ -48,11 +48,11 @@ import javax.swing.SwingUtilities
 class LabeledBranchPanel(
     val project: Project,
     val branch: BranchInfo,
-    private val color: JBColor,
+    private val colorTheme: Palette.Theme,
     private val alignment: Int = SwingConstants.LEFT,
 ) :
     JBPanel<JBPanel<*>>(), Disposable {
-    val branchPanel = BranchPanel(branch, color)
+    val branchPanel = BranchPanel(branch, colorTheme)
     val commitLabels: MutableList<JBLabel> = mutableListOf()
     val messages: MutableList<JBPanel<JBPanel<*>>> = mutableListOf()
     private val branchNameLabel = BoldLabel(branch.name)
@@ -61,18 +61,64 @@ class LabeledBranchPanel(
     init {
         branchNameLabel.horizontalAlignment = SwingConstants.CENTER
         layout = GridBagLayout()
+        isOpaque = false
         val gbc = GridBagConstraints()
 
         addComponents()
 
+        addBranchName(gbc)
+
+        addBranchOfCommits(gbc)
+
+        addCommitNames(gbc)
+    }
+
+    /**
+     * Add the labels containing the commit names
+     * to the panel
+     * You can specify offset if you want to move them up/down
+     */
+    private fun LabeledBranchPanel.addCommitNames(
+        gbc: GridBagConstraints,
+        offset: Int = 5,
+    ) {
+        setCommitNamesPosition(gbc, offset)
+        add(labelPanelWrapper, gbc)
+    }
+
+    /**
+     * Add the connected commits to the panel
+     * You can specify offset if you want to move them up/down
+     */
+    private fun LabeledBranchPanel.addBranchOfCommits(
+        gbc: GridBagConstraints,
+        offset: Int = 5,
+    ) {
+        setBranchPosition(gbc, offset)
+        add(branchPanel, gbc)
+    }
+
+    /**
+     * Add the branch name to the panel
+     */
+    private fun LabeledBranchPanel.addBranchName(gbc: GridBagConstraints) {
         setBranchNamePosition(gbc)
         add(branchNameLabel, gbc)
+    }
 
-        setBranchPosition(gbc)
-        add(branchPanel, gbc)
-
-        setCommitNamesPosition(gbc)
-        add(labelPanelWrapper, gbc)
+    /**
+     * Function that adds the branch
+     * with the corresponding name labels
+     * with specified offset
+     * Call when you want to change alignment of
+     * secondary branch
+     */
+    fun addBranchWithVerticalOffset(offset: Int = 5) {
+        remove(labelPanelWrapper)
+        remove(branchPanel)
+        val gbc = GridBagConstraints()
+        addCommitNames(gbc, offset)
+        addBranchOfCommits(gbc, offset)
     }
 
     /**
@@ -86,11 +132,7 @@ class LabeledBranchPanel(
     ): JBLabel {
         val truncatedMessage = truncateMessage(i)
 
-        val commitLabel =
-            object : JBLabel(truncatedMessage), Disposable {
-                override fun dispose() {
-                }
-            }
+        val commitLabel = JBLabel(truncatedMessage)
 
         val visualChanges = branch.currentCommits[i].getChangesAfterPick()
         if (visualChanges.any { it is CollapseCommand }) {
@@ -127,6 +169,10 @@ class LabeledBranchPanel(
         return commitLabel
     }
 
+    /**
+     * If message longer than 500 characters
+     * shorten it by putting ellipsis ...
+     */
     private fun truncateMessage(i: Int): String {
         val maxCharacters = 500
         val commitMessage = branch.currentCommits[i].commit.subject
@@ -162,6 +208,9 @@ class LabeledBranchPanel(
                     circle.preferredHeight,
                 )
             val gbc = gridCellForCircle(i, circles)
+            if (i == 0) {
+                gbc.insets.top = branchPanel.diameter
+            }
             labelPanelWrapper.add(wrappedLabel, gbc)
             commitLabels.add(commitLabel)
 
@@ -238,7 +287,7 @@ class LabeledBranchPanel(
         textLabelWrapper.add(labelWrapper)
         textLabelWrapper.add(textWrapper)
 
-        val labelListener = LabelListener(commitInfo)
+        val labelListener = LabelListener(commitInfo, branch)
         commitLabel.addMouseListener(labelListener)
 
         if (commitLabel is Disposable) {
@@ -250,6 +299,10 @@ class LabeledBranchPanel(
         return textLabelWrapper
     }
 
+    /**
+     * Specify alignment within the grid
+     * of the text label
+     */
     private fun gridCellForTextLabel(): GridBagConstraints {
         val gbc = GridBagConstraints()
         gbc.gridx = 0
@@ -327,7 +380,7 @@ class LabeledBranchPanel(
         commitLabel: JBLabel,
         commitInfo: CommitInfo,
     ): RoundedTextField {
-        val textField = RoundedTextField(commitInfo, TextStyle.stripTextFromStyling(commitLabel.text), color)
+        val textField = RoundedTextField(commitInfo, TextStyle.stripTextFromStyling(commitLabel.text), colorTheme.regularCircleColor)
         SwingUtilities.invokeLater {
             textField.maximumSize = commitLabel.size
         }
@@ -339,28 +392,40 @@ class LabeledBranchPanel(
      * Sets the position of the commit names
      * on the grid.
      */
-    fun setCommitNamesPosition(gbc: GridBagConstraints) {
+    fun setCommitNamesPosition(
+        gbc: GridBagConstraints,
+        offset: Int,
+    ) {
         gbc.gridx = if (alignment == SwingConstants.LEFT) 1 else 0
         gbc.gridy = 1
         gbc.weightx = 1.0
         gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
         gbc.anchor = GridBagConstraints.CENTER
-        gbc.insets = Insets(5, 5, 5, 5)
+        gbc.insets = offsetBranchIfAdded(offset)
     }
 
     /**
      * Sets the position of the branch
      * on the grid.
      */
-    fun setBranchPosition(gbc: GridBagConstraints) {
+    fun setBranchPosition(
+        gbc: GridBagConstraints,
+        offset: Int,
+    ) {
         gbc.gridx = if (alignment == SwingConstants.LEFT) 0 else 1
         gbc.gridy = 1
         gbc.weightx = 0.0
         gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
-        gbc.insets = Insets(5, 5, 5, 5)
+        gbc.insets = offsetBranchIfAdded(offset)
     }
+
+    /**
+     * If the branch panel displays an additional branch
+     * we offset the branch down.
+     */
+    private fun offsetBranchIfAdded(offset: Int): Insets = Insets(offset, 5, branchPanel.diameter, 5)
 
     /**
      * Sets the position of the branch name label
@@ -370,10 +435,10 @@ class LabeledBranchPanel(
         gbc.gridx = if (alignment == SwingConstants.LEFT) 0 else 1
         gbc.gridy = 0
         gbc.weightx = 0.0
-        gbc.weighty = 1.0
+        gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
         gbc.anchor = GridBagConstraints.SOUTH
-        gbc.insets = Insets(5, 5, 5, 5)
+        gbc.insets = Insets(branchPanel.diameter, 5, branchPanel.diameter, 5)
     }
 
     /**
@@ -400,6 +465,9 @@ class LabeledBranchPanel(
         revalidate()
     }
 
+    /**
+     * Get a text field by given index
+     */
     fun getTextField(i: Int): RoundedTextField {
         val message = messages[i]
         val textWrapper = message.components[1] as JBPanel<*>
@@ -407,6 +475,9 @@ class LabeledBranchPanel(
         return textField
     }
 
+    /**
+     * Alter coloring of text labels
+     */
     override fun paintComponent(g: Graphics?) {
         super.paintComponent(g)
 

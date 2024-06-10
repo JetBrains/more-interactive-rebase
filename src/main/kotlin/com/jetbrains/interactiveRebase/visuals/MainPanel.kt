@@ -9,6 +9,7 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.listeners.BranchNavigationListener
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.SidePanel
@@ -16,23 +17,26 @@ import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import javax.swing.ScrollPaneConstants
-import javax.swing.SwingConstants
 
 class MainPanel(
     private val project: Project,
-    private val branchInfo: BranchInfo,
 ) :
     JBPanel<JBPanel<*>>(), Disposable {
     internal var commitInfoPanel = CommitInfoPanel(project)
     internal var contentPanel: JBScrollPane
-    internal var branchPanel: LabeledBranchPanel
     internal var sidePanel: JBScrollPane
+    internal var graphPanel: GraphPanel
+    private val graphInfoListener: GraphInfo.Listener
     private val branchInfoListener: BranchInfo.Listener
     private val commitInfoListener: CommitInfo.Listener
+    private val graphInfo: GraphInfo = project.service<ModelService>().graphInfo
+    private val branchInfo: BranchInfo = graphInfo.mainBranch
+    private var otherBranchInfo: BranchInfo? = graphInfo.addedBranch
     private val branchNavigationListener: BranchNavigationListener
 
     init {
-        branchPanel = createBranchPanel()
+        graphPanel = createGraphPanel()
+
         contentPanel = createContentPanel()
         sidePanel = createSidePanel()
 
@@ -42,32 +46,41 @@ class MainPanel(
         branchInfoListener =
             object : BranchInfo.Listener {
                 override fun onNameChange(newName: String) {
-                    branchPanel.updateBranchName()
+                    graphPanel.mainBranchPanel.updateBranchName()
                 }
 
                 override fun onCommitChange(commits: List<CommitInfo>) {
-                    branchPanel.updateCommits()
+                    graphPanel.updateGraphPanel()
                     registerCommitListener()
                 }
 
                 override fun onSelectedCommitChange(selectedCommits: MutableList<CommitInfo>) {
-                    branchPanel.updateCommits()
+                    graphPanel.updateGraphPanel()
                     commitInfoPanel.commitsSelected(selectedCommits.map { it.commit })
                 }
 
                 override fun onCurrentCommitsChange(currentCommits: MutableList<CommitInfo>) {
-                    branchPanel.updateCommits()
+                    graphPanel.updateGraphPanel()
                     registerCommitListener()
+                }
+            }
+
+        graphInfoListener =
+            object : GraphInfo.Listener {
+                override fun onBranchChange() {
+                    graphPanel.updateGraphPanel()
+                    graphInfo.addedBranch?.addListener(branchInfoListener)
                 }
             }
 
         commitInfoListener =
             object : CommitInfo.Listener {
                 override fun onCommitChange() {
-                    branchPanel.updateCommits()
+                    graphPanel.updateGraphPanel()
                 }
             }
 
+        graphInfo.addListener(graphInfoListener)
         branchNavigationListener = BranchNavigationListener(project)
 
         branchInfo.addListener(branchInfoListener)
@@ -80,14 +93,15 @@ class MainPanel(
     }
 
     /**
-     * Creates a branch panel.
+     * Creates a graph panel.
      */
-    fun createBranchPanel(): LabeledBranchPanel {
-        return LabeledBranchPanel(
+    fun createGraphPanel(): GraphPanel {
+        if (otherBranchInfo != null) {
+            branchInfo.isPrimary = true
+            otherBranchInfo!!.isWriteable = false
+        }
+        return GraphPanel(
             project,
-            branchInfo,
-            Palette.BLUE,
-            SwingConstants.RIGHT,
         )
     }
 
@@ -109,7 +123,7 @@ class MainPanel(
         gbc.fill = GridBagConstraints.VERTICAL
 
         contentPanel.add(
-            branchPanel,
+            graphPanel,
             gbc,
         )
 
@@ -122,7 +136,7 @@ class MainPanel(
     fun createSidePanel(): JBScrollPane {
         val scrollable = JBScrollPane()
 
-        val sidePanel = SidePanel(project.service<ModelService>().graphInfo.branchList)
+        val sidePanel = SidePanel(project.service<ModelService>().graphInfo.branchList, project)
         scrollable.setViewportView(sidePanel)
         scrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
         scrollable.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED)
@@ -158,6 +172,9 @@ class MainPanel(
 
     fun registerCommitListener() {
         branchInfo.currentCommits.forEach {
+            it.addListener(commitInfoListener)
+        }
+        otherBranchInfo?.currentCommits?.forEach {
             it.addListener(commitInfoListener)
         }
     }

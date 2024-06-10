@@ -31,13 +31,22 @@ class GraphService(private val project: Project) {
     ) {
         // first get commits of the added branch using the checked out branch as reference
         commitService.referenceBranchName = commitService.getBranchName()
-        val newBranch = BranchInfo(addedBranch)
+        val newBranch = BranchInfo(addedBranch, isPrimary = false, isWriteable = false)
         updateBranchInfo(newBranch, includeBranchingCommit = true)
-        graphInfo.addedBranch = newBranch
 
         // update the checked-out branch using the added branch as reference
         commitService.referenceBranchName = addedBranch
         updateBranchInfo(graphInfo.mainBranch)
+        graphInfo.mainBranch.isPrimary = true
+
+        graphInfo.changeAddedBranch(newBranch)
+    }
+
+    fun removeBranch(graphInfo: GraphInfo) {
+        graphInfo.mainBranch.isPrimary = false
+        commitService.referenceBranchName = ""
+        updateBranchInfo(graphInfo.mainBranch)
+        graphInfo.changeAddedBranch(null)
     }
 
     /**
@@ -67,7 +76,7 @@ class GraphService(private val project: Project) {
     /**
      * Given a branchInfo, re-fetches the commits, populates the branch info if it is the first time fetching
      * Also includes the commit before branching off from the reference branch if includeBranchingCommit is true.
-     * Refactored form ModelService.
+     * Refactored from ModelService.
      */
     fun updateBranchInfo(
         branchInfo: BranchInfo,
@@ -83,7 +92,9 @@ class GraphService(private val project: Project) {
             branchInfo.setName(name)
             branchInfo.setCommits(commits)
             branchInfo.clearSelectedCommits()
-            invoker.branchInfo = branchInfo
+            if (branchInfo.isWriteable) {
+                invoker.branchInfo = branchInfo
+            }
         }
     }
 

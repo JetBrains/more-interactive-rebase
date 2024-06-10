@@ -38,7 +38,7 @@ class SquashedCirclePanelTest : BasePlatformTestCase() {
                 SquashedCirclePanel(
                     50.0,
                     2.0f,
-                    JBColor.BLACK,
+                    Palette.BLUE_THEME,
                     commit,
                 ),
             )

@@ -11,14 +11,14 @@ class SideBranchPanelTest : BasePlatformTestCase() {
     val branchName = "main"
 
     fun testCreateSideBranchPanel() {
-        val sideBranchPanel = SideBranchPanel(branchName)
+        val sideBranchPanel = SideBranchPanel(branchName, project)
         assertNotNull(sideBranchPanel)
         assertThat(sideBranchPanel.branchName).isEqualTo(branchName)
         assertThat(sideBranchPanel.button).isNotNull
     }
 
     fun testAddRemoveBranchButton() {
-        val sideBranchPanel = SideBranchPanel(branchName)
+        val sideBranchPanel = SideBranchPanel(branchName, project)
         assertNotNull(sideBranchPanel)
         assertThat(sideBranchPanel.button).isNotNull
         assertThat(sideBranchPanel.button.icon).isEqualTo(AllIcons.General.Remove)
@@ -30,7 +30,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
     }
 
     fun testResetBranchPanelVisually() {
-        val sideBranchPanel = SideBranchPanel(branchName)
+        val sideBranchPanel = SideBranchPanel(branchName, project)
         sideBranchPanel.resetSideBranchPanelVisually()
         assertThat(sideBranchPanel.backgroundColor).isEqualTo(Palette.TRANSPARENT)
         assertThat(sideBranchPanel.label.foreground).isEqualTo(JBColor.BLACK)
@@ -40,7 +40,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
     }
 
     fun testGetAlignmentForButton() {
-        val sideBranchPanel = SideBranchPanel(branchName)
+        val sideBranchPanel = SideBranchPanel(branchName, project)
         val gbc = sideBranchPanel.getAlignmentForButton()
         assertThat(gbc.weightx).isEqualTo(0.1)
         assertThat(gbc.gridx).isEqualTo(1)
@@ -49,25 +49,25 @@ class SideBranchPanelTest : BasePlatformTestCase() {
     }
 
     fun testOnHover() {
-        val sideBranchPanel = SideBranchPanel(branchName)
+        val sideBranchPanel = SideBranchPanel(branchName, project)
         sideBranchPanel.onHover()
-        assertThat(sideBranchPanel.backgroundColor).isEqualTo(Palette.JETBRAINSHOVER)
+        assertThat(sideBranchPanel.backgroundColor).isEqualTo(Palette.JETBRAINS_HOVER)
     }
 
     fun testGrayOutText() {
-        val sideBranchPanel = SideBranchPanel(branchName)
+        val sideBranchPanel = SideBranchPanel(branchName, project)
         sideBranchPanel.grayOutText()
-        assertThat(sideBranchPanel.label.foreground).isEqualTo(Palette.GRAYBUTTON)
+        assertThat(sideBranchPanel.label.foreground).isEqualTo(Palette.GRAY_BUTTON)
     }
 
     fun testButtonOnHover() {
-        val sideBranchPanel = SideBranchPanel(branchName)
+        val sideBranchPanel = SideBranchPanel(branchName, project)
         sideBranchPanel.buttonOnHover()
         assertThat(sideBranchPanel.button.backgroundColor).isEqualTo(sideBranchPanel.background.darker())
     }
 
     fun testButtonOnHoverExit() {
-        val sideBranchPanel = SideBranchPanel(branchName)
+        val sideBranchPanel = SideBranchPanel(branchName, project)
         sideBranchPanel.buttonOnHoverExit()
         assertThat(sideBranchPanel.button.backgroundColor).isEqualTo(Palette.TRANSPARENT)
     }

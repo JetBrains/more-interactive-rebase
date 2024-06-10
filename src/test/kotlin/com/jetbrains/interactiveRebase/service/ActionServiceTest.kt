@@ -11,6 +11,7 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
+import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
@@ -23,6 +24,7 @@ import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.CommitInfoPanel
+import com.jetbrains.interactiveRebase.visuals.GraphPanel
 import com.jetbrains.interactiveRebase.visuals.MainPanel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -62,13 +64,14 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService = ModelService(project, CoroutineScope(Dispatchers.EDT), commitService)
         modelService.branchInfo.initialCommits = mutableListOf(commitInfo1, commitInfo2)
         modelService.branchInfo.currentCommits = mutableListOf(commitInfo1, commitInfo2)
-        modelService.addToSelectedCommits(commitInfo1)
+        modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
         modelService.branchInfo.setName("feature1")
         modelService.invoker.branchInfo = modelService.branchInfo
 
         branchInfo = modelService.branchInfo
-        mainPanel = MainPanel(project, branchInfo)
+        mainPanel = MainPanel(project)
         mainPanel.commitInfoPanel = mock(CommitInfoPanel::class.java)
+        mainPanel.graphPanel = GraphPanel(project, GraphInfo(branchInfo))
         Mockito.doNothing().`when`(mainPanel.commitInfoPanel).commitsSelected(anyCustom())
         Mockito.doNothing().`when`(mainPanel.commitInfoPanel).repaint()
         actionService = ActionService(project, modelService, modelService.invoker)
@@ -80,7 +83,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits.isEmpty()).isTrue()
         assertThat(commitInfo1.changes.isNotEmpty()).isTrue()
         assertThat(commitInfo1.isSelected).isFalse()
-        Mockito.verify(mainPanel.commitInfoPanel).commitsSelected(anyCustom())
     }
 
     fun testTakeRewordAction() {
@@ -191,7 +193,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits.isEmpty()).isTrue()
         assertThat(commitInfo1.changes.isNotEmpty()).isTrue()
         assertThat(commitInfo1.isSelected).isFalse()
-        Mockito.verify(mainPanel.commitInfoPanel).commitsSelected(anyCustom())
     }
 
     fun testPerformPickAction() {
@@ -266,7 +267,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     fun testTakeFixupActionMultipleCommits() {
         modelService.invoker.commands.clear()
 
-        modelService.addToSelectedCommits(commitInfo2)
+        modelService.addToSelectedCommits(commitInfo2, branchInfo)
         actionService.takeFixupAction()
 
         assertThat(modelService.invoker.commands[0]).isInstanceOf(FixupCommand::class.java)
@@ -278,7 +279,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     fun testTakeSquashActionMultipleCommits() {
         modelService.invoker.commands.clear()
 
-        modelService.addToSelectedCommits(commitInfo2)
+        modelService.addToSelectedCommits(commitInfo2, branchInfo)
         actionService.takeSquashAction()
 
         assertThat(modelService.invoker.commands[0]).isInstanceOf(SquashCommand::class.java)

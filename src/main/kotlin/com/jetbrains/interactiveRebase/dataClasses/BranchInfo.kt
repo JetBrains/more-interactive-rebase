@@ -10,7 +10,8 @@ class BranchInfo(
     var name: String = "",
     var initialCommits: List<CommitInfo> = listOf(),
     var selectedCommits: MutableList<CommitInfo> = mutableListOf(),
-    val isCheckedOut: Boolean = false,
+    var isPrimary: Boolean = false,
+    var isWriteable: Boolean = true,
 ) {
     private val listeners: MutableList<Listener> = mutableListOf()
     internal var currentCommits: MutableList<CommitInfo> = initialCommits.toMutableList()
@@ -147,7 +148,7 @@ class BranchInfo(
         if (name != other.name) return false
         if (initialCommits != other.initialCommits) return false
         if (selectedCommits != other.selectedCommits) return false
-        if (isCheckedOut != other.isCheckedOut) return false
+        if (isPrimary != other.isPrimary) return false
         if (currentCommits != other.currentCommits) return false
 
         return true
@@ -157,7 +158,7 @@ class BranchInfo(
         var result = name.hashCode()
         result = 31 * result + initialCommits.hashCode()
         result = 31 * result + selectedCommits.hashCode()
-        result = 31 * result + isCheckedOut.hashCode()
+        result = 31 * result + isPrimary.hashCode()
         result = 31 * result + currentCommits.hashCode()
         return result
     }
