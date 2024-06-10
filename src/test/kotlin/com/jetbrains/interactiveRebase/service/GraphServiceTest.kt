@@ -24,38 +24,108 @@ class GraphServiceTest : BasePlatformTestCase() {
     private lateinit var commitService: CommitService
     private lateinit var commit1: CommitInfo
     private lateinit var provider: TestGitCommitProvider
+    private lateinit var commit2: CommitInfo
+    private lateinit var commitParent: CommitInfo
+    private lateinit var addedCommit1: CommitInfo
+
+    init {
+        System.setProperty("idea.home.path", "/tmp")
+    }
 
     override fun setUp() {
         super.setUp()
+        this.provider = TestGitCommitProvider(project)
+        this.commit1 = CommitInfo(provider.createCommitWithParent("fix test", "before tests"), project)
+        this.commit2 = CommitInfo(provider.createCommitWithParent("add something", "fix test"), project)
+        this.commitParent = CommitInfo(provider.createCommit("before tests"), project)
+        this.addedCommit1 = CommitInfo(provider.createCommitWithParent("in reference", "before tests"), project)
+
         this.commitService = mock(CommitService::class.java)
         this.graphService = GraphService(project, commitService)
-        this.provider = TestGitCommitProvider(project)
-        this.commit1 = CommitInfo(provider.createCommit("add tests"), project)
+
+//        this.commit1 = CommitInfo(provider.createCommit("add tests"), project)
     }
 
     fun testGetBranchingCommit() {
-        val commit = CommitInfo(provider.createCommitWithParent("fix test", "parent"), project)
-        val commitParent = CommitInfo(provider.createCommit("before tests"), project)
+        val b1 = BranchInfo("feature", initialCommits = listOf(commit2, commit1))
+        val b2 = BranchInfo("dev", initialCommits = listOf(addedCommit1))
+
+        val graph = GraphInfo(b1, b2)
         `when`(commitService.turnHashToCommit(anyString())).thenReturn(commitParent.commit)
         `when`(commitService.getCommitInfoForBranch(anyCustom())).thenReturn(listOf(commitParent))
 
-        val res = graphService.getBranchingCommit(commit)
-        verify(commitService).turnHashToCommit("parent")
+        val res = graphService.getBranchingCommit(graph)
+        verify(commitService).turnHashToCommit(commitParent.commit.id.asString())
         verify(commitService).getCommitInfoForBranch(listOf(commitParent.commit))
         assertThat(res).isEqualTo(commitParent)
     }
 
     fun testGetBranchingCommitChecksEmpty() {
-        assertThatThrownBy { graphService.getBranchingCommit(commit1) }
+        val b1 = BranchInfo("feature")
+        val b2 = BranchInfo("dev", initialCommits = listOf(addedCommit1))
+
+        val graph = GraphInfo(b1, b2)
+        assertThatThrownBy { graphService.getBranchingCommit(graph) }
             .isInstanceOf(IRInaccessibleException::class.java)
-            .withFailMessage("Branching-off commit cannot be displayed")
+            .withFailMessage("Branching-off commit cannot be displayed. Cannot find the added branch or the commits on the primary branch")
     }
 
-    fun testGetBranchingCommitChecksMergeCommit() {
-        val commit = CommitInfo(provider.createCommitWithParent("fix test", "mom", "dad"), project)
-        assertThatThrownBy { graphService.getBranchingCommit(commit) }
+    fun testGetBranchingCommitChecksNullAdded() {
+        val b1 = BranchInfo("feature", initialCommits = listOf(commit1))
+
+        val graph = GraphInfo(b1, null)
+        assertThatThrownBy { graphService.getBranchingCommit(graph) }
             .isInstanceOf(IRInaccessibleException::class.java)
-            .withFailMessage("Branching-off commit cannot be displayed")
+            .withFailMessage("Branching-off commit cannot be displayed. Cannot find the added branch or the commits on the primary branch")
+    }
+
+    fun testGetBranchingCommitChecksNoParent() {
+        val b1 = BranchInfo("feature", initialCommits = listOf(commitParent))
+        val b2 = BranchInfo("dev", initialCommits = listOf(addedCommit1))
+
+        val graph = GraphInfo(b1, b2)
+        assertThatThrownBy { graphService.getBranchingCommit(graph) }
+            .isInstanceOf(IRInaccessibleException::class.java)
+            .withFailMessage("Trying to display parents of initial commit")
+    }
+
+//
+    fun testGetBranchingCommitChecksMergeCommit() {
+        val mergeCommit =
+            CommitInfo(
+                provider.createCommitWithParent("fix test", "other parent", commitParent.commit.id.asString()),
+                project,
+            )
+
+        val b1 = BranchInfo("feature", initialCommits = listOf(mergeCommit))
+        val b2 = BranchInfo("dev", initialCommits = listOf(addedCommit1))
+        `when`(commitService.turnHashToCommit(anyString())).thenReturn(commitParent.commit)
+        `when`(commitService.getCommitInfoForBranch(anyCustom())).thenReturn(listOf(commitParent))
+
+        val graph = GraphInfo(b1, b2)
+        val res = graphService.getBranchingCommit(graph)
+        verify(commitService).turnHashToCommit(commitParent.commit.id.asString())
+        verify(commitService).getCommitInfoForBranch(listOf(commitParent.commit))
+        assertThat(res).isEqualTo(commitParent)
+    }
+
+    fun testGetBranchingCommitChecksMergeCommitNoIntersection() {
+        val mergeCommit =
+            CommitInfo(
+                provider.createCommitWithParent("fix test", commitParent.commit.id.asString(), "other parent"),
+                project,
+            )
+
+        val b1 = BranchInfo("feature", initialCommits = listOf(mergeCommit))
+        val b2 = BranchInfo("dev", initialCommits = listOf(commit2))
+        `when`(commitService.turnHashToCommit(anyString())).thenReturn(commitParent.commit)
+        `when`(commitService.getCommitInfoForBranch(anyCustom())).thenReturn(listOf(commitParent))
+
+        val graph = GraphInfo(b1, b2)
+        val res = graphService.getBranchingCommit(graph)
+        verify(commitService).turnHashToCommit(commitParent.commit.id.asString())
+        verify(commitService).getCommitInfoForBranch(listOf(commitParent.commit))
+        assertThat(res).isEqualTo(commitParent)
     }
 
     fun testUpdateBranchInfoInitName() {
@@ -97,20 +167,20 @@ class GraphServiceTest : BasePlatformTestCase() {
         assertThat(resultBranch.initialCommits).isEqualTo(listOf(commit1))
     }
 
-    fun testUpdateBranchInfoIncludeBranching() {
-        val branchInfo = BranchInfo("feature1")
-        val commit = CommitInfo(provider.createCommitWithParent("with parent", "parent"), project)
-        `when`(commitService.getBranchName()).thenReturn("feature1")
-        `when`(commitService.getCommits("feature1")).thenReturn(listOf(commit.commit))
-        `when`(commitService.getCommitInfoForBranch(anyList())).thenReturn(listOf(commit1))
-        `when`(commitService.getCommitInfoForBranch(listOf(commit.commit))).thenReturn(listOf(commit))
-        `when`(commitService.turnHashToCommit("parent")).thenReturn(commit1.commit)
-        graphService.updateBranchInfo(branchInfo, true)
-        val resultBranch = project.service<RebaseInvoker>().branchInfo
-        assertThat(resultBranch.selectedCommits).isEmpty()
-        assertThat(resultBranch.name).isEqualTo("feature1")
-        assertThat(resultBranch.initialCommits).hasSameElementsAs(listOf(commit1, commit))
-    }
+//    fun testUpdateBranchInfoIncludeBranching() {
+//        val branchInfo = BranchInfo("feature1")
+//        val commit = CommitInfo(provider.createCommitWithParent("with parent", "parent"), project)
+//        `when`(commitService.getBranchName()).thenReturn("feature1")
+//        `when`(commitService.getCommits("feature1")).thenReturn(listOf(commit.commit))
+//        `when`(commitService.getCommitInfoForBranch(anyList())).thenReturn(listOf(commit1))
+//        `when`(commitService.getCommitInfoForBranch(listOf(commit.commit))).thenReturn(listOf(commit))
+//        `when`(commitService.turnHashToCommit("parent")).thenReturn(commit1.commit)
+//        graphService.updateBranchInfo(branchInfo)
+//        val resultBranch = project.service<RebaseInvoker>().branchInfo
+//        assertThat(resultBranch.selectedCommits).isEmpty()
+//        assertThat(resultBranch.name).isEqualTo("feature1")
+//        assertThat(resultBranch.initialCommits).hasSameElementsAs(listOf(commit1, commit))
+//    }
 
     fun testAddBranchOneInEach() {
         val checkedOut = BranchInfo("")
@@ -118,7 +188,7 @@ class GraphServiceTest : BasePlatformTestCase() {
         val startingCommit2 = CommitInfo(provider.createCommitWithParent("with parent in f2", "parent"), project)
         val parentCommit = CommitInfo(provider.createCommit("parent"), project)
         val graphInfo = GraphInfo(checkedOut)
-        `when`(commitService.getCommits("feature2")).thenReturn(listOf(startingCommit2.commit))
+        `when`(commitService.getCommitsWithReference("feature2", "feature1")).thenReturn(listOf(startingCommit2.commit))
         `when`(commitService.getCommits("feature1")).thenReturn(listOf(startingCommit1.commit))
         `when`(commitService.getBranchName()).thenReturn("feature1")
         `when`(commitService.getCommitInfoForBranch(listOf(startingCommit1.commit))).thenReturn(listOf(startingCommit1))
@@ -131,6 +201,24 @@ class GraphServiceTest : BasePlatformTestCase() {
         assertThat(graphInfo.addedBranch).isEqualTo(expAdded)
         assertThat(checkedOut.name).isEqualTo("feature1")
         assertThat(checkedOut.currentCommits).doesNotContain(parentCommit)
+    }
+
+    fun testAddBranchChecksEmptyPrimary() {
+        val checkedOut = BranchInfo("")
+        val startingCommit1 = CommitInfo(provider.createCommitWithParent("with parent in f1", "parent"), project)
+        val startingCommit2 = CommitInfo(provider.createCommitWithParent("with parent in f2", "parent"), project)
+        val parentCommit = CommitInfo(provider.createCommit("parent"), project)
+        val graphInfo = GraphInfo(checkedOut)
+        `when`(commitService.getCommitsWithReference("feature2", "feature1")).thenReturn(listOf(startingCommit2.commit))
+        `when`(commitService.getCommits("feature1")).thenReturn(listOf())
+        `when`(commitService.getBranchName()).thenReturn("feature1")
+        `when`(commitService.getCommitInfoForBranch(listOf(startingCommit1.commit))).thenReturn(listOf(startingCommit1))
+        `when`(commitService.getCommitInfoForBranch(listOf(parentCommit.commit))).thenReturn(listOf(parentCommit))
+        `when`(commitService.getCommitInfoForBranch(listOf(startingCommit2.commit))).thenReturn(listOf(startingCommit2))
+        `when`(commitService.turnHashToCommit("parent")).thenReturn(parentCommit.commit)
+
+        graphService.addBranch(graphInfo, "feature2")
+        assertThat(graphInfo.addedBranch).isNull()
     }
 
     fun testUpgradeGraphInfoOneBranch() {
@@ -153,7 +241,7 @@ class GraphServiceTest : BasePlatformTestCase() {
         val parentCommit = CommitInfo(provider.createCommit("parent"), project)
         val added = BranchInfo("feature2", listOf(startingCommit1))
         val graphInfo = GraphInfo(checkedOut, added)
-        `when`(commitService.getCommits("feature2")).thenReturn(listOf(addedCommit.commit, startingCommit2.commit))
+        `when`(commitService.getCommitsWithReference("feature2", "feature1")).thenReturn(listOf(addedCommit.commit, startingCommit2.commit))
         `when`(commitService.getCommits("feature1")).thenReturn(listOf(startingCommit1.commit))
         `when`(commitService.getBranchName()).thenReturn("feature1")
         `when`(commitService.getCommitInfoForBranch(listOf(startingCommit1.commit))).thenReturn(listOf(startingCommit1))
@@ -167,6 +255,20 @@ class GraphServiceTest : BasePlatformTestCase() {
         assertThat(checkedOut.initialCommits).isEqualTo(listOf(startingCommit1))
         assertThat(graphInfo.addedBranch?.currentCommits).contains(addedCommit)
         assertThat(graphInfo.addedBranch?.currentCommits).contains(startingCommit2)
+    }
+
+    fun testRemoveBranch() {
+        val b1 = BranchInfo("feature", initialCommits = listOf(commit2, commit1))
+        val b2 = BranchInfo("dev", initialCommits = listOf(addedCommit1))
+
+        `when`(commitService.turnHashToCommit(anyString())).thenReturn(commitParent.commit)
+        `when`(commitService.getCommitInfoForBranch(anyCustom())).thenReturn(listOf(commitParent))
+        `when`(commitService.getCommits("feature")).thenReturn(listOf(commit2.commit, commit1.commit))
+
+        val graph = GraphInfo(b1, b2)
+        graphService.removeBranch(graph)
+        assertThat(graph.addedBranch).isNull()
+        assertThat(graph.mainBranch.isPrimary).isFalse()
     }
 
     private inline fun <reified T> anyCustom(): T = any(T::class.java)

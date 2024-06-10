@@ -198,6 +198,7 @@ class GraphPanel(
             RenderingHints.VALUE_ANTIALIAS_ON,
         )
 
+        if (mainBranchPanel.branchPanel.circles.isEmpty()) return
         // Coordinates of the last circle of the main branch
         val (mainCircleCenterX, mainCircleCenterY) = centerCoordinatesOfLastMainCircle()
 

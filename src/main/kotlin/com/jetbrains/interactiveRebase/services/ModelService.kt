@@ -193,7 +193,7 @@ class ModelService(
     /**
      * Populates the GraphInfo field in order to be able to display the side panel of local branches
      */
-    private fun populateLocalBranches() {
+    fun populateLocalBranches() {
         val branchService = project.service<BranchService>()
         coroutineScope.launch {
             graphInfo.branchList = branchService.getBranchesExceptCheckedOut().toMutableList()
