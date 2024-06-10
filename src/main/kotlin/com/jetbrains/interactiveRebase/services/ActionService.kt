@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
@@ -245,8 +246,7 @@ class ActionService(project: Project) {
         invoker.undoneCommands.clear()
         val currentBranchInfo = invoker.branchInfo
         invoker.branchInfo.currentCommits = currentBranchInfo.initialCommits.toMutableList()
-        invoker.branchInfo.initialCommits.forEach {
-                commitInfo ->
+        invoker.branchInfo.initialCommits.forEach { commitInfo ->
             commitInfo.changes.clear()
             commitInfo.isSelected = false
             commitInfo.isSquashed = false
@@ -256,6 +256,7 @@ class ActionService(project: Project) {
             commitInfo.isHovered = false
         }
         invoker.branchInfo.clearSelectedCommits()
+        takeCollapseAction()
     }
 
     /**
@@ -629,20 +630,23 @@ class ActionService(project: Project) {
      * and adding back the collapsed commits
      * to the list of current commits.
      */
-    fun expandCollapsedCommits(parentCommit: CommitInfo) {
+    fun expandCollapsedCommits(
+        parentCommit: CommitInfo,
+        branchInfo: BranchInfo,
+    ) {
         if (!parentCommit.isCollapsed) return
         parentCommit.isCollapsed = false
         val collapseCommand = parentCommit.changes.filterIsInstance<CollapseCommand>().lastOrNull() as CollapseCommand
         if (collapseCommand == null) return
 
         parentCommit.removeChange(collapseCommand)
-        val index = modelService.branchInfo.currentCommits.indexOf(parentCommit)
+        val index = branchInfo.currentCommits.indexOf(parentCommit)
         val collapsedCommits = collapseCommand.collapsedCommits
         collapsedCommits.forEach {
             it.isCollapsed = false
             it.removeChange(collapseCommand)
         }
-        modelService.branchInfo.addCommitsToCurrentCommits(index, collapsedCommits)
+        branchInfo.addCommitsToCurrentCommits(index, collapsedCommits)
     }
 
     /**
@@ -652,7 +656,7 @@ class ActionService(project: Project) {
     fun takeCollapseAction() {
         val selectedCommits = modelService.getSelectedCommits()
         selectedCommits.sortBy { modelService.branchInfo.indexOfCommit(it) }
-
+        takeCollapseActionOnSecondBranch()
         if (modelService.getSelectedCommits().isEmpty()) {
             modelService.branchInfo.collapseCommits()
         } else {
@@ -661,6 +665,13 @@ class ActionService(project: Project) {
             val indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
 
             modelService.branchInfo.collapseCommits(indexFirstCommit, indexLastCommit)
+        }
+    }
+
+    fun takeCollapseActionOnSecondBranch() {
+        val addedBranch = modelService.graphInfo.addedBranch
+        if (addedBranch != null && addedBranch.currentCommits.none { it.isCollapsed }) {
+            modelService.graphInfo.addedBranch?.collapseCommits()
         }
     }
 

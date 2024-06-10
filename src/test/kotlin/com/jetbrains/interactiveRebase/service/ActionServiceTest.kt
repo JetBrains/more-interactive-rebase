@@ -10,8 +10,8 @@ import com.intellij.testFramework.TestActionEvent.createTestEvent
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
@@ -664,7 +664,7 @@ class ActionServiceTest : BasePlatformTestCase() {
             commit.isCollapsed = false
         }
         modelService.branchInfo.clearSelectedCommits()
-        modelService.addToSelectedCommits(commitInfo1)
+        modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
         val testEvent = createTestEvent()
         actionService.checkCollapse(testEvent)
         assertThat(testEvent.presentation.isEnabled).isFalse()
@@ -745,8 +745,8 @@ class ActionServiceTest : BasePlatformTestCase() {
             commit.isCollapsed = false
         }
         modelService.branchInfo.clearSelectedCommits()
-        modelService.addToSelectedCommits(commitInfo1)
-        modelService.addToSelectedCommits(commitInfo2)
+        modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
+        modelService.addToSelectedCommits(commitInfo2, modelService.branchInfo)
         val testEvent = createTestEvent()
         actionService.checkCollapse(testEvent)
         assertThat(testEvent.presentation.isEnabled).isTrue()
@@ -788,8 +788,8 @@ class ActionServiceTest : BasePlatformTestCase() {
         }
         modelService.branchInfo.clearSelectedCommits()
 
-        modelService.addToSelectedCommits(commitInfo1)
-        modelService.addToSelectedCommits(commitInfo5)
+        modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
+        modelService.addToSelectedCommits(commitInfo5, modelService.branchInfo)
 
         val testEvent = createTestEvent()
         actionService.checkCollapse(testEvent)
@@ -832,7 +832,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         }
         modelService.branchInfo.clearSelectedCommits()
 
-        modelService.addToSelectedCommits(commitInfo1)
+        modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
         commitInfo2.isCollapsed = true
 
         val testEvent = createTestEvent()
@@ -876,7 +876,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         }
         modelService.branchInfo.clearSelectedCommits()
 
-        modelService.addToSelectedCommits(commitInfo1)
+        modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
 
         val testEvent = createTestEvent()
         actionService.checkFixupOrSquash(testEvent)
@@ -885,7 +885,7 @@ class ActionServiceTest : BasePlatformTestCase() {
 
     fun testExpandCommitsNotAlreadyCollapsed() {
         commitInfo1.isCollapsed = false
-        actionService.expandCollapsedCommits(commitInfo1)
+        actionService.expandCollapsedCommits(commitInfo1, branchInfo)
         assertThat(commitInfo1.isCollapsed).isFalse()
     }
 
@@ -928,7 +928,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         val collapseCommand = CollapseCommand(commitInfo7, mutableListOf(commitInfo5, commitInfo6))
         commitInfo7.addChange(collapseCommand)
 
-        actionService.expandCollapsedCommits(commitInfo7)
+        actionService.expandCollapsedCommits(commitInfo7, branchInfo)
         assertThat(commitInfo7.isCollapsed).isFalse()
         assertThat(commitInfo6.isCollapsed).isFalse()
         assertThat(commitInfo5.isCollapsed).isFalse()
@@ -1012,8 +1012,8 @@ class ActionServiceTest : BasePlatformTestCase() {
                 commitInfo8,
             )
         modelService.branchInfo.clearSelectedCommits()
-        modelService.addToSelectedCommits(commitInfo1)
-        modelService.addToSelectedCommits(commitInfo2)
+        modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
+        modelService.addToSelectedCommits(commitInfo2, modelService.branchInfo)
         actionService.takeCollapseAction()
         assertThat(commitInfo2.isCollapsed).isTrue()
         assertThat(

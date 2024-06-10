@@ -1,6 +1,5 @@
 package com.jetbrains.interactiveRebase.visuals
 
-import com.intellij.ui.JBColor
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import icons.VcsLogIcons
 import java.awt.Graphics
@@ -11,7 +10,7 @@ import java.awt.geom.Rectangle2D
 class CollapseCirclePanel(
     diameter: Double,
     private val border: Float,
-    color: JBColor,
+    color: Palette.Theme,
     override var commit: CommitInfo,
     override var next: CirclePanel? = null,
     override var previous: CirclePanel? = null,

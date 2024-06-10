@@ -56,7 +56,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
         }
 
         if (circlePanel.commit.isCollapsed) {
-            commit.project.service<ActionService>().expandCollapsedCommits(commit)
+            commit.project.service<ActionService>().expandCollapsedCommits(commit, branchInfo)
             commit.isHovered = false
         } else if (!circlePanel.commit.isSelected || modelService.branchInfo.getActualSelectedCommitsSize() > 1) {
             modelService.selectSingleCommit(circlePanel.commit, branchInfo)

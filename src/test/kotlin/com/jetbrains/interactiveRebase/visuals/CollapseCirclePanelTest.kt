@@ -42,7 +42,7 @@ class CollapseCirclePanelTest : BasePlatformTestCase() {
                 CollapseCirclePanel(
                     50.0,
                     2.0f,
-                    JBColor.BLACK,
+                    Palette.BLUE_THEME,
                     commit,
                 ),
             )

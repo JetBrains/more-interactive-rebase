@@ -87,7 +87,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
     fun testUpFirstCommitSelectedCollapsedCase() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
-        modelService.selectSingleCommit(commit1)
+        modelService.selectSingleCommit(commit1, branchInfo)
         commit2.isCollapsed = true
         listener.up()
 
@@ -108,7 +108,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
     fun testDownCollapsedCase() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
-        modelService.selectSingleCommit(commit4)
+        modelService.selectSingleCommit(commit4, branchInfo)
         commit3.isCollapsed = true
         listener.down()
 

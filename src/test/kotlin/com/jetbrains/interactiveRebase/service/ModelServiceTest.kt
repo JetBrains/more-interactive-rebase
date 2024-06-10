@@ -41,7 +41,7 @@ class ModelServiceTest : BasePlatformTestCase() {
         val command = FixupCommand(commit2, mutableListOf(commit1))
         commit2.changes.add(command)
 
-        modelService.addToSelectedCommits(commit2)
+        modelService.addToSelectedCommits(commit2, modelService.branchInfo)
         assertThat(modelService.branchInfo.selectedCommits).containsExactlyInAnyOrder(commit1, commit2)
     }
 
@@ -49,7 +49,7 @@ class ModelServiceTest : BasePlatformTestCase() {
         val command = SquashCommand(commit2, mutableListOf(commit1), "squash")
         commit2.changes.add(command)
 
-        modelService.addToSelectedCommits(commit2)
+        modelService.addToSelectedCommits(commit2, modelService.branchInfo)
         assertThat(modelService.branchInfo.selectedCommits).containsExactlyInAnyOrder(commit1, commit2)
     }
 
@@ -57,7 +57,7 @@ class ModelServiceTest : BasePlatformTestCase() {
         val command = SquashCommand(commit2, mutableListOf(commit1), "squash")
         commit2.changes.add(command)
 
-        modelService.addToSelectedCommits(commit2)
+        modelService.addToSelectedCommits(commit2, modelService.branchInfo)
         assertThat(modelService.branchInfo.selectedCommits).containsExactlyInAnyOrder(commit1, commit2)
     }
 
@@ -70,12 +70,12 @@ class ModelServiceTest : BasePlatformTestCase() {
         val command = SquashCommand(commit3, mutableListOf(commit1, commit2), "squash")
         commit3.changes.add(command)
 
-        modelService.addToSelectedCommits(commit3)
+        modelService.addToSelectedCommits(commit3, modelService.branchInfo)
         assertThat(modelService.getHighestSelectedCommit()).isEqualTo(commit1)
         assertThat(modelService.getLowestSelectedCommit()).isEqualTo(commit3)
 
         commit1.isSquashed = true
         commit2.isSquashed = true
-        assertThat(modelService.getLastSelectedCommit()).isEqualTo(commit3)
+        assertThat(modelService.getLastSelectedCommit(modelService.branchInfo)).isEqualTo(commit3)
     }
 }

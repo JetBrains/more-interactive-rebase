@@ -64,7 +64,7 @@ class BranchPanel(
                 CollapseCirclePanel(
                     diameter.toDouble(),
                     4f,
-                    color,
+                    colorTheme,
                     branch.currentCommits[i],
                 )
         } else if (visualChanges.any { it is DropCommand }) {
