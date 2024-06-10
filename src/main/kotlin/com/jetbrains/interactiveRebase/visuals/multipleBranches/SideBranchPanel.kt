@@ -34,6 +34,10 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
         layout = GridBagLayout()
         addSideBranchLabel()
         addRemoveBranchButton()
+
+        val name = project.service<ModelService>().graphInfo.addedBranch?.name
+
+        if (name == branchName) selectBranch()
     }
 
     /**

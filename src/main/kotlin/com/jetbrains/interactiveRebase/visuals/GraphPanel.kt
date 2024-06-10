@@ -2,7 +2,6 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
@@ -17,7 +16,6 @@ import java.awt.Insets
 import java.awt.LinearGradientPaint
 import java.awt.RenderingHints
 import java.awt.geom.CubicCurve2D
-import javax.swing.BorderFactory
 import javax.swing.SwingConstants
 
 /**
@@ -47,9 +45,7 @@ class GraphPanel(
                     SwingConstants.LEFT,
                     addedTheme,
                 )
-            addedBranchPanel!!.border = BorderFactory.createLineBorder(JBColor.GREEN)
         }
-        mainBranchPanel.border = BorderFactory.createLineBorder(JBColor.BLUE)
 
         layout = GridBagLayout()
 

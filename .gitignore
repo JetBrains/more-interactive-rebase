@@ -6,3 +6,4 @@ out/
 lib/
 .gradle/
 *.DS_Store
+/.intellijPlatform/

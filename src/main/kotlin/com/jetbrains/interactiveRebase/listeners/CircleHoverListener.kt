@@ -59,11 +59,6 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
         } else {
             modelService.removeFromSelectedCommits(circlePanel.commit, branchInfo)
         }
-
-//        val branchInfo = (circlePanel.parent as BranchPanel).branch
-//        val modelService = circlePanel.commit.project.service<ModelService>()
-//        circlePanel.commit.isSelected = !circlePanel.commit.isSelected
-//        modelService.addOrRemoveCommitSelection(circlePanel.commit, branchInfo)
     }
 
     /**
