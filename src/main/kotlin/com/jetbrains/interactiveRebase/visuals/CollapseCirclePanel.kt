@@ -8,14 +8,17 @@ import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.geom.Rectangle2D
 
-class CollapseCirclePanel(diameter: Double,
-                          private val border: Float,
-                          color: JBColor,
-                          override var commit: CommitInfo,
-                          override var next: CirclePanel? = null,
-                          override var previous: CirclePanel? = null,):
+class CollapseCirclePanel(
+    diameter: Double,
+    private val border: Float,
+    color: JBColor,
+    override var commit: CommitInfo,
+    override var next: CirclePanel? = null,
+    override var previous: CirclePanel? = null,
+) :
     CirclePanel(diameter, border, color, commit, next, previous) {
-        lateinit var rectangle: Rectangle2D
+    lateinit var rectangle: Rectangle2D
+
     override fun paintCircle(g: Graphics) {
         val g2d = g as Graphics2D
 
@@ -47,7 +50,7 @@ class CollapseCirclePanel(diameter: Double,
         val height = height.toDouble()
 
         val adjustedHeight = diameter - 2 * (border + 0.5)
-        val adjustedWidth = adjustedHeight/1.5
+        val adjustedWidth = adjustedHeight / 1.5
 
         val originX = (width - adjustedWidth) / 2
         val originY = (height - adjustedHeight) / 2
@@ -57,12 +60,10 @@ class CollapseCirclePanel(diameter: Double,
         rectangle = Rectangle2D.Double(originX, originY, adjustedWidth, adjustedHeight)
     }
 
-
     fun paintIcon(g: Graphics) {
         val icon = RotatedIcon(VcsLogIcons.Process.Dots_1, 90.0)
         val iconX = (width - icon.iconWidth) / 2
         val iconY = (height - icon.iconHeight) / 2
         icon.paintIcon(this, g, iconX, iconY)
     }
-
 }

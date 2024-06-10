@@ -7,7 +7,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAwareAction
 import com.jetbrains.interactiveRebase.services.ActionService
 
-class CollapseAction: DumbAwareAction("Collapse", "Collapse commits", AllIcons.General.CollapseComponent) {
+class CollapseAction : DumbAwareAction("Collapse", "Collapse commits", AllIcons.General.CollapseComponent) {
     override fun actionPerformed(e: AnActionEvent) {
         e.project?.service<ActionService>()?.takeCollapseAction()
     }

@@ -39,9 +39,11 @@ class BranchInfo(
         listeners.forEach { it.onCommitChange(commits) }
     }
 
-    fun collapseCommits(initialIndex: Int = 5, finalIndex: Int = this.currentCommits.size - 2){
-        if(this.initialCommits.size < 7) return
-
+    fun collapseCommits(
+        initialIndex: Int = 5,
+        finalIndex: Int = this.currentCommits.size - 2,
+    ) {
+        if (this.initialCommits.size < 7) return
 
         val collapsedCommits = this.currentCommits.subList(initialIndex, finalIndex).deepClonePolymorphic()
         val parentOfCollapsedCommit = this.currentCommits[finalIndex]
@@ -124,7 +126,10 @@ class BranchInfo(
         listeners.forEach { it.onCurrentCommitsChange(currentCommits) }
     }
 
-    internal fun addCommitsToCurrentCommits(index: Int, commits: List<CommitInfo>) {
+    internal fun addCommitsToCurrentCommits(
+        index: Int,
+        commits: List<CommitInfo>,
+    ) {
         currentCommits.addAll(index, commits)
         listeners.forEach { it.onCurrentCommitsChange(currentCommits) }
     }

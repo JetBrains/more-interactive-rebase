@@ -59,15 +59,15 @@ class BranchPanel(
 
         val visualChanges = commit.getChangesAfterPick()
 
-        if (visualChanges.any { it is CollapseCommand }){
-            circle = CollapseCirclePanel(
-                diameter.toDouble(),
-                4f,
-                color,
-                branch.currentCommits[i],
-            )
-        }
-        else if (visualChanges.any { it is DropCommand }) {
+        if (visualChanges.any { it is CollapseCommand }) {
+            circle =
+                CollapseCirclePanel(
+                    diameter.toDouble(),
+                    4f,
+                    color,
+                    branch.currentCommits[i],
+                )
+        } else if (visualChanges.any { it is DropCommand }) {
             circle =
                 DropCirclePanel(
                     (diameter + 2).toDouble(),
@@ -228,10 +228,10 @@ class BranchPanel(
         revalidate()
     }
 
-    fun prepareCommitsForCollapsing(){
-        if(branch.currentCommits.size < 7) return
+    fun prepareCommitsForCollapsing() {
+        if (branch.currentCommits.size < 7) return
         val sizey = branch.currentCommits.size
-        val newCurrentCommits = branch.currentCommits.subList(0,5) + branch.currentCommits.subList(sizey-2, sizey)
+        val newCurrentCommits = branch.currentCommits.subList(0, 5) + branch.currentCommits.subList(sizey - 2, sizey)
 
         val collapsedCommits = branch.currentCommits.subList(5, sizey - 2)
         val parentOfCollapsedCommit = branch.currentCommits[sizey - 2]

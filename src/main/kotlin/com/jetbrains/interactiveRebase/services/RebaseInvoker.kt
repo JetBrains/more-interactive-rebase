@@ -41,7 +41,7 @@ class RebaseInvoker(val project: Project) {
         model = convertToModel(commits.reversed())
     }
 
-    fun expandCollapsedCommits(){
+    fun expandCollapsedCommits() {
         val commits = branchInfo.currentCommits.toMutableList()
         for (commitInfo in branchInfo.currentCommits) {
             for (command in commitInfo.changes) {

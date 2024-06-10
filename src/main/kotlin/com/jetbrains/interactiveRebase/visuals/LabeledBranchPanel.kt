@@ -93,32 +93,33 @@ class LabeledBranchPanel(
             }
 
         val visualChanges = branch.currentCommits[i].getChangesAfterPick()
-        if (visualChanges.any { it is CollapseCommand })
+        if (visualChanges.any { it is CollapseCommand }) {
             commitLabel.text = ""
-        else{
-        visualChanges.forEach {
-            if (it is RewordCommand) {
-                commitLabel.text = TextStyle.addStyling(it.newMessage, TextStyle.ITALIC)
-                commitLabel.foreground = JBColor.BLUE
-            }
-            if (it is DropCommand) {
-                commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.CROSSED)
-                // TODO: when drag-and-drop is implemented, this will probably break because
-                // TODO: the alignment setting logic was changed
-                commitLabel.horizontalAlignment = alignment
-                commitLabel.alignmentX = RIGHT_ALIGNMENT
-            }
+        } else {
+            visualChanges.forEach {
+                if (it is RewordCommand) {
+                    commitLabel.text = TextStyle.addStyling(it.newMessage, TextStyle.ITALIC)
+                    commitLabel.foreground = JBColor.BLUE
+                }
+                if (it is DropCommand) {
+                    commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.CROSSED)
+                    // TODO: when drag-and-drop is implemented, this will probably break because
+                    // TODO: the alignment setting logic was changed
+                    commitLabel.horizontalAlignment = alignment
+                    commitLabel.alignmentX = RIGHT_ALIGNMENT
+                }
 
-            if (it is SquashCommand) {
-                if (it.parentCommit == branch.currentCommits[i]) {
-                    commitLabel.text = it.newMessage
+                if (it is SquashCommand) {
+                    if (it.parentCommit == branch.currentCommits[i]) {
+                        commitLabel.text = it.newMessage
+                    }
                 }
             }
-        }
 
-        if (branch.currentCommits[i].isSelected) {
-            commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.BOLD)
-        }}
+            if (branch.currentCommits[i].isSelected) {
+                commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.BOLD)
+            }
+        }
         commitLabel.labelFor = circle
         commitLabel.horizontalAlignment = alignment
         commitLabel.verticalTextPosition = SwingConstants.CENTER

@@ -96,15 +96,16 @@ class ActionService(project: Project) {
      */
     fun checkFixupOrSquash(e: AnActionEvent) {
         val notEmpty = modelService.branchInfo.selectedCommits.isNotEmpty()
-        val notFirstCommit = !(
+        val notFirstCommit =
+            !(
                 modelService.branchInfo.selectedCommits.size==1 &&
-                        modelService.branchInfo.currentCommits.reversed()
-                            .indexOf(modelService.branchInfo.selectedCommits[0])==0
-                )
-        val notDropped = modelService.getSelectedCommits().none { commit ->
-            commit.getChangesAfterPick().any { change -> change is DropCommand }
-        }
-
+                    modelService.branchInfo.currentCommits.reversed()
+                        .indexOf(modelService.branchInfo.selectedCommits[0])==0
+            )
+        val notDropped =
+            modelService.getSelectedCommits().none { commit ->
+                commit.getChangesAfterPick().any { change -> change is DropCommand }
+            }
 
         val notCollapsed = checkParentNotCollapsed()
 
@@ -112,10 +113,11 @@ class ActionService(project: Project) {
     }
 
     fun checkParentNotCollapsed(): Boolean {
-        if(modelService.branchInfo.getActualSelectedCommitsSize() != 1) return true
+        if (modelService.branchInfo.getActualSelectedCommitsSize() != 1) return true
 
         val commit = modelService.getSelectedCommits().last()
         val index = modelService.branchInfo.currentCommits.indexOf(commit)
+        if (index == modelService.branchInfo.currentCommits.size - 1) return true
 
         return !modelService.branchInfo.currentCommits[index+1].isCollapsed
     }
@@ -546,24 +548,31 @@ class ActionService(project: Project) {
         e.presentation.isEnabled = invoker.undoneCommands.isNotEmpty()
     }
 
+    /**
+     * The collapse button should be enabled if the action is valid, which is in the cases:
+     * - there are no already collapsed commits
+     * - there are more than 7 commits
+     * - there is no selected commit OR
+     * - there are at least 2 selected commits, which are in a range.
+     */
     fun checkCollapse(e: AnActionEvent) {
         // check if there are any already collapsed commits
         val currentCommits = modelService.getCurrentCommits()
-        if(modelService.branchInfo.initialCommits.size <= 7){
+        if (modelService.branchInfo.initialCommits.size <= 7) {
             e.presentation.isEnabled = false
             return
         }
 
-        if(currentCommits.any { it.isCollapsed }){
+        if (currentCommits.any { it.isCollapsed }) {
             e.presentation.isEnabled = false
             return
         }
-        if(modelService.branchInfo.getActualSelectedCommitsSize() == 1){
+        if (modelService.branchInfo.getActualSelectedCommitsSize() == 1) {
             e.presentation.isEnabled = false
             return
         }
 
-        if(modelService.getSelectedCommits().isEmpty()){
+        if (modelService.getSelectedCommits().isEmpty()) {
             e.presentation.isEnabled = true
             return
         }
@@ -571,24 +580,32 @@ class ActionService(project: Project) {
         e.presentation.isEnabled = checkSelectedCommitsAreInARange()
     }
 
-    fun checkSelectedCommitsAreInARange():Boolean{
+    /**
+     * Checks whether the selected commits are in a range.
+     */
+    fun checkSelectedCommitsAreInARange(): Boolean {
         var selectedCommits = modelService.getSelectedCommits()
         val currentCommits = modelService.getCurrentCommits()
 
         val indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
         val indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
 
-        val commitsOfRange = currentCommits.subList(indexFirstCommit, indexLastCommit+1)
+        val commitsOfRange = currentCommits.subList(indexFirstCommit, indexLastCommit + 1)
         selectedCommits = selectedCommits.filter { !it.isSquashed }.toMutableList()
-        val res = commitsOfRange.containsAll(selectedCommits)
-        return res
+        return selectedCommits.containsAll(commitsOfRange)
     }
 
-    fun expandCollapsedCommits(parentCommit: CommitInfo){
-        if(!parentCommit.isCollapsed) return
+    /**
+     * Expands the collapsed commits, by removing the collapse command,
+     * setting the isCollapsed flag to false,
+     * and adding back the collapsed commits
+     * to the list of current commits.
+     */
+    fun expandCollapsedCommits(parentCommit: CommitInfo) {
+        if (!parentCommit.isCollapsed) return
         parentCommit.isCollapsed = false
         val collapseCommand = parentCommit.changes.filterIsInstance<CollapseCommand>().lastOrNull() as CollapseCommand
-        if(collapseCommand == null) return
+        if (collapseCommand == null) return
 
         parentCommit.removeChange(collapseCommand)
         val index = modelService.branchInfo.currentCommits.indexOf(parentCommit)
@@ -600,14 +617,17 @@ class ActionService(project: Project) {
         modelService.branchInfo.addCommitsToCurrentCommits(index, collapsedCommits)
     }
 
-    fun takeCollapseAction(){
+    /**
+     * Takes the collapse action, which collapses the selected commits, by either
+     * keeping the first 5 commits and last commit, or the selected commits.
+     */
+    fun takeCollapseAction() {
         val selectedCommits = modelService.getSelectedCommits()
         selectedCommits.sortBy { modelService.branchInfo.indexOfCommit(it) }
 
-        if(modelService.getSelectedCommits().isEmpty()){
+        if (modelService.getSelectedCommits().isEmpty()) {
             modelService.branchInfo.collapseCommits()
-        }
-        else{
+        } else {
             val currentCommits = modelService.getCurrentCommits()
             val indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
             val indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
@@ -620,6 +640,4 @@ class ActionService(project: Project) {
         val wrapper = mainPanel.getComponent(0) as OnePixelSplitter
         return wrapper.firstComponent as HeaderPanel
     }
-
-
 }
