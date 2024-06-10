@@ -121,7 +121,7 @@ class BranchPanel(
             drawLineBetweenCommits(i, g2d)
         }
 
-        if (!branch.isPrimary) {
+        if (!branch.isPrimary && circles.isNotEmpty()) {
             drawBottomLine(g2d)
         }
     }

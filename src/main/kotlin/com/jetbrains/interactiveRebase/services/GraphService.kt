@@ -40,7 +40,7 @@ class GraphService(private val project: Project) {
         }
 
         // first get commits of the added branch using the checked out branch as reference
-        val newBranch = BranchInfo(addedBranch, isPrimary = false, isEnabled = false)
+        val newBranch = BranchInfo(addedBranch, isPrimary = false, isWritable = false)
         graphInfo.addedBranch = newBranch
         updateAddedBranchInfo(graphInfo)
 
@@ -116,17 +116,16 @@ class GraphService(private val project: Project) {
         }
     }
 
+    /**
+     * Used to fetch updates on the added branch, should not be used for the primary branch.
+     * Fetches commits taking the primary branch as reference and adds the branching commit to the end
+     */
     fun updateAddedBranchInfo(graphInfo: GraphInfo) {
         val addedBranch = graphInfo.addedBranch ?: return
         val commits =
             commitService.getCommitInfoForBranch(
                 commitService.getCommitsWithReference(addedBranch.name, graphInfo.mainBranch.name),
             ).toMutableList()
-        println("in update addedbranch commtis found $commits current grap $graphInfo")
-
-//        if (graphInfo.mainBranch.currentCommits.isEmpty() && commits.isEmpty()) {
-//            throw IRInaccessibleException("Could not find the commit difference between branches")
-//        }
         commits.add(getBranchingCommit(graphInfo))
 
         if (branchChange(addedBranch.name, commits, addedBranch)) {

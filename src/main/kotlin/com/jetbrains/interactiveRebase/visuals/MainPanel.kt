@@ -98,7 +98,7 @@ class MainPanel(
     fun createGraphPanel(): GraphPanel {
         if (otherBranchInfo != null) {
             branchInfo.isPrimary = true
-            otherBranchInfo!!.isWriteable = false
+            otherBranchInfo!!.isWritable = false
         }
         return GraphPanel(
             project,

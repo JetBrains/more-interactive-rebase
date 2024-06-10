@@ -137,6 +137,7 @@ class GraphServiceTest : BasePlatformTestCase() {
 
     fun testUpdateBranchInfoNoChange() {
         val branchInfo = BranchInfo("feature1")
+        `when`(commitService.getBranchName()).thenReturn("feature1")
         graphService.updateBranchInfo(branchInfo)
         assertThat(project.service<RebaseInvoker>().branchInfo).isNotEqualTo(branchInfo)
     }
@@ -166,21 +167,6 @@ class GraphServiceTest : BasePlatformTestCase() {
         assertThat(resultBranch.name).isEqualTo("feature1")
         assertThat(resultBranch.initialCommits).isEqualTo(listOf(commit1))
     }
-
-//    fun testUpdateBranchInfoIncludeBranching() {
-//        val branchInfo = BranchInfo("feature1")
-//        val commit = CommitInfo(provider.createCommitWithParent("with parent", "parent"), project)
-//        `when`(commitService.getBranchName()).thenReturn("feature1")
-//        `when`(commitService.getCommits("feature1")).thenReturn(listOf(commit.commit))
-//        `when`(commitService.getCommitInfoForBranch(anyList())).thenReturn(listOf(commit1))
-//        `when`(commitService.getCommitInfoForBranch(listOf(commit.commit))).thenReturn(listOf(commit))
-//        `when`(commitService.turnHashToCommit("parent")).thenReturn(commit1.commit)
-//        graphService.updateBranchInfo(branchInfo)
-//        val resultBranch = project.service<RebaseInvoker>().branchInfo
-//        assertThat(resultBranch.selectedCommits).isEmpty()
-//        assertThat(resultBranch.name).isEqualTo("feature1")
-//        assertThat(resultBranch.initialCommits).hasSameElementsAs(listOf(commit1, commit))
-//    }
 
     fun testAddBranchOneInEach() {
         val checkedOut = BranchInfo("")
@@ -261,6 +247,7 @@ class GraphServiceTest : BasePlatformTestCase() {
         val b1 = BranchInfo("feature", initialCommits = listOf(commit2, commit1))
         val b2 = BranchInfo("dev", initialCommits = listOf(addedCommit1))
 
+        `when`(commitService.getBranchName()).thenReturn("feature1")
         `when`(commitService.turnHashToCommit(anyString())).thenReturn(commitParent.commit)
         `when`(commitService.getCommitInfoForBranch(anyCustom())).thenReturn(listOf(commitParent))
         `when`(commitService.getCommits("feature")).thenReturn(listOf(commit2.commit, commit1.commit))

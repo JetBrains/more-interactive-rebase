@@ -23,7 +23,7 @@ class LabelListener(
     override fun mouseClicked(e: MouseEvent?) {
         if (e != null && e.clickCount >= 2 &&
             !commit.getChangesAfterPick().any { change -> change is DropCommand } &&
-            branchInfo.isWriteable
+            branchInfo.isWritable
         ) {
             commit.setTextFieldEnabledTo(true)
             modelService.selectSingleCommit(commit, branchInfo)
