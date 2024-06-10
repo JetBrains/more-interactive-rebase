@@ -2,13 +2,17 @@ package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 
-class LabelListener(private val commit: CommitInfo) : MouseListener, Disposable {
+class LabelListener(
+    private val commit: CommitInfo,
+    private val branchInfo: BranchInfo,
+) : MouseListener, Disposable {
     private val project = commit.project
     private val modelService = project.service<ModelService>()
 
@@ -17,15 +21,18 @@ class LabelListener(private val commit: CommitInfo) : MouseListener, Disposable 
      * If clicked once, selects or deselects commit
      */
     override fun mouseClicked(e: MouseEvent?) {
-        if (e != null && e.clickCount >= 2 && !commit.getChangesAfterPick().any { change -> change is DropCommand }) {
+        if (e != null && e.clickCount >= 2 &&
+            !commit.getChangesAfterPick().any { change -> change is DropCommand } &&
+            branchInfo.isWriteable
+        ) {
             commit.setTextFieldEnabledTo(true)
-            modelService.selectSingleCommit(commit)
+            modelService.selectSingleCommit(commit, branchInfo)
         }
         if (e != null && e.clickCount == 1) {
             if (!commit.isSelected) {
-                modelService.selectSingleCommit(commit)
+                modelService.selectSingleCommit(commit, branchInfo)
             } else {
-                modelService.removeFromSelectedCommits(commit)
+                modelService.removeFromSelectedCommits(commit, branchInfo)
             }
         }
     }

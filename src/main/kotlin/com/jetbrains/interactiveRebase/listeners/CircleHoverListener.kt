@@ -4,6 +4,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.visuals.BranchPanel
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -15,6 +16,7 @@ import java.awt.event.MouseEvent
  */
 class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter(), Disposable {
     val commit: CommitInfo = circlePanel.commit
+    val branchInfo = (circlePanel.parent as BranchPanel).branch
 
     /**
      * Highlight the circle if the mouse enters the encapsulating rectangle and
@@ -53,9 +55,9 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
         }
 
         if (!circlePanel.commit.isSelected || modelService.branchInfo.getActualSelectedCommitsSize() > 1) {
-            modelService.selectSingleCommit(circlePanel.commit)
+            modelService.selectSingleCommit(circlePanel.commit, branchInfo)
         } else {
-            modelService.removeFromSelectedCommits(circlePanel.commit)
+            modelService.removeFromSelectedCommits(circlePanel.commit, branchInfo)
         }
     }
 
@@ -82,13 +84,13 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
         val selectedIndex = modelService.getCurrentCommits().indexOf(selectedCommit)
         val commitIndex = modelService.getCurrentCommits().indexOf(commit)
 
-        modelService.selectSingleCommit(selectedCommit)
+        modelService.selectSingleCommit(selectedCommit, branchInfo)
 
         modelService.getCurrentCommits()
             .subList(Integer.min(selectedIndex, commitIndex), Integer.max(selectedIndex + 1, commitIndex + 1))
             .forEach {
                 if (it != selectedCommit) {
-                    modelService.addToSelectedCommits(it)
+                    modelService.addToSelectedCommits(it, branchInfo)
                 }
             }
     }
@@ -98,11 +100,13 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
      * the currently selected commit
      */
     private fun controlClick() {
+        val branchInfo = (circlePanel.parent as BranchPanel).branch
+
         val modelService = commit.project.service<ModelService>()
         if (!commit.isSelected) {
-            modelService.addToSelectedCommits(commit)
+            modelService.addToSelectedCommits(commit, branchInfo)
         } else {
-            modelService.removeFromSelectedCommits(commit)
+            modelService.removeFromSelectedCommits(commit, branchInfo)
         }
     }
 

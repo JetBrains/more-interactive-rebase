@@ -23,7 +23,7 @@ class ModelService(
 ) : Disposable {
     constructor(project: Project, coroutineScope: CoroutineScope) : this(project, coroutineScope, project.service<CommitService>())
 
-    val branchInfo = BranchInfo(isCheckedOut = true)
+    val branchInfo = BranchInfo()
     val graphInfo = GraphInfo(branchInfo)
     private val graphService = project.service<GraphService>()
 
@@ -45,9 +45,12 @@ class ModelService(
      * commit by also deselecting all
      * currently selected commits
      */
-    fun selectSingleCommit(commit: CommitInfo) {
+    fun selectSingleCommit(
+        commit: CommitInfo,
+        branchInfo: BranchInfo,
+    ) {
         branchInfo.clearSelectedCommits()
-        addToSelectedCommits(commit)
+        addToSelectedCommits(commit, branchInfo)
     }
 
     /**
@@ -56,7 +59,10 @@ class ModelService(
      * deselecting the rest of the
      * commits
      */
-    fun addToSelectedCommits(commit: CommitInfo) {
+    fun addToSelectedCommits(
+        commit: CommitInfo,
+        branchInfo: BranchInfo,
+    ) {
         commit.isSelected = true
         branchInfo.addSelectedCommits(commit)
         commit.getChangesAfterPick().forEach { change ->
@@ -71,8 +77,12 @@ class ModelService(
     /**
      * Removes commit from
      * list of selected commits
+     * for a given branch
      */
-    fun removeFromSelectedCommits(commit: CommitInfo) {
+    fun removeFromSelectedCommits(
+        commit: CommitInfo,
+        branchInfo: BranchInfo,
+    ) {
         commit.isSelected = false
         branchInfo.removeSelectedCommits(commit)
         commit.getChangesAfterPick().forEach { change ->
@@ -119,7 +129,7 @@ class ModelService(
      * Returns the last commit that is selected
      * but is not squashed or fixed up
      */
-    fun getLastSelectedCommit(): CommitInfo {
+    fun getLastSelectedCommit(branchInfo: BranchInfo): CommitInfo {
         var commit = branchInfo.selectedCommits.last()
 
         // Ensure that the commit we are moving is actually displayed
@@ -163,9 +173,18 @@ class ModelService(
     /**
      * Populates the added branch field in the graph info with the given branch
      */
-    fun addBranchToGraphInfo(addedBranch: String) {
+    fun addSecondBranchToGraphInfo(addedBranch: String) {
         coroutineScope.launch {
             graphService.addBranch(graphInfo, addedBranch)
+        }
+    }
+
+    /**
+     * Removes the added branch field in the graph info
+     */
+    fun removeSecondBranchFromGraphInfo() {
+        coroutineScope.launch {
+            graphService.removeBranch(graphInfo)
         }
     }
 

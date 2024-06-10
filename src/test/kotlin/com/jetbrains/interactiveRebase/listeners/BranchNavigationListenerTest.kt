@@ -63,7 +63,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
     fun testUpOutOfBounds() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
-        modelService.selectSingleCommit(commit4)
+        modelService.selectSingleCommit(commit4, branchInfo)
         listener.up()
 
         assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
@@ -73,7 +73,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
     fun testUpFirstCommitSelected() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
-        modelService.selectSingleCommit(commit1)
+        modelService.selectSingleCommit(commit1, branchInfo)
         listener.up()
 
         assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
@@ -83,7 +83,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
     fun testDownLastCommitSelected() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
-        modelService.selectSingleCommit(commit4)
+        modelService.selectSingleCommit(commit4, branchInfo)
         listener.down()
 
         assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
@@ -93,7 +93,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
     fun testDownOutOfBounds() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
-        modelService.selectSingleCommit(commit1)
+        modelService.selectSingleCommit(commit1, branchInfo)
         listener.down()
 
         assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
