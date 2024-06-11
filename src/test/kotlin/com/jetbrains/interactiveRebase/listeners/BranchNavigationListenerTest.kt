@@ -13,6 +13,10 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 
 class BranchNavigationListenerTest : BasePlatformTestCase() {
+    init {
+        System.setProperty("idea.home.path", "/tmp")
+    }
+
     private lateinit var listener: BranchNavigationListener
     private lateinit var modelService: ModelService
     private lateinit var commit1: CommitInfo
@@ -80,6 +84,17 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit2)
     }
 
+    fun testUpFirstCommitSelectedCollapsedCase() {
+        branchInfo.clearSelectedCommits()
+        branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
+        modelService.selectSingleCommit(commit1, branchInfo)
+        commit2.isCollapsed = true
+        listener.up()
+
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
+        assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit3)
+    }
+
     fun testDownLastCommitSelected() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
@@ -88,6 +103,17 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
 
         assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
         assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit3)
+    }
+
+    fun testDownCollapsedCase() {
+        branchInfo.clearSelectedCommits()
+        branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
+        modelService.selectSingleCommit(commit4, branchInfo)
+        commit3.isCollapsed = true
+        listener.down()
+
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
+        assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit2)
     }
 
     fun testDownOutOfBounds() {

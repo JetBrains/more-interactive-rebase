@@ -37,6 +37,11 @@
                     description="Redo the last action you took">
                 <keyboard-shortcut first-keystroke="ctrl shift Z" keymap="$default"/>
             </action>
+            <action id="com.jetbrains.interactiveRebase.actions.changePanel.CollapseAction"
+                    class="com.jetbrains.interactiveRebase.actions.changePanel.CollapseAction" text="CollapseAction"
+                    description="Collapse commits">
+                <keyboard-shortcut first-keystroke="alt c" keymap="$default"/>
+            </action>
 
             <separator/>
             <action id="com.jetbrains.interactiveRebase.actions.gitPanel.PickAction"

@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.listeners
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.BranchPanel
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
@@ -54,7 +55,10 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
             return
         }
 
-        if (!circlePanel.commit.isSelected || modelService.branchInfo.getActualSelectedCommitsSize() > 1) {
+        if (circlePanel.commit.isCollapsed) {
+            commit.project.service<ActionService>().expandCollapsedCommits(commit, branchInfo)
+            commit.isHovered = false
+        } else if (!circlePanel.commit.isSelected || modelService.branchInfo.getActualSelectedCommitsSize() > 1) {
             modelService.selectSingleCommit(circlePanel.commit, branchInfo)
         } else {
             modelService.removeFromSelectedCommits(circlePanel.commit, branchInfo)

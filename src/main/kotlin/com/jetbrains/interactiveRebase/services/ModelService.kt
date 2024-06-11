@@ -63,6 +63,7 @@ class ModelService(
         commit: CommitInfo,
         branchInfo: BranchInfo,
     ) {
+        if (commit.isCollapsed) return
         commit.isSelected = true
         branchInfo.addSelectedCommits(commit)
         commit.getChangesAfterPick().forEach { change ->
@@ -84,13 +85,8 @@ class ModelService(
         branchInfo: BranchInfo,
     ) {
         commit.isSelected = false
+        if (commit.isCollapsed) return
         branchInfo.removeSelectedCommits(commit)
-        commit.getChangesAfterPick().forEach { change ->
-            if (change is FixupCommand || change is SquashCommand) {
-                val combinedCommits = project.service<ActionService>().getCombinedCommits(change)
-                branchInfo.selectedCommits.addAll(combinedCommits)
-            }
-        }
     }
 
     /**
@@ -123,6 +119,40 @@ class ModelService(
      */
     fun getSelectedCommits(): MutableList<CommitInfo> {
         return branchInfo.selectedCommits
+    }
+
+    /**
+     * Returns the selected commit which is the lowest visually in the list.
+     */
+    fun getLowestSelectedCommit(): CommitInfo {
+        var commit = branchInfo.selectedCommits[0]
+        var index = branchInfo.currentCommits.indexOf(commit)
+
+        branchInfo.selectedCommits.forEach {
+            if (branchInfo.currentCommits.indexOf(it) > index && !it.isSquashed) {
+                commit = it
+                index = branchInfo.currentCommits.indexOf(it)
+            }
+        }
+
+        return commit
+    }
+
+    /**
+     * Returns the selected commit which is the highest visually in the list.
+     */
+    fun getHighestSelectedCommit(): CommitInfo {
+        var commit = branchInfo.selectedCommits[0]
+        var index = branchInfo.currentCommits.indexOf(commit)
+
+        branchInfo.selectedCommits.forEach {
+            if (branchInfo.currentCommits.indexOf(it) < index && !it.isSquashed) {
+                commit = it
+                index = branchInfo.currentCommits.indexOf(it)
+            }
+        }
+
+        return commit
     }
 
     /**

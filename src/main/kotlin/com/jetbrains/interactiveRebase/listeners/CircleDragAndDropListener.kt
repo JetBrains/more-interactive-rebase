@@ -5,6 +5,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.services.ModelService
@@ -96,7 +97,7 @@ class CircleDragAndDropListener(
      */
     override fun mouseDragged(e: MouseEvent) {
         maxY = parent.branchPanel.height - circle.height
-        if (!commit.getChangesAfterPick().any { it is DropCommand } &&
+        if (!commit.getChangesAfterPick().any { it is DropCommand || it is CollapseCommand } &&
             parent.branch.isWriteable
         ) {
             wasDragged = true

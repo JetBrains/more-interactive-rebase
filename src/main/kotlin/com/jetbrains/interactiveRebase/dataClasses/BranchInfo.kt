@@ -1,8 +1,10 @@
 package com.jetbrains.interactiveRebase.dataClasses
 
 import com.intellij.openapi.Disposable
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
+import com.jetbrains.rd.framework.base.deepClonePolymorphic
 
 class BranchInfo(
     var name: String = "",
@@ -34,7 +36,31 @@ class BranchInfo(
     internal fun setCommits(commits: List<CommitInfo>) {
         this.initialCommits = commits
         this.currentCommits = commits.toMutableList()
+        collapseCommits()
         listeners.forEach { it.onCommitChange(commits) }
+    }
+
+    fun collapseCommits(
+        initialIndex: Int = 5,
+        finalIndex: Int = this.currentCommits.size - 2,
+    ) {
+        if (this.initialCommits.size < 7) return
+
+        val collapsedCommits = this.currentCommits.subList(initialIndex, finalIndex).deepClonePolymorphic()
+        val parentOfCollapsedCommit = this.currentCommits[finalIndex]
+
+        val collapsedCommand = CollapseCommand(parentOfCollapsedCommit, collapsedCommits.toMutableList())
+
+        parentOfCollapsedCommit.addChange(collapsedCommand)
+        parentOfCollapsedCommit.isCollapsed = true
+        parentOfCollapsedCommit.isHovered = false
+
+        this.currentCommits.removeAll(collapsedCommits)
+        this.clearSelectedCommits()
+        collapsedCommits.forEach {
+            it.addChange(collapsedCommand)
+            it.isCollapsed = true
+        }
     }
 
     /**
@@ -101,6 +127,14 @@ class BranchInfo(
         listeners.forEach { it.onCurrentCommitsChange(currentCommits) }
     }
 
+    internal fun addCommitsToCurrentCommits(
+        index: Int,
+        commits: List<CommitInfo>,
+    ) {
+        currentCommits.addAll(index, commits)
+        listeners.forEach { it.onCurrentCommitsChange(currentCommits) }
+    }
+
     override fun toString(): String {
         return "BranchInfo(name='$name', initialCommits=$initialCommits, selectedCommits=$selectedCommits)"
     }
@@ -140,9 +174,9 @@ class BranchInfo(
         if (commit.isSquashed) {
             commit.getChangesAfterPick().forEach {
                 if (it is FixupCommand) {
-                    ret = currentCommits.indexOf(it.parentCommit)
+                    ret = currentCommits.indexOf(it.parentCommit) - 1
                 } else if (it is SquashCommand) {
-                    ret = currentCommits.indexOf(it.parentCommit)
+                    ret = currentCommits.indexOf(it.parentCommit) - 1
                 }
             }
         }

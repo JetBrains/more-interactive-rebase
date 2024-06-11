@@ -5,7 +5,9 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
@@ -118,16 +120,31 @@ class ActionService(project: Project) {
      * Commits from the added branch cannot be squashed.
      */
     fun checkFixupOrSquash(e: AnActionEvent) {
-        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !areDisabledCommitsSelected() &&
+        val notEmpty = modelService.branchInfo.selectedCommits.isNotEmpty()
+        val notFirstCommit =
             !(
                 modelService.branchInfo.selectedCommits.size==1 &&
-                    invoker.branchInfo.currentCommits.reversed()
+                    modelService.branchInfo.currentCommits.reversed()
                         .indexOf(modelService.branchInfo.selectedCommits[0])==0
-            ) &&
+            )
+        val notDropped =
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
+
+        val notCollapsed = checkParentNotCollapsed()
+
+        e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && notCollapsed && !areDisabledCommitsSelected()
+    }
+
+    fun checkParentNotCollapsed(): Boolean {
+        if (modelService.branchInfo.getActualSelectedCommitsSize() != 1) return true
+
+        val commit = modelService.getSelectedCommits().last()
+        val index = modelService.branchInfo.currentCommits.indexOf(commit)
+        if (index == modelService.branchInfo.currentCommits.size - 1) return true
+
+        return !modelService.branchInfo.currentCommits[index+1].isCollapsed
     }
 
     /**
@@ -229,8 +246,7 @@ class ActionService(project: Project) {
         invoker.undoneCommands.clear()
         val currentBranchInfo = invoker.branchInfo
         invoker.branchInfo.currentCommits = currentBranchInfo.initialCommits.toMutableList()
-        invoker.branchInfo.initialCommits.forEach {
-                commitInfo ->
+        invoker.branchInfo.initialCommits.forEach { commitInfo ->
             commitInfo.changes.clear()
             commitInfo.isSelected = false
             commitInfo.isSquashed = false
@@ -240,6 +256,7 @@ class ActionService(project: Project) {
             commitInfo.isHovered = false
         }
         invoker.branchInfo.clearSelectedCommits()
+        takeCollapseAction()
     }
 
     /**
@@ -269,7 +286,7 @@ class ActionService(project: Project) {
         selectedCommits.sortBy { modelService.branchInfo.indexOfCommit(it) }
         var parentCommit = selectedCommits.last()
         if (modelService.branchInfo.getActualSelectedCommitsSize() == 1) {
-            val selectedIndex = modelService.getCurrentCommits().indexOf(selectedCommits[0])
+            val selectedIndex = modelService.getCurrentCommits().indexOf(parentCommit)
             parentCommit = modelService.getCurrentCommits()[selectedIndex + 1]
         }
         selectedCommits.remove(parentCommit)
@@ -558,6 +575,104 @@ class ActionService(project: Project) {
      */
     fun checkRedo(e: AnActionEvent) {
         e.presentation.isEnabled = invoker.undoneCommands.isNotEmpty()
+    }
+
+    /**
+     * The collapse button should be enabled if the action is valid, which is in the cases:
+     * - there are no already collapsed commits
+     * - there are more than 7 commits
+     * - there is no selected commit OR
+     * - there are at least 2 selected commits, which are in a range.
+     */
+    fun checkCollapse(e: AnActionEvent) {
+        // check if there are any already collapsed commits
+        val currentCommits = modelService.getCurrentCommits()
+        if (modelService.branchInfo.initialCommits.size <= 7) {
+            e.presentation.isEnabled = false
+            return
+        }
+
+        if (currentCommits.any { it.isCollapsed }) {
+            e.presentation.isEnabled = false
+            return
+        }
+        if (modelService.branchInfo.getActualSelectedCommitsSize() == 1) {
+            e.presentation.isEnabled = false
+            return
+        }
+
+        if (modelService.getSelectedCommits().isEmpty()) {
+            e.presentation.isEnabled = true
+            return
+        }
+
+        e.presentation.isEnabled = checkSelectedCommitsAreInARange()
+    }
+
+    /**
+     * Checks whether the selected commits are in a range.
+     */
+    fun checkSelectedCommitsAreInARange(): Boolean {
+        var selectedCommits = modelService.getSelectedCommits()
+        val currentCommits = modelService.getCurrentCommits()
+
+        val indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
+        val indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
+
+        val commitsOfRange = currentCommits.subList(indexFirstCommit, indexLastCommit + 1)
+        selectedCommits = selectedCommits.filter { !it.isSquashed }.toMutableList()
+        return selectedCommits.containsAll(commitsOfRange)
+    }
+
+    /**
+     * Expands the collapsed commits, by removing the collapse command,
+     * setting the isCollapsed flag to false,
+     * and adding back the collapsed commits
+     * to the list of current commits.
+     */
+    fun expandCollapsedCommits(
+        parentCommit: CommitInfo,
+        branchInfo: BranchInfo,
+    ) {
+        if (!parentCommit.isCollapsed) return
+        parentCommit.isCollapsed = false
+        val collapseCommand = parentCommit.changes.filterIsInstance<CollapseCommand>().lastOrNull() as CollapseCommand
+        if (collapseCommand == null) return
+
+        parentCommit.removeChange(collapseCommand)
+        val index = branchInfo.currentCommits.indexOf(parentCommit)
+        val collapsedCommits = collapseCommand.collapsedCommits
+        collapsedCommits.forEach {
+            it.isCollapsed = false
+            it.removeChange(collapseCommand)
+        }
+        branchInfo.addCommitsToCurrentCommits(index, collapsedCommits)
+    }
+
+    /**
+     * Takes the collapse action, which collapses the selected commits, by either
+     * keeping the first 5 commits and last commit, or the selected commits.
+     */
+    fun takeCollapseAction() {
+        val selectedCommits = modelService.getSelectedCommits()
+        selectedCommits.sortBy { modelService.branchInfo.indexOfCommit(it) }
+        takeCollapseActionOnSecondBranch()
+        if (modelService.getSelectedCommits().isEmpty()) {
+            modelService.branchInfo.collapseCommits()
+        } else {
+            val currentCommits = modelService.getCurrentCommits()
+            val indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
+            val indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
+
+            modelService.branchInfo.collapseCommits(indexFirstCommit, indexLastCommit)
+        }
+    }
+
+    fun takeCollapseActionOnSecondBranch() {
+        val addedBranch = modelService.graphInfo.addedBranch
+        if (addedBranch != null && addedBranch.currentCommits.none { it.isCollapsed }) {
+            modelService.graphInfo.addedBranch?.collapseCommits()
+        }
     }
 
     fun getHeaderPanel(): HeaderPanel {

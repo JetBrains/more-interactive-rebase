@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.services
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
@@ -31,7 +32,8 @@ class RebaseInvoker(val project: Project) {
      * correct list of current commits.
      */
     fun createModel() {
-        expandCurrentCommits()
+        expandCollapsedCommits()
+        expandCurrentCommitsForSquashed()
         val commits =
             branchInfo.currentCommits.map {
                     commitInfo ->
@@ -41,12 +43,26 @@ class RebaseInvoker(val project: Project) {
         model = convertToModel(commits.reversed())
     }
 
+    fun expandCollapsedCommits() {
+        val commits = branchInfo.currentCommits.toMutableList()
+        for (commitInfo in branchInfo.currentCommits) {
+            for (command in commitInfo.changes) {
+                if (command is CollapseCommand) {
+                    val parentCommit = command.firstCommit
+                    val parentIndex = commits.indexOfFirst { it == parentCommit }
+                    commits.addAll(parentIndex, command.collapsedCommits)
+                }
+            }
+        }
+        branchInfo.currentCommits = commits
+    }
+
     /**
      * Method that expands the previously changed list of current commits.
      * At the moment, we remove the "squashed" and "fixed up" commits from the list,
      * but we add them back at the correct position.
      */
-    fun expandCurrentCommits() {
+    fun expandCurrentCommitsForSquashed() {
         val commits = branchInfo.currentCommits.toMutableList()
         for (commitInfo in branchInfo.currentCommits) {
             for (command in commitInfo.getChangesAfterPick()) {
