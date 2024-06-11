@@ -41,10 +41,6 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
     private lateinit var message2: JBPanel<JBPanel<*>>
     private lateinit var invoker: RebaseInvoker
 
-    init {
-        System.setProperty("idea.home.path", "/tmp")
-    }
-
     override fun setUp() {
         super.setUp()
 

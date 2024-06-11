@@ -14,10 +14,6 @@ class LabelListenerTest : BasePlatformTestCase() {
     private lateinit var commitInfo: CommitInfo
     private lateinit var modelService: ModelService
 
-    init {
-        System.setProperty("idea.home.path", "/tmp")
-    }
-
     override fun setUp() {
         super.setUp()
         val commitProvider = TestGitCommitProvider(project)

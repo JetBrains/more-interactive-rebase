@@ -42,10 +42,6 @@ class ActionServiceTest : BasePlatformTestCase() {
     private lateinit var branchInfo: BranchInfo
     private lateinit var actionService: ActionService
 
-    init {
-        System.setProperty("idea.home.path", "/tmp")
-    }
-
     override fun setUp() {
         super.setUp()
         val commitProvider = TestGitCommitProvider(project)
