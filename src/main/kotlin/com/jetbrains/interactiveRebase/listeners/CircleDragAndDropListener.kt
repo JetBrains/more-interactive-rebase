@@ -98,7 +98,7 @@ class CircleDragAndDropListener(
     override fun mouseDragged(e: MouseEvent) {
         maxY = parent.branchPanel.height - circle.height
         if (!commit.getChangesAfterPick().any { it is DropCommand || it is CollapseCommand } &&
-            parent.branch.isWriteable
+            parent.branch.isWritable
         ) {
             wasDragged = true
             commit.isDragged = true
