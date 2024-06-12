@@ -13,10 +13,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 
 class BranchNavigationListenerTest : BasePlatformTestCase() {
-    init {
-        System.setProperty("idea.home.path", "/tmp")
-    }
-
     private lateinit var listener: BranchNavigationListener
     private lateinit var modelService: ModelService
     private lateinit var commit1: CommitInfo
