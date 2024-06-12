@@ -1,33 +1,34 @@
 package com.jetbrains.interactiveRebase.actions.ButtonActions
 
+import com.intellij.ide.HelpTooltip
+import com.intellij.ide.IdeBundle
+import com.intellij.ide.actions.GotoClassPresentationUpdater
 import com.intellij.ide.ui.laf.darcula.ui.DarculaButtonPainter
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
+import com.intellij.openapi.actionSystem.ex.TooltipDescriptionProvider
+import com.intellij.openapi.actionSystem.ex.TooltipLinkProvider
+import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
-import com.intellij.ui.JBColor
-import com.intellij.ui.TableUtil
+import com.intellij.openapi.util.registry.Registry
+import com.intellij.openapi.util.text.Strings
 import com.intellij.util.ui.JBInsets
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.components.BorderLayoutPanel
-import com.intellij.util.ui.components.JBComponent
-import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
-
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.Insets
-import java.awt.event.InputEvent
-import java.util.function.Supplier
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JComponent
-import javax.swing.KeyStroke
 
 internal class RebaseAction() :
         ButtonAction("Rebase", "Start the rebase process") {
+
      override fun actionPerformed(e: AnActionEvent) {
          val invoker = e.project?.service<RebaseInvoker>()
          invoker?.createModel()
@@ -58,9 +59,7 @@ internal abstract class ButtonAction(title: String, description: String,
                     return JBInsets.emptyInsets()
                 }
             }
-
             isFocusable = false
-
             addActionListener {
                 val dataContext = ActionToolbar.getDataContextFor(this)
                 actionPerformed(
@@ -68,8 +67,20 @@ internal abstract class ButtonAction(title: String, description: String,
                                 null, ActionPlaces.EDITOR_TAB, dataContext)
                 )
             }
+            val os = System.getProperty("os.name").toLowerCase()
+            val shortcutText = if (os.contains("mac")) "Option+Enter" else "Alt+Enter"
+
+            if (Registry.`is`("ide.helptooltip.enabled")) {
+                HelpTooltip.dispose(this)
+                HelpTooltip()
+                        .setTitle(this.text)
+                        .setShortcut("Alt+Enter")
+                        .setDescription(description)
+                        .installOn(this)
+            }
 
         }
+
     }
 
     private val buttonPanel = BorderLayoutPanel().addToCenter(button).apply {

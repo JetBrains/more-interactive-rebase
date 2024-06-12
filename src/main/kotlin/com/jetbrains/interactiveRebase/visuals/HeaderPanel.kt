@@ -6,6 +6,8 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
+import com.intellij.ui.util.minimumHeight
+import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.actions.ButtonActions.RebaseAction
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
@@ -24,6 +26,7 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
     init {
         gitActionsPanel.layout = BoxLayout(gitActionsPanel, BoxLayout.X_AXIS)
         addGitButtons(gitActionsPanel)
+        withMinimumHeight(JBUI.scale(30))
 
         changeActionsPanel.layout = BoxLayout(changeActionsPanel, BoxLayout.X_AXIS)
         addChangeButtons(changeActionsPanel)
@@ -56,9 +59,11 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
      * At the moment, the buttons are hardcoded, but we will replace them with icons and listeners later.
      */
     fun addChangeButtons(buttonPanel: JBPanel<JBPanel<*>>) {
-        val group = DefaultActionGroup().apply {
-            add(RebaseAction())
-        }
+
+        val group =
+                actionManager.getAction(
+                        "ActionButtonsGroup",
+                ) as RebaseActionsGroup
         val toolbar = actionManager.createActionToolbar(ActionPlaces.EDITOR_TAB, group, true)
         val toolbarComponent: JComponent = toolbar.component
         toolbar.targetComponent = buttonPanel

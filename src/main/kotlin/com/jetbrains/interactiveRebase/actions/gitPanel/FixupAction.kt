@@ -8,7 +8,9 @@ import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAwareAction
 import com.jetbrains.interactiveRebase.services.ActionService
+import java.awt.event.KeyEvent
 import javax.swing.JComponent
+import javax.swing.KeyStroke
 
 class FixupAction :
     DumbAwareAction(
@@ -40,5 +42,6 @@ class FixupAction :
             "Alt+F",
             "Combines commits into one, with a default message",
         )
+
     }
 }

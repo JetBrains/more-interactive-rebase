@@ -70,6 +70,14 @@
                 </action>
             </group>
         </group>
+        <group id="ActionButtonsGroup"
+               class="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup" text="RebaseGlobalActionsGroup" description="Interactive rebase actions">
+            <action id="ButtonAction"
+                    class="com.jetbrains.interactiveRebase.actions.ButtonActions.RebaseAction" text="RebaseAction"
+                    description="Rebase">
+                <keyboard-shortcut first-keystroke="alt ENTER" keymap="$default"/>
+            </action>
+        </group>
 
     </actions>
 
