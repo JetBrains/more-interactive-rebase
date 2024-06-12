@@ -16,6 +16,7 @@ stages:
   - build
   - staticAnalysis
   - test
+  - deploy
 
 
 # Default build cache settings to extend from
@@ -85,3 +86,17 @@ test-interactive-rebase-jetbrains:
     - gradle test jacocoTestReport
     - cat build/reports/jacoco/test/html/index.html | grep -Po "Total.*?([0-9]{1,3})%"
   coverage: /([0-9]{1,3})%/
+
+deploy-interactive-rebase-jetbrains:
+  needs:
+    - gradle_build
+    - build-interactive-rebase-jetbrains
+    - spotless-interactive-rebase-jetbrains
+    - test-interactive-rebase-jetbrains
+  dependencies:
+    - gradle_build
+  stage: deploy
+  script:
+    - gradle publishPlugin
+  only:
+    - main
