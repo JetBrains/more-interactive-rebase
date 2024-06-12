@@ -141,6 +141,8 @@ val integrationTestTask = tasks.register<Test>("integrationTest") {
     classpath = integrationTests.runtimeClasspath
 //    shouldRunAfter(tasks.named("test"))
     useJUnit()
+    maxParallelForks = 1
+    systemProperty("junit.jupiter.execution.parallel.enabled", "false")
     systemProperties["idea.home.path"] = System.getProperty("java.io.tmpdir")
 }
 

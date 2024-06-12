@@ -39,7 +39,7 @@ gradle_build:
       - build/
   script:
     - gradle clean
-    - gradle build testClasses  -x spotlessCheck -x test 
+    - gradle build testClasses  -x spotlessCheck -x test -x integrationTest
 
 
 
@@ -75,7 +75,7 @@ PMD-interactive-rebase-jetbrains:
   script:
     gradle pmdMain pmdTest
 
-test-interactive-rebase-jetbrains:
+unit-test-interactive-rebase-jetbrains:
 #  extends: .build_cached
   needs:
     - gradle_build
@@ -87,12 +87,40 @@ test-interactive-rebase-jetbrains:
     - cat build/reports/jacoco/test/html/index.html | grep -Po "Total.*?([0-9]{1,3})%"
   coverage: /([0-9]{1,3})%/
 
+integration-test-interactive-rebase-jetbrains:
+  #  extends: .build_cached
+  needs:
+    - gradle_build
+  dependencies:
+    - gradle_build
+  stage: test
+  script:
+    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.SquashActionTest
+    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.FixupActionTest
+    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.DropActionTest
+    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.RewordActionTest
+    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.StopToEditActionTest
+  coverage: /([0-9]{1,3})%/
+
+test-coverage-interactive-rebase-jetbrains:
+  #  extends: .build_cached
+  needs:
+    - gradle_build
+    - unit-test-interactive-rebase-jetbrains
+    - integration-test-interactive-rebase-jetbrains
+  dependencies:
+    - gradle_build
+  stage: test
+  script:
+    - cat build/reports/jacoco/test/html/index.html | grep -Po "Total.*?([0-9]{1,3})%"
+  coverage: /([0-9]{1,3})%/
+
 deploy-interactive-rebase-jetbrains:
   needs:
     - gradle_build
     - build-interactive-rebase-jetbrains
     - spotless-interactive-rebase-jetbrains
-    - test-interactive-rebase-jetbrains
+    - unit-test-interactive-rebase-jetbrains
   dependencies:
     - gradle_build
   stage: deploy

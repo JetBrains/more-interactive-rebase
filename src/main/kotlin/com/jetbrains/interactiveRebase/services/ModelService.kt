@@ -13,6 +13,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.IRGitRefreshListener
 import git4idea.status.GitRefreshListener
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Service(Service.Level.PROJECT)
@@ -185,8 +186,13 @@ class ModelService(
      * coroutine
      */
     fun fetchGraphInfo() {
-        coroutineScope.launch {
-            graphService.updateGraphInfo(graphInfo)
+        coroutineScope.launch(Dispatchers.IO) {
+            try{
+                graphService.updateGraphInfo(graphInfo)
+            }
+            catch(e: Exception) {
+                println(e.message)
+            }
         }
     }
 
@@ -195,8 +201,13 @@ class ModelService(
      */
     fun populateLocalBranches() {
         val branchService = project.service<BranchService>()
-        coroutineScope.launch {
-            graphInfo.branchList = branchService.getBranchesExceptCheckedOut().toMutableList()
+        coroutineScope.launch(Dispatchers.IO) {
+            try {
+                graphInfo.branchList = branchService.getBranchesExceptCheckedOut().toMutableList()
+            }
+            catch(e: Exception) {
+                println(e.message)
+            }
         }
     }
 
@@ -204,8 +215,13 @@ class ModelService(
      * Populates the added branch field in the graph info with the given branch
      */
     fun addSecondBranchToGraphInfo(addedBranch: String) {
-        coroutineScope.launch {
-            graphService.addBranch(graphInfo, addedBranch)
+        coroutineScope.launch(Dispatchers.IO) {
+            try{
+                graphService.addBranch(graphInfo, addedBranch)
+            }
+            catch(e: Exception) {
+                println(e.message)
+            }
         }
     }
 
@@ -213,8 +229,13 @@ class ModelService(
      * Removes the added branch field in the graph info
      */
     fun removeSecondBranchFromGraphInfo() {
-        coroutineScope.launch {
-            graphService.removeBranch(graphInfo)
+        coroutineScope.launch(Dispatchers.IO) {
+            try{
+                graphService.removeBranch(graphInfo)
+            }
+            catch(e: Exception) {
+                println(e.message)
+            }
         }
     }
 
