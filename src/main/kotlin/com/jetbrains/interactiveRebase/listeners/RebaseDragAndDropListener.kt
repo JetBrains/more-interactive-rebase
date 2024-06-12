@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.listeners
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
+import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.visuals.GraphPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
@@ -11,84 +12,117 @@ import java.awt.GridBagLayout
 import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.JLayeredPane
 
 class RebaseDragAndDropListener(
     val project: Project,
-    private val branchNamePanel: RoundedPanel,
-    internal val otherBranchNamePanel: RoundedPanel,
+    private val mainBranchNameLabel: RoundedPanel,
+    internal val addedBranchNameLabel: RoundedPanel,
     private val graphPanel: GraphPanel,
 ) : MouseAdapter(), Disposable {
 
-//    private val layeredPane = graphPanel.layeredPane
-    private val parent = branchNamePanel.parent as LabeledBranchPanel
-    private val gbc = (parent.layout as GridBagLayout).getConstraints(branchNamePanel)
+    private val mainBranchPanel = mainBranchNameLabel.parent as LabeledBranchPanel
+    private val addedBranchPanel = addedBranchNameLabel.parent as LabeledBranchPanel
+    private val dragPanel = graphPanel.parent.getComponent(0) as JBPanel<JBPanel<*>>
+    private val gbcMain = (mainBranchPanel.layout as GridBagLayout).getConstraints(mainBranchNameLabel)
+    private val gbcAdded = (addedBranchPanel.layout as GridBagLayout).getConstraints(addedBranchNameLabel)
 
-    internal var initialPosition = Point(branchNamePanel.x, branchNamePanel.y)
-    internal var convertedPosition = Point(branchNamePanel.x, branchNamePanel.y)
-    internal var mousePosition = Point(branchNamePanel.x, branchNamePanel.y)
-    private var placeholderPanel = placeholderPanel()
+    internal var initialPositionMain = Point()
+    internal var initialPositionAdded = Point()
+    internal var mousePosition = Point()
+    private var mainPlaceholderPanel = placeholderPanel(mainBranchPanel)
+    private var addedPlaceholderPanel = placeholderPanel(addedBranchPanel)
 
     override fun mousePressed(e: MouseEvent) {
 
         updateMousePosition(e)
-        initialPosition = Point(branchNamePanel.x, branchNamePanel.y)
-        val offsetX = e.x - branchNamePanel.bounds.x
-        val offsetY = e.y - branchNamePanel.bounds.y
+        initialPositionMain = Point(
+            mainBranchNameLabel.x + mainBranchPanel.x,
+            mainBranchNameLabel.y + mainBranchPanel.y)
+        initialPositionAdded = Point(
+            addedBranchNameLabel.x + addedBranchPanel.x,
+            addedBranchNameLabel.y + addedBranchPanel.y)
 
-        placeholderPanel = placeholderPanel()
+        addLabelsToDragPanel()
+
         // Create a transparent placeholder panel at the initial position
-        parent.remove(branchNamePanel)
-        parent.add(placeholderPanel, gbc)
-        parent.revalidate()
-        parent.repaint()
+        substituteLabelForPlaceholderMainBranch()
 
-        // Set the location of the panel to the mouse click point
-//        layeredPane.add(branchNamePanel, JLayeredPane.DRAG_LAYER)
-        graphPanel.add(branchNamePanel, JLayeredPane.DRAG_LAYER)
-        branchNamePanel.setLocation(e.x - offsetX, e.y - offsetY)
+        substituteLabelForPlaceholderAddedBranch()
     }
 
-    private fun placeholderPanel(): RoundedPanel {
-        val placeholderPanel = parent.instantiateBranchNamePanel()
+    private fun substituteLabelForPlaceholderAddedBranch() {
+        addedBranchPanel.remove(addedBranchNameLabel)
+        addedBranchPanel.add(addedPlaceholderPanel, gbcAdded)
+        addedBranchPanel.revalidate()
+        addedBranchPanel.repaint()
+    }
+
+    private fun substituteLabelForPlaceholderMainBranch() {
+        mainBranchPanel.remove(mainBranchNameLabel)
+        mainBranchPanel.add(mainPlaceholderPanel, gbcMain)
+        mainBranchPanel.revalidate()
+        mainBranchPanel.repaint()
+    }
+
+    private fun addLabelsToDragPanel() {
+        dragPanel.add(mainBranchNameLabel)
+        dragPanel.add(addedBranchNameLabel)
+        mainBranchNameLabel.location = initialPositionMain
+        addedBranchNameLabel.location = initialPositionAdded
+        dragPanel.revalidate()
+        dragPanel.repaint()
+    }
+
+    private fun placeholderPanel(labeledBranchPanel: LabeledBranchPanel): RoundedPanel {
+        val placeholderPanel = labeledBranchPanel.instantiateBranchNamePanel()
         placeholderPanel.backgroundColor = Palette.TRANSPARENT
-        placeholderPanel.getComponent(0).foreground = parent.background
+        placeholderPanel.getComponent(0).foreground = labeledBranchPanel.background
         placeholderPanel.isOpaque = false
         return placeholderPanel
     }
 
     override fun mouseDragged(e: MouseEvent) {
-        val thisX = branchNamePanel.x
-        val thisY = branchNamePanel.y
+        mainBranchNameLabel.backgroundColor = mainBranchPanel.colorTheme.regularCircleColor
+        setBranchNameLocation(e)
+        updateMousePosition(e)
+
+        if (mainBranchNameLabel.bounds.intersects(addedBranchNameLabel.bounds)) {
+            addedBranchNameLabel.background = JBColor.LIGHT_GRAY
+        } else {
+            addedBranchNameLabel.background = JBColor.BLACK
+        }
+    }
+
+    private fun setBranchNameLocation(e: MouseEvent) {
+        val thisX = mainBranchNameLabel.x
+        val thisY = mainBranchNameLabel.y
 
         val deltaX = e.xOnScreen - mousePosition.x
         val deltaY = e.yOnScreen - mousePosition.y
         val newX = thisX + deltaX
         val newY = thisY + deltaY
-        branchNamePanel.setLocation(newX, newY)
-        updateMousePosition(e)
 
-        if (branchNamePanel.bounds.intersects(otherBranchNamePanel.bounds)) {
-            otherBranchNamePanel.background = JBColor.LIGHT_GRAY
-        } else {
-            otherBranchNamePanel.background = JBColor.BLACK
-        }
-        placeholderPanel.size = branchNamePanel.size
+        val newXBounded = (newX).coerceIn(0, dragPanel.width - mainBranchNameLabel.width)
+        val newYBounded = (newY).coerceIn(0, initialPositionMain.y + mainBranchNameLabel.height + 30)
+        mainBranchNameLabel.setLocation(newXBounded, newYBounded)
     }
 
     override fun mouseReleased(e: MouseEvent) {
-        if (branchNamePanel.bounds.intersects(otherBranchNamePanel.bounds)) {
-            otherBranchNamePanel.background = JBColor.GREEN
+        if (mainBranchNameLabel.bounds.intersects(addedBranchNameLabel.bounds)) {
+            addedBranchNameLabel.background = JBColor.GREEN
         } else {
-            branchNamePanel.location = convertedPosition
+            mainBranchNameLabel.location = initialPositionMain
         }
-        otherBranchNamePanel.background = JBColor.WHITE
-        parent.remove(placeholderPanel)
-        parent.add(branchNamePanel, gbc)
-//        layeredPane.revalidate()
-//        layeredPane.repaint()
+        addedBranchNameLabel.background = JBColor.WHITE
+        mainBranchPanel.remove(mainPlaceholderPanel)
+        mainBranchPanel.add(mainBranchNameLabel, gbcMain)
+
+        addedBranchPanel.remove(addedPlaceholderPanel)
+        addedBranchPanel.add(addedBranchNameLabel, gbcAdded)
         graphPanel.revalidate()
         graphPanel.repaint()
+        dragPanel.revalidate()
+        dragPanel.repaint()
     }
 
     /**

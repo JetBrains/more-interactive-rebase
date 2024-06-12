@@ -11,7 +11,6 @@ import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.listeners.RebaseDragAndDropListener
 import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.BasicStroke
-import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -21,8 +20,6 @@ import java.awt.Insets
 import java.awt.LinearGradientPaint
 import java.awt.RenderingHints
 import java.awt.geom.CubicCurve2D
-import javax.swing.BorderFactory
-import javax.swing.JLayeredPane
 import javax.swing.SwingConstants
 
 /**
@@ -307,14 +304,14 @@ class GraphPanel(
             val mainLastCircle = mainBranchPanel.branchPanel.circles.last()
             mainCircleCenterX =
                 mainBranchPanel.x + // start of the labeled branch panel
-                mainBranchPanel.branchPanel.x + // start of the internal branch panel
-                mainLastCircle.x + // start of the circle
-                mainLastCircle.width / 2 // center of the circle
+                        mainBranchPanel.branchPanel.x + // start of the internal branch panel
+                        mainLastCircle.x + // start of the circle
+                        mainLastCircle.width / 2 // center of the circle
             mainCircleCenterY =
                 mainBranchPanel.y + // start of the labeled branch panel
-                mainBranchPanel.branchPanel.y + // start of the internal branch panel
-                mainLastCircle.y + // start of the circle
-                mainLastCircle.height / 2 // center of the circle
+                        mainBranchPanel.branchPanel.y + // start of the internal branch panel
+                        mainLastCircle.y + // start of the circle
+                        mainLastCircle.height / 2 // center of the circle
         }
         return Pair(mainCircleCenterX, mainCircleCenterY)
     }

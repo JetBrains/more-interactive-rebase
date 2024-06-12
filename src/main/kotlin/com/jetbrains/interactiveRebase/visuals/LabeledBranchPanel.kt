@@ -51,7 +51,7 @@ import javax.swing.border.EmptyBorder
 class LabeledBranchPanel(
     val project: Project,
     val branch: BranchInfo,
-    private val colorTheme: Palette.Theme,
+    val colorTheme: Palette.Theme,
     private val alignment: Int = SwingConstants.LEFT,
 ) :
     JBPanel<JBPanel<*>>(), Disposable {
