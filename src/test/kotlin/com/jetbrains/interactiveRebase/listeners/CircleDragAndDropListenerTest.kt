@@ -66,7 +66,7 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
         circles = mutableListOf(circle, other)
         branch = mock(BranchInfo()::class.java)
         `when`(branch.currentCommits).thenReturn(mutableListOf(commit, otherCommit))
-        `when`(branch.isWriteable).thenReturn(true)
+        `when`(branch.isWritable).thenReturn(true)
 
         message1 =
             mock(JBPanel<JBPanel<*>>()::class.java).apply {
