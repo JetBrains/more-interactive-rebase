@@ -11,11 +11,13 @@ import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.utils.consumers.CommitConsumer
 import com.jetbrains.interactiveRebase.utils.consumers.GeneralCommitConsumer
 import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
+import git4idea.GitCommit
 import git4idea.commands.GitCommandResult
 import git4idea.repo.GitRepository
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.any
 import org.mockito.Mockito.doAnswer
+import org.mockito.Mockito.doNothing
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
@@ -34,7 +36,6 @@ class CommitServiceTest : BasePlatformTestCase() {
         branchService = project.service<BranchService>()
         utils = mock(IRGitUtils::class.java)
         val branchService = BranchService(project, utils)
-        controlledCommitService = CommitService(project, utils, branchService)
 
         doAnswer {
             project.guessProjectDir()
@@ -42,6 +43,7 @@ class CommitServiceTest : BasePlatformTestCase() {
         doAnswer {
             GitCommandResult(false, 0, listOf(), listOf("master"))
         }.`when`(utils).runCommand(anyCustom())
+        controlledCommitService = CommitService(project, utils, branchService)
     }
 
     fun testGeneralConsumerStopsAtCap() {
@@ -79,10 +81,10 @@ class CommitServiceTest : BasePlatformTestCase() {
 
         doAnswer {
             consumer.accept(commit)
-        }.`when`(utils).getCommitsOfBranch(anyCustom(), anyCustom())
+        }.`when`(utils).getCommitsOfBranch(anyCustom(), anyCustom(), anyCustom())
 
         val res = controlledCommitService.getDisplayableCommitsOfBranch(branchName, repo, consumer)
-        verify(utils).getCommitsOfBranch(anyCustom(), anyCustom())
+        verify(utils).getCommitsOfBranch(anyCustom(), anyCustom(), anyCustom())
         assertEquals(res, listOf(commit))
     }
 
@@ -121,7 +123,7 @@ class CommitServiceTest : BasePlatformTestCase() {
             consumerInside.accept(commit2)
         }.`when`(utils).getCommitDifferenceBetweenBranches(anyCustom(), anyCustom(), anyCustom(), anyCustom())
 
-        val res = controlledCommitService.getCommits()
+        val res = controlledCommitService.getCommits("current")
         assertEquals(res, listOf(commit1, commit2))
     }
 
@@ -142,9 +144,9 @@ class CommitServiceTest : BasePlatformTestCase() {
             val consumerInside = it.arguments[1] as CommitConsumer
             consumerInside.accept(commit1)
             consumerInside.accept(commit2)
-        }.`when`(utils).getCommitsOfBranch(anyCustom(), anyCustom())
+        }.`when`(utils).getCommitsOfBranch(anyCustom(), anyCustom(), anyCustom())
 
-        val res = controlledCommitService.getCommits()
+        val res = controlledCommitService.getCommits("current")
 
         assertEquals(res, listOf(commit1, commit2))
         assertEquals("current", controlledCommitService.referenceBranchName)
@@ -155,7 +157,7 @@ class CommitServiceTest : BasePlatformTestCase() {
         val cons = GeneralCommitConsumer()
         cons.consume(commitProvider.createCommit("fix tests"))
         controlledCommitService.handleMergedBranch(cons, "branch", repo)
-        verify(utils, never()).getCommitsOfBranch(repo, cons)
+        verify(utils, never()).getCommitsOfBranch(repo, cons, "branch")
     }
 
     fun testMergedBranchHandlingConsidersMerged() {
@@ -165,20 +167,7 @@ class CommitServiceTest : BasePlatformTestCase() {
             GitCommandResult(false, 0, listOf(), listOf("merged"))
         }.`when`(utils).runCommand(anyCustom())
         controlledCommitService.handleMergedBranch(cons, "merged", repo)
-        verify(utils).getCommitsOfBranch(repo, cons)
-    }
-
-    fun testGetCommitChecksIfBranchIsNull() {
-        val repo: GitRepository = MockGitRepository(null)
-        doAnswer {
-            repo
-        }.`when`(utils).getRepository()
-
-        val exception =
-            assertThrows<IRInaccessibleException> {
-                controlledCommitService.getCommits()
-            }
-        assertEquals(exception.message, "Branch cannot be accessed")
+        verify(utils).getCommitsOfBranch(repo, cons, "merged")
     }
 
     fun testGetCommitInfoForBranch() {
@@ -200,6 +189,35 @@ class CommitServiceTest : BasePlatformTestCase() {
         assertEquals(res.size, 2)
         assertEquals(res[0].commit, commit1)
         assertEquals(res[1].commit, commit2)
+    }
+
+    fun testTurnHashToCommit() {
+        val commit1: GitCommit = commitProvider.createCommit("added tests")
+        doAnswer {
+            MockGitRepository("current-branch")
+        }.`when`(utils).getRepository()
+        doAnswer {
+            val consumerInside = it.arguments[2] as CommitConsumer
+            consumerInside.accept(commit1)
+        }.`when`(utils).collectACommit(anyCustom(), anyCustom(), anyCustom())
+        val res = controlledCommitService.turnHashToCommit(commit1.id.toString())
+        assertEquals(res, commit1)
+    }
+
+    fun testTurnHashToCommitCheckNoCommits() {
+        val commit1: GitCommit = commitProvider.createCommit("added tests")
+        doAnswer {
+            MockGitRepository("current-branch")
+        }.`when`(utils).getRepository()
+        doNothing().`when`(utils).collectACommit(anyCustom(), anyCustom(), anyCustom())
+        assertThrows<IRInaccessibleException> { controlledCommitService.turnHashToCommit(commit1.id.toString()) }
+    }
+
+    fun testGetBranchName() {
+        doAnswer {
+            MockGitRepository("current-branch")
+        }.`when`(utils).getRepository()
+        assertEquals(controlledCommitService.getBranchName(), "current-branch")
     }
 
     private inline fun <reified T> anyCustom(): T = any(T::class.java)

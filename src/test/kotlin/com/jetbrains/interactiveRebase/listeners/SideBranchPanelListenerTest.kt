@@ -15,11 +15,11 @@ class SideBranchPanelListenerTest : BasePlatformTestCase() {
 
     override fun setUp() {
         super.setUp()
-        sideBranchPanel = SideBranchPanel("main")
-        parent = SidePanel()
+        sideBranchPanel = SideBranchPanel("main", project)
+        parent = SidePanel(mutableListOf("feature", "bugfix"), project)
         parent.sideBranchPanels.add(sideBranchPanel)
-        parent.sideBranchPanels.add(SideBranchPanel("feature"))
-        parent.sideBranchPanels.add(SideBranchPanel("bugfix"))
+        parent.sideBranchPanels.add(SideBranchPanel("feature", project))
+        parent.sideBranchPanels.add(SideBranchPanel("bugfix", project))
         sideBranchPanelListener = SideBranchPanelListener(sideBranchPanel, parent)
         mouseEvent = MouseEvent(sideBranchPanel, 0, 0, 0, 0, 0, 0, false)
     }
@@ -27,14 +27,14 @@ class SideBranchPanelListenerTest : BasePlatformTestCase() {
     fun testMouseEnteredCanSelect() {
         sideBranchPanelListener.mouseEntered(mouseEvent)
 
-        assertThat(sideBranchPanel.backgroundColor).isEqualTo(Palette.JETBRAINSHOVER)
+        assertThat(sideBranchPanel.backgroundColor).isEqualTo(Palette.JETBRAINS_HOVER)
     }
 
     fun testMouseEnteredCanNotSelect() {
         sideBranchPanel.isSelected = true
         sideBranchPanelListener.mouseEntered(mouseEvent)
 
-        assertThat(sideBranchPanel.backgroundColor).isNotEqualTo(Palette.JETBRAINSHOVER)
+        assertThat(sideBranchPanel.backgroundColor).isNotEqualTo(Palette.JETBRAINS_HOVER)
     }
 
     fun testMouseExitedNoSelectedBranch() {
@@ -55,7 +55,7 @@ class SideBranchPanelListenerTest : BasePlatformTestCase() {
     fun testMouseClickedCanSelectBranch() {
         sideBranchPanelListener.mouseClicked(mouseEvent)
         assertThat(sideBranchPanel.isSelected).isTrue()
-        assertThat(sideBranchPanel.backgroundColor).isEqualTo(Palette.JETBRAINSSELCTED)
+        assertThat(sideBranchPanel.backgroundColor).isEqualTo(Palette.JETBRAINS_SELECTED)
         assertThat(parent.sideBranchPanels[1].label.foreground).isEqualTo(Palette.GRAY)
     }
 
@@ -63,7 +63,7 @@ class SideBranchPanelListenerTest : BasePlatformTestCase() {
         parent.sideBranchPanels[1].isSelected = true
         sideBranchPanelListener.mouseClicked(mouseEvent)
         assertThat(sideBranchPanel.isSelected).isFalse()
-        assertThat(sideBranchPanel.backgroundColor).isNotEqualTo(Palette.JETBRAINSSELCTED)
+        assertThat(sideBranchPanel.backgroundColor).isNotEqualTo(Palette.JETBRAINS_SELECTED)
     }
 
     fun testMouseClickedDeselect() {

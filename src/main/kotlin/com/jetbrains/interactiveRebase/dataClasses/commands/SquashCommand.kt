@@ -10,7 +10,7 @@ data class SquashCommand(
     val squashedCommits: MutableList<CommitInfo>,
     var newMessage: String,
 ) :
-    RebaseCommand() {
+    IRCommand() {
     /**
      * This method is  set up connection with the
      * Interactive Rebase mechanism.
@@ -39,5 +39,9 @@ data class SquashCommand(
 //            }
 //        }
         // This existed in the previous functionality but could make it work
+    }
+
+    override fun commitOfCommand(): CommitInfo {
+        return parentCommit
     }
 }

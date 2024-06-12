@@ -15,12 +15,12 @@ class RemoveSideBranchListenerTest : BasePlatformTestCase() {
 
     override fun setUp() {
         super.setUp()
-        sideBranchPanel = SideBranchPanel("main")
-        parent = SidePanel()
+        sideBranchPanel = SideBranchPanel("main", project)
+        parent = SidePanel(mutableListOf("feature", "bugfix"), project)
         parent.sideBranchPanels.add(sideBranchPanel)
-        parent.sideBranchPanels.add(SideBranchPanel("feature"))
-        parent.sideBranchPanels.add(SideBranchPanel("bugfix"))
-        removeSideBranchListener = RemoveSideBranchListener(sideBranchPanel, parent)
+        parent.sideBranchPanels.add(SideBranchPanel("feature", project))
+        parent.sideBranchPanels.add(SideBranchPanel("bugfix", project))
+        removeSideBranchListener = RemoveSideBranchListener(project, sideBranchPanel, parent)
         mouseEvent = MouseEvent(sideBranchPanel, 0, 0, 0, 0, 0, 0, false)
     }
 

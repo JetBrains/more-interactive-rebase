@@ -6,7 +6,7 @@ import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
 data class RewordCommand(var commit: CommitInfo, var newMessage: String) :
-    RebaseCommand() {
+    IRCommand() {
     /**
      * This method is to set up connection with the
      * Interactive Rebase mechanism.
@@ -19,5 +19,9 @@ data class RewordCommand(var commit: CommitInfo, var newMessage: String) :
         branchInfo: BranchInfo,
     ) {
         model.reword(branchInfo.currentCommits.reversed().indexOf(commit), newMessage)
+    }
+
+    override fun commitOfCommand(): CommitInfo {
+        return commit
     }
 }

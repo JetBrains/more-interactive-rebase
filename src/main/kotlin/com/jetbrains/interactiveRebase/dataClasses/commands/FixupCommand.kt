@@ -6,7 +6,7 @@ import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
 data class FixupCommand(var parentCommit: CommitInfo, val fixupCommits: MutableList<CommitInfo>) :
-    RebaseCommand() {
+    IRCommand() {
     /**
      * This method is to set up connection with the
      * Interactive Rebase mechanism.
@@ -25,5 +25,9 @@ data class FixupCommand(var parentCommit: CommitInfo, val fixupCommits: MutableL
                 branchInfo.currentCommits.reversed().indexOf(c)
             }.reversed()
         model.unite(commitIndices)
+    }
+
+    override fun commitOfCommand(): CommitInfo {
+        return parentCommit
     }
 }

@@ -2,9 +2,12 @@ package com.jetbrains.interactiveRebase.visuals.multipleBranches
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
+import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.Palette
 import com.jetbrains.interactiveRebase.visuals.RoundedButton
 import java.awt.Dimension
@@ -12,7 +15,7 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import javax.swing.JLabel
 
-class SideBranchPanel(val branchName: String) : RoundedPanel(), Disposable {
+class SideBranchPanel(val branchName: String, val project: Project) : RoundedPanel(), Disposable {
     var isSelected: Boolean = false
     lateinit var label: JLabel
     lateinit var button: RoundedButton
@@ -31,6 +34,10 @@ class SideBranchPanel(val branchName: String) : RoundedPanel(), Disposable {
         layout = GridBagLayout()
         addSideBranchLabel()
         addRemoveBranchButton()
+
+        val name = project.service<ModelService>().graphInfo.addedBranch?.name
+
+        if (name == branchName) selectBranch()
     }
 
     /**
@@ -85,7 +92,7 @@ class SideBranchPanel(val branchName: String) : RoundedPanel(), Disposable {
      * Changes the color of the panel when the mouse hovers over it.
      */
     internal fun onHover() {
-        backgroundColor = Palette.JETBRAINSHOVER
+        backgroundColor = Palette.JETBRAINS_HOVER
         this.repaint()
         this.revalidate()
     }
@@ -108,10 +115,10 @@ class SideBranchPanel(val branchName: String) : RoundedPanel(), Disposable {
      */
     internal fun selectBranch() {
         this.isOpaque = true
-        backgroundColor = Palette.JETBRAINSSELCTED
+        backgroundColor = Palette.JETBRAINS_SELECTED
         this.isSelected = true
         this.button.isVisible = true
-
+        project.service<ModelService>().addSecondBranchToGraphInfo(branchName)
         this.repaint()
         this.revalidate()
     }
@@ -120,7 +127,7 @@ class SideBranchPanel(val branchName: String) : RoundedPanel(), Disposable {
      * Changes the color of the branch name (label) to gray.
      */
     internal fun grayOutText() {
-        this.label.foreground = Palette.GRAYBUTTON
+        this.label.foreground = Palette.GRAY_BUTTON
     }
 
     /**

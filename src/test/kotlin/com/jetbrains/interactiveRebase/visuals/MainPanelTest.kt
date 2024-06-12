@@ -23,7 +23,8 @@ class MainPanelTest : BasePlatformTestCase() {
 
         modelService = ModelService(project, CoroutineScope(Dispatchers.Default))
         branchInfo = modelService.branchInfo
-        mainPanel = MainPanel(project, branchInfo)
+        mainPanel = MainPanel(project)
+//        mainPanel = MainPanel(project, branchInfo, branchInfo)
     }
 
     fun testUpdateMainPanelVisuals() {
@@ -37,9 +38,8 @@ class MainPanelTest : BasePlatformTestCase() {
 
     fun testAddOrRemoveCommitSelection() {
         val commit1 = CommitInfo(TestGitCommitProvider(project).createCommit("my commit"), project, mutableListOf())
-        commit1.isSelected = true
 
-        modelService.addOrRemoveCommitSelection(commit1)
+        modelService.addToSelectedCommits(commit1, modelService.branchInfo)
         assertEquals(modelService.branchInfo.selectedCommits, listOf(commit1))
     }
 
@@ -48,7 +48,7 @@ class MainPanelTest : BasePlatformTestCase() {
         `when`(commit1.isSelected).thenReturn(false)
         modelService.branchInfo.selectedCommits = mutableListOf(commit1)
 
-        modelService.addOrRemoveCommitSelection(commit1)
+        modelService.removeFromSelectedCommits(commit1, modelService.branchInfo)
         assertEquals(modelService.branchInfo.selectedCommits.size, 0)
     }
 
@@ -63,7 +63,7 @@ class MainPanelTest : BasePlatformTestCase() {
 
     fun testUpdateMainComponentThread() {
         val mockService = mock(ModelService::class.java)
-        doNothing().`when`(mockService).fetchBranchInfo()
+        doNothing().`when`(mockService).fetchGraphInfo()
 
         assertEquals(1, mainPanel.componentCount)
         assertEquals(OnePixelSplitter::class.java, mainPanel.getComponent(0).javaClass)

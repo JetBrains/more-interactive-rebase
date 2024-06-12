@@ -41,7 +41,7 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
     private fun addGitButtons(buttonPanel: JBPanel<JBPanel<*>>) {
         val actionsGroup =
             actionManager.getAction(
-                "com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup",
+                "ActionsGroup",
             ) as RebaseActionsGroup
         val toolbar = actionManager.createActionToolbar(ActionPlaces.EDITOR_TAB, actionsGroup, true)
         val toolbarComponent: JComponent = toolbar.component
@@ -54,16 +54,24 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
      * At the moment, the buttons are hardcoded, but we will replace them with icons and listeners later.
      */
     fun addChangeButtons(buttonPanel: JBPanel<JBPanel<*>>) {
-        val rebaseButton = RoundedButton("Rebase", Palette.BLUEBUTTON, Palette.WHITETEXT)
+        val rebaseButton = RoundedButton("Rebase", Palette.BLUE_BUTTON, Palette.WHITE_TEXT)
 
         rebaseButton.addActionListener {
             invoker.createModel()
             invoker.executeCommands()
         }
-        val resetButton = RoundedButton("Reset", Palette.GRAYBUTTON, Palette.WHITETEXT)
+
+        val resetButton = RoundedButton("Reset", Palette.GRAY_BUTTON, Palette.WHITE_TEXT)
 
         resetButton.addActionListener { project.service<ActionService>().resetAllChangesAction() }
 
+        var normalButton = RoundedButton("Normal", Palette.GRAY_BUTTON, Palette.WHITE_TEXT)
+        normalButton.addActionListener {
+//            project.service<ModelService>().addBranchToGraphInfo("main")
+//            println(project.service<ModelService>().graphInfo)
+            project.service<ActionService>().takeNormalRebaseAction()
+        }
+        buttonPanel.add(normalButton)
         buttonPanel.add(resetButton)
         buttonPanel.add(rebaseButton)
     }

@@ -54,10 +54,11 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.23.1")
     testImplementation("org.assertj:assertj-swing-junit:3.9.2")
     //testImplementation("junit:junit:4.12")
-    testImplementation("com.jetbrains.intellij.platform:vcs-test-framework:241.15989.150")
-    testImplementation("com.jetbrains.intellij.platform:test-framework:241.15989.150")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:2.0.0")
+//    testImplementation("com.jetbrains.intellij.platform:vcs-test-framework:241.15989.150")
+//    testImplementation("com.jetbrains.intellij.platform:test-framework:241.15989.150")
+//    testImplementation("org.jetbrains.kotlin:kotlin-test:2.0.0")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    testImplementation("org.awaitility:awaitility:4.2.0")
 }
 
 kotlin {
@@ -141,10 +142,10 @@ tasks {
         changeNotes = properties("pluginVersion").map { pluginVersion ->
             with(changelog) {
                 renderItem(
-                        (getOrNull(pluginVersion) ?: getUnreleased())
-                                .withHeader(false)
-                                .withEmptySections(false),
-                        Changelog.OutputType.HTML,
+                    (getOrNull(pluginVersion) ?: getUnreleased())
+                        .withHeader(false)
+                        .withEmptySections(false),
+                    Changelog.OutputType.HTML,
                 )
             }
         }
@@ -167,7 +168,7 @@ tasks {
 
     publishPlugin {
         dependsOn("patchChangelog")
-        token = environment("PUBLISH_TOKEN")
+        token.set(System.getenv("ORG_GRADLE_PROJECT_intellijPublishToken"))
         // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel

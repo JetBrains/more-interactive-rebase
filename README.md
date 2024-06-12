@@ -9,6 +9,11 @@ A More Interactive Rebase for JetBrains is a plugin for the integrated developme
 environments (IDEs) from JetBrains. The tool makes it easier for you to perform Git Interactive Rebase actions, without 
 the need for a command line, by providing a clear 
 graphical visualization of the commit history and the changes you want to perform on it.
+
+⚠️ DISCLAIMER:
+This plugin is still under very early stages of development, consider this to be an access to the pre-alpha version
+of the plugin. It may be possible that certain functionalities do not work as intended or do not work at all. Your
+feedback would prove very useful for us. Thanks!
 <!-- Plugin description end -->
 
 

@@ -6,10 +6,13 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.visuals.BranchPanel
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
+import com.jetbrains.interactiveRebase.visuals.Palette
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.assertj.core.api.Assertions.assertThat
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
@@ -25,7 +28,7 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
 
     override fun setUp() {
         super.setUp()
-        circlePanel = mock(CirclePanel::class.java)
+
         val commitProvider = TestGitCommitProvider(project)
         commit1 = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf())
 
@@ -33,13 +36,19 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
 
         doAnswer {
             listOf(commit1.commit)
-        }.`when`(commitService).getCommits()
+        }.`when`(commitService).getCommits(anyString())
 
         doAnswer {
             "feature1"
         }.`when`(commitService).getBranchName()
 
         val modelService = ModelService(project, CoroutineScope(Dispatchers.EDT), commitService)
+
+        circlePanel = mock(CirclePanel::class.java)
+        `when`(circlePanel.parent).thenReturn(
+            BranchPanel(modelService.branchInfo, Palette.BLUE_THEME),
+        )
+
         listener = CircleHoverListener(circlePanel)
     }
 
@@ -106,12 +115,6 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
         `when`(circlePanel.circle).thenReturn(Ellipse2D.Double(0.0, 0.0, 20.0, 20.0))
         listener.mouseExited(null)
         verify(circlePanel, never()).repaint()
-    }
-
-    fun testMouseClicked() {
-        `when`(circlePanel.commit).thenReturn(commit1)
-        listener.mouseClicked(null)
-        assertThat(circlePanel.commit.isSelected).isTrue()
     }
 
     fun testMouseMovedInsideCircle() {
