@@ -6,7 +6,9 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.visuals.BranchPanel
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
+import com.jetbrains.interactiveRebase.visuals.Palette
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.assertj.core.api.Assertions.assertThat
@@ -24,13 +26,9 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
     private lateinit var listener: CircleHoverListener
     private lateinit var commit1: CommitInfo
 
-    init {
-        System.setProperty("idea.home.path", "/tmp")
-    }
-
     override fun setUp() {
         super.setUp()
-        circlePanel = mock(CirclePanel::class.java)
+
         val commitProvider = TestGitCommitProvider(project)
         commit1 = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf())
 
@@ -45,6 +43,12 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
         }.`when`(commitService).getBranchName()
 
         val modelService = ModelService(project, CoroutineScope(Dispatchers.EDT), commitService)
+
+        circlePanel = mock(CirclePanel::class.java)
+        `when`(circlePanel.parent).thenReturn(
+            BranchPanel(modelService.branchInfo, Palette.BLUE_THEME),
+        )
+
         listener = CircleHoverListener(circlePanel)
     }
 
@@ -112,16 +116,6 @@ class CircleHoverListenerTest : BasePlatformTestCase() {
         listener.mouseExited(null)
         verify(circlePanel, never()).repaint()
     }
-
-//    fun testMouseClicked() {
-//        val event = mock(MouseEvent::class.java)
-//        `when`(circlePanel.commit).thenReturn(commit1)
-//        `when`(event.isShiftDown).thenReturn(false)
-//        `when`(event.isControlDown).thenReturn(false)
-//
-//        listener.mouseClicked(event)
-//        assertThat(circlePanel.commit.isSelected).isTrue()
-//    }
 
     fun testMouseMovedInsideCircle() {
         val event = mock(MouseEvent::class.java)

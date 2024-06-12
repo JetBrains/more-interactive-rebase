@@ -50,20 +50,24 @@ class BranchNavigationListener(project: Project, private val modelService: Model
     fun up() {
         if (modelService.branchInfo.selectedCommits.size == 0) {
             val commit = modelService.branchInfo.currentCommits.last()
-            modelService.selectSingleCommit(commit)
+            modelService.selectSingleCommit(commit, modelService.branchInfo)
             return
         }
-        var commit = modelService.getLastSelectedCommit()
+
+        var commit = modelService.getLastSelectedCommit(modelService.branchInfo)
 
         val index = modelService.branchInfo.currentCommits.indexOf(commit)
         if (index == 0) {
             commit = modelService.branchInfo.currentCommits[index]
-            modelService.selectSingleCommit(commit)
+            modelService.selectSingleCommit(commit, modelService.branchInfo)
             return
         }
 
         commit = modelService.branchInfo.currentCommits[index - 1]
-        modelService.selectSingleCommit(commit)
+        if (commit.isCollapsed) {
+            commit = modelService.branchInfo.currentCommits[index - 2]
+        }
+        modelService.selectSingleCommit(commit, modelService.branchInfo)
     }
 
     /**
@@ -74,20 +78,23 @@ class BranchNavigationListener(project: Project, private val modelService: Model
     fun down() {
         if (modelService.branchInfo.selectedCommits.size == 0) {
             val commit = modelService.branchInfo.currentCommits[0]
-            modelService.selectSingleCommit(commit)
+            modelService.selectSingleCommit(commit, modelService.branchInfo)
             return
         }
-        var commit = modelService.getLastSelectedCommit()
+        var commit = modelService.getLastSelectedCommit(modelService.branchInfo)
 
         val index = modelService.branchInfo.currentCommits.indexOf(commit)
         if (index == modelService.branchInfo.currentCommits.size - 1) {
             commit = modelService.branchInfo.currentCommits[index]
-            modelService.selectSingleCommit(commit)
+            modelService.selectSingleCommit(commit, modelService.branchInfo)
             return
         }
 
         commit = modelService.branchInfo.currentCommits[index + 1]
-        modelService.selectSingleCommit(commit)
+        if (commit.isCollapsed) {
+            commit = modelService.branchInfo.currentCommits[index + 2]
+        }
+        modelService.selectSingleCommit(commit, modelService.branchInfo)
     }
 
     /**
@@ -99,21 +106,24 @@ class BranchNavigationListener(project: Project, private val modelService: Model
     fun shiftUp() {
         if (modelService.branchInfo.selectedCommits.size == 0) {
             val commit = modelService.branchInfo.currentCommits.last()
-            modelService.addToSelectedCommits(commit)
+            modelService.addToSelectedCommits(commit, modelService.branchInfo)
             return
         }
-        val commit = modelService.getLastSelectedCommit()
+        val commit = modelService.getLastSelectedCommit(modelService.branchInfo)
 
         val index = modelService.branchInfo.currentCommits.indexOf(commit)
         if (index == 0) {
             return
         }
 
-        val nextCommit = modelService.branchInfo.currentCommits[index - 1]
+        var nextCommit = modelService.branchInfo.currentCommits[index - 1]
+        if (nextCommit.isCollapsed) {
+            nextCommit = modelService.branchInfo.currentCommits[index - 2]
+        }
         if (!nextCommit.isSelected) {
-            modelService.addToSelectedCommits(nextCommit)
+            modelService.addToSelectedCommits(nextCommit, modelService.branchInfo)
         } else {
-            modelService.removeFromSelectedCommits(commit)
+            modelService.removeFromSelectedCommits(commit, modelService.branchInfo)
         }
     }
 
@@ -126,21 +136,24 @@ class BranchNavigationListener(project: Project, private val modelService: Model
     fun shiftDown() {
         if (modelService.branchInfo.selectedCommits.size == 0) {
             val commit = modelService.branchInfo.currentCommits[0]
-            modelService.addToSelectedCommits(commit)
+            modelService.addToSelectedCommits(commit, modelService.branchInfo)
             return
         }
-        val commit = modelService.getLastSelectedCommit()
+        val commit = modelService.getLastSelectedCommit(modelService.branchInfo)
 
         val index = modelService.branchInfo.currentCommits.indexOf(commit)
         if (index == modelService.branchInfo.currentCommits.size - 1) {
             return
         }
 
-        val nextCommit = modelService.branchInfo.currentCommits[index + 1]
+        var nextCommit = modelService.branchInfo.currentCommits[index + 1]
+        if (nextCommit.isCollapsed) {
+            nextCommit = modelService.branchInfo.currentCommits[index + 2]
+        }
         if (!nextCommit.isSelected) {
-            modelService.addToSelectedCommits(nextCommit)
+            modelService.addToSelectedCommits(nextCommit, modelService.branchInfo)
         } else {
-            modelService.removeFromSelectedCommits(commit)
+            modelService.removeFromSelectedCommits(commit, modelService.branchInfo)
         }
     }
 

@@ -5,10 +5,15 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
-// TODO: Add needed attributes for the indices or ordering of the commits, based on drag-and-drop implementation
+/**
+ * This is the abstract class for all the commands
+ * that will be executed during the rebase process.
+ *
+ * This class is the base class for all the commands
+ * that will be executed during the rebase process.
+ */
 
-data class ReorderCommand(val commit: CommitInfo, val oldIndex: Int, val newIndex: Int) :
-    IRCommand() {
+sealed class IRCommand() {
     /**
      * This method is to set up connection with the
      * Interactive Rebase mechanism.
@@ -16,13 +21,10 @@ data class ReorderCommand(val commit: CommitInfo, val oldIndex: Int, val newInde
      * This will be called within the RebaseInvoker,
      * once the actual rebase is initiated through the rebase button.
      */
-    override fun execute(
+    internal abstract fun execute(
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
-    ) {
-    }
+    )
 
-    override fun commitOfCommand(): CommitInfo {
-        return commit
-    }
+    internal abstract fun commitOfCommand(): CommitInfo
 }

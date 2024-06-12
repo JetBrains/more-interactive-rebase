@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.services
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.vcs.log.Hash
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
@@ -29,15 +30,31 @@ class GraphService(private val project: Project) {
         graphInfo: GraphInfo,
         addedBranch: String,
     ) {
-        // first get commits of the added branch using the checked out branch as reference
-        commitService.referenceBranchName = commitService.getBranchName()
-        val newBranch = BranchInfo(addedBranch)
-        updateBranchInfo(newBranch, includeBranchingCommit = true)
-        graphInfo.addedBranch = newBranch
-
         // update the checked-out branch using the added branch as reference
         commitService.referenceBranchName = addedBranch
         updateBranchInfo(graphInfo.mainBranch)
+        graphInfo.mainBranch.isPrimary = true
+
+        if (graphInfo.mainBranch.initialCommits.isEmpty()) {
+            return
+        }
+
+        // first get commits of the added branch using the checked out branch as reference
+        val newBranch = BranchInfo(addedBranch, isPrimary = false, isWritable = false)
+        graphInfo.addedBranch = newBranch
+        updateAddedBranchInfo(graphInfo)
+
+        graphInfo.changeAddedBranch(newBranch)
+    }
+
+    /**
+     * Called when a branch is de-selected from the side panel
+     */
+    fun removeBranch(graphInfo: GraphInfo) {
+        commitService.referenceBranchName = ""
+        updateBranchInfo(graphInfo.mainBranch)
+        graphInfo.changeAddedBranch(null)
+        graphInfo.mainBranch.isPrimary = false
     }
 
     /**
@@ -47,43 +64,75 @@ class GraphService(private val project: Project) {
     fun updateGraphInfo(graphInfo: GraphInfo) {
         updateBranchInfo(graphInfo.mainBranch)
         if (graphInfo.addedBranch != null) {
-            updateBranchInfo(graphInfo.addedBranch!!, includeBranchingCommit = true)
+            updateAddedBranchInfo(graphInfo)
         }
     }
 
     /**
-     * Given a commit, gets the parent commit as CommitInfo.
-     * Used when trying to find a branching commit after adding a branch
+     * Given a commit, gets the parent commit as CommitInfo. Looks at the last commit on the primary branch,
+     * Used when trying to find a branching commit after adding a branch,
+     * this commit is added as the last element of the secondary branch
      */
-    fun getBranchingCommit(startingCommit: CommitInfo): CommitInfo {
-        val parents = startingCommit.commit.parents
-        if (parents.isEmpty() || parents.size > 1) {
-            throw IRInaccessibleException("Branching-off commit cannot be displayed")
+
+    fun getBranchingCommit(graphInfo: GraphInfo): CommitInfo {
+        if (graphInfo.mainBranch.currentCommits.isEmpty() || graphInfo.addedBranch == null) {
+            throw IRInaccessibleException(
+                "Branching-off commit cannot be displayed. Cannot find the added branch or the commits on the primary branch",
+            )
         }
-        val parent = commitService.turnHashToCommit(parents[0].asString())
-        return commitService.getCommitInfoForBranch(listOf(parent))[0]
+        val addedBranch: BranchInfo = graphInfo.addedBranch!!
+        val lastInPrimary = graphInfo.mainBranch.currentCommits.last()
+        val primaryParents: List<Hash> = lastInPrimary.commit.parents
+
+        if (primaryParents.isEmpty()) {
+            throw IRInaccessibleException("Trying to display parents of initial commit")
+        }
+        var branchingHash: Hash = primaryParents[0]
+
+        // if there are multiple options for a branching commit, compare with added branch and choose the common parent
+        if (primaryParents.size > 1 && addedBranch.currentCommits.isNotEmpty()) {
+            val addedParents: Set<Hash> = addedBranch.currentCommits.last().commit.parents.toSet()
+            val intersection: Set<Hash> = primaryParents.intersect(addedParents)
+            branchingHash = if (intersection.isEmpty()) branchingHash else intersection.first()
+        }
+        val parentCommit = commitService.turnHashToCommit(branchingHash.asString())
+
+        return commitService.getCommitInfoForBranch(listOf(parentCommit)).first()
     }
 
     /**
      * Given a branchInfo, re-fetches the commits, populates the branch info if it is the first time fetching
      * Also includes the commit before branching off from the reference branch if includeBranchingCommit is true.
-     * Refactored form ModelService.
+     * Refactored from ModelService.
      */
-    fun updateBranchInfo(
-        branchInfo: BranchInfo,
-        includeBranchingCommit: Boolean = false,
-    ) {
-        val name = branchInfo.name.ifEmpty { commitService.getBranchName() }
+    fun updateBranchInfo(branchInfo: BranchInfo) {
+        val name = commitService.getBranchName()
 
         val commits = commitService.getCommitInfoForBranch(commitService.getCommits(name)).toMutableList()
-        if (includeBranchingCommit) {
-            commits.add(getBranchingCommit(commits.last()))
-        }
         if (branchChange(name, commits, branchInfo)) {
             branchInfo.setName(name)
             branchInfo.setCommits(commits)
             branchInfo.clearSelectedCommits()
             invoker.branchInfo = branchInfo
+        }
+    }
+
+    /**
+     * Used to fetch updates on the added branch, should not be used for the primary branch.
+     * Fetches commits taking the primary branch as reference and adds the branching commit to the end
+     */
+    fun updateAddedBranchInfo(graphInfo: GraphInfo) {
+        val addedBranch = graphInfo.addedBranch ?: return
+        val commits =
+            commitService.getCommitInfoForBranch(
+                commitService.getCommitsWithReference(addedBranch.name, graphInfo.mainBranch.name),
+            ).toMutableList()
+        commits.add(getBranchingCommit(graphInfo))
+
+        if (branchChange(addedBranch.name, commits, addedBranch)) {
+            addedBranch.setName(addedBranch.name)
+            addedBranch.setCommits(commits)
+            addedBranch.clearSelectedCommits()
         }
     }
 

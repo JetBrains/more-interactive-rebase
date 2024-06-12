@@ -52,7 +52,7 @@ class RebaseInvokerTest : BasePlatformTestCase() {
         commit4.addChange(squashCommand)
         val rebaseInvoker = RebaseInvoker(project)
         rebaseInvoker.branchInfo.currentCommits = mutableListOf(commit2, commit4, commit5)
-        rebaseInvoker.expandCurrentCommits()
+        rebaseInvoker.expandCurrentCommitsForSquashed()
         assertThat(rebaseInvoker.branchInfo.currentCommits.size).isEqualTo(5)
         assertThat(rebaseInvoker.branchInfo.currentCommits).isEqualTo(mutableListOf(commit2, commit1, commit3, commit4, commit5))
     }
@@ -64,7 +64,7 @@ class RebaseInvokerTest : BasePlatformTestCase() {
         val rebaseInvoker = RebaseInvoker(project)
         commit5.addChange(FixupCommand(commit5, mutableListOf(commit2)))
         rebaseInvoker.branchInfo.currentCommits = mutableListOf(commit4, commit5)
-        rebaseInvoker.expandCurrentCommits()
+        rebaseInvoker.expandCurrentCommitsForSquashed()
         assertThat(rebaseInvoker.branchInfo.currentCommits.size).isEqualTo(5)
         assertThat(rebaseInvoker.branchInfo.currentCommits).isEqualTo(
             mutableListOf(

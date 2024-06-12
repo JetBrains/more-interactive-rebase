@@ -10,6 +10,8 @@ import com.intellij.testFramework.TestActionEvent.createTestEvent
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
@@ -22,6 +24,7 @@ import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.CommitInfoPanel
+import com.jetbrains.interactiveRebase.visuals.GraphPanel
 import com.jetbrains.interactiveRebase.visuals.MainPanel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,10 +41,6 @@ class ActionServiceTest : BasePlatformTestCase() {
     private lateinit var commitInfo2: CommitInfo
     private lateinit var branchInfo: BranchInfo
     private lateinit var actionService: ActionService
-
-    init {
-        System.setProperty("idea.home.path", "/tmp")
-    }
 
     override fun setUp() {
         super.setUp()
@@ -61,13 +60,14 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService = ModelService(project, CoroutineScope(Dispatchers.EDT), commitService)
         modelService.branchInfo.initialCommits = mutableListOf(commitInfo1, commitInfo2)
         modelService.branchInfo.currentCommits = mutableListOf(commitInfo1, commitInfo2)
-        modelService.addToSelectedCommits(commitInfo1)
+        modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
         modelService.branchInfo.setName("feature1")
         modelService.invoker.branchInfo = modelService.branchInfo
 
         branchInfo = modelService.branchInfo
-        mainPanel = MainPanel(project, branchInfo)
+        mainPanel = MainPanel(project)
         mainPanel.commitInfoPanel = mock(CommitInfoPanel::class.java)
+        mainPanel.graphPanel = GraphPanel(project, GraphInfo(branchInfo))
         Mockito.doNothing().`when`(mainPanel.commitInfoPanel).commitsSelected(anyCustom())
         Mockito.doNothing().`when`(mainPanel.commitInfoPanel).repaint()
         actionService = ActionService(project, modelService, modelService.invoker)
@@ -79,7 +79,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits.isEmpty()).isTrue()
         assertThat(commitInfo1.changes.isNotEmpty()).isTrue()
         assertThat(commitInfo1.isSelected).isFalse()
-        Mockito.verify(mainPanel.commitInfoPanel).commitsSelected(anyCustom())
     }
 
     fun testTakeRewordAction() {
@@ -190,7 +189,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits.isEmpty()).isTrue()
         assertThat(commitInfo1.changes.isNotEmpty()).isTrue()
         assertThat(commitInfo1.isSelected).isFalse()
-        Mockito.verify(mainPanel.commitInfoPanel).commitsSelected(anyCustom())
     }
 
     fun testPerformPickAction() {
@@ -265,7 +263,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     fun testTakeFixupActionMultipleCommits() {
         modelService.invoker.commands.clear()
 
-        modelService.addToSelectedCommits(commitInfo2)
+        modelService.addToSelectedCommits(commitInfo2, branchInfo)
         actionService.takeFixupAction()
 
         assertThat(modelService.invoker.commands[0]).isInstanceOf(FixupCommand::class.java)
@@ -277,7 +275,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     fun testTakeSquashActionMultipleCommits() {
         modelService.invoker.commands.clear()
 
-        modelService.addToSelectedCommits(commitInfo2)
+        modelService.addToSelectedCommits(commitInfo2, branchInfo)
         actionService.takeSquashAction()
 
         assertThat(modelService.invoker.commands[0]).isInstanceOf(SquashCommand::class.java)
@@ -582,6 +580,442 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.invoker.commands.add(DropCommand(commitInfo1))
         actionService.removePickFromSquashed(listOf(commitInfo1, commitInfo2))
         assertThat(modelService.invoker.commands.size).isEqualTo(1)
+    }
+
+    fun testCheckCollapseLessThan7Commits() {
+        val testEvent = createTestEvent()
+        actionService.checkCollapse(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isFalse()
+    }
+
+    fun testCheckCollapseAlreadyCollapsed() {
+        val commitProvider = TestGitCommitProvider(project)
+        val commitInfo3 = CommitInfo(commitProvider.createCommit("bbb"), project, mutableListOf())
+        val commitInfo4 = CommitInfo(commitProvider.createCommit("aaa"), project, mutableListOf())
+        val commitInfo5 = CommitInfo(commitProvider.createCommit("ccc"), project, mutableListOf())
+        val commitInfo6 = CommitInfo(commitProvider.createCommit("ddd"), project, mutableListOf())
+        val commitInfo7 = CommitInfo(commitProvider.createCommit("fff"), project, mutableListOf())
+        val commitInfo8 = CommitInfo(commitProvider.createCommit("ggg"), project, mutableListOf())
+
+        modelService.branchInfo.initialCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        modelService.branchInfo.currentCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        commitInfo7.isCollapsed = true
+        val testEvent = createTestEvent()
+        actionService.checkCollapse(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isFalse()
+    }
+
+    fun testCheckCollapseOnly1Selected() {
+        val commitProvider = TestGitCommitProvider(project)
+        val commitInfo3 = CommitInfo(commitProvider.createCommit("bbb"), project, mutableListOf())
+        val commitInfo4 = CommitInfo(commitProvider.createCommit("aaa"), project, mutableListOf())
+        val commitInfo5 = CommitInfo(commitProvider.createCommit("ccc"), project, mutableListOf())
+        val commitInfo6 = CommitInfo(commitProvider.createCommit("ddd"), project, mutableListOf())
+        val commitInfo7 = CommitInfo(commitProvider.createCommit("fff"), project, mutableListOf())
+        val commitInfo8 = CommitInfo(commitProvider.createCommit("ggg"), project, mutableListOf())
+
+        modelService.branchInfo.initialCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        modelService.branchInfo.currentCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        for (commit in modelService.branchInfo.currentCommits) {
+            commit.isCollapsed = false
+        }
+        modelService.branchInfo.clearSelectedCommits()
+        modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
+        val testEvent = createTestEvent()
+        actionService.checkCollapse(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isFalse()
+    }
+
+    fun testCheckCollapseNoSelectedCommits() {
+        val commitProvider = TestGitCommitProvider(project)
+        val commitInfo3 = CommitInfo(commitProvider.createCommit("bbb"), project, mutableListOf())
+        val commitInfo4 = CommitInfo(commitProvider.createCommit("aaa"), project, mutableListOf())
+        val commitInfo5 = CommitInfo(commitProvider.createCommit("ccc"), project, mutableListOf())
+        val commitInfo6 = CommitInfo(commitProvider.createCommit("ddd"), project, mutableListOf())
+        val commitInfo7 = CommitInfo(commitProvider.createCommit("fff"), project, mutableListOf())
+        val commitInfo8 = CommitInfo(commitProvider.createCommit("ggg"), project, mutableListOf())
+
+        modelService.branchInfo.initialCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        modelService.branchInfo.currentCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        for (commit in modelService.branchInfo.currentCommits) {
+            commit.isCollapsed = false
+        }
+        modelService.branchInfo.clearSelectedCommits()
+        val testEvent = createTestEvent()
+        actionService.checkCollapse(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isTrue()
+    }
+
+    fun testCheckCollapseCommitsAreInARange() {
+        val commitProvider = TestGitCommitProvider(project)
+        val commitInfo3 = CommitInfo(commitProvider.createCommit("bbb"), project, mutableListOf())
+        val commitInfo4 = CommitInfo(commitProvider.createCommit("aaa"), project, mutableListOf())
+        val commitInfo5 = CommitInfo(commitProvider.createCommit("ccc"), project, mutableListOf())
+        val commitInfo6 = CommitInfo(commitProvider.createCommit("ddd"), project, mutableListOf())
+        val commitInfo7 = CommitInfo(commitProvider.createCommit("fff"), project, mutableListOf())
+        val commitInfo8 = CommitInfo(commitProvider.createCommit("ggg"), project, mutableListOf())
+
+        modelService.branchInfo.initialCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        modelService.branchInfo.currentCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        for (commit in modelService.branchInfo.currentCommits) {
+            commit.isCollapsed = false
+        }
+        modelService.branchInfo.clearSelectedCommits()
+        modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
+        modelService.addToSelectedCommits(commitInfo2, modelService.branchInfo)
+        val testEvent = createTestEvent()
+        actionService.checkCollapse(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isTrue()
+    }
+
+    fun testCheckCollapseCommitsAreNotInARange() {
+        val commitProvider = TestGitCommitProvider(project)
+        val commitInfo3 = CommitInfo(commitProvider.createCommit("bbb"), project, mutableListOf())
+        val commitInfo4 = CommitInfo(commitProvider.createCommit("aaa"), project, mutableListOf())
+        val commitInfo5 = CommitInfo(commitProvider.createCommit("ccc"), project, mutableListOf())
+        val commitInfo6 = CommitInfo(commitProvider.createCommit("ddd"), project, mutableListOf())
+        val commitInfo7 = CommitInfo(commitProvider.createCommit("fff"), project, mutableListOf())
+        val commitInfo8 = CommitInfo(commitProvider.createCommit("ggg"), project, mutableListOf())
+
+        modelService.branchInfo.initialCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        modelService.branchInfo.currentCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        for (commit in modelService.branchInfo.currentCommits) {
+            commit.isCollapsed = false
+        }
+        modelService.branchInfo.clearSelectedCommits()
+
+        modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
+        modelService.addToSelectedCommits(commitInfo5, modelService.branchInfo)
+
+        val testEvent = createTestEvent()
+        actionService.checkCollapse(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isFalse()
+    }
+
+    fun testCheckParentNotCollapsedWhenSquashing() {
+        val commitProvider = TestGitCommitProvider(project)
+        val commitInfo3 = CommitInfo(commitProvider.createCommit("bbb"), project, mutableListOf())
+        val commitInfo4 = CommitInfo(commitProvider.createCommit("aaa"), project, mutableListOf())
+        val commitInfo5 = CommitInfo(commitProvider.createCommit("ccc"), project, mutableListOf())
+        val commitInfo6 = CommitInfo(commitProvider.createCommit("ddd"), project, mutableListOf())
+        val commitInfo7 = CommitInfo(commitProvider.createCommit("fff"), project, mutableListOf())
+        val commitInfo8 = CommitInfo(commitProvider.createCommit("ggg"), project, mutableListOf())
+
+        modelService.branchInfo.initialCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        modelService.branchInfo.currentCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        for (commit in modelService.branchInfo.currentCommits) {
+            commit.isCollapsed = false
+        }
+        modelService.branchInfo.clearSelectedCommits()
+
+        modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
+        commitInfo2.isCollapsed = true
+
+        val testEvent = createTestEvent()
+        actionService.checkFixupOrSquash(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isFalse()
+    }
+
+    fun testCheckParentNotCollapsedWhenSquashingIsNotCollapsed() {
+        val commitProvider = TestGitCommitProvider(project)
+        val commitInfo3 = CommitInfo(commitProvider.createCommit("bbb"), project, mutableListOf())
+        val commitInfo4 = CommitInfo(commitProvider.createCommit("aaa"), project, mutableListOf())
+        val commitInfo5 = CommitInfo(commitProvider.createCommit("ccc"), project, mutableListOf())
+        val commitInfo6 = CommitInfo(commitProvider.createCommit("ddd"), project, mutableListOf())
+        val commitInfo7 = CommitInfo(commitProvider.createCommit("fff"), project, mutableListOf())
+        val commitInfo8 = CommitInfo(commitProvider.createCommit("ggg"), project, mutableListOf())
+
+        modelService.branchInfo.initialCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        modelService.branchInfo.currentCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        for (commit in modelService.branchInfo.currentCommits) {
+            commit.isCollapsed = false
+        }
+        modelService.branchInfo.clearSelectedCommits()
+
+        modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
+
+        val testEvent = createTestEvent()
+        actionService.checkFixupOrSquash(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isTrue()
+    }
+
+    fun testExpandCommitsNotAlreadyCollapsed() {
+        commitInfo1.isCollapsed = false
+        actionService.expandCollapsedCommits(commitInfo1, branchInfo)
+        assertThat(commitInfo1.isCollapsed).isFalse()
+    }
+
+    fun testExpandCommitsAlreadyCollapsed() {
+        val commitProvider = TestGitCommitProvider(project)
+        val commitInfo3 = CommitInfo(commitProvider.createCommit("bbb"), project, mutableListOf())
+        val commitInfo4 = CommitInfo(commitProvider.createCommit("aaa"), project, mutableListOf())
+        val commitInfo5 = CommitInfo(commitProvider.createCommit("ccc"), project, mutableListOf())
+        val commitInfo6 = CommitInfo(commitProvider.createCommit("ddd"), project, mutableListOf())
+        val commitInfo7 = CommitInfo(commitProvider.createCommit("fff"), project, mutableListOf())
+        val commitInfo8 = CommitInfo(commitProvider.createCommit("ggg"), project, mutableListOf())
+
+        modelService.branchInfo.initialCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        modelService.branchInfo.currentCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+
+        commitInfo7.isCollapsed = true
+        commitInfo6.isCollapsed = true
+        commitInfo5.isCollapsed = true
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo1, commitInfo2, commitInfo3, commitInfo4, commitInfo7, commitInfo8)
+        val collapseCommand = CollapseCommand(commitInfo7, mutableListOf(commitInfo5, commitInfo6))
+        commitInfo7.addChange(collapseCommand)
+
+        actionService.expandCollapsedCommits(commitInfo7, branchInfo)
+        assertThat(commitInfo7.isCollapsed).isFalse()
+        assertThat(commitInfo6.isCollapsed).isFalse()
+        assertThat(commitInfo5.isCollapsed).isFalse()
+
+        assertThat(commitInfo7.changes.size).isEqualTo(0)
+        assertThat(
+            modelService.branchInfo.currentCommits,
+        ).isEqualTo(mutableListOf(commitInfo1, commitInfo2, commitInfo3, commitInfo4, commitInfo5, commitInfo6, commitInfo7, commitInfo8))
+    }
+
+    fun testTakeCollapseAction() {
+        val commitProvider = TestGitCommitProvider(project)
+        val commitInfo3 = CommitInfo(commitProvider.createCommit("bbb"), project, mutableListOf())
+        val commitInfo4 = CommitInfo(commitProvider.createCommit("aaa"), project, mutableListOf())
+        val commitInfo5 = CommitInfo(commitProvider.createCommit("ccc"), project, mutableListOf())
+        val commitInfo6 = CommitInfo(commitProvider.createCommit("ddd"), project, mutableListOf())
+        val commitInfo7 = CommitInfo(commitProvider.createCommit("fff"), project, mutableListOf())
+        val commitInfo8 = CommitInfo(commitProvider.createCommit("ggg"), project, mutableListOf())
+
+        modelService.branchInfo.initialCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        modelService.branchInfo.currentCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        modelService.branchInfo.clearSelectedCommits()
+
+        actionService.takeCollapseAction()
+        assertThat(commitInfo7.isCollapsed).isTrue()
+        assertThat(
+            modelService.branchInfo.currentCommits,
+        ).isEqualTo(mutableListOf(commitInfo1, commitInfo2, commitInfo3, commitInfo4, commitInfo5, commitInfo7, commitInfo8))
+        assertThat(commitInfo7.changes.size).isEqualTo(1)
+    }
+
+    fun testTaleCollapseActionWithSelectedCommits() {
+        val commitProvider = TestGitCommitProvider(project)
+        val commitInfo3 = CommitInfo(commitProvider.createCommit("bbb"), project, mutableListOf())
+        val commitInfo4 = CommitInfo(commitProvider.createCommit("aaa"), project, mutableListOf())
+        val commitInfo5 = CommitInfo(commitProvider.createCommit("ccc"), project, mutableListOf())
+        val commitInfo6 = CommitInfo(commitProvider.createCommit("ddd"), project, mutableListOf())
+        val commitInfo7 = CommitInfo(commitProvider.createCommit("fff"), project, mutableListOf())
+        val commitInfo8 = CommitInfo(commitProvider.createCommit("ggg"), project, mutableListOf())
+
+        modelService.branchInfo.initialCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        modelService.branchInfo.currentCommits =
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
+        modelService.branchInfo.clearSelectedCommits()
+        modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
+        modelService.addToSelectedCommits(commitInfo2, modelService.branchInfo)
+        actionService.takeCollapseAction()
+        assertThat(commitInfo2.isCollapsed).isTrue()
+        assertThat(
+            modelService.branchInfo.currentCommits,
+        ).isEqualTo(mutableListOf(commitInfo2, commitInfo3, commitInfo4, commitInfo5, commitInfo6, commitInfo7, commitInfo8))
+        assertThat(commitInfo2.changes.size).isEqualTo(1)
     }
 
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)

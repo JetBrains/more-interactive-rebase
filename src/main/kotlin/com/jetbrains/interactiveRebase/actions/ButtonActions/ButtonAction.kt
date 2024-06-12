@@ -12,6 +12,7 @@ import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.ui.getActionShortcutText
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.util.text.Strings
 import com.intellij.util.ui.JBInsets
@@ -50,6 +51,7 @@ internal class RebaseAction() :
 internal abstract class ButtonAction(title: String, description: String,
                                      additionalShortcuts: List<Shortcut> = listOf()
 ) : IRAction(title, description,null,  additionalShortcuts), CustomComponentAction, DumbAware {
+
     protected val button = object : JButton(title) {
         init {
             val buttonHeight = JBUI.scale(28)
@@ -67,17 +69,18 @@ internal abstract class ButtonAction(title: String, description: String,
                                 null, ActionPlaces.EDITOR_TAB, dataContext)
                 )
             }
-            val os = System.getProperty("os.name").toLowerCase()
-            val shortcutText = if (os.contains("mac")) "Option+Enter" else "Alt+Enter"
+            //val os = System.getProperty("os.name").toLowerCase()
+            //val shortcutText = if (os.contains("mac")) "Option+Enter" else "Alt+Enter"
 
             if (Registry.`is`("ide.helptooltip.enabled")) {
                 HelpTooltip.dispose(this)
                 HelpTooltip()
                         .setTitle(this.text)
-                        .setShortcut("Alt+Enter")
+                        .setShortcut(getActionShortcutText("ButtonAction"))
                         .setDescription(description)
                         .installOn(this)
             }
+
 
         }
 

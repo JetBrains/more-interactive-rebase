@@ -23,7 +23,7 @@ class ModelService(
 ) : Disposable {
     constructor(project: Project, coroutineScope: CoroutineScope) : this(project, coroutineScope, project.service<CommitService>())
 
-    val branchInfo = BranchInfo(isCheckedOut = true)
+    val branchInfo = BranchInfo()
     val graphInfo = GraphInfo(branchInfo)
     private val graphService = project.service<GraphService>()
 
@@ -45,9 +45,12 @@ class ModelService(
      * commit by also deselecting all
      * currently selected commits
      */
-    fun selectSingleCommit(commit: CommitInfo) {
+    fun selectSingleCommit(
+        commit: CommitInfo,
+        branchInfo: BranchInfo,
+    ) {
         branchInfo.clearSelectedCommits()
-        addToSelectedCommits(commit)
+        addToSelectedCommits(commit, branchInfo)
     }
 
     /**
@@ -56,7 +59,11 @@ class ModelService(
      * deselecting the rest of the
      * commits
      */
-    fun addToSelectedCommits(commit: CommitInfo) {
+    fun addToSelectedCommits(
+        commit: CommitInfo,
+        branchInfo: BranchInfo,
+    ) {
+        if (commit.isCollapsed) return
         commit.isSelected = true
         branchInfo.addSelectedCommits(commit)
         commit.getChangesAfterPick().forEach { change ->
@@ -71,16 +78,15 @@ class ModelService(
     /**
      * Removes commit from
      * list of selected commits
+     * for a given branch
      */
-    fun removeFromSelectedCommits(commit: CommitInfo) {
+    fun removeFromSelectedCommits(
+        commit: CommitInfo,
+        branchInfo: BranchInfo,
+    ) {
         commit.isSelected = false
+        if (commit.isCollapsed) return
         branchInfo.removeSelectedCommits(commit)
-        commit.getChangesAfterPick().forEach { change ->
-            if (change is FixupCommand || change is SquashCommand) {
-                val combinedCommits = project.service<ActionService>().getCombinedCommits(change)
-                branchInfo.selectedCommits.addAll(combinedCommits)
-            }
-        }
     }
 
     /**
@@ -116,10 +122,44 @@ class ModelService(
     }
 
     /**
+     * Returns the selected commit which is the lowest visually in the list.
+     */
+    fun getLowestSelectedCommit(): CommitInfo {
+        var commit = branchInfo.selectedCommits[0]
+        var index = branchInfo.currentCommits.indexOf(commit)
+
+        branchInfo.selectedCommits.forEach {
+            if (branchInfo.currentCommits.indexOf(it) > index && !it.isSquashed) {
+                commit = it
+                index = branchInfo.currentCommits.indexOf(it)
+            }
+        }
+
+        return commit
+    }
+
+    /**
+     * Returns the selected commit which is the highest visually in the list.
+     */
+    fun getHighestSelectedCommit(): CommitInfo {
+        var commit = branchInfo.selectedCommits[0]
+        var index = branchInfo.currentCommits.indexOf(commit)
+
+        branchInfo.selectedCommits.forEach {
+            if (branchInfo.currentCommits.indexOf(it) < index && !it.isSquashed) {
+                commit = it
+                index = branchInfo.currentCommits.indexOf(it)
+            }
+        }
+
+        return commit
+    }
+
+    /**
      * Returns the last commit that is selected
      * but is not squashed or fixed up
      */
-    fun getLastSelectedCommit(): CommitInfo {
+    fun getLastSelectedCommit(branchInfo: BranchInfo): CommitInfo {
         var commit = branchInfo.selectedCommits.last()
 
         // Ensure that the commit we are moving is actually displayed
@@ -153,7 +193,7 @@ class ModelService(
     /**
      * Populates the GraphInfo field in order to be able to display the side panel of local branches
      */
-    private fun populateLocalBranches() {
+    fun populateLocalBranches() {
         val branchService = project.service<BranchService>()
         coroutineScope.launch {
             graphInfo.branchList = branchService.getBranchesExceptCheckedOut().toMutableList()
@@ -163,9 +203,18 @@ class ModelService(
     /**
      * Populates the added branch field in the graph info with the given branch
      */
-    fun addBranchToGraphInfo(addedBranch: String) {
+    fun addSecondBranchToGraphInfo(addedBranch: String) {
         coroutineScope.launch {
             graphService.addBranch(graphInfo, addedBranch)
+        }
+    }
+
+    /**
+     * Removes the added branch field in the graph info
+     */
+    fun removeSecondBranchFromGraphInfo() {
+        coroutineScope.launch {
+            graphService.removeBranch(graphInfo)
         }
     }
 

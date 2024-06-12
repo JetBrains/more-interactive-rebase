@@ -38,6 +38,11 @@
                     description="Redo the last action you took">
                 <keyboard-shortcut first-keystroke="ctrl shift Z" keymap="$default"/>
             </action>
+            <action id="com.jetbrains.interactiveRebase.actions.changePanel.CollapseAction"
+                    class="com.jetbrains.interactiveRebase.actions.changePanel.CollapseAction" text="CollapseAction"
+                    description="Collapse commits">
+                <keyboard-shortcut first-keystroke="alt c" keymap="$default"/>
+            </action>
 
             <separator/>
             <group id="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup"
@@ -69,6 +74,7 @@
                     <keyboard-shortcut first-keystroke="alt E" keymap="$default"/>
                 </action>
             </group>
+
         </group>
         <group id="ActionButtonsGroup"
                class="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup" text="RebaseGlobalActionsGroup" description="Interactive rebase actions">
@@ -77,6 +83,7 @@
                     description="Rebase">
                 <keyboard-shortcut first-keystroke="alt ENTER" keymap="$default"/>
             </action>
+
         </group>
 
     </actions>

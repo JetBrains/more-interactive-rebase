@@ -3,7 +3,9 @@ package com.jetbrains.interactiveRebase.services
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.IRCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
@@ -15,21 +17,25 @@ import git4ideaClasses.IRGitModel
 @Service(Service.Level.PROJECT)
 class RebaseInvoker(val project: Project) {
     var branchInfo = BranchInfo()
+
+//    var otherBranchInfo = BranchInfo()
     internal lateinit var model: IRGitModel<GitRebaseEntryGeneratedUsingLog>
 
     /**
      * Global (project-level) list of rebase commands
      * that will be executed, once the rebase is initiated.
      */
-    var commands = mutableListOf<RebaseCommand>()
-    var undoneCommands = mutableListOf<RebaseCommand>()
+
+    var commands = mutableListOf<IRCommand>()
+    var undoneCommands = mutableListOf<IRCommand>()
 
     /**
      * Creates a git model for the rebase, from the
      * correct list of current commits.
      */
     fun createModel() {
-        expandCurrentCommits()
+        expandCollapsedCommits()
+        expandCurrentCommitsForSquashed()
         val commits =
             branchInfo.currentCommits.map {
                     commitInfo ->
@@ -39,12 +45,26 @@ class RebaseInvoker(val project: Project) {
         model = convertToModel(commits.reversed())
     }
 
+    fun expandCollapsedCommits() {
+        val commits = branchInfo.currentCommits.toMutableList()
+        for (commitInfo in branchInfo.currentCommits) {
+            for (command in commitInfo.changes) {
+                if (command is CollapseCommand) {
+                    val parentCommit = command.firstCommit
+                    val parentIndex = commits.indexOfFirst { it == parentCommit }
+                    commits.addAll(parentIndex, command.collapsedCommits)
+                }
+            }
+        }
+        branchInfo.currentCommits = commits
+    }
+
     /**
      * Method that expands the previously changed list of current commits.
      * At the moment, we remove the "squashed" and "fixed up" commits from the list,
      * but we add them back at the correct position.
      */
-    fun expandCurrentCommits() {
+    fun expandCurrentCommitsForSquashed() {
         val commits = branchInfo.currentCommits.toMutableList()
         for (commitInfo in branchInfo.currentCommits) {
             for (command in commitInfo.getChangesAfterPick()) {
@@ -80,14 +100,14 @@ class RebaseInvoker(val project: Project) {
     /**
      * Adds a command to the list of commands to be executed.
      */
-    fun addCommand(command: RebaseCommand) {
+    fun addCommand(command: IRCommand) {
         commands.add(command)
     }
 
     /**
      * Removes a command from the list of commands to be executed.
      */
-    fun removeCommand(command: RebaseCommand) {
+    fun removeCommand(command: IRCommand) {
         commands.remove(command)
     }
 
@@ -96,8 +116,15 @@ class RebaseInvoker(val project: Project) {
      */
     fun executeCommands() {
         val commandz = commands.filterNot { it is ReorderCommand }
+        var base = branchInfo.initialCommits.reversed()[0].commit.parents.first().asString()
+        val rebaseCommand = commandz.findLast { command -> command is RebaseCommand }
+        if (rebaseCommand != null) {
+            base = (rebaseCommand as RebaseCommand).commit.commit.id.asString()
+        }
         commandz.forEach { it.execute(model, branchInfo) }
-        IRGitRebaseUtils(project).rebase(branchInfo.initialCommits.reversed()[0].commit, model)
+        if (base != null) {
+            IRGitRebaseUtils(project).rebase(base, model)
+        }
         commands.clear()
     }
 }

@@ -12,10 +12,6 @@ class CommitInfoTest : BasePlatformTestCase() {
     private lateinit var commitInfo: CommitInfo
     private lateinit var listener: CommitInfo.Listener
 
-    init {
-        System.setProperty("idea.home.path", "/tmp")
-    }
-
     override fun setUp() {
         super.setUp()
         val commitProvider = TestGitCommitProvider(project)
