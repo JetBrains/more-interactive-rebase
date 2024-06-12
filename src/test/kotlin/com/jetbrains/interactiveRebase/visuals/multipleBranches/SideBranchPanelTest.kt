@@ -1,14 +1,83 @@
 package com.jetbrains.interactiveRebase.visuals.multipleBranches
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.JBColor
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
+import com.jetbrains.interactiveRebase.services.DialogService
+import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.Palette
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import java.awt.GridBagConstraints
 
 class SideBranchPanelTest : BasePlatformTestCase() {
     val branchName = "main"
+
+    fun testSelectBranchTriggersAcceptedWarning() {
+        project.service<RebaseInvoker>().addCommand(
+            DropCommand(CommitInfo(TestGitCommitProvider(project).createCommit("add test"), project)),
+        )
+        val dialog: DialogService = mock(DialogService::class.java)
+        `when`(dialog.warningYesNoDialog(anyString(), anyString())).thenReturn(true)
+        val modelService = mock(ModelService::class.java)
+        val sideBranchPanel = SideBranchPanel(branchName, project, dialog, modelService)
+
+        val result = sideBranchPanel.selectBranch()
+        verify(dialog).warningYesNoDialog(
+            "Overwriting Staged Changes",
+            "Adding another branch to the view will reset the staged " +
+                "interactive rebase actions. Do you want to continue?",
+        )
+        verify(modelService).addSecondBranchToGraphInfo(branchName)
+        assertThat(sideBranchPanel.isOpaque).isTrue()
+        assertThat(result).isTrue()
+        assertThat(sideBranchPanel.isSelected).isTrue()
+        assertThat(sideBranchPanel.backgroundColor).isEqualTo(Palette.JETBRAINS_SELECTED)
+    }
+
+    fun testSelectBranchTriggersRejectedWarning() {
+        project.service<RebaseInvoker>().addCommand(
+            DropCommand(CommitInfo(TestGitCommitProvider(project).createCommit("add test"), project)),
+        )
+        val dialog: DialogService = mock(DialogService::class.java)
+        `when`(dialog.warningYesNoDialog(anyString(), anyString())).thenReturn(false)
+        val modelService = mock(ModelService::class.java)
+        val sideBranchPanel = SideBranchPanel(branchName, project, dialog, modelService)
+
+        val result = sideBranchPanel.selectBranch()
+        verify(dialog).warningYesNoDialog(
+            "Overwriting Staged Changes",
+            "Adding another branch to the view will reset the staged " +
+                "interactive rebase actions. Do you want to continue?",
+        )
+        verify(modelService, never()).addSecondBranchToGraphInfo(branchName)
+        assertThat(result).isFalse()
+        assertThat(sideBranchPanel.isSelected).isFalse()
+        assertThat(sideBranchPanel.backgroundColor).isNotEqualTo(Palette.JETBRAINS_SELECTED)
+    }
+
+    fun testSelectBranchConsidersEmptyChanges() {
+        val dialog: DialogService = mock(DialogService::class.java)
+        `when`(dialog.warningYesNoDialog(anyString(), anyString())).thenReturn(false)
+        val modelService = mock(ModelService::class.java)
+        val sideBranchPanel = SideBranchPanel(branchName, project, dialog, modelService)
+
+        val result = sideBranchPanel.selectBranch()
+        verify(dialog, never()).warningYesNoDialog(anyString(), anyString())
+        verify(modelService).addSecondBranchToGraphInfo(branchName)
+        assertThat(result).isTrue()
+        assertThat(sideBranchPanel.isSelected).isTrue()
+        assertThat(sideBranchPanel.backgroundColor).isEqualTo(Palette.JETBRAINS_SELECTED)
+    }
 
     fun testCreateSideBranchPanel() {
         val sideBranchPanel = SideBranchPanel(branchName, project)

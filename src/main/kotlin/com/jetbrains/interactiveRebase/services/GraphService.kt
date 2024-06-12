@@ -30,6 +30,7 @@ class GraphService(private val project: Project) {
         graphInfo: GraphInfo,
         addedBranch: String,
     ) {
+        project.service<ActionService>().resetAllChangesAction()
         // update the checked-out branch using the added branch as reference
         commitService.referenceBranchName = addedBranch
         updateBranchInfo(graphInfo.mainBranch)

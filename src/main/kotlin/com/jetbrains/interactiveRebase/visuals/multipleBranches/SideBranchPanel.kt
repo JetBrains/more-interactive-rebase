@@ -7,7 +7,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
+import com.jetbrains.interactiveRebase.services.DialogService
 import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.Palette
 import com.jetbrains.interactiveRebase.visuals.RoundedButton
 import java.awt.Dimension
@@ -19,6 +21,21 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
     var isSelected: Boolean = false
     lateinit var label: JLabel
     lateinit var button: RoundedButton
+    var dialogService: DialogService = project.service<DialogService>()
+    var modelService: ModelService = project.service<ModelService>()
+
+    /**
+     * Constructor used in tests for dependency injection
+     */
+    constructor(
+        branchName: String,
+        project: Project,
+        dialogService: DialogService,
+        modelService: ModelService,
+    ) : this(branchName, project) {
+        this.dialogService = dialogService
+        this.modelService = modelService
+    }
 
     init {
         backgroundColor = background
@@ -35,7 +52,7 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
         addSideBranchLabel()
         addRemoveBranchButton()
 
-        val name = project.service<ModelService>().graphInfo.addedBranch?.name
+        val name = modelService.graphInfo.addedBranch?.name
 
         if (name == branchName) selectBranch()
     }
@@ -112,15 +129,46 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
 
     /**
      * Changes the color of the panel when it is selected.
+     * Triggers warning if there are any changes in the invoker, if not, adds the selected branch to the view
+     * Returns true if branch is successfully added, false if adding was cancelled after warning
      */
-    internal fun selectBranch() {
+    internal fun selectBranch(): Boolean {
+        // if there are staged changes, trigger warning that they might be overwritten
+        if (project.service<RebaseInvoker>().commands.isNotEmpty()) {
+            return triggerOverwriteWarning()
+        }
+        addSelectedBranchToView()
+        return true
+    }
+
+    /**
+     * Adds the selected branch to the graph visualization next to the checked out branch
+     */
+    private fun addSelectedBranchToView() {
+        modelService.addSecondBranchToGraphInfo(branchName)
         this.isOpaque = true
         backgroundColor = Palette.JETBRAINS_SELECTED
         this.isSelected = true
         this.button.isVisible = true
-        project.service<ModelService>().addSecondBranchToGraphInfo(branchName)
         this.repaint()
         this.revalidate()
+    }
+
+    /**
+     * Shows dialogue stating that the staged changes will be overwritten
+     * If branch is added and yes is chosen, returns true, false otherwise
+     */
+    private fun triggerOverwriteWarning(): Boolean {
+        val answer: Boolean =
+            dialogService.warningYesNoDialog(
+                "Overwriting Staged Changes",
+                "Adding another branch to the view will reset the staged interactive rebase actions. Do you want to continue?",
+            )
+        if (answer) {
+            addSelectedBranchToView()
+            return true
+        }
+        return false
     }
 
     /**
