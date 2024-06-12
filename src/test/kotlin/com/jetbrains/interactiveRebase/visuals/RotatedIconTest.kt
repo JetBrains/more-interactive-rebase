@@ -10,10 +10,6 @@ import java.awt.Graphics2D
 import javax.swing.Icon
 
 class RotatedIconTest : BasePlatformTestCase() {
-    init {
-        System.setProperty("idea.home.path", "/tmp")
-    }
-
     private lateinit var icon: Icon
     private lateinit var graphics2D: Graphics2D
     private lateinit var component: Component
