@@ -140,6 +140,8 @@ val integrationTestTask = tasks.register<Test>("integrationTest") {
     testClassesDirs = integrationTests.output.classesDirs
     classpath = integrationTests.runtimeClasspath
 //    shouldRunAfter(tasks.named("test"))
+    useJUnit()
+    systemProperties["idea.home.path"] = System.getProperty("java.io.tmpdir")
 }
 
 tasks {
