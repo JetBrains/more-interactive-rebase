@@ -2,13 +2,11 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.ui.components.JBPanel
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.Desktop
 import java.awt.event.ActionEvent
 import java.net.URI
 import javax.swing.AbstractAction
 import javax.swing.Action
-import javax.swing.BorderFactory
 import javax.swing.JButton
 
 class HelpPanel() : JBPanel<JBPanel<*>>() {
@@ -25,7 +23,6 @@ class HelpPanel() : JBPanel<JBPanel<*>>() {
         this.layout = BorderLayout()
         val action: Action = MyHelpAction(desktop)
         val help = JButton(action)
-        this.border = BorderFactory.createLineBorder(Color.BLUE)
         help.toolTipText = "Show help contents"
         help.putClientProperty("JButton.buttonType", "help")
         this.add(help, BorderLayout.SOUTH)
