@@ -76,18 +76,17 @@ PMD-interactive-rebase-jetbrains:
     gradle pmdMain pmdTest
 
 unit-test-interactive-rebase-jetbrains:
-#  extends: .build_cached
   needs:
     - gradle_build
   dependencies:
     - gradle_build
   stage: test
   script:
-    - gradle test
+    - gradle test jacocoTestReport
+    - cat build/reports/jacoco/test/html/index.html | grep -Po "Total.*?([0-9]{1,3})%"
   coverage: /([0-9]{1,3})%/
 
 integration-test-interactive-rebase-jetbrains:
-  #  extends: .build_cached
   needs:
     - gradle_build
   dependencies:
@@ -100,20 +99,9 @@ integration-test-interactive-rebase-jetbrains:
     - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.RewordActionTest
     - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.StopToEditActionTest
   allow_failure: true
-
-test-coverage-interactive-rebase-jetbrains:
-  #  extends: .build_cached
-  needs:
-    - gradle_build
-    - unit-test-interactive-rebase-jetbrains
-    - integration-test-interactive-rebase-jetbrains
-  dependencies:
-    - gradle_build
-  stage: test
-  script:
-    - gradle jacocoTestReport
-    - cat build/reports/jacoco/test/html/index.html | grep -Po "Total.*?([0-9]{1,3})%"
-  coverage: /([0-9]{1,3})%/
+#  only:
+#    - main
+#    - dev
 
 deploy-interactive-rebase-jetbrains:
   needs:
