@@ -161,8 +161,8 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
     private fun triggerOverwriteWarning(): Boolean {
         val answer: Boolean =
             dialogService.warningYesNoDialog(
-                "Overwriting Staged Changes",
-                "Adding another branch to the view will reset the staged interactive rebase actions. Do you want to continue?",
+                "Overwriting Changes",
+                "Adding another branch to the view will reset the actions you have made. Do you want to continue?",
             )
         if (answer) {
             addSelectedBranchToView()
