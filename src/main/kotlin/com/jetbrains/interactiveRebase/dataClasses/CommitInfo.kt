@@ -2,14 +2,14 @@ package com.jetbrains.interactiveRebase.dataClasses
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
+import com.jetbrains.interactiveRebase.dataClasses.commands.IRCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import git4idea.GitCommit
 
 data class CommitInfo(
     val commit: GitCommit,
     val project: Project,
-    val changes: MutableList<RebaseCommand> = mutableListOf(),
+    val changes: MutableList<IRCommand> = mutableListOf(),
     var isSelected: Boolean = false,
     var isHovered: Boolean = false,
     var isTextFieldEnabled: Boolean = false,
@@ -32,7 +32,7 @@ data class CommitInfo(
      * list of changes of the
      * commit
      */
-    fun addChange(change: RebaseCommand) {
+    fun addChange(change: IRCommand) {
         changes.add(change)
         listeners.forEach { it.onCommitChange() }
     }
@@ -42,7 +42,7 @@ data class CommitInfo(
      * list of changes of the
      * commit
      */
-    fun removeChange(change: RebaseCommand) {
+    fun removeChange(change: IRCommand) {
         changes.remove(change)
         listeners.forEach { it.onCommitChange() }
     }
@@ -90,7 +90,7 @@ data class CommitInfo(
         listeners.forEach { it.onCommitChange() }
     }
 
-    fun getChangesAfterPick(): List<RebaseCommand> {
+    fun getChangesAfterPick(): List<IRCommand> {
         val indexOfPick = changes.indexOfLast { it is PickCommand }
         return if (indexOfPick != -1) {
             changes.subList(indexOfPick, changes.size)

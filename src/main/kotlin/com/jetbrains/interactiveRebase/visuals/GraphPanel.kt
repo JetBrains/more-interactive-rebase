@@ -72,6 +72,7 @@ class GraphPanel(
      * Adds the two branches (as Labeled Branch Panels)
      * to the graph panel
      */
+
     internal fun addBranches() {
         val gbc = GridBagConstraints()
 

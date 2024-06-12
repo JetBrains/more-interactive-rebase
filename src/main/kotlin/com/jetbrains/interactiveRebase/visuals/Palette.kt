@@ -21,6 +21,7 @@ object Palette {
     public final val GRAY = JBColor(Color(178, 172, 172), Color(65, 79, 84))
     public final val SELECTED_HIGHLIGHT = JBColor(Color(0, 0, 0), Color(120, 191, 232))
     public final val DARK_SHADOW = JBColor(Color(22, 92, 140), Color(19, 71, 139))
+
     public final val JETBRAINS_GRAY = JBColor(Gray._242, Color(60, 63, 65))
     public final val DARK_GRAY = JBColor(Color(28, 29, 31), Color(60, 63, 65))
     public final val BLUE_BUTTON = JBColor(Color(41, 152, 231), Color(20, 124, 204))
@@ -29,7 +30,6 @@ object Palette {
     public final val TRANSPARENT = JBColor(Color(0, 0, 0, 0), Color(0, 0, 0, 0))
     public final val JETBRAINS_HOVER = JBColor(Color(228, 228, 230), Color(83, 83, 96))
     public final val JETBRAINS_SELECTED = JBColor(Color(215, 225, 252), Color(69, 115, 232))
-
     public final val BLUE_BORDER = JBColor(Color(37, 47, 65), Color(21, 147, 232))
     public final val LIME_BORDER = JBColor(Color(195, 180, 70), Color(144, 130, 46))
     public final val TOMATO_BORDER = JBColor(Color(189, 55, 43), Color(150, 42, 33))

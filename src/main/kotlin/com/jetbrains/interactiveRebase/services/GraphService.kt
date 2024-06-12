@@ -73,6 +73,7 @@ class GraphService(private val project: Project) {
      * Used when trying to find a branching commit after adding a branch,
      * this commit is added as the last element of the secondary branch
      */
+
     fun getBranchingCommit(graphInfo: GraphInfo): CommitInfo {
         if (graphInfo.mainBranch.currentCommits.isEmpty() || graphInfo.addedBranch == null) {
             throw IRInaccessibleException(

@@ -119,7 +119,6 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
         this.isSelected = true
         this.button.isVisible = true
         project.service<ModelService>().addSecondBranchToGraphInfo(branchName)
-
         this.repaint()
         this.revalidate()
     }

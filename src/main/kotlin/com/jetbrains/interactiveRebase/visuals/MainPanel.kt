@@ -36,7 +36,6 @@ class MainPanel(
 
     init {
         graphPanel = createGraphPanel()
-
         contentPanel = createContentPanel()
         sidePanel = createSidePanel()
 
@@ -135,7 +134,6 @@ class MainPanel(
 
     fun createSidePanel(): JBScrollPane {
         val scrollable = JBScrollPane()
-
         val sidePanel = SidePanel(project.service<ModelService>().graphInfo.branchList, project)
         scrollable.setViewportView(sidePanel)
         scrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
