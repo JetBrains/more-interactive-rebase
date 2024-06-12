@@ -24,6 +24,8 @@ import com.jetbrains.interactiveRebase.listeners.LabelListener
 import com.jetbrains.interactiveRebase.listeners.TextFieldListener
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.services.strategies.SquashTextStrategy
+import com.jetbrains.interactiveRebase.visuals.multipleBranches.RoundedPanel
+import java.awt.Cursor
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.GridBagConstraints
@@ -36,6 +38,7 @@ import javax.swing.JTextField
 import javax.swing.OverlayLayout
 import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
+import javax.swing.border.EmptyBorder
 
 /**
  * Panel encapsulating a branch and corresponding labels
@@ -55,11 +58,11 @@ class LabeledBranchPanel(
     val branchPanel = BranchPanel(branch, colorTheme)
     val commitLabels: MutableList<JBLabel> = mutableListOf()
     val messages: MutableList<JBPanel<JBPanel<*>>> = mutableListOf()
-    private val branchNameLabel = BoldLabel(branch.name)
+    val branchNamePanel = branchNamePanel()
+
     internal val labelPanelWrapper = JBPanel<JBPanel<*>>()
 
     init {
-        branchNameLabel.horizontalAlignment = SwingConstants.CENTER
         layout = GridBagLayout()
         isOpaque = false
         val gbc = GridBagConstraints()
@@ -103,7 +106,7 @@ class LabeledBranchPanel(
      */
     private fun LabeledBranchPanel.addBranchName(gbc: GridBagConstraints) {
         setBranchNamePosition(gbc)
-        add(branchNameLabel, gbc)
+        add(branchNamePanel, gbc)
     }
 
     /**
@@ -120,6 +123,33 @@ class LabeledBranchPanel(
         addCommitNames(gbc, offset)
         addBranchOfCommits(gbc, offset)
     }
+
+    private fun branchNamePanel(): RoundedPanel {
+        val label = BoldLabel(branch.name)
+        label.horizontalAlignment = SwingConstants.CENTER
+        val panel = RoundedPanel()
+        panel.border = EmptyBorder(2,3,3,3)
+        panel.cornerRadius = 15
+        panel.backgroundColor = colorTheme.branchNameColor
+        panel.add(label)
+
+        panel.addMouseListener(object : MouseAdapter() {
+            override fun mouseEntered(e: MouseEvent?) {
+                cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                panel.backgroundColor = colorTheme.regularCircleColor
+                panel.repaint()
+            }
+
+            override fun mouseExited(e: MouseEvent?) {
+                cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
+                panel.backgroundColor = colorTheme.branchNameColor
+                panel.repaint()
+            }
+        })
+
+        return panel
+    }
+
 
     /**
      * Sets up the appearance of a commit label
@@ -445,7 +475,7 @@ class LabeledBranchPanel(
      * Updates branch name
      */
     fun updateBranchName() {
-        branchNameLabel.text = branch.name
+        (branchNamePanel.getComponent(0) as BoldLabel).text = branch.name
     }
 
     /**

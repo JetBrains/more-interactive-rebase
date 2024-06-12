@@ -7,6 +7,7 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
+import com.jetbrains.interactiveRebase.listeners.RebaseDragAndDropListener
 import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.BasicStroke
 import java.awt.Color
@@ -148,8 +149,28 @@ class GraphPanel(
         offset: Int,
     ) {
         alignPrimaryBranch(gbc)
+
+        makeBranchNamePanelDraggable()
         mainBranchPanel.addBranchWithVerticalOffset(offset)
         add(mainBranchPanel, gbc)
+    }
+
+    /**
+     * Adds a drag and drop listener to the branch name panel
+     * to make it support rebasing on top of another branch
+     * iff there's a second branch added to the view
+     */
+    private fun GraphPanel.makeBranchNamePanelDraggable() {
+        if (addedBranchPanel != null) {
+            val rebaseDragAndDropListener = RebaseDragAndDropListener(
+                project,
+                mainBranchPanel.branchNamePanel,
+                addedBranchPanel!!.branchNamePanel,
+                this
+            )
+            mainBranchPanel.branchNamePanel.addMouseListener(rebaseDragAndDropListener)
+            mainBranchPanel.branchNamePanel.addMouseMotionListener(rebaseDragAndDropListener)
+        }
     }
 
     /**
