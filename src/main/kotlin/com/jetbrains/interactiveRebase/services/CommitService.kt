@@ -123,9 +123,9 @@ class CommitService(private val project: Project) {
         val branchCommand: GitCommand = GitCommand.REV_PARSE
         val root: VirtualFile = gitUtils.getRoot() ?: throw IRInaccessibleException("Project root cannot be found")
         val lineHandler = GitLineHandler(project, root, branchCommand)
-        val params = listOf("--abbrev-ref","HEAD")
+        val params = listOf("--abbrev-ref", "HEAD")
         lineHandler.addParameters(params)
-        val output : GitCommandResult  =  gitUtils.runCommand(lineHandler)
+        val output: GitCommandResult = gitUtils.runCommand(lineHandler)
         return output.getOutputOrThrow()
     }
 }

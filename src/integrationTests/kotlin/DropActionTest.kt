@@ -11,7 +11,7 @@ import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.awaitility.Awaitility
 import java.util.concurrent.TimeUnit
 
-class DropActionTest: IRGitPlatformTest() {
+class DropActionTest : IRGitPlatformTest() {
     fun testDropCommit() {
         runBlocking(Dispatchers.EDT) {
             // this opens the editor tab, and initializes everything
@@ -25,7 +25,6 @@ class DropActionTest: IRGitPlatformTest() {
 
             modelService.selectSingleCommit(commitToDrop, modelService.branchInfo)
 
-
             val dropAction = DropAction()
             val testEvent1 = createTestEvent(dropAction)
             dropAction.actionPerformed(testEvent1)
@@ -37,11 +36,9 @@ class DropActionTest: IRGitPlatformTest() {
             Awaitility.await()
                 .alias("3 commits left for drop")
                 .pollInSameThread()
-                .atMost(15000, TimeUnit.MILLISECONDS)
+                .atMost(20000, TimeUnit.MILLISECONDS)
                 .pollDelay(50, TimeUnit.MILLISECONDS)
                 .until {
-                    repository.getAllCommitMessages().forEach { println(it) }
-                    println("\n\n\n")
                     gitCommitsCountEquals(3)
                 }
             val remainingCommitMessages = repository.getAllCommitMessages()

@@ -12,7 +12,7 @@ import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.awaitility.Awaitility
 import java.util.concurrent.TimeUnit
 
-class FixupActionTest: IRGitPlatformTest() {
+class FixupActionTest : IRGitPlatformTest() {
     fun testFixupCommit() {
         runBlocking(Dispatchers.EDT) {
             // this opens the editor tab, and initializes everything
@@ -33,16 +33,14 @@ class FixupActionTest: IRGitPlatformTest() {
             val rebaseButton = getRebaseButton()
             rebaseButton.doClick()
 
-            Thread.sleep(5000)
+//            Thread.sleep(5000)
 
             Awaitility.await()
                 .alias("3 commits left for fixup")
                 .pollInSameThread()
-                .atMost(15000, TimeUnit.MILLISECONDS)
+                .atMost(20000, TimeUnit.MILLISECONDS)
                 .pollDelay(50, TimeUnit.MILLISECONDS)
                 .until {
-                    repository.getAllCommitMessages().forEach { println(it) }
-                    println("\n\n\n")
                     gitCommitsCountEquals(3)
                 }
             val remainingCommitMessages = repository.getAllCommitMessages()

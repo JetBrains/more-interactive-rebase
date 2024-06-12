@@ -187,10 +187,9 @@ class ModelService(
      */
     fun fetchGraphInfo() {
         coroutineScope.launch(Dispatchers.IO) {
-            try{
+            try {
                 graphService.updateGraphInfo(graphInfo)
-            }
-            catch(e: Exception) {
+            } catch (e: Exception) {
                 println(e.message)
             }
         }
@@ -204,8 +203,7 @@ class ModelService(
         coroutineScope.launch(Dispatchers.IO) {
             try {
                 graphInfo.branchList = branchService.getBranchesExceptCheckedOut().toMutableList()
-            }
-            catch(e: Exception) {
+            } catch (e: Exception) {
                 println(e.message)
             }
         }
@@ -216,10 +214,9 @@ class ModelService(
      */
     fun addSecondBranchToGraphInfo(addedBranch: String) {
         coroutineScope.launch(Dispatchers.IO) {
-            try{
+            try {
                 graphService.addBranch(graphInfo, addedBranch)
-            }
-            catch(e: Exception) {
+            } catch (e: Exception) {
                 println(e.message)
             }
         }
@@ -230,10 +227,9 @@ class ModelService(
      */
     fun removeSecondBranchFromGraphInfo() {
         coroutineScope.launch(Dispatchers.IO) {
-            try{
+            try {
                 graphService.removeBranch(graphInfo)
-            }
-            catch(e: Exception) {
+            } catch (e: Exception) {
                 println(e.message)
             }
         }

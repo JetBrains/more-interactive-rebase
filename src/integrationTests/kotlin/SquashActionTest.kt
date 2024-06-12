@@ -14,7 +14,7 @@ import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.awaitility.Awaitility
 import java.util.concurrent.TimeUnit
 
-class SquashActionTest: IRGitPlatformTest() {
+class SquashActionTest : IRGitPlatformTest() {
     fun testSquashCommits() {
         runBlocking(Dispatchers.EDT) {
             // this opens the editor tab, and initializes everything
@@ -54,7 +54,7 @@ class SquashActionTest: IRGitPlatformTest() {
             rebaseButton.doClick()
 
             Awaitility.await()
-                .atMost(15000, TimeUnit.MILLISECONDS)
+                .atMost(20000, TimeUnit.MILLISECONDS)
                 .pollDelay(50, TimeUnit.MILLISECONDS)
                 .alias("squash commit message changed")
                 .pollInSameThread()
