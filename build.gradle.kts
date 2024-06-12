@@ -53,7 +53,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:3.12.4")
     testImplementation("org.assertj:assertj-core:3.23.1")
     testImplementation("org.assertj:assertj-swing-junit:3.9.2")
-    //testImplementation("junit:junit:4.12")
+    testImplementation("junit:junit:4.12")
 //    testImplementation("com.jetbrains.intellij.platform:vcs-test-framework:241.15989.150")
 //    testImplementation("com.jetbrains.intellij.platform:test-framework:241.15989.150")
 //    testImplementation("org.jetbrains.kotlin:kotlin-test:2.0.0")
@@ -113,6 +113,30 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
 }
 
 apply(plugin = "info.solidsoft.pitest")
+
+val integrationTests: SourceSet by sourceSets.creating {
+    kotlin.srcDir("src/integrationTests/kotlin")
+    resources.srcDir("src/integrationTests/resources")
+    compileClasspath += sourceSets["main"].output + sourceSets["test"].output
+    runtimeClasspath += output + compileClasspath
+}
+
+configurations {
+    getByName("integrationTestsImplementation") {
+        extendsFrom(configurations["testImplementation"])
+    }
+    getByName("integrationTestsRuntimeOnly") {
+        extendsFrom(configurations["testRuntimeOnly"])
+    }
+}
+
+val integrationTestTask = tasks.register<Test>("integrationTest") {
+    description = "Runs the integration tests."
+    group = "verification"
+    testClassesDirs = integrationTests.output.classesDirs
+    classpath = integrationTests.runtimeClasspath
+//    shouldRunAfter(tasks.named("test"))
+}
 
 tasks {
     wrapper {
@@ -264,4 +288,8 @@ tasks.withType(Test::class) {
             }))
         }
     }
+}
+
+tasks.named("check") {
+    dependsOn(integrationTestTask)
 }
