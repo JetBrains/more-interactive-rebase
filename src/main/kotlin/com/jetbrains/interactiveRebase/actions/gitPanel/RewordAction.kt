@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.ui.getActionShortcutText
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup.Companion.makeTooltip
 import com.jetbrains.interactiveRebase.services.ActionService
 import javax.swing.JComponent
@@ -38,7 +39,7 @@ class RewordAction :
             this,
             presentation,
             place,
-            "Alt+R",
+                getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction"),
             "Changes the subject of a commit",
         )
     }

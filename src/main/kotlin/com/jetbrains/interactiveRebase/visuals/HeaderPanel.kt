@@ -8,7 +8,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.util.minimumHeight
 import com.intellij.util.ui.JBUI
-import com.jetbrains.interactiveRebase.actions.ButtonActions.RebaseAction
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
@@ -68,29 +67,17 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
         val toolbar = actionManager.createActionToolbar(ActionPlaces.EDITOR_TAB, group, true)
         val toolbarComponent: JComponent = toolbar.component
         toolbar.targetComponent = buttonPanel
+
+
+        var normalButton = RoundedButton("Normal", Palette.GRAY_BUTTON, Palette.WHITE_TEXT)
+        normalButton.addActionListener {
+            project.service<ActionService>().takeNormalRebaseAction()
+        }
+
+        buttonPanel.add(normalButton)
         buttonPanel.add(toolbarComponent)
-        //val rebaseButton = RoundedButton("Rebase", Palette.BLUEBUTTON, Palette.WHITETEXT)
-
-//
-//        val resetButton = RoundedButton("Reset", Palette.GRAYBUTTON, Palette.WHITETEXT)
-//
-//        resetButton.addActionListener { project.service<ActionService>().resetAllChangesAction() }
-
-        //buttonPanel.add(resetButton)
-        //buttonPanel.add(rebaseButton)
 
 
-//
-//
-//        var normalButton = RoundedButton("Normal", Palette.GRAY_BUTTON, Palette.WHITE_TEXT)
-//        normalButton.addActionListener {
-////            project.service<ModelService>().addBranchToGraphInfo("main")
-////            println(project.service<ModelService>().graphInfo)
-//            project.service<ActionService>().takeNormalRebaseAction()
-//        }
-//        buttonPanel.add(normalButton)
-//        buttonPanel.add(resetButton)
-//        buttonPanel.add(rebaseButton)
 
     }
 }

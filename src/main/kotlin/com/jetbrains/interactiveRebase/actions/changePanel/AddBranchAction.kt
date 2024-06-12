@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.ui.getActionShortcutText
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
 import javax.swing.JComponent
@@ -47,7 +48,7 @@ class AddBranchAction :
             this,
             presentation,
             place,
-            "Alt+A",
+                getActionShortcutText("com.jetbrains.interactiveRebase.actions.changePanel.AddBranchAction"),
             "Add another branch to the view",
         )
     }

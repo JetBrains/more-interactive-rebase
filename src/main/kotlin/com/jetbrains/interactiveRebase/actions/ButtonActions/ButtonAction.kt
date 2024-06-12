@@ -4,6 +4,7 @@ import com.intellij.ide.HelpTooltip
 import com.intellij.ide.IdeBundle
 import com.intellij.ide.actions.GotoClassPresentationUpdater
 import com.intellij.ide.ui.laf.darcula.ui.DarculaButtonPainter
+import com.intellij.ide.ui.laf.darcula.ui.DarculaButtonUI
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.actionSystem.ex.TooltipDescriptionProvider
@@ -15,6 +16,8 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.getActionShortcutText
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.util.text.Strings
+import com.intellij.openapi.wm.impl.welcomeScreen.learnIde.coursesInProgress.mainBackgroundColor
+import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBInsets
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.components.BorderLayoutPanel
@@ -26,31 +29,11 @@ import java.awt.Insets
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JComponent
-
-internal class RebaseAction() :
-        ButtonAction("Rebase", "Start the rebase process") {
-
-     override fun actionPerformed(e: AnActionEvent) {
-         val invoker = e.project?.service<RebaseInvoker>()
-         invoker?.createModel()
-         invoker?.executeCommands()
-
-    }
-
-    override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.EDT
-    }
-
-    override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkRebase(e)
-
-    }
+import javax.swing.UIManager
 
 
-}
-internal abstract class ButtonAction(title: String, description: String,
-                                     additionalShortcuts: List<Shortcut> = listOf()
-) : IRAction(title, description,null,  additionalShortcuts), CustomComponentAction, DumbAware {
+internal abstract class ButtonAction(title: String, description: String, actionId: String
+) : IRAction(title, description,null), CustomComponentAction, DumbAware {
 
     protected val button = object : JButton(title) {
         init {
@@ -69,14 +52,12 @@ internal abstract class ButtonAction(title: String, description: String,
                                 null, ActionPlaces.EDITOR_TAB, dataContext)
                 )
             }
-            //val os = System.getProperty("os.name").toLowerCase()
-            //val shortcutText = if (os.contains("mac")) "Option+Enter" else "Alt+Enter"
 
             if (Registry.`is`("ide.helptooltip.enabled")) {
                 HelpTooltip.dispose(this)
                 HelpTooltip()
                         .setTitle(this.text)
-                        .setShortcut(getActionShortcutText("ButtonAction"))
+                        .setShortcut(getActionShortcutText(actionId))
                         .setDescription(description)
                         .installOn(this)
             }
@@ -99,9 +80,5 @@ internal abstract class ButtonAction(title: String, description: String,
 
 
 }
-internal abstract class IRAction(title: String, description: String, icon: Icon?,
-        additionalShortcuts: List<Shortcut> = listOf()
-) :  DumbAwareAction(title, description, icon) {
-
-
-}
+internal abstract class IRAction(title: String, description: String, icon: Icon? )
+    :  DumbAwareAction(title, description, icon)
