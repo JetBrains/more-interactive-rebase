@@ -14,7 +14,7 @@ class BranchInfo(
     var isWritable: Boolean = true,
 ) {
     private val listeners: MutableList<Listener> = mutableListOf()
-    internal var currentCommits: MutableList<CommitInfo> = initialCommits.toMutableList()
+    var currentCommits: MutableList<CommitInfo> = initialCommits.toMutableList()
 
     internal fun addListener(listener: Listener) = listeners.add(listener)
 
