@@ -125,13 +125,7 @@ class LabeledBranchPanel(
     }
 
     private fun branchNamePanel(): RoundedPanel {
-        val label = BoldLabel(branch.name)
-        label.horizontalAlignment = SwingConstants.CENTER
-        val panel = RoundedPanel()
-        panel.border = EmptyBorder(2,3,3,3)
-        panel.cornerRadius = 15
-        panel.backgroundColor = colorTheme.branchNameColor
-        panel.add(label)
+        val panel = instantiateBranchNamePanel()
 
         panel.addMouseListener(object : MouseAdapter() {
             override fun mouseEntered(e: MouseEvent?) {
@@ -147,6 +141,17 @@ class LabeledBranchPanel(
             }
         })
 
+        return panel
+    }
+
+    fun instantiateBranchNamePanel(): RoundedPanel {
+        val label = BoldLabel(branch.name)
+        label.horizontalAlignment = SwingConstants.CENTER
+        val panel = RoundedPanel()
+        panel.border = EmptyBorder(2, 3, 3, 3)
+        panel.cornerRadius = 15
+        panel.backgroundColor = colorTheme.branchNameColor
+        panel.add(label)
         return panel
     }
 

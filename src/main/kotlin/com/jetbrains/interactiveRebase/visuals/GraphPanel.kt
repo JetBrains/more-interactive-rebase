@@ -2,6 +2,7 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.UIUtil
@@ -10,6 +11,7 @@ import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.listeners.RebaseDragAndDropListener
 import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.BasicStroke
+import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -19,6 +21,8 @@ import java.awt.Insets
 import java.awt.LinearGradientPaint
 import java.awt.RenderingHints
 import java.awt.geom.CubicCurve2D
+import javax.swing.BorderFactory
+import javax.swing.JLayeredPane
 import javax.swing.SwingConstants
 
 /**
@@ -31,6 +35,9 @@ class GraphPanel(
     private val mainTheme: Palette.Theme = Palette.BLUE_THEME,
     private val addedTheme: Palette.Theme = Palette.TOMATO_THEME,
 ) : JBPanel<JBPanel<*>>() {
+
+//    val layeredPane = JLayeredPane()
+
     var mainBranchPanel: LabeledBranchPanel =
         createLabeledBranchPanel(
             graphInfo.mainBranch,
@@ -51,6 +58,13 @@ class GraphPanel(
         }
 
         layout = GridBagLayout()
+//        layout = BorderLayout()
+//        layeredPane.layout = GridBagLayout()
+//        layeredPane.background = JBColor.BLUE
+//        layeredPane.border = BorderFactory.createLineBorder(JBColor.RED)
+//        addedBranchPanel?.border = BorderFactory.createLineBorder(JBColor.GREEN)
+//        mainBranchPanel.border = BorderFactory.createLineBorder(JBColor.YELLOW)
+//        add(layeredPane, BorderLayout.CENTER)
 
         addBranches()
     }
@@ -106,6 +120,7 @@ class GraphPanel(
         alignSecondBranch(gbc)
         addedBranchPanel!!.addBranchWithVerticalOffset(offset)
         add(addedBranchPanel!!, gbc)
+//        layeredPane.add(addedBranchPanel!!, gbc, JLayeredPane.DEFAULT_LAYER)
     }
 
     /**
@@ -150,9 +165,10 @@ class GraphPanel(
     ) {
         alignPrimaryBranch(gbc)
 
-        makeBranchNamePanelDraggable()
         mainBranchPanel.addBranchWithVerticalOffset(offset)
         add(mainBranchPanel, gbc)
+//        layeredPane.add(mainBranchPanel, gbc, JLayeredPane.DEFAULT_LAYER)
+        makeBranchNamePanelDraggable()
     }
 
     /**
@@ -307,6 +323,7 @@ class GraphPanel(
      * Update branch panels
      */
     fun updateGraphPanel() {
+//        layeredPane.removeAll()
         removeAll()
 
         mainBranchPanel =
@@ -327,6 +344,8 @@ class GraphPanel(
         }
 
         addBranches()
+//        layeredPane.revalidate()
+//        layeredPane.repaint()
         revalidate()
         repaint()
     }
