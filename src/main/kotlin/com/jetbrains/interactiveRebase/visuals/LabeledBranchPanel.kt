@@ -460,7 +460,8 @@ class LabeledBranchPanel(
      * If the branch panel displays an additional branch
      * we offset the branch down.
      */
-    private fun offsetBranchIfAdded(offset: Int): Insets = Insets(offset, 5, branchPanel.diameter, 5)
+    private fun offsetBranchIfAdded(offset: Int): Insets =
+        Insets(offset, 5, branchPanel.diameter, 5)
 
     /**
      * Sets the position of the branch name label

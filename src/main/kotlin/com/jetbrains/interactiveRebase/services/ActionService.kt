@@ -68,7 +68,8 @@ class ActionService(project: Project) {
      * Creates a rebase command for a normal rebase
      */
     fun takeNormalRebaseAction() {
-        val command = modelService.graphInfo.addedBranch?.currentCommits?.get(1)?.let { RebaseCommand(it) }
+        invoker.undoneCommands.clear()
+        val command = modelService.graphInfo.addedBranch?.baseCommit?.let { RebaseCommand(it) }
         if (command != null) {
             invoker.addCommand(command)
         }
@@ -306,6 +307,7 @@ class ActionService(project: Project) {
             commitInfo.isReordered = false
             commitInfo.isHovered = false
         }
+        modelService.graphInfo.addedBranch?.baseCommit = modelService.graphInfo.addedBranch?.currentCommits?.last()
         invoker.branchInfo.clearSelectedCommits()
         takeCollapseAction()
     }
@@ -467,11 +469,19 @@ class ActionService(project: Project) {
         if (command is PickCommand) {
             removePickFromSquashOrFixup(commitToBeUndone)
         }
-
-        commitToBeUndone.removeChange(command)
+        if (command is RebaseCommand) {
+            undoRebase()
+        } else {
+            commitToBeUndone.removeChange(command)
+        }
         invoker.undoneCommands.add(command)
 
         modelService.branchInfo.clearSelectedCommits()
+    }
+
+    private fun undoRebase() {
+        modelService.graphInfo.addedBranch?.baseCommit =
+            modelService.graphInfo.addedBranch?.currentCommits?.last()
     }
 
     /**
@@ -496,11 +506,20 @@ class ActionService(project: Project) {
         if (command is PickCommand) {
             redoPick(commitToBeRedone)
         }
+        if (command is RebaseCommand) {
+            redoRebase(commitToBeRedone)
+        } else {
+            commitToBeRedone.addChange(command)
 
-        commitToBeRedone.addChange(command)
+        }
+
         invoker.commands.add(command)
 
         modelService.branchInfo.clearSelectedCommits()
+    }
+
+    private fun redoRebase(commitToBeRedone: CommitInfo) {
+        modelService.graphInfo.addedBranch?.baseCommit = commitToBeRedone
     }
 
     /**
@@ -617,6 +636,8 @@ class ActionService(project: Project) {
         commit.setReorderedTo(false)
         mainPanel.graphPanel.mainBranchPanel.branch.updateCurrentCommits(command.newIndex, command.oldIndex, commit)
     }
+
+
 
     /**
      * If the last undone action that was performed by the user was a reorder,

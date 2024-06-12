@@ -1,9 +1,11 @@
 package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.visuals.GraphPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
@@ -12,6 +14,7 @@ import java.awt.GridBagLayout
 import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.Timer
 
 class RebaseDragAndDropListener(
     val project: Project,
@@ -32,8 +35,9 @@ class RebaseDragAndDropListener(
     private var mainPlaceholderPanel = placeholderPanel(mainBranchPanel)
     private var addedPlaceholderPanel = placeholderPanel(addedBranchPanel)
 
-    override fun mousePressed(e: MouseEvent) {
+    private val initialColor = addedBranchNameLabel.backgroundColor
 
+    override fun mousePressed(e: MouseEvent) {
         updateMousePosition(e)
         initialPositionMain = Point(
             mainBranchNameLabel.x + mainBranchPanel.x,
@@ -87,9 +91,11 @@ class RebaseDragAndDropListener(
         updateMousePosition(e)
 
         if (mainBranchNameLabel.bounds.intersects(addedBranchNameLabel.bounds)) {
-            addedBranchNameLabel.background = JBColor.LIGHT_GRAY
+            addedBranchNameLabel.backgroundColor = JBColor.LIGHT_GRAY
+            addedBranchNameLabel.repaint()
         } else {
-            addedBranchNameLabel.background = JBColor.BLACK
+            addedBranchNameLabel.backgroundColor = initialColor
+            addedBranchNameLabel.repaint()
         }
     }
 
@@ -102,27 +108,55 @@ class RebaseDragAndDropListener(
         val newX = thisX + deltaX
         val newY = thisY + deltaY
 
-        val newXBounded = (newX).coerceIn(0, dragPanel.width - mainBranchNameLabel.width)
-        val newYBounded = (newY).coerceIn(0, initialPositionMain.y + mainBranchNameLabel.height + 30)
-        mainBranchNameLabel.setLocation(newXBounded, newYBounded)
+//        val newXBounded = (newX).coerceIn(0, dragPanel.width - mainBranchNameLabel.width)
+//        val newYBounded = (newY).coerceIn(0, initialPositionMain.y + mainBranchNameLabel.height + 30)
+        mainBranchNameLabel.setLocation(newX, newY)
     }
 
     override fun mouseReleased(e: MouseEvent) {
         if (mainBranchNameLabel.bounds.intersects(addedBranchNameLabel.bounds)) {
-            addedBranchNameLabel.background = JBColor.GREEN
-        } else {
-            mainBranchNameLabel.location = initialPositionMain
+            addedBranchNameLabel.backgroundColor = JBColor.GREEN
+            addedBranchNameLabel.repaint()
+//            graphPanel.graphInfo.addedBranch!!.rebaseOffset = 100
+            graphPanel.graphInfo.addedBranch!!.baseCommit =
+                graphPanel.graphInfo.addedBranch!!.currentCommits[0]
+            project.service<ActionService>().takeNormalRebaseAction()
+//            addedBranchPanel.revalidate()
+//            animatePanelMovement(200)
         }
-        addedBranchNameLabel.background = JBColor.WHITE
+
         mainBranchPanel.remove(mainPlaceholderPanel)
         mainBranchPanel.add(mainBranchNameLabel, gbcMain)
 
         addedBranchPanel.remove(addedPlaceholderPanel)
         addedBranchPanel.add(addedBranchNameLabel, gbcAdded)
+
         graphPanel.revalidate()
+        graphPanel.updateGraphPanel()
         graphPanel.repaint()
         dragPanel.revalidate()
         dragPanel.repaint()
+    }
+
+    fun animatePanelMovement(offset: Int) {
+        val startY = addedBranchPanel.y
+        val targetY = startY + offset
+        val animationDuration = 500 // duration in milliseconds
+        val animationInterval = 10 // interval in milliseconds
+        val steps = animationDuration / animationInterval
+        val stepSize = offset / steps.toFloat()
+
+        val timer = Timer(animationInterval) { actionEvent ->
+            val currentY = addedBranchPanel.y
+            if (currentY < targetY) {
+                addedBranchPanel.setLocation(addedBranchPanel.x, (currentY + stepSize).toInt())
+                addedBranchPanel.revalidate()
+                addedBranchPanel.repaint()
+            } else {
+                (actionEvent.source as Timer).stop()
+            }
+        }
+        timer.start()
     }
 
     /**

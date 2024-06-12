@@ -33,7 +33,7 @@ class GraphPanel(
     private val addedTheme: Palette.Theme = Palette.TOMATO_THEME,
 ) : JBPanel<JBPanel<*>>() {
 
-//    val layeredPane = JLayeredPane()
+    lateinit var rebaseCircleInAddedBranch: CirclePanel
 
     var mainBranchPanel: LabeledBranchPanel =
         createLabeledBranchPanel(
@@ -55,13 +55,6 @@ class GraphPanel(
         }
 
         layout = GridBagLayout()
-//        layout = BorderLayout()
-//        layeredPane.layout = GridBagLayout()
-//        layeredPane.background = JBColor.BLUE
-//        layeredPane.border = BorderFactory.createLineBorder(JBColor.RED)
-//        addedBranchPanel?.border = BorderFactory.createLineBorder(JBColor.GREEN)
-//        mainBranchPanel.border = BorderFactory.createLineBorder(JBColor.YELLOW)
-//        add(layeredPane, BorderLayout.CENTER)
 
         addBranches()
     }
@@ -117,7 +110,6 @@ class GraphPanel(
         alignSecondBranch(gbc)
         addedBranchPanel!!.addBranchWithVerticalOffset(offset)
         add(addedBranchPanel!!, gbc)
-//        layeredPane.add(addedBranchPanel!!, gbc, JLayeredPane.DEFAULT_LAYER)
     }
 
     /**
@@ -147,7 +139,8 @@ class GraphPanel(
      */
     private fun computeVerticalOffsetOfSecondBranch(): Int {
         val mainCircleCount = mainBranchPanel.branchPanel.circles.size
-        val addedCircleCount = addedBranchPanel?.branchPanel?.circles?.size ?: 0
+        val addedCircleCount =
+            (graphInfo.addedBranch?.currentCommits?.indexOf(graphInfo.addedBranch?.baseCommit!!) ?: 0) + 1
         val difference = mainCircleCount - addedCircleCount + 2
         return difference * mainBranchPanel.branchPanel.diameter * 2
     }
@@ -161,10 +154,8 @@ class GraphPanel(
         offset: Int,
     ) {
         alignPrimaryBranch(gbc)
-
         mainBranchPanel.addBranchWithVerticalOffset(offset)
         add(mainBranchPanel, gbc)
-//        layeredPane.add(mainBranchPanel, gbc, JLayeredPane.DEFAULT_LAYER)
         makeBranchNamePanelDraggable()
     }
 
@@ -249,7 +240,14 @@ class GraphPanel(
 
         // Coordinates of the last circle of the added branch
         if (addedBranchPanel != null) {
-            val (addedCircleCenterX, addedCircleCenterY) = centerCoordinatesOfLastAddedCircle()
+            try {
+                rebaseCircleInAddedBranch = addedBranchPanel!!.branchPanel.circles.filter { c ->
+                    c.commit == graphInfo.addedBranch?.baseCommit
+                }[0]
+            } catch (e: Exception) {
+                println("Mn burzash")
+            }
+            val (addedCircleCenterX, addedCircleCenterY) = centerCoordinatesOfBaseCircleInAddedBranch()
 
             gradientTransition(
                 g2d,
@@ -284,12 +282,11 @@ class GraphPanel(
      * Find the coordinates of the center
      * of the last circle of the primary (checked out) branch
      */
-    fun centerCoordinatesOfLastAddedCircle(): Pair<Int, Int> {
-        val addedLastCircle = addedBranchPanel!!.branchPanel.circles.last()
+    fun centerCoordinatesOfBaseCircleInAddedBranch(): Pair<Int, Int> {
         val addedCircleCenterX =
-            addedBranchPanel!!.x + addedBranchPanel!!.branchPanel.x + addedLastCircle.x + addedLastCircle.width / 2
+            addedBranchPanel!!.x + addedBranchPanel!!.branchPanel.x + rebaseCircleInAddedBranch.x + rebaseCircleInAddedBranch.width / 2
         val addedCircleCenterY =
-            addedBranchPanel!!.y + addedBranchPanel!!.branchPanel.y + addedLastCircle.y + addedLastCircle.height / 2
+            addedBranchPanel!!.y + addedBranchPanel!!.branchPanel.y + rebaseCircleInAddedBranch.y + rebaseCircleInAddedBranch.height / 2
         return Pair(addedCircleCenterX, addedCircleCenterY)
     }
 
@@ -320,7 +317,6 @@ class GraphPanel(
      * Update branch panels
      */
     fun updateGraphPanel() {
-//        layeredPane.removeAll()
         removeAll()
 
         mainBranchPanel =
@@ -341,8 +337,6 @@ class GraphPanel(
         }
 
         addBranches()
-//        layeredPane.revalidate()
-//        layeredPane.repaint()
         revalidate()
         repaint()
     }

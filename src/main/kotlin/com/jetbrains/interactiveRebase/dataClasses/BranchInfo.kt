@@ -15,6 +15,7 @@ class BranchInfo(
 ) {
     private val listeners: MutableList<Listener> = mutableListOf()
     var currentCommits: MutableList<CommitInfo> = initialCommits.toMutableList()
+    var baseCommit: CommitInfo? = null
 
     internal fun addListener(listener: Listener) = listeners.add(listener)
 

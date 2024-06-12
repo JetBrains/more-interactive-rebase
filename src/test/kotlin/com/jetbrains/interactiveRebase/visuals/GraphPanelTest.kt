@@ -105,7 +105,7 @@ class GraphPanelTest : BasePlatformTestCase() {
     }
 
     fun testCenterCoordinatesOfLastAddedCircle() {
-        val coordinates = graphPanel.centerCoordinatesOfLastAddedCircle()
+        val coordinates = graphPanel.centerCoordinatesOfBaseCircleInAddedBranch()
         assertEquals(32, coordinates.first)
         assertEquals(47, coordinates.second)
     }

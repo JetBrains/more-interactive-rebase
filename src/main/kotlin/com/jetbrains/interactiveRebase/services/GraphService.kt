@@ -135,6 +135,7 @@ class GraphService(private val project: Project) {
             addedBranch.setName(addedBranch.name)
             addedBranch.setCommits(commits)
             addedBranch.clearSelectedCommits()
+            addedBranch.baseCommit = commits.last()
         }
     }
 
