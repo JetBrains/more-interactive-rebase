@@ -129,6 +129,10 @@ configurations {
         extendsFrom(configurations["testRuntimeOnly"])
     }
 }
+dependencies {
+    "integrationTestsImplementation"("com.jetbrains.intellij.platform:vcs-test-framework:241.15989.150")
+    "integrationTestsImplementation"("com.jetbrains.intellij.platform:test-framework:241.15989.150")
+}
 
 val integrationTestTask = tasks.register<Test>("integrationTest") {
     description = "Runs the integration tests."
@@ -293,3 +297,4 @@ tasks.withType(Test::class) {
 tasks.named("check") {
     dependsOn(integrationTestTask)
 }
+
