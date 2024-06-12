@@ -63,6 +63,9 @@ class ActionService(project: Project) {
         modelService.branchInfo.clearSelectedCommits()
     }
 
+    /**
+     * Creates a rebase command for a normal rebase
+     */
     fun takeNormalRebaseAction() {
         val command = modelService.graphInfo.addedBranch?.currentCommits?.get(1)?.let { RebaseCommand(it) }
         if (command != null) {
