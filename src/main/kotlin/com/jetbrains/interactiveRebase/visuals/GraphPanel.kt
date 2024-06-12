@@ -152,7 +152,7 @@ class GraphPanel(
     private fun alignSecondBranch(gbc: GridBagConstraints) {
         gbc.gridx = 1
         gbc.gridy = 0
-        gbc.weightx = 1.0
+        gbc.weightx = 0.0
         gbc.weighty = 1.0
         gbc.anchor = GridBagConstraints.NORTH
         gbc.insets =
