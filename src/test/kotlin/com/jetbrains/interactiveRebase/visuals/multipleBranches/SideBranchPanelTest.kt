@@ -33,9 +33,9 @@ class SideBranchPanelTest : BasePlatformTestCase() {
 
         val result = sideBranchPanel.selectBranch()
         verify(dialog).warningYesNoDialog(
-            "Overwriting Staged Changes",
-            "Adding another branch to the view will reset the staged " +
-                "interactive rebase actions. Do you want to continue?",
+            "Overwriting Changes",
+            "Adding another branch to the view will reset the actions you have made. " +
+                "Do you want to continue?",
         )
         verify(modelService).addSecondBranchToGraphInfo(branchName)
         assertThat(sideBranchPanel.isOpaque).isTrue()
@@ -55,9 +55,9 @@ class SideBranchPanelTest : BasePlatformTestCase() {
 
         val result = sideBranchPanel.selectBranch()
         verify(dialog).warningYesNoDialog(
-            "Overwriting Staged Changes",
-            "Adding another branch to the view will reset the staged " +
-                "interactive rebase actions. Do you want to continue?",
+            "Overwriting Changes",
+            "Adding another branch to the view will reset the actions you have made. " +
+                "Do you want to continue?",
         )
         verify(modelService, never()).addSecondBranchToGraphInfo(branchName)
         assertThat(result).isFalse()
