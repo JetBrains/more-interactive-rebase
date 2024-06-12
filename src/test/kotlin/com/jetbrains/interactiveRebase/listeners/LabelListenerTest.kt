@@ -18,8 +18,11 @@ class LabelListenerTest : BasePlatformTestCase() {
         super.setUp()
         val commitProvider = TestGitCommitProvider(project)
         commitInfo = CommitInfo(commitProvider.createCommit("fix tests"), project, mutableListOf())
-        listener = LabelListener(commitInfo)
         modelService = project.service<ModelService>()
+        val branchInfo = modelService.branchInfo
+        branchInfo.initialCommits = listOf(commitInfo)
+        branchInfo.currentCommits = mutableListOf(commitInfo)
+        listener = LabelListener(commitInfo, branchInfo)
     }
 
     fun testMouseClickedConsidersNull() {

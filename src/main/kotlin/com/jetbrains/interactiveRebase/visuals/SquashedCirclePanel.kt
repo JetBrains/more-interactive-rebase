@@ -12,11 +12,11 @@ import java.awt.geom.Ellipse2D
 class SquashedCirclePanel(
     diameter: Double,
     private val border: Float,
-    color: JBColor,
+    colorTheme: Palette.Theme,
     override var commit: CommitInfo,
     override var next: CirclePanel? = null,
     override var previous: CirclePanel? = null,
-) : CirclePanel(diameter * 1.7, border, color, commit, next, previous) {
+) : CirclePanel(diameter * 1.7, border, colorTheme, commit, next, previous) {
     lateinit var backCircle: Ellipse2D.Double
 
     /**
@@ -30,27 +30,22 @@ class SquashedCirclePanel(
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
         createCircle(diameter)
-        color =
+        var circleColor: Color =
             if (commit.isDragged) {
-                JBColor.BLUE as JBColor
+                colorTheme.draggedCircleColor
             } else if (commit.isReordered) {
-                Palette.INDIGO
+                colorTheme.reorderedCircleColor
             } else {
-                color
+                colorTheme.regularCircleColor
             }
-        val circleColor =
-            if (commit.isSelected) {
-                color.darker() as JBColor
-            } else {
-                color
-            }
+        circleColor = if (commit.isSelected) circleColor.darker() else circleColor
         val borderColor =
             if (commit.isSelected) {
-                Palette.BLUE_BORDER.darker()
+                colorTheme.selectedBorderColor
             } else if (commit.isDragged || commit.isReordered) {
-                color.darker()
+                colorTheme.reorderedBorderColor
             } else {
-                Palette.DARK_BLUE
+                colorTheme.borderColor
             }
 
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)

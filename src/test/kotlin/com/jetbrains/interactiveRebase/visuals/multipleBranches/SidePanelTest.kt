@@ -9,6 +9,14 @@ import java.awt.GridBagConstraints
 class SidePanelTest : BasePlatformTestCase() {
     val branches = mutableListOf("Branch 1", "Branch 2", "Branch 3")
 
+    init {
+        System.setProperty("idea.home.path", "/tmp")
+    }
+
+    override fun setUp() {
+        super.setUp()
+    }
+
     fun testSetVisible() {
         val sidePanel = SidePanel(branches, project)
         sidePanel.isVisible = true

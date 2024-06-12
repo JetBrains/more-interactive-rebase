@@ -1,13 +1,17 @@
 package com.jetbrains.interactiveRebase.dataClasses
 
 import com.intellij.openapi.Disposable
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
+import com.jetbrains.rd.framework.base.deepClonePolymorphic
 
 class BranchInfo(
     var name: String = "",
     var initialCommits: List<CommitInfo> = listOf(),
     var selectedCommits: MutableList<CommitInfo> = mutableListOf(),
     var isPrimary: Boolean = false,
-    var isEnabled: Boolean = true,
+    var isWritable: Boolean = true,
 ) {
     private val listeners: MutableList<Listener> = mutableListOf()
     internal var currentCommits: MutableList<CommitInfo> = initialCommits.toMutableList()
@@ -32,7 +36,31 @@ class BranchInfo(
     internal fun setCommits(commits: List<CommitInfo>) {
         this.initialCommits = commits
         this.currentCommits = commits.toMutableList()
+        collapseCommits()
         listeners.forEach { it.onCommitChange(commits) }
+    }
+
+    fun collapseCommits(
+        initialIndex: Int = 5,
+        finalIndex: Int = this.currentCommits.size - 2,
+    ) {
+        if (this.initialCommits.size < 7) return
+
+        val collapsedCommits = this.currentCommits.subList(initialIndex, finalIndex).deepClonePolymorphic()
+        val parentOfCollapsedCommit = this.currentCommits[finalIndex]
+
+        val collapsedCommand = CollapseCommand(parentOfCollapsedCommit, collapsedCommits.toMutableList())
+
+        parentOfCollapsedCommit.addChange(collapsedCommand)
+        parentOfCollapsedCommit.isCollapsed = true
+        parentOfCollapsedCommit.isHovered = false
+
+        this.currentCommits.removeAll(collapsedCommits)
+        this.clearSelectedCommits()
+        collapsedCommits.forEach {
+            it.addChange(collapsedCommand)
+            it.isCollapsed = true
+        }
     }
 
     /**
@@ -52,6 +80,14 @@ class BranchInfo(
      */
     internal fun removeSelectedCommits(commit: CommitInfo) {
         selectedCommits.remove(commit)
+        commit.getChangesAfterPick().forEach {
+                change ->
+            if (change is SquashCommand) {
+                change.squashedCommits.forEach { selectedCommits.remove(it) }
+            } else if (change is FixupCommand) {
+                change.fixupCommits.forEach { selectedCommits.remove(it) }
+            }
+        }
         listeners.forEach { it.onSelectedCommitChange(selectedCommits) }
     }
 
@@ -77,6 +113,10 @@ class BranchInfo(
         return size
     }
 
+    /**
+     * Updates the order of the current
+     * commits
+     */
     internal fun updateCurrentCommits(
         oldIndex: Int,
         newIndex: Int,
@@ -84,6 +124,14 @@ class BranchInfo(
     ) {
         currentCommits.removeAt(oldIndex)
         currentCommits.add(newIndex, commit)
+        listeners.forEach { it.onCurrentCommitsChange(currentCommits) }
+    }
+
+    internal fun addCommitsToCurrentCommits(
+        index: Int,
+        commits: List<CommitInfo>,
+    ) {
+        currentCommits.addAll(index, commits)
         listeners.forEach { it.onCurrentCommitsChange(currentCommits) }
     }
 
@@ -113,6 +161,27 @@ class BranchInfo(
         result = 31 * result + isPrimary.hashCode()
         result = 31 * result + currentCommits.hashCode()
         return result
+    }
+
+    /**
+     * Gets the index of the current commit
+     * taking into account squashed commits
+     */
+
+    internal fun indexOfCommit(commit: CommitInfo): Int {
+        var ret = currentCommits.indexOf(commit)
+
+        if (commit.isSquashed) {
+            commit.getChangesAfterPick().forEach {
+                if (it is FixupCommand) {
+                    ret = currentCommits.indexOf(it.parentCommit) - 1
+                } else if (it is SquashCommand) {
+                    ret = currentCommits.indexOf(it.parentCommit) - 1
+                }
+            }
+        }
+
+        return ret
     }
 
     /**

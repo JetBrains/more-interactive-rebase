@@ -5,10 +5,13 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
+import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
+import com.jetbrains.interactiveRebase.visuals.GraphPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import java.awt.Point
 import java.awt.event.ActionEvent
@@ -83,6 +86,7 @@ class CircleDragAndDropListener(
             messages.map { m ->
                 Point(m.x, m.y)
             }.toMutableList()
+        e.consume()
     }
 
     /**
@@ -93,7 +97,10 @@ class CircleDragAndDropListener(
      * 4. handle limited vertical movement (outside parent component)
      */
     override fun mouseDragged(e: MouseEvent) {
-        if (!commit.changes.any { it is DropCommand } && parent.branch.isEnabled) {
+        maxY = parent.branchPanel.height - circle.height
+        if (!commit.getChangesAfterPick().any { it is DropCommand || it is CollapseCommand } &&
+            parent.branch.isWritable
+        ) {
             wasDragged = true
             commit.isDragged = true
             val deltaY = e.yOnScreen - mousePosition.y
@@ -112,8 +119,11 @@ class CircleDragAndDropListener(
             }
 
             // Handle visual indication of movement limits
-            indicateLimitedVerticalMovement(newCircleY)
+//            indicateLimitedVerticalMovement(newCircleY)
+
+            (parent.parent as GraphPanel).repaint()
         }
+        e.consume()
     }
 
     /**
@@ -123,6 +133,7 @@ class CircleDragAndDropListener(
     internal fun updateMousePosition(e: MouseEvent) {
         mousePosition.x = e.xOnScreen
         mousePosition.y = e.yOnScreen
+        e.consume()
     }
 
     /**
@@ -132,14 +143,18 @@ class CircleDragAndDropListener(
      * 3. update commitInfo
      */
     override fun mouseReleased(e: MouseEvent) {
+        val modelService = project.service<ModelService>()
         if (wasDragged) {
             commit.isDragged = false
             repositionOnDrop()
             if (initialIndex != currentIndex) {
-                markCommitAsReordered()
+                modelService.markCommitAsReordered(commit, initialIndex, currentIndex)
+                parent.branch.updateCurrentCommits(initialIndex, currentIndex, commit)
             }
-            parent.branch.updateCurrentCommits(initialIndex, currentIndex, commit)
+            (parent.parent as GraphPanel?)?.updateGraphPanel()
+            (parent.parent as GraphPanel?)?.repaint()
         }
+        e.consume()
     }
 
     /**
@@ -154,8 +169,9 @@ class CircleDragAndDropListener(
         commit.setReorderedTo(true)
         val command =
             ReorderCommand(
-                commits.size - initialIndex - 1,
-                commits.size - initialIndex - 1,
+                commit,
+                initialIndex,
+                currentIndex,
             )
         commit.addChange(command)
         project.service<RebaseInvoker>().addCommand(command)

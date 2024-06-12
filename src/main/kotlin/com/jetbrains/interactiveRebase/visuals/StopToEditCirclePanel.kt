@@ -11,11 +11,11 @@ import java.awt.RenderingHints
 class StopToEditCirclePanel(
     diameter: Double,
     private val border: Float,
-    color: JBColor,
+    colorTheme: Palette.Theme,
     override var commit: CommitInfo,
     override var next: CirclePanel? = null,
     override var previous: CirclePanel? = null,
-) : CirclePanel(diameter, border, color, commit, next, previous) {
+) : CirclePanel(diameter, border, colorTheme, commit, next, previous) {
     override fun paintCircle(g: Graphics) {
         val g2d = g as Graphics2D
 
@@ -24,7 +24,7 @@ class StopToEditCirclePanel(
 
         createCircle(diameter)
         val circleColor = if (commit.isSelected) Palette.DARK_GRAY.darker() else Palette.JETBRAINS_GRAY
-        val borderColor = if (commit.isSelected) Palette.BLUE_BORDER.darker() else Palette.DARK_BLUE
+        val borderColor = if (commit.isSelected) colorTheme.borderColor.darker() else colorTheme.borderColor
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
 
         if (commit.isHovered) {

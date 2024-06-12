@@ -8,6 +8,7 @@ import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.IRGitRefreshListener
 import git4idea.status.GitRefreshListener
@@ -23,9 +24,6 @@ class ModelService(
     constructor(project: Project, coroutineScope: CoroutineScope) : this(project, coroutineScope, project.service<CommitService>())
 
     val branchInfo = BranchInfo()
-
-    // TODO: remove?
-//    val otherBranchInfo = BranchInfo()
     val graphInfo = GraphInfo(branchInfo)
     private val graphService = project.service<GraphService>()
 
@@ -38,38 +36,81 @@ class ModelService(
      */
     init {
         fetchGraphInfo()
+        populateLocalBranches()
         project.messageBus.connect(this).subscribe(GitRefreshListener.TOPIC, IRGitRefreshListener(project))
     }
 
     /**
-     * Adds or removes
-     * the commit from the
-     * list of selected commits
+     * Selects the single passed in
+     * commit by also deselecting all
+     * currently selected commits
      */
-    fun addOrRemoveCommitSelection(commit: CommitInfo) {
-        commit.changes.forEach { change ->
+    fun selectSingleCommit(
+        commit: CommitInfo,
+        branchInfo: BranchInfo,
+    ) {
+        branchInfo.clearSelectedCommits()
+        addToSelectedCommits(commit, branchInfo)
+    }
+
+    /**
+     * Adds a commit to the list
+     * of selected commits without
+     * deselecting the rest of the
+     * commits
+     */
+    fun addToSelectedCommits(
+        commit: CommitInfo,
+        branchInfo: BranchInfo,
+    ) {
+        if (commit.isCollapsed) return
+        commit.isSelected = true
+        branchInfo.addSelectedCommits(commit)
+        commit.getChangesAfterPick().forEach { change ->
             if (change is FixupCommand || change is SquashCommand) {
-                val combinedCommits = project.service<ActionService>().getCombinedCommits(change)
-                if (commit.isSelected) {
-                    branchInfo.selectedCommits.addAll(combinedCommits)
-                    // TODO: remove
-//                    otherBranchInfo.selectedCommits.addAll(combinedCommits)
-                } else {
-                    branchInfo.selectedCommits.removeAll(combinedCommits)
-                    // TODO: remove
-//                    otherBranchInfo.selectedCommits.removeAll(combinedCommits)
+                project.service<ActionService>().getCombinedCommits(change).forEach {
+                    branchInfo.addSelectedCommits(it)
                 }
             }
         }
-        if (commit.isSelected) {
-            branchInfo.addSelectedCommits(commit)
-            // TODO: remove
-//            otherBranchInfo.addSelectedCommits(commit)
-        } else {
-            branchInfo.removeSelectedCommits(commit)
-            // TODO: remove
-//            otherBranchInfo.removeSelectedCommits(commit)
-        }
+    }
+
+    /**
+     * Removes commit from
+     * list of selected commits
+     * for a given branch
+     */
+    fun removeFromSelectedCommits(
+        commit: CommitInfo,
+        branchInfo: BranchInfo,
+    ) {
+        commit.isSelected = false
+        if (commit.isCollapsed) return
+        branchInfo.removeSelectedCommits(commit)
+    }
+
+    /**
+     * Marks a commit as a reordered by
+     * 1. sets the isReordered flag to true
+     * 2. adds a ReorderCommand
+     * to the visual changes applied to the commit
+     * 3. adds the Reorder Command to the Invoker
+     * that holds an overview of all staged changes.
+     */
+    internal fun markCommitAsReordered(
+        commit: CommitInfo,
+        oldIndex: Int,
+        newIndex: Int,
+    ) {
+        commit.setReorderedTo(true)
+        val command =
+            ReorderCommand(
+                commit,
+                oldIndex,
+                newIndex,
+            )
+        commit.addChange(command)
+        project.service<RebaseInvoker>().addCommand(command)
     }
 
     /**
@@ -78,6 +119,56 @@ class ModelService(
      */
     fun getSelectedCommits(): MutableList<CommitInfo> {
         return branchInfo.selectedCommits
+    }
+
+    /**
+     * Returns the selected commit which is the lowest visually in the list.
+     */
+    fun getLowestSelectedCommit(): CommitInfo {
+        var commit = branchInfo.selectedCommits[0]
+        var index = branchInfo.currentCommits.indexOf(commit)
+
+        branchInfo.selectedCommits.forEach {
+            if (branchInfo.currentCommits.indexOf(it) > index && !it.isSquashed) {
+                commit = it
+                index = branchInfo.currentCommits.indexOf(it)
+            }
+        }
+
+        return commit
+    }
+
+    /**
+     * Returns the selected commit which is the highest visually in the list.
+     */
+    fun getHighestSelectedCommit(): CommitInfo {
+        var commit = branchInfo.selectedCommits[0]
+        var index = branchInfo.currentCommits.indexOf(commit)
+
+        branchInfo.selectedCommits.forEach {
+            if (branchInfo.currentCommits.indexOf(it) < index && !it.isSquashed) {
+                commit = it
+                index = branchInfo.currentCommits.indexOf(it)
+            }
+        }
+
+        return commit
+    }
+
+    /**
+     * Returns the last commit that is selected
+     * but is not squashed or fixed up
+     */
+    fun getLastSelectedCommit(branchInfo: BranchInfo): CommitInfo {
+        var commit = branchInfo.selectedCommits.last()
+
+        // Ensure that the commit we are moving is actually displayed
+        while (commit.isSquashed) {
+            val index = branchInfo.selectedCommits.indexOf(commit)
+            commit = branchInfo.selectedCommits[index - 1]
+        }
+
+        return commit
     }
 
     /**
@@ -100,11 +191,30 @@ class ModelService(
     }
 
     /**
+     * Populates the GraphInfo field in order to be able to display the side panel of local branches
+     */
+    fun populateLocalBranches() {
+        val branchService = project.service<BranchService>()
+        coroutineScope.launch {
+            graphInfo.branchList = branchService.getBranchesExceptCheckedOut().toMutableList()
+        }
+    }
+
+    /**
      * Populates the added branch field in the graph info with the given branch
      */
-    fun addBranchToGraphInfo(addedBranch: String) {
+    fun addSecondBranchToGraphInfo(addedBranch: String) {
         coroutineScope.launch {
             graphService.addBranch(graphInfo, addedBranch)
+        }
+    }
+
+    /**
+     * Removes the added branch field in the graph info
+     */
+    fun removeSecondBranchFromGraphInfo() {
+        coroutineScope.launch {
+            graphService.removeBranch(graphInfo)
         }
     }
 

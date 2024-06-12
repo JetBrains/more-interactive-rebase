@@ -2,7 +2,6 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
@@ -25,26 +24,27 @@ import javax.swing.SwingConstants
  */
 class GraphPanel(
     val project: Project,
-//    graphInfo: GraphInfo,
-//    mainBranch: BranchInfo,
-//    addedBranch: BranchInfo? = null,
-    private val mainColor: JBColor = Palette.BLUE,
-    private val addedColor: JBColor = Palette.LIME_GREEN,
+    val graphInfo: GraphInfo = project.service<ModelService>().graphInfo,
+    private val mainTheme: Palette.Theme = Palette.BLUE_THEME,
+    private val addedTheme: Palette.Theme = Palette.TOMATO_THEME,
 ) : JBPanel<JBPanel<*>>() {
-    val mainBranch = project.service<ModelService>().graphInfo.mainBranch
-    val addedBranch = project.service<ModelService>().graphInfo.addedBranch
-    val mainBranchPanel: LabeledBranchPanel =
-        createLabeledBranchPanel(mainBranch, SwingConstants.RIGHT)
+    var mainBranchPanel: LabeledBranchPanel =
+        createLabeledBranchPanel(
+            graphInfo.mainBranch,
+            SwingConstants.RIGHT,
+            mainTheme,
+        )
 
     var addedBranchPanel: LabeledBranchPanel? = null
 
     init {
-        if (addedBranch != null) {
+        if (graphInfo.addedBranch != null) {
             addedBranchPanel =
-                createLabeledBranchPanel(addedBranch, SwingConstants.LEFT)
-            // TODO: remove
-//            addedBranchPanel!!.border = BorderFactory.createLineBorder(JBColor.CYAN)
-//            mainBranchPanel.border = BorderFactory.createLineBorder(JBColor.YELLOW)
+                createLabeledBranchPanel(
+                    graphInfo.addedBranch!!,
+                    SwingConstants.LEFT,
+                    addedTheme,
+                )
         }
 
         layout = GridBagLayout()
@@ -60,10 +60,11 @@ class GraphPanel(
     private fun createLabeledBranchPanel(
         mainBranch: BranchInfo,
         alignment: Int,
+        colorTheme: Palette.Theme,
     ) = LabeledBranchPanel(
         project,
         mainBranch,
-        mainColor,
+        colorTheme,
         alignment,
     )
 
@@ -71,18 +72,89 @@ class GraphPanel(
      * Adds the two branches (as Labeled Branch Panels)
      * to the graph panel
      */
-    private fun addBranches() {
+
+    internal fun addBranches() {
         val gbc = GridBagConstraints()
-        gbc.gridx = 0
+
+        val (offsetMain, offsetAdded) = computeVerticalOffsets()
+        addFirstBranchToTheView(gbc, offsetMain)
+
+        if (addedBranchPanel != null) {
+            addSecondBranchToTheView(gbc, offsetAdded)
+        }
+    }
+
+    /**
+     * Adds the second branch to the view
+     * for visualization
+     */
+    private fun GraphPanel.addSecondBranchToTheView(
+        gbc: GridBagConstraints,
+        offset: Int,
+    ) {
+        alignSecondBranch(gbc)
+        addedBranchPanel!!.addBranchWithVerticalOffset(offset)
+        add(addedBranchPanel!!, gbc)
+    }
+
+    /**
+     * Computes what offset is necessary for both of the branches
+     * to be properly aligned.
+     * That is, the added branch always has
+     * a lower position than the primary branch.
+     * The default padding is 5 px.
+     */
+    private fun computeVerticalOffsets(): Pair<Int, Int> {
+        val offset = computeVerticalOffsetOfSecondBranch()
+        var offsetMain = 5
+        var offsetAdded = 5
+        if (offset < 0) {
+            offsetMain = -offset
+        } else if (offset > 0) {
+            offsetAdded = offset
+        }
+        return Pair(offsetMain, offsetAdded)
+    }
+
+    /**
+     * Calculates a vertical offset for the second branch
+     * based on the number of visualized commits
+     * This ensures that the second added branch is always positioned
+     * below the primary one
+     */
+    private fun computeVerticalOffsetOfSecondBranch(): Int {
+        val mainCircleCount = mainBranchPanel.branchPanel.circles.size
+        val addedCircleCount = addedBranchPanel?.branchPanel?.circles?.size ?: 0
+        val difference = mainCircleCount - addedCircleCount + 2
+        return difference * mainBranchPanel.branchPanel.diameter * 2
+    }
+
+    /**
+     * Adds the main branch to the view
+     * for visualization
+     */
+    private fun GraphPanel.addFirstBranchToTheView(
+        gbc: GridBagConstraints,
+        offset: Int,
+    ) {
+        alignPrimaryBranch(gbc)
+        mainBranchPanel.addBranchWithVerticalOffset(offset)
+        add(mainBranchPanel, gbc)
+    }
+
+    /**
+     * Sets the grid alignment specifics
+     * of the second branch
+     * 1. it is to the right
+     * 2. sets distance from the primary branch
+     * 3. spans vertically over the entire editor tab
+     */
+    private fun alignSecondBranch(gbc: GridBagConstraints) {
+        gbc.gridx = 1
         gbc.gridy = 0
         gbc.weightx = 1.0
         gbc.weighty = 1.0
-        gbc.anchor = GridBagConstraints.CENTER
-        gbc.fill = GridBagConstraints.BOTH
-
-        add(mainBranchPanel, gbc)
-
-        gbc.gridx = 1
+        gbc.anchor = GridBagConstraints.NORTH
         gbc.insets =
             Insets(
                 0,
@@ -90,9 +162,26 @@ class GraphPanel(
                 0,
                 0,
             )
+        gbc.fill = GridBagConstraints.BOTH
+    }
 
-        if (addedBranchPanel != null) {
-            add(addedBranchPanel!!, gbc)
+    /**
+     * Sets the grid alignment specifics
+     * of the first branch
+     * If it's the only branch set it to span vertically
+     * else make sure the branch panel doesn't go all the way to the
+     * bottom of the screen
+     */
+    private fun alignPrimaryBranch(gbc: GridBagConstraints) {
+        gbc.gridx = 0
+        gbc.gridy = 0
+        gbc.weightx = 0.0
+        gbc.weighty = 1.0
+        gbc.anchor = GridBagConstraints.NORTH
+        gbc.fill = GridBagConstraints.BOTH
+
+        if (graphInfo.mainBranch.isPrimary) {
+            gbc.fill = GridBagConstraints.HORIZONTAL
         }
     }
 
@@ -110,6 +199,7 @@ class GraphPanel(
             RenderingHints.VALUE_ANTIALIAS_ON,
         )
 
+        if (mainBranchPanel.branchPanel.circles.isEmpty()) return
         // Coordinates of the last circle of the main branch
         val (mainCircleCenterX, mainCircleCenterY) = centerCoordinatesOfLastMainCircle()
 
@@ -130,14 +220,19 @@ class GraphPanel(
                     mainCircleCenterX.toFloat(),
                     mainCircleCenterY.toFloat(),
                     mainCircleCenterX.toFloat(),
-                    mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 3 / 2,
+                    mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 2,
                     mainCircleCenterX.toFloat(),
-                    mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 3 / 2,
+                    mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 2,
                     addedCircleCenterX.toFloat(),
                     addedCircleCenterY.toFloat(),
                 )
 
-            g2d.draw(curve)
+            // If added branch is not rendered because the screen is too small
+            // coordinates appear to be 0
+            // Hence, we don't draw the line in this case
+            if (Pair(addedCircleCenterX, addedCircleCenterY) != Pair(0, 0)) {
+                g2d.draw(curve)
+            }
         }
     }
 
@@ -159,18 +254,50 @@ class GraphPanel(
      * of the last circle of the added (not checked out) branch
      */
     fun centerCoordinatesOfLastMainCircle(): Pair<Int, Int> {
-        val mainLastCircle = mainBranchPanel.branchPanel.circles.last()
-        val mainCircleCenterX =
-            mainBranchPanel.x + // start of the labeled branch panel
+        var mainCircleCenterX = 0
+        var mainCircleCenterY = 0
+        if (mainBranchPanel.branchPanel.circles.isNotEmpty()) {
+            val mainLastCircle = mainBranchPanel.branchPanel.circles.last()
+            mainCircleCenterX =
+                mainBranchPanel.x + // start of the labeled branch panel
                 mainBranchPanel.branchPanel.x + // start of the internal branch panel
                 mainLastCircle.x + // start of the circle
                 mainLastCircle.width / 2 // center of the circle
-        val mainCircleCenterY =
-            mainBranchPanel.y + // start of the labeled branch panel
+            mainCircleCenterY =
+                mainBranchPanel.y + // start of the labeled branch panel
                 mainBranchPanel.branchPanel.y + // start of the internal branch panel
                 mainLastCircle.y + // start of the circle
                 mainLastCircle.height / 2 // center of the circle
+        }
         return Pair(mainCircleCenterX, mainCircleCenterY)
+    }
+
+    /**
+     * Update branch panels
+     */
+    fun updateGraphPanel() {
+        removeAll()
+
+        mainBranchPanel =
+            createLabeledBranchPanel(
+                graphInfo.mainBranch,
+                SwingConstants.RIGHT,
+                mainTheme,
+            )
+
+        addedBranchPanel = null
+        if (graphInfo.addedBranch != null) {
+            addedBranchPanel =
+                createLabeledBranchPanel(
+                    graphInfo.addedBranch!!,
+                    SwingConstants.LEFT,
+                    addedTheme,
+                )
+        }
+
+        addBranches()
+        revalidate()
+        repaint()
     }
 
     /**
@@ -184,7 +311,7 @@ class GraphPanel(
         endX: Int,
         endY: Int,
         fractions: FloatArray = floatArrayOf(0.0f, 0.8f),
-        colors: Array<Color> = arrayOf(mainColor, addedColor),
+        colors: Array<Color> = arrayOf(mainTheme.regularCircleColor, addedTheme.regularCircleColor),
     ) {
         g2d.paint =
             LinearGradientPaint(

@@ -4,9 +4,6 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
-import com.intellij.vcs.log.VcsShortCommitDetails
-import com.intellij.vcs.log.impl.VcsCommitMetadataImpl
-import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4idea.GitUtil
 import git4idea.branch.GitRebaseParams
 import git4idea.i18n.GitBundle

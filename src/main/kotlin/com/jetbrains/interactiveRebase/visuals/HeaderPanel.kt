@@ -7,7 +7,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
-import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import java.awt.BorderLayout
 import java.awt.Graphics
@@ -42,7 +41,7 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
     private fun addGitButtons(buttonPanel: JBPanel<JBPanel<*>>) {
         val actionsGroup =
             actionManager.getAction(
-                "com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup",
+                "ActionsGroup",
             ) as RebaseActionsGroup
         val toolbar = actionManager.createActionToolbar(ActionPlaces.EDITOR_TAB, actionsGroup, true)
         val toolbarComponent: JComponent = toolbar.component
@@ -70,10 +69,10 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
         normalButton.addActionListener {
 //            project.service<ModelService>().addBranchToGraphInfo("main")
 //            println(project.service<ModelService>().graphInfo)
-            project.service<ActionService>().takeNormalRebaseAction() }
+            project.service<ActionService>().takeNormalRebaseAction()
+        }
         buttonPanel.add(normalButton)
         buttonPanel.add(resetButton)
         buttonPanel.add(rebaseButton)
-
     }
 }

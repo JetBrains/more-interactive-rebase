@@ -23,7 +23,7 @@ import javax.imageio.ImageIO
 open class CirclePanel(
     open val diameter: Double,
     private val border: Float,
-    var color: JBColor,
+    var colorTheme: Palette.Theme,
     open var commit: CommitInfo,
     open var next: CirclePanel? = null,
     open var previous: CirclePanel? = null,
@@ -68,27 +68,22 @@ open class CirclePanel(
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
         createCircle(diameter)
-        color =
+        var circleColor: Color =
             if (commit.isDragged) {
-                JBColor.BLUE as JBColor
-            } else if (commit.isReordered) {
-                Palette.INDIGO
+                colorTheme.draggedCircleColor
+//            } else if (commit.isReordered) {
+//                colorTheme.reorderedCircleColor
             } else {
-                color
+                colorTheme.regularCircleColor
             }
-        val circleColor =
-            if (commit.isSelected) {
-                color.darker() as JBColor
-            } else {
-                color
-            }
+        circleColor = if (commit.isSelected) circleColor.darker() else circleColor
         val borderColor =
             if (commit.isSelected) {
-                Palette.BLUE_BORDER.darker()
+                colorTheme.selectedBorderColor
             } else if (commit.isDragged || commit.isReordered) {
-                color.darker()
+                colorTheme.reorderedBorderColor
             } else {
-                Palette.DARK_BLUE
+                colorTheme.borderColor
             }
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
 //        if (commit.isDragged) {

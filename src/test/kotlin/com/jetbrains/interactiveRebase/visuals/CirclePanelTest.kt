@@ -28,7 +28,7 @@ class CirclePanelTest : BasePlatformTestCase() {
     }
 
     fun testPaintComponent() {
-        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
+        val circlePanel = CirclePanel(10.0, 2f, Palette.BLUE_THEME, commit)
         `when`(graph.create()).thenReturn(graph2)
 
         circlePanel.paintComponent(graph)
@@ -39,7 +39,7 @@ class CirclePanelTest : BasePlatformTestCase() {
     }
 
     fun testPaintComponentIsSelected() {
-        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
+        val circlePanel = CirclePanel(10.0, 2f, Palette.BLUE_THEME, commit)
         `when`(graph.create()).thenReturn(graph2)
         circlePanel.commit.isSelected = true
         circlePanel.paintComponent(graph)
@@ -51,7 +51,7 @@ class CirclePanelTest : BasePlatformTestCase() {
     }
 
     fun testPaintCircleIsHovered() {
-        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
+        val circlePanel = CirclePanel(10.0, 2f, Palette.BLUE_THEME, commit)
         `when`(graph.create()).thenReturn(graph2)
         circlePanel.commit.isHovered = true
         circlePanel.paintCircle(graph)
@@ -62,7 +62,7 @@ class CirclePanelTest : BasePlatformTestCase() {
     }
 
     fun testDrawBorder() {
-        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
+        val circlePanel = CirclePanel(10.0, 2f, Palette.BLUE_THEME, commit)
         val circle = circlePanel.circle
         val borderColor = JBColor.BLACK
         circlePanel.drawBorder(graph, circle, borderColor)
@@ -72,7 +72,7 @@ class CirclePanelTest : BasePlatformTestCase() {
     }
 
     fun testSelectedCommitAppearance() {
-        val circlePanel = CirclePanel(10.0, 2f, JBColor.BLUE, commit)
+        val circlePanel = CirclePanel(10.0, 2f, Palette.BLUE_THEME, commit)
         val circleColor = JBColor.BLACK
         val borderColor = JBColor.BLACK
         circlePanel.selectedCommitAppearance(graph, true, circleColor, borderColor)

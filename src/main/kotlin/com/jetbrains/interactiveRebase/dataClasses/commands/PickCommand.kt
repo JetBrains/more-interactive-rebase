@@ -17,5 +17,10 @@ data class PickCommand(var commit: CommitInfo) : IRCommand() {
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
     ) {
+        model.pick(listOf(branchInfo.currentCommits.reversed().indexOf(commit)))
+    }
+
+    override fun commitOfCommand(): CommitInfo {
+        return commit
     }
 }

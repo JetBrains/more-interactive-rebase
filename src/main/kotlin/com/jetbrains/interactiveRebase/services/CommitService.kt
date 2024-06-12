@@ -45,6 +45,17 @@ class CommitService(private val project: Project) {
         return getDisplayableCommitsOfBranch(branchName, repo, consumer)
     }
 
+    fun getCommitsWithReference(
+        wantedBranch: String,
+        referenceBranch: String,
+    ): List<GitCommit> {
+        val initial = this.referenceBranchName
+        this.referenceBranchName = referenceBranch
+        val commits = getCommits(wantedBranch)
+        this.referenceBranchName = initial
+        return commits
+    }
+
     /**
      * Gets the commits in the given branch that are not on the reference branch, caps them to the maximum size at the consumer.
      * If the current branch is the reference branch or has been merged to the reference branch, gets all commits until reaching the cap
@@ -58,7 +69,7 @@ class CommitService(private val project: Project) {
             gitUtils.getCommitsOfBranch(repo, consumer, branchName)
         } else {
             gitUtils.getCommitDifferenceBetweenBranches(branchName, referenceBranchName, repo, consumer)
-            handleMergedBranch(consumer, branchName, repo)
+//            handleMergedBranch(consumer, branchName, repo)
         }
         return consumer.commits
     }
@@ -99,7 +110,7 @@ class CommitService(private val project: Project) {
     }
 
     /**
-     * Gets branchname from utils
+     * Gets branch name from utils
      */
     fun getBranchName(): String {
         return gitUtils.getRepository().currentBranchName.toString()

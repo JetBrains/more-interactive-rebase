@@ -11,28 +11,15 @@ import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
 import javax.swing.JComponent
 
-class AddBranchAction :
-    DumbAwareAction(
-        "Add Branch",
-        "Add another branch to the view",
-        AllIcons.Actions.AddList,
-    ),
+class RedoAction :
+    DumbAwareAction("Redo", "Redo the last action", AllIcons.Actions.Redo),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project ?: return
-        val mainPanel = project.service<ActionService>().mainPanel
-        val sidePanel = mainPanel.sidePanel
-
-        sidePanel.isVisible = !sidePanel.isVisible
-        sidePanel.setVisible(sidePanel.isVisible)
-
-        // This toggles the icon of the add branch
-        // e.presentation.icon = if (sidePanel.isVisible) AllIcons.Actions.Exit else AllIcons.Actions.AddList
+        e.project?.service<ActionService>()?.redoLastAction()
     }
 
     override fun update(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible = true
-//        super.update(e)
+        e.project?.service<ActionService>()?.checkRedo(e)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
@@ -47,8 +34,8 @@ class AddBranchAction :
             this,
             presentation,
             place,
-            "Alt+A",
-            "Add another branch to the view",
+            "Ctrl+Shift+Z",
+            "Redo the last action",
         )
     }
 }

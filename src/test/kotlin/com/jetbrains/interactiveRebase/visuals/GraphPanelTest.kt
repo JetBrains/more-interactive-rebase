@@ -3,10 +3,13 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
+import junit.framework.TestCase
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -28,9 +31,14 @@ class GraphPanelTest : BasePlatformTestCase() {
     private lateinit var commit6: CommitInfo
     private lateinit var branchInfo: BranchInfo
     private lateinit var otherBranchInfo: BranchInfo
+    private lateinit var graphInfo: GraphInfo
     private lateinit var mainCirclePanel: CirclePanel
     private lateinit var addedCirclePanel: CirclePanel
     private lateinit var graphPanel: GraphPanel
+
+    init {
+        System.setProperty("idea.home.path", "/tmp")
+    }
 
     override fun setUp() {
         super.setUp()
@@ -60,7 +68,9 @@ class GraphPanelTest : BasePlatformTestCase() {
         `when`(addedCirclePanel.width).thenReturn(35)
         `when`(addedCirclePanel.height).thenReturn(45)
 
-        graphPanel = GraphPanel(project)
+        graphInfo = GraphInfo(branchInfo, otherBranchInfo)
+
+        graphPanel = spy(GraphPanel(project, graphInfo))
         graphPanel.mainBranchPanel.branchPanel.circles = mutableListOf(mainCirclePanel)
         graphPanel.addedBranchPanel!!.branchPanel.circles = mutableListOf(addedCirclePanel)
     }
@@ -86,6 +96,16 @@ class GraphPanelTest : BasePlatformTestCase() {
         val coordinates = graphPanel.centerCoordinatesOfLastMainCircle()
         assertEquals(25, coordinates.first)
         assertEquals(40, coordinates.second)
+    }
+
+    fun testCenterCoordinatesOfLastMainCircleEmptyList() {
+        branchInfo.currentCommits = mutableListOf()
+        branchInfo.isPrimary = true
+        graphInfo = GraphInfo(branchInfo, otherBranchInfo)
+        graphPanel = GraphPanel(project, graphInfo)
+        val coordinates = graphPanel.centerCoordinatesOfLastMainCircle()
+        assertEquals(0, coordinates.first)
+        assertEquals(0, coordinates.second)
     }
 
     fun testCenterCoordinatesOfLastAddedCircle() {
@@ -115,5 +135,21 @@ class GraphPanelTest : BasePlatformTestCase() {
         verify(g2d, times(1)).setPaint(
             any(LinearGradientPaint::class.java),
         )
+    }
+
+    fun testUpdateGraphPanel() {
+        graphPanel.updateGraphPanel()
+        verify(graphPanel).removeAll()
+        verify(graphPanel).addBranches()
+        verify(graphPanel).repaint()
+    }
+
+    fun testUpdateGraphPanelSingleBranch() {
+        graphPanel = spy(GraphPanel(project, GraphInfo(branchInfo)))
+        graphPanel.updateGraphPanel()
+        verify(graphPanel).removeAll()
+        verify(graphPanel).addBranches()
+        verify(graphPanel).repaint()
+        TestCase.assertNull(graphPanel.addedBranchPanel)
     }
 }

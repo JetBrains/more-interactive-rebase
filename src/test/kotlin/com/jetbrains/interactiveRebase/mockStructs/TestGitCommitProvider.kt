@@ -12,7 +12,7 @@ import git4idea.history.GitCommitRequirements
 class TestGitCommitProvider(private val project: Project) {
     fun createCommit(subject: String): GitCommit {
         val author = MockVcsUserRegistry().users.first()
-        val hash = MockHash("example-hash")
+        val hash = MockHash(subject)
         val root = MockVirtualFile("mock name")
         val message = "example long commit message"
         val commitRequirements = GitCommitRequirements()
@@ -27,7 +27,7 @@ class TestGitCommitProvider(private val project: Project) {
         vararg parents: String,
     ): GitCommit {
         val author = MockVcsUserRegistry().users.first()
-        val hash = MockHash("example-hash")
+        val hash = MockHash(thisCommit)
         val root = MockVirtualFile("mock name")
         val message = "example long commit message"
         val commitRequirements = GitCommitRequirements()
@@ -61,6 +61,23 @@ class TestGitCommitProvider(private val project: Project) {
 
         override fun toShortString(): String {
             return string
+        }
+
+        override fun toString(): String {
+            return "MockHash(string='$string')"
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as MockHash
+
+            return string == other.string
+        }
+
+        override fun hashCode(): Int {
+            return string.hashCode()
         }
     }
 }

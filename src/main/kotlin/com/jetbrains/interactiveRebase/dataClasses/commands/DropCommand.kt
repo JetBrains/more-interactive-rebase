@@ -19,4 +19,8 @@ data class DropCommand(var commit: CommitInfo) : IRCommand() {
     ) {
         model.drop(listOf(branchInfo.currentCommits.reversed().indexOf(commit)))
     }
+
+    override fun commitOfCommand(): CommitInfo {
+        return commit
+    }
 }

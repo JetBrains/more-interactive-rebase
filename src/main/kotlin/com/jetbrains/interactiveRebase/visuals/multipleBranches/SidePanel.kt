@@ -67,7 +67,7 @@ class SidePanel(var branches: MutableList<String>, val project: Project) : JBPan
      * Adds a listener to the remove button of the branch panel.
      */
     fun addRemoveBranchButtonListener(branch: SideBranchPanel) {
-        val removeListener = RemoveSideBranchListener(branch, this)
+        val removeListener = RemoveSideBranchListener(project, branch, this)
         branch.button.addMouseListener(removeListener)
         branch.button.addMouseMotionListener(removeListener)
     }
