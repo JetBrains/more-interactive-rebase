@@ -35,6 +35,7 @@ class LabelListener(
                 modelService.removeFromSelectedCommits(commit, branchInfo)
             }
         }
+        e?.consume()
     }
 
     override fun mousePressed(e: MouseEvent?) {}

@@ -41,7 +41,7 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
     private fun addGitButtons(buttonPanel: JBPanel<JBPanel<*>>) {
         val actionsGroup =
             actionManager.getAction(
-                "com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup",
+                "ActionsGroup",
             ) as RebaseActionsGroup
         val toolbar = actionManager.createActionToolbar(ActionPlaces.EDITOR_TAB, actionsGroup, true)
         val toolbarComponent: JComponent = toolbar.component

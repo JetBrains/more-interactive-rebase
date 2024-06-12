@@ -21,11 +21,12 @@
                 text="Interactive Rebase Current Branch">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
-        <group id="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup"
-               class="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup" text="RebaseActionsGroup" description="Interactive rebase actions">
+        <group id="ActionsGroup"
+               class="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup" text="RebaseGlobalActionsGroup" description="Interactive rebase actions">
             <action id="com.jetbrains.interactiveRebase.actions.changePanel.AddBranchAction"
                     class="com.jetbrains.interactiveRebase.actions.changePanel.AddBranchAction" text="AddBranchAction"
                     description="Add another branch to the view">
+                <keyboard-shortcut first-keystroke="alt A" keymap="$default"/>
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.changePanel.UndoAction"
                     class="com.jetbrains.interactiveRebase.actions.changePanel.UndoAction" text="UndoAction"
@@ -44,36 +45,36 @@
             </action>
 
             <separator/>
-            <action id="com.jetbrains.interactiveRebase.actions.gitPanel.PickAction"
-                    class="com.jetbrains.interactiveRebase.actions.gitPanel.PickAction" text="PickAction" description="Revert actions of a commit">
-                <keyboard-shortcut first-keystroke="alt P" keymap="$default"/>
-            </action>
-            <action id="com.jetbrains.interactiveRebase.actions.gitPanel.SquashAction"
-                    class="com.jetbrains.interactiveRebase.actions.gitPanel.SquashAction" text="SquashAction" description="Combine commits and set the commit subject" icon="AllIcons.Actions.DynamicUsages">
-                <keyboard-shortcut first-keystroke="alt S" keymap="$default"/>
+            <group id="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup"
+                   class="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup" text="RebaseActionsGroup" description="Interactive rebase actions">
+                <action id="com.jetbrains.interactiveRebase.actions.gitPanel.PickAction"
+                        class="com.jetbrains.interactiveRebase.actions.gitPanel.PickAction" text="PickAction" description="Revert actions of a commit">
+                    <keyboard-shortcut first-keystroke="alt P" keymap="$default"/>
+                </action>
+                <action id="com.jetbrains.interactiveRebase.actions.gitPanel.SquashAction"
+                        class="com.jetbrains.interactiveRebase.actions.gitPanel.SquashAction" text="SquashAction" description="Combine commits and set the commit subject" icon="AllIcons.Actions.DynamicUsages">
+                    <keyboard-shortcut first-keystroke="alt S" keymap="$default"/>
 
-            </action>
-            <action id="com.jetbrains.interactiveRebase.actions.gitPanel.FixupAction"
-                    class="com.jetbrains.interactiveRebase.actions.gitPanel.FixupAction" text="FixupAction" description="Combine commits">
-                <keyboard-shortcut first-keystroke="alt F" keymap="$default"/>
-            </action>
-            <action id="com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction"
-                    class="com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction" text="RewordAction" description="Reword a commit">
-                <keyboard-shortcut first-keystroke="alt R" keymap="$default"/>
-            </action>
-            <action id="com.jetbrains.interactiveRebase.actions.gitPanel.DropAction"
-                    class="com.jetbrains.interactiveRebase.actions.gitPanel.DropAction" text="DropAction" description="Drop a commit">
-                <keyboard-shortcut first-keystroke="DELETE" keymap="$default"/>
-                <keyboard-shortcut first-keystroke="BACK_SPACE" keymap="$default"/>
-            </action>
-            <action id="com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction"
-                    class="com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction" text="StopToEditAction" description="Stop while rebasing to edit a commit">
-                <keyboard-shortcut first-keystroke="alt E" keymap="$default"/>
-            </action>
+                </action>
+                <action id="com.jetbrains.interactiveRebase.actions.gitPanel.FixupAction"
+                        class="com.jetbrains.interactiveRebase.actions.gitPanel.FixupAction" text="FixupAction" description="Combine commits">
+                    <keyboard-shortcut first-keystroke="alt F" keymap="$default"/>
+                </action>
+                <action id="com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction"
+                        class="com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction" text="RewordAction" description="Reword a commit">
+                    <keyboard-shortcut first-keystroke="alt R" keymap="$default"/>
+                </action>
+                <action id="com.jetbrains.interactiveRebase.actions.gitPanel.DropAction"
+                        class="com.jetbrains.interactiveRebase.actions.gitPanel.DropAction" text="DropAction" description="Drop a commit">
+                    <keyboard-shortcut first-keystroke="DELETE" keymap="$default"/>
+                    <keyboard-shortcut first-keystroke="BACK_SPACE" keymap="$default"/>
+                </action>
+                <action id="com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction"
+                        class="com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction" text="StopToEditAction" description="Stop while rebasing to edit a commit">
+                    <keyboard-shortcut first-keystroke="alt E" keymap="$default"/>
+                </action>
+            </group>
         </group>
-
-
-
 
     </actions>
 

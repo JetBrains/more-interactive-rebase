@@ -32,6 +32,7 @@ class TextFieldListener(
             KeyEvent.VK_ENTER -> processEnter()
             KeyEvent.VK_ESCAPE -> textField.exitTextBox()
         }
+        e?.consume()
     }
 
     internal fun processEnter() {
