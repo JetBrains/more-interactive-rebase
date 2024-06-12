@@ -18,6 +18,7 @@ class RemoveSideBranchListener(private val project: Project, val sideBranchPanel
 
         modelService.removeSecondBranchFromGraphInfo()
         parent.resetAllBranchesVisually()
+        e?.consume()
     }
 
     /**
@@ -25,6 +26,7 @@ class RemoveSideBranchListener(private val project: Project, val sideBranchPanel
      */
     override fun mouseEntered(e: MouseEvent?) {
         sideBranchPanel.buttonOnHover()
+        e?.consume()
     }
 
     /**
@@ -32,5 +34,6 @@ class RemoveSideBranchListener(private val project: Project, val sideBranchPanel
      */
     override fun mouseExited(e: MouseEvent?) {
         sideBranchPanel.buttonOnHoverExit()
+        e?.consume()
     }
 }

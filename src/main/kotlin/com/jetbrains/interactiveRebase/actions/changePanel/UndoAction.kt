@@ -2,12 +2,18 @@ package com.jetbrains.interactiveRebase.actions.changePanel
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.components.service
+import com.intellij.openapi.project.DumbAwareAction
+import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
+import javax.swing.JComponent
 
-class UndoAction : AnAction("Undo", "Undo the last action", AllIcons.Actions.Undo) {
+class UndoAction :
+    DumbAwareAction("Undo", "Undo the last action", AllIcons.Actions.Undo),
+    CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
         e.project?.service<ActionService>()?.undoLastAction()
     }
@@ -18,5 +24,18 @@ class UndoAction : AnAction("Undo", "Undo the last action", AllIcons.Actions.Und
 
     override fun getActionUpdateThread(): ActionUpdateThread {
         return ActionUpdateThread.EDT
+    }
+
+    override fun createCustomComponent(
+        presentation: Presentation,
+        place: String,
+    ): JComponent {
+        return RebaseActionsGroup.makeTooltip(
+            this,
+            presentation,
+            place,
+            "Ctrl+Z",
+            "Undo the last action",
+        )
     }
 }

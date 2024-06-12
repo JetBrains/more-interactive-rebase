@@ -86,6 +86,7 @@ class CircleDragAndDropListener(
             messages.map { m ->
                 Point(m.x, m.y)
             }.toMutableList()
+        e.consume()
     }
 
     /**
@@ -122,6 +123,7 @@ class CircleDragAndDropListener(
 
             (parent.parent as GraphPanel).repaint()
         }
+        e.consume()
     }
 
     /**
@@ -131,6 +133,7 @@ class CircleDragAndDropListener(
     internal fun updateMousePosition(e: MouseEvent) {
         mousePosition.x = e.xOnScreen
         mousePosition.y = e.yOnScreen
+        e.consume()
     }
 
     /**
@@ -151,6 +154,7 @@ class CircleDragAndDropListener(
             (parent.parent as GraphPanel?)?.updateGraphPanel()
             (parent.parent as GraphPanel?)?.repaint()
         }
+        e.consume()
     }
 
     /**

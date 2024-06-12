@@ -110,7 +110,7 @@ class CommitService(private val project: Project) {
     }
 
     /**
-     * Gets branchname from utils
+     * Gets branch name from utils
      */
     fun getBranchName(): String {
         return gitUtils.getRepository().currentBranchName.toString()
