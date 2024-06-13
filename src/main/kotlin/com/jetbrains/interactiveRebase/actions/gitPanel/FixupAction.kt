@@ -9,9 +9,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.getActionShortcutText
 import com.jetbrains.interactiveRebase.services.ActionService
-import java.awt.event.KeyEvent
 import javax.swing.JComponent
-import javax.swing.KeyStroke
 
 class FixupAction :
     DumbAwareAction(
@@ -40,9 +38,8 @@ class FixupAction :
             this,
             presentation,
             place,
-                getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.FixupAction"),
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.FixupAction"),
             "Combines commits into one, with a default message",
         )
-
     }
 }

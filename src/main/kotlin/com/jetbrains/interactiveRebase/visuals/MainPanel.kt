@@ -41,7 +41,6 @@ class MainPanel(
         sidePanel = SidePanel(project.service<ModelService>().graphInfo.branchList, project)
         sidePanelPane = createSidePanel()
 
-
         this.layout = BorderLayout()
         createMainPanel()
 

@@ -1,17 +1,21 @@
-package com.jetbrains.interactiveRebase.actions.ButtonActions
+package com.jetbrains.interactiveRebase.actions.buttonActions
 
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.services.ActionService
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 
-internal class ResetAction :
-        ButtonAction("Reset", "Reset all changes", "ResetAction") {
-
+internal class StartRebaseAction :
+    ButtonAction(
+        "Rebase",
+        "Start the rebase process with the indicated changes",
+        "StartRebaseAction",
+    ) {
     override fun actionPerformed(e: AnActionEvent) {
-        val actionService = e.project?.service<ActionService>()
-        actionService?.resetAllChangesAction()
-
+        val invoker = e.project?.service<RebaseInvoker>()
+        invoker?.createModel()
+        invoker?.executeCommands()
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
@@ -20,8 +24,5 @@ internal class ResetAction :
 
     override fun update(e: AnActionEvent) {
         e.project?.service<ActionService>()?.checkRebaseAndReset(e)
-
     }
-
-
 }

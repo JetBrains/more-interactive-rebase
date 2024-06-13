@@ -35,7 +35,7 @@ class UndoAction :
             this,
             presentation,
             place,
-                getActionShortcutText("com.jetbrains.interactiveRebase.actions.changePanel.UndoAction"),
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.changePanel.UndoAction"),
             "Undo the last action",
         )
     }

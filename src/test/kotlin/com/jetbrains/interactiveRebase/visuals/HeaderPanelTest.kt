@@ -8,9 +8,11 @@ import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.mockito.ArgumentCaptor
-import org.mockito.Mockito.*
-import javax.swing.JButton
-import javax.swing.JComponent
+import org.mockito.Mockito.any
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 
 class HeaderPanelTest : BasePlatformTestCase() {
     private lateinit var headerPanel: HeaderPanel
@@ -34,11 +36,14 @@ class HeaderPanelTest : BasePlatformTestCase() {
         val captorGroup = ArgumentCaptor.forClass(RebaseActionsGroup::class.java)
         val captorPlaces = ArgumentCaptor.forClass(String::class.java)
         val captorHorizontal = ArgumentCaptor.forClass(Boolean::class.java)
-        verify(actionManager, times(2)).createActionToolbar(captorPlaces.capture(), captorGroup.capture(), captorHorizontal.capture())
+        verify(actionManager, times(2)).createActionToolbar(
+            captorPlaces.capture(),
+            captorGroup.capture(),
+            captorHorizontal.capture(),
+        )
         assertThat(captorPlaces.value).isEqualTo(ActionPlaces.EDITOR_TAB)
         assertThat(captorHorizontal.value).isTrue()
     }
-
 
     private inline fun <reified T> anyCustom(): T = any(T::class.java)
 }

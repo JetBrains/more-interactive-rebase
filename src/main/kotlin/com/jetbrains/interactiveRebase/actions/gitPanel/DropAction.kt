@@ -34,7 +34,7 @@ class DropAction :
             this,
             presentation,
             place,
-                getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.DropAction"),
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.DropAction"),
             "Removes a commit from history",
         )
     }

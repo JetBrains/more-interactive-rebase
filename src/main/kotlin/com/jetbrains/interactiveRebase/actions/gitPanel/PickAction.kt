@@ -38,7 +38,7 @@ class PickAction :
             this,
             presentation,
             place,
-                getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.PickAction"),
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.PickAction"),
             "Undoes the changes made on the selected commit",
         )
     }

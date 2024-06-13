@@ -25,10 +25,9 @@ class AddBranchAction :
         val sidePanelPane = mainPanel.sidePanelPane
 
         sidePanelPane.isVisible = !sidePanelPane.isVisible
-        if(sidePanelPane.isVisible){
+        if (sidePanelPane.isVisible) {
             mainPanel.sidePanel.updateBranchNames()
             println(mainPanel.sidePanel.branches)
-
         }
 
         sidePanelPane.setVisible(sidePanelPane.isVisible)
@@ -54,7 +53,7 @@ class AddBranchAction :
             this,
             presentation,
             place,
-                getActionShortcutText("com.jetbrains.interactiveRebase.actions.changePanel.AddBranchAction"),
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.changePanel.AddBranchAction"),
             "Add another branch to the view",
         )
     }

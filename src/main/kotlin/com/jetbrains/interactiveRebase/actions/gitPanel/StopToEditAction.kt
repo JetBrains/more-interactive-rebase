@@ -38,7 +38,7 @@ class StopToEditAction :
             this,
             presentation,
             place,
-                getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction"),
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction"),
             "Pauses the rebase action to edit a commit",
         )
     }

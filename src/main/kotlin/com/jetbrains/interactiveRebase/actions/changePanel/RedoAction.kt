@@ -35,7 +35,7 @@ class RedoAction :
             this,
             presentation,
             place,
-                getActionShortcutText("com.jetbrains.interactiveRebase.actions.changePanel.RedoAction"),
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.changePanel.RedoAction"),
             "Redo the last action",
         )
     }

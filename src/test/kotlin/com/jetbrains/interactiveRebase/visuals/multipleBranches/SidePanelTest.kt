@@ -11,8 +11,6 @@ import java.awt.GridBagConstraints
 class SidePanelTest : BasePlatformTestCase() {
     val branches = mutableListOf("Branch 1", "Branch 2", "Branch 3")
 
-
-
     override fun setUp() {
         super.setUp()
         project.service<ModelService>().graphInfo.branchList = branches

@@ -39,7 +39,7 @@ class RewordAction :
             this,
             presentation,
             place,
-                getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction"),
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction"),
             "Changes the subject of a commit",
         )
     }

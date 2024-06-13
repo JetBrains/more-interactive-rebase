@@ -38,7 +38,7 @@ class SquashAction() :
             this,
             presentation,
             place,
-                getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.SquashAction"),
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.SquashAction"),
             "Combines commits into one, and allows to choose the new commit message",
         )
     }

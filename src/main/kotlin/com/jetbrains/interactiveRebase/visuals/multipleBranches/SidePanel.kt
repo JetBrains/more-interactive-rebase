@@ -50,14 +50,13 @@ class SidePanel(var branches: MutableList<String>, val project: Project) : JBPan
      * Updates the branches in the panel.
      */
     fun updateBranches() {
-       branches = project.service<ModelService>().graphInfo.branchList
+        branches = project.service<ModelService>().graphInfo.branchList
     }
 
     /**
      * Creates a panel for a single branch name.
      */
     fun createSideBranchPanel(i: Int) {
-
         val branch = SideBranchPanel(branches[i], project)
         sideBranchPanels.add(branch)
 

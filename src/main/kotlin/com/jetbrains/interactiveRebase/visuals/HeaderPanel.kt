@@ -2,11 +2,9 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
-import com.intellij.ui.util.minimumHeight
 import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
@@ -58,16 +56,13 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
      * At the moment, the buttons are hardcoded, but we will replace them with icons and listeners later.
      */
     fun addChangeButtons(buttonPanel: JBPanel<JBPanel<*>>) {
-
-
         val group =
-                actionManager.getAction(
-                        "ActionButtonsGroup",
-                ) as RebaseActionsGroup
+            actionManager.getAction(
+                "ActionButtonsGroup",
+            ) as RebaseActionsGroup
         val toolbar = actionManager.createActionToolbar(ActionPlaces.EDITOR_TAB, group, true)
         val toolbarComponent: JComponent = toolbar.component
         toolbar.targetComponent = buttonPanel
-
 
         var normalButton = RoundedButton("Normal", Palette.GRAY_BUTTON, Palette.WHITE_TEXT)
         normalButton.addActionListener {
@@ -76,8 +71,5 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
 
         buttonPanel.add(normalButton)
         buttonPanel.add(toolbarComponent)
-
-
-
     }
 }

@@ -87,8 +87,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(commitInfo2.isTextFieldEnabled).isFalse()
     }
 
-
-
     fun testTakeRewordActionConsidersEmptyList() {
         commitInfo1.isSelected = false
         modelService.branchInfo.clearSelectedCommits()

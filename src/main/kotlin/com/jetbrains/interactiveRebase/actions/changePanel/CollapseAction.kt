@@ -12,8 +12,13 @@ import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
 import javax.swing.JComponent
 
-class CollapseAction : DumbAwareAction("Collapse", "Collapse commits",
-        AllIcons.General.CollapseComponent), CustomComponentAction {
+class CollapseAction :
+    DumbAwareAction(
+        "Collapse",
+        "Collapse commits",
+        AllIcons.General.CollapseComponent,
+    ),
+    CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
         e.project?.service<ActionService>()?.takeCollapseAction()
     }
@@ -27,15 +32,15 @@ class CollapseAction : DumbAwareAction("Collapse", "Collapse commits",
     }
 
     override fun createCustomComponent(
-            presentation: Presentation,
-            place: String,
+        presentation: Presentation,
+        place: String,
     ): JComponent {
         return RebaseActionsGroup.makeTooltip(
-                this,
-                presentation,
-                place,
-                getActionShortcutText("com.jetbrains.interactiveRebase.actions.changePanel.CollapseAction"),
-                "Collapse commits",
+            this,
+            presentation,
+            place,
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.changePanel.CollapseAction"),
+            "Collapse commits",
         )
     }
 }

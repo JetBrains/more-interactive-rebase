@@ -69,9 +69,9 @@ class BranchService(private val project: Project) {
     fun getBranches(): List<String> {
         val result: GitCommandResult = executeGitBranchCommand(listOf())
         var joinedString = ""
-        try{
+        try {
             joinedString = result.getOutputOrThrow()
-        }catch(e : VcsException){
+        } catch (e: VcsException) {
             getBranches()
         }
         return formatBranchList(joinedString)

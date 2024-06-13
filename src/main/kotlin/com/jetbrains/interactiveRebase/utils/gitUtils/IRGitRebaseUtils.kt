@@ -61,9 +61,9 @@ class IRGitRebaseUtils(private val project: Project) {
                 if (params != null) {
                     GitRebaseUtils.rebase(project, listOf(repo), params, indicator)
 
-                    do{
+                    do {
                         project.service<ModelService>().fetchGraphInfo()
-                    } while(project.service<ModelService>().graphInfo.mainBranch.initialCommits.isEmpty())
+                    } while (project.service<ModelService>().graphInfo.mainBranch.initialCommits.isEmpty())
                 }
             }
         }.queue()
