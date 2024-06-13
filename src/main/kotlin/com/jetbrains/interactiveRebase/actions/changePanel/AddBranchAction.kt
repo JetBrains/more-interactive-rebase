@@ -27,7 +27,6 @@ class AddBranchAction :
         sidePanelPane.isVisible = !sidePanelPane.isVisible
         if (sidePanelPane.isVisible) {
             mainPanel.sidePanel.updateBranchNames()
-            println(mainPanel.sidePanel.branches)
         }
 
         sidePanelPane.setVisible(sidePanelPane.isVisible)

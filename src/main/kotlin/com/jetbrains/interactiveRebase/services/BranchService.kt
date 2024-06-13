@@ -95,5 +95,4 @@ class BranchService(private val project: Project) {
         lineHandler.addParameters(params)
         return gitUtils.runCommand(lineHandler)
     }
-
 }

@@ -95,9 +95,10 @@ integration-test-interactive-rebase-jetbrains:
   script:
     - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.SquashActionTest
     - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.FixupActionTest
-    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.DropActionTest
+    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.UseCase1Test
     - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.RewordActionTest
     - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.StopToEditActionTest
+    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.TwoBranchesActionTest
   allow_failure: true
 #  only:
 #    - main

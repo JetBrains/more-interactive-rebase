@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.integrationTests
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.TestActionEvent.createTestEvent
+import com.jetbrains.interactiveRebase.actions.buttonActions.StartRebaseAction
 import com.jetbrains.interactiveRebase.actions.gitPanel.FixupAction
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.git
 import com.jetbrains.interactiveRebase.services.ModelService
@@ -30,8 +31,11 @@ class FixupActionTest : IRGitPlatformTest() {
             fixupAction.actionPerformed(testEvent1)
 
             // this clicks the rebase button
-            val rebaseButton = getRebaseButton()
-            rebaseButton.doClick()
+            val rebaseAction = StartRebaseAction()
+            val rebaseEvent = createTestEvent(rebaseAction)
+            rebaseAction.actionPerformed(rebaseEvent)
+//            val rebaseButton = getRebaseButton()
+//            rebaseButton.doClick()
 
 //            Thread.sleep(5000)
 

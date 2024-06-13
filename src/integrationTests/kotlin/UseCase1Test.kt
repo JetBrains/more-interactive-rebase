@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.integrationTests
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.TestActionEvent.createTestEvent
+import com.jetbrains.interactiveRebase.actions.buttonActions.StartRebaseAction
 import com.jetbrains.interactiveRebase.actions.changePanel.RedoAction
 import com.jetbrains.interactiveRebase.actions.changePanel.UndoAction
 import com.jetbrains.interactiveRebase.actions.gitPanel.DropAction
@@ -80,11 +81,15 @@ class UseCase1Test : IRGitPlatformTest() {
             keyboardShortcut.altDown()
             keyboardShortcut.altDown()
 
-            assertThat(modelService.branchInfo.currentCommits.map{it.commit.subject}).isEqualTo(listOf("my final commit","code quality","first", "i love testing"))
+            assertThat(
+                modelService.branchInfo.currentCommits.map {
+                    it.commit.subject
+                },
+            ).isEqualTo(listOf("my final commit", "code quality", "first", "i love testing"))
 
-            // this clicks the rebase button
-            val rebaseButton = getRebaseButton()
-            rebaseButton.doClick()
+            val rebaseAction = StartRebaseAction()
+            val rebaseEvent = createTestEvent(rebaseAction)
+            rebaseAction.actionPerformed(rebaseEvent)
 
             Awaitility.await()
                 .alias("3 commits left for drop")
@@ -98,7 +103,7 @@ class UseCase1Test : IRGitPlatformTest() {
             remainingCommitMessages = remainingCommitMessages.filter { it != "initial" }
 
             assertThat(remainingCommitMessages.contains("my final commit")).isFalse()
-            assertThat(remainingCommitMessages).isEqualTo(listOf("code quality","first", "i love testing"))
+            assertThat(remainingCommitMessages).isEqualTo(listOf("code quality", "first", "i love testing"))
         }
     }
 }

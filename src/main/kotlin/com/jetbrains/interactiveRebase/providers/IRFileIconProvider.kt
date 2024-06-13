@@ -7,12 +7,15 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.interactiveRebase.virtualFile.IRVirtualFile
 import javax.swing.Icon
 
-class IRFileIconProvider:FileIconProvider {
-    override fun getIcon(file: VirtualFile, flags: Int, project: Project?): Icon {
-        if(file is IRVirtualFile){
+class IRFileIconProvider : FileIconProvider {
+    override fun getIcon(
+        file: VirtualFile,
+        flags: Int,
+        project: Project?,
+    ): Icon {
+        if (file is IRVirtualFile) {
             return AllIcons.Actions.Lightning
         }
         return file.fileType.icon
     }
-
 }

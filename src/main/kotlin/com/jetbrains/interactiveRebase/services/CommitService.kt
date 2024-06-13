@@ -115,6 +115,7 @@ class CommitService(private val project: Project) {
         }
         return consumer.commits[0]
     }
+
     /**
      * Gets branch name from utils
      */

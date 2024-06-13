@@ -10,7 +10,6 @@ import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.chec
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.git
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.ModelService
-import com.jetbrains.interactiveRebase.visuals.multipleBranches.SidePanel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
@@ -18,7 +17,7 @@ import org.awaitility.Awaitility
 import java.awt.event.MouseEvent
 import java.util.concurrent.TimeUnit
 
-class TwoBranchesActionTest:IRGitPlatformTest(){
+class TwoBranchesActionTest : IRGitPlatformTest() {
     lateinit var secondCommitOnMain: String
     lateinit var thirdCommitOnMain: String
 
@@ -28,7 +27,6 @@ class TwoBranchesActionTest:IRGitPlatformTest(){
     lateinit var thirdCommitOnFeature: String
     lateinit var fourthCommitOnFeature: String
     lateinit var fifthCommitOnFeature: String
-
 
     override fun setUp() {
         super.setUp()
@@ -83,19 +81,19 @@ class TwoBranchesActionTest:IRGitPlatformTest(){
         assertThat(modelService.branchInfo.name).isEqualTo(featureBranch)
     }
 
-    fun testTwoBranchesInView(){
-        runBlocking(Dispatchers.EDT){
+    fun testTwoBranchesInView() {
+        runBlocking(Dispatchers.EDT) {
             openAndInitializePlugin()
             val modelService = project.service<ModelService>()
 
-            //open the side panel
+            // open the side panel
             val addBranchAction = AddBranchAction()
             val testEvent1 = createTestEvent(addBranchAction)
             addBranchAction.actionPerformed(testEvent1)
 
-            val sidePanel = project.service<ActionService>().
-                                mainPanel.sidePanel.
-                                    viewport.getComponent(0) as SidePanel
+            val sidePanel =
+                project.service<ActionService>()
+                    .mainPanel.sidePanel
             assertThat(sidePanel.isVisible).isTrue()
 
             Awaitility.await()
@@ -104,15 +102,15 @@ class TwoBranchesActionTest:IRGitPlatformTest(){
                 .atMost(30000, TimeUnit.MILLISECONDS)
                 .pollDelay(50, TimeUnit.MILLISECONDS)
                 .until {
-                    sidePanel.branches.equals(listOf("development","main"))
+                    sidePanel.branches.equals(listOf("development", "main"))
                 }
 
             val mainBranchPanel = sidePanel.sideBranchPanels[1]
             assertThat(mainBranchPanel.branchName).isEqualTo("main")
 
-            //to select a branch to add to the view
+            // to select a branch to add to the view
             val mainBranchPanelListener = mainBranchPanel.mouseListeners[0]
-            val mouseEvent = MouseEvent(mainBranchPanel, 444, 0L, 0,2,2,1,false)
+            val mouseEvent = MouseEvent(mainBranchPanel, 444, 0L, 0, 2, 2, 1, false)
 
             mainBranchPanelListener.mouseClicked(mouseEvent)
 
@@ -122,10 +120,10 @@ class TwoBranchesActionTest:IRGitPlatformTest(){
                 .alias("adding a second branch to the view and refreshing")
                 .pollInSameThread()
                 .until {
-                   modelService.graphInfo.addedBranch != null
+                    modelService.graphInfo.addedBranch != null
                 }
 
-            //check if the correct information about the 2 branches is added to the model
+            // check if the correct information about the 2 branches is added to the model
             val addedBranch = modelService.graphInfo.addedBranch
             Awaitility.await()
                 .pollInSameThread()
@@ -147,8 +145,8 @@ class TwoBranchesActionTest:IRGitPlatformTest(){
                 }
 
             assertThat(modelService.graphInfo.mainBranch.name).isEqualTo(featureBranch)
-            assertThat(modelService.graphInfo.mainBranch.initialCommits.map { it.commit.subject }).
-                    isEqualTo(listOf("new file","testy","it works","whatever","refactor"))
+            assertThat(modelService.graphInfo.mainBranch.initialCommits.map { it.commit.subject })
+                .isEqualTo(listOf("new file", "testy", "it works", "whatever", "refactor"))
 
             mainBranchPanelListener.mouseClicked(mouseEvent)
 
@@ -164,9 +162,9 @@ class TwoBranchesActionTest:IRGitPlatformTest(){
             val devBranchPanel = sidePanel.sideBranchPanels[0]
             assertThat(devBranchPanel.branchName).isEqualTo("development")
 
-            //to select a branch to add to the view
+            // to select a branch to add to the view
             val devBranchPanelListener = devBranchPanel.mouseListeners[0]
-            val mouseEvent2 = MouseEvent(devBranchPanel, 9, 0L, 0,2,2,1,false)
+            val mouseEvent2 = MouseEvent(devBranchPanel, 9, 0L, 0, 2, 2, 1, false)
 
             devBranchPanelListener.mouseClicked(mouseEvent2)
 
@@ -179,7 +177,7 @@ class TwoBranchesActionTest:IRGitPlatformTest(){
                     modelService.graphInfo.addedBranch != null
                 }
 
-            //check if the correct information about the 2 branches is added to the model
+            // check if the correct information about the 2 branches is added to the model
             val devBranch = modelService.graphInfo.addedBranch
 
             assertThat(devBranch?.name).isEqualTo("development")
@@ -191,13 +189,12 @@ class TwoBranchesActionTest:IRGitPlatformTest(){
                 .pollInSameThread()
                 .until {
                     val commitsOnDevBranch = devBranch?.initialCommits?.map { it.commit.subject }
-                    commitsOnDevBranch == listOf("my final commit", "i love testing", "code quality","first","initial")
+                    commitsOnDevBranch == listOf("my final commit", "i love testing", "code quality", "first", "initial")
                 }
 
             assertThat(modelService.graphInfo.mainBranch.name).isEqualTo(featureBranch)
-            assertThat(modelService.graphInfo.mainBranch.initialCommits.map { it.commit.subject }).
-            isEqualTo(listOf("new file","testy","it works","whatever","refactor","third", "second"))
+            assertThat(modelService.graphInfo.mainBranch.initialCommits.map { it.commit.subject })
+                .isEqualTo(listOf("new file", "testy", "it works", "whatever", "refactor", "third", "second"))
         }
-
     }
 }

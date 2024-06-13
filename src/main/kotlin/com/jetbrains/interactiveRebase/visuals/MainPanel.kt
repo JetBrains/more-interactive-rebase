@@ -25,8 +25,8 @@ class MainPanel(
     internal var commitInfoPanel = CommitInfoPanel(project)
     internal var contentPanel: JBScrollPane
     internal var sidePanelPane: JBScrollPane
-    internal var sidePanel: SidePanel
-    internal var graphPanel: GraphPanel
+    var sidePanel: SidePanel
+    var graphPanel: GraphPanel
     private val graphInfoListener: GraphInfo.Listener
     private val branchInfoListener: BranchInfo.Listener
     private val commitInfoListener: CommitInfo.Listener

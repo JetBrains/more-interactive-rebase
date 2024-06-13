@@ -28,7 +28,7 @@ class RebaseInvoker(val project: Project) {
     var commands = mutableListOf<IRCommand>()
     var undoneCommands = mutableListOf<IRCommand>()
 
-    fun removeChangesBeforePick(){
+    fun removeChangesBeforePick() {
         val changesToRemove = mutableListOf<IRCommand>()
         for (commitInfo in branchInfo.currentCommits) {
             val changes = commitInfo.changes.filter { it !in commitInfo.getChangesAfterPick() }

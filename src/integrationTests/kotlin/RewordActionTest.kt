@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.integrationTests
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.TestActionEvent.createTestEvent
+import com.jetbrains.interactiveRebase.actions.buttonActions.StartRebaseAction
 import com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.git
 import com.jetbrains.interactiveRebase.listeners.TextFieldListener
@@ -45,8 +46,9 @@ class RewordActionTest : IRGitPlatformTest() {
             listener.processEnter()
 
             // here we click the rebase button
-            val rebaseButton = getRebaseButton()
-            rebaseButton.doClick()
+            val rebaseAction = StartRebaseAction()
+            val rebaseEvent = createTestEvent(rebaseAction)
+            rebaseAction.actionPerformed(rebaseEvent)
 
             Awaitility.await()
                 .atMost(20000, TimeUnit.MILLISECONDS)
