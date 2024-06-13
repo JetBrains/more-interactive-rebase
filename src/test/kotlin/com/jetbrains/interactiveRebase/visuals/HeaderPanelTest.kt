@@ -10,6 +10,7 @@ import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.mockito.ArgumentCaptor
 import org.mockito.Mockito.any
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 
@@ -35,20 +36,13 @@ class HeaderPanelTest : BasePlatformTestCase() {
         val captorGroup = ArgumentCaptor.forClass(RebaseActionsGroup::class.java)
         val captorPlaces = ArgumentCaptor.forClass(String::class.java)
         val captorHorizontal = ArgumentCaptor.forClass(Boolean::class.java)
-        verify(actionManager).createActionToolbar(captorPlaces.capture(), captorGroup.capture(), captorHorizontal.capture())
+        verify(actionManager, times(2)).createActionToolbar(
+            captorPlaces.capture(),
+            captorGroup.capture(),
+            captorHorizontal.capture(),
+        )
         assertThat(captorPlaces.value).isEqualTo(ActionPlaces.EDITOR_TAB)
         assertThat(captorHorizontal.value).isTrue()
-    }
-
-    fun testIncludesChangeButtonsRebase() {
-        val buttonPanel: JBPanel<JBPanel<*>> = JBPanel()
-        headerPanel.addChangeButtons(buttonPanel)
-
-        val rebaseButton = buttonPanel.getComponent(1) as RoundedButton
-        assertThat(rebaseButton.actionListeners).hasSize(1)
-
-        val resetButton = buttonPanel.getComponent(0) as RoundedButton
-        assertThat(resetButton.actionListeners).hasSize(1)
     }
 
     private inline fun <reified T> anyCustom(): T = any(T::class.java)

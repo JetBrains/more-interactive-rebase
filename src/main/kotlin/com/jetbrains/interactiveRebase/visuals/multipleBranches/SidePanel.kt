@@ -1,11 +1,13 @@
 package com.jetbrains.interactiveRebase.visuals.multipleBranches
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.listeners.RemoveSideBranchListener
 import com.jetbrains.interactiveRebase.listeners.SideBranchPanelListener
+import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 
@@ -32,9 +34,21 @@ class SidePanel(var branches: MutableList<String>, val project: Project) : JBPan
      * Updates the branch names in the panel.
      */
     fun updateBranchNames() {
+        removeAll()
+        sideBranchPanels.clear()
+        updateBranches()
         for (i in 0 until branches.size) {
             createSideBranchPanel(i)
         }
+        revalidate()
+        repaint()
+    }
+
+    /**
+     * Updates the branches in the panel.
+     */
+    fun updateBranches() {
+        branches = project.service<ModelService>().graphInfo.branchList
     }
 
     /**

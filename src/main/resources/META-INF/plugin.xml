@@ -41,7 +41,7 @@
             <action id="com.jetbrains.interactiveRebase.actions.changePanel.CollapseAction"
                     class="com.jetbrains.interactiveRebase.actions.changePanel.CollapseAction" text="CollapseAction"
                     description="Collapse commits">
-                <keyboard-shortcut first-keystroke="alt c" keymap="$default"/>
+                <keyboard-shortcut first-keystroke="ctrl c" keymap="$default"/>
             </action>
 
             <separator/>
@@ -74,6 +74,22 @@
                     <keyboard-shortcut first-keystroke="alt E" keymap="$default"/>
                 </action>
             </group>
+
+        </group>
+        <group id="ActionButtonsGroup"
+               class="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup" text="RebaseGlobalActionsGroup" description="Interactive rebase actions">
+            <action id="ResetAction"
+                    class="com.jetbrains.interactiveRebase.actions.buttonActions.ResetAction" text="ResetAction"
+                    description="Reset">
+                <keyboard-shortcut first-keystroke="ctrl R" keymap="$default"/>
+            </action>
+            <action id="StartRebaseAction"
+                    class="com.jetbrains.interactiveRebase.actions.buttonActions.StartRebaseAction" text="StartRebaseAction"
+                    description="Rebase">
+                <keyboard-shortcut first-keystroke="alt ENTER" keymap="$default"/>
+            </action>
+
+
         </group>
 
     </actions>

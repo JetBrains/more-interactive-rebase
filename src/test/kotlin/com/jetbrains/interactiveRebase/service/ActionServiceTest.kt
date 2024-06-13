@@ -354,6 +354,22 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(testEvent.presentation.isEnabled).isFalse()
     }
 
+    fun testCheckRebaseAndResetDisabled() {
+        modelService.invoker.commands.clear()
+        val testEvent = createTestEvent()
+        actionService.checkRebaseAndReset(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isFalse()
+    }
+
+    fun testCheckRebaseAndResetEnabled() {
+        modelService.invoker.commands.clear()
+        val command1 = RewordCommand(commitInfo1, "reorderTest")
+        modelService.invoker.addCommand(command1)
+        val testEvent = createTestEvent()
+        actionService.checkRebaseAndReset(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isTrue()
+    }
+
     fun testCheckUndoEnabled() {
         modelService.invoker.commands.clear()
         val command1 = RewordCommand(commitInfo1, "reorderTest")

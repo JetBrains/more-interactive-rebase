@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.ui.getActionShortcutText
 import com.jetbrains.interactiveRebase.services.ActionService
 import javax.swing.JComponent
 
@@ -37,7 +38,7 @@ class FixupAction :
             this,
             presentation,
             place,
-            "Alt+F",
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.FixupAction"),
             "Combines commits into one, with a default message",
         )
     }

@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.ui.getActionShortcutText
 import com.jetbrains.interactiveRebase.services.ActionService
 import javax.swing.JComponent
 
@@ -33,7 +34,7 @@ class DropAction :
             this,
             presentation,
             place,
-            "Delete",
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.DropAction"),
             "Removes a commit from history",
         )
     }

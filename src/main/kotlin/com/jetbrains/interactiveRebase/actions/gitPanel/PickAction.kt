@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.ui.getActionShortcutText
 import com.jetbrains.interactiveRebase.services.ActionService
 import javax.swing.JComponent
 
@@ -37,7 +38,7 @@ class PickAction :
             this,
             presentation,
             place,
-            "Alt+P",
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.PickAction"),
             "Undoes the changes made on the selected commit",
         )
     }
