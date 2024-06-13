@@ -22,10 +22,16 @@ class AddBranchAction :
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val mainPanel = project.service<ActionService>().mainPanel
-        val sidePanel = mainPanel.sidePanel
+        val sidePanelPane = mainPanel.sidePanelPane
 
-        sidePanel.isVisible = !sidePanel.isVisible
-        sidePanel.setVisible(sidePanel.isVisible)
+        sidePanelPane.isVisible = !sidePanelPane.isVisible
+        if(sidePanelPane.isVisible){
+            mainPanel.sidePanel.updateBranchNames()
+            println(mainPanel.sidePanel.branches)
+
+        }
+
+        sidePanelPane.setVisible(sidePanelPane.isVisible)
 
         // This toggles the icon of the add branch
         // e.presentation.icon = if (sidePanel.isVisible) AllIcons.Actions.Exit else AllIcons.Actions.AddList

@@ -24,7 +24,8 @@ class MainPanel(
     JBPanel<JBPanel<*>>(), Disposable {
     internal var commitInfoPanel = CommitInfoPanel(project)
     internal var contentPanel: JBScrollPane
-    internal var sidePanel: JBScrollPane
+    internal var sidePanelPane: JBScrollPane
+    internal var sidePanel: SidePanel
     internal var graphPanel: GraphPanel
     private val graphInfoListener: GraphInfo.Listener
     private val branchInfoListener: BranchInfo.Listener
@@ -37,7 +38,9 @@ class MainPanel(
     init {
         graphPanel = createGraphPanel()
         contentPanel = createContentPanel()
-        sidePanel = createSidePanel()
+        sidePanel = SidePanel(project.service<ModelService>().graphInfo.branchList, project)
+        sidePanelPane = createSidePanel()
+
 
         this.layout = BorderLayout()
         createMainPanel()
@@ -134,7 +137,6 @@ class MainPanel(
 
     fun createSidePanel(): JBScrollPane {
         val scrollable = JBScrollPane()
-        val sidePanel = SidePanel(project.service<ModelService>().graphInfo.branchList, project)
         scrollable.setViewportView(sidePanel)
         scrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
         scrollable.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED)
@@ -155,8 +157,8 @@ class MainPanel(
 
         val secondDivider =
             OnePixelSplitter(false, 0.18f).apply {
-                sidePanel.setVisible(false)
-                firstComponent = sidePanel
+                sidePanelPane.setVisible(false)
+                firstComponent = sidePanelPane
                 secondComponent = firstDivider
             }
         val thirdDivider =
