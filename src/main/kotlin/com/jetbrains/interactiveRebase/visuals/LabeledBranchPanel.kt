@@ -130,13 +130,21 @@ class LabeledBranchPanel(
         panel.addMouseListener(object : MouseAdapter() {
             override fun mouseEntered(e: MouseEvent?) {
                 cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-                panel.backgroundColor = colorTheme.regularCircleColor
+                if(branch.isRebased) {
+                    panel.backgroundColor = Palette.TRANSPARENT
+                } else {
+                    panel.backgroundColor = colorTheme.regularCircleColor
+                }
                 panel.repaint()
             }
 
             override fun mouseExited(e: MouseEvent?) {
                 cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
-                panel.backgroundColor = colorTheme.branchNameColor
+                if(branch.isRebased) {
+                    panel.backgroundColor = Palette.TRANSPARENT
+                } else {
+                    panel.backgroundColor = colorTheme.branchNameColor
+                }
                 panel.repaint()
             }
         })
@@ -150,7 +158,13 @@ class LabeledBranchPanel(
         val panel = RoundedPanel()
         panel.border = EmptyBorder(2, 3, 3, 3)
         panel.cornerRadius = 15
+
         panel.backgroundColor = colorTheme.branchNameColor
+        if (branch.isRebased) {
+            label.foreground = JBColor.BLUE
+            panel.backgroundColor = Palette.TRANSPARENT
+            panel.addBorderGradient(colorTheme.regularCircleColor, Palette.TOMATO_THEME.regularCircleColor)
+        }
         panel.add(label)
         return panel
     }

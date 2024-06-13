@@ -307,7 +307,9 @@ class ActionService(project: Project) {
             commitInfo.isReordered = false
             commitInfo.isHovered = false
         }
-        modelService.graphInfo.addedBranch?.baseCommit = modelService.graphInfo.addedBranch?.currentCommits?.last()
+        modelService.graphInfo.mainBranch.isRebased = false
+        modelService.graphInfo.addedBranch?.baseCommit =
+            modelService.graphInfo.addedBranch?.currentCommits?.last()
         invoker.branchInfo.clearSelectedCommits()
         takeCollapseAction()
     }
@@ -482,6 +484,7 @@ class ActionService(project: Project) {
     private fun undoRebase() {
         modelService.graphInfo.addedBranch?.baseCommit =
             modelService.graphInfo.addedBranch?.currentCommits?.last()
+        modelService.graphInfo.mainBranch.isRebased = false
     }
 
     /**
@@ -520,6 +523,7 @@ class ActionService(project: Project) {
 
     private fun redoRebase(commitToBeRedone: CommitInfo) {
         modelService.graphInfo.addedBranch?.baseCommit = commitToBeRedone
+        modelService.graphInfo.mainBranch.isRebased = true
     }
 
     /**

@@ -137,7 +137,7 @@ class GraphPanel(
      * This ensures that the second added branch is always positioned
      * below the primary one
      */
-    private fun computeVerticalOffsetOfSecondBranch(): Int {
+    internal fun computeVerticalOffsetOfSecondBranch(): Int {
         val mainCircleCount = mainBranchPanel.branchPanel.circles.size
         val addedCircleCount =
             (graphInfo.addedBranch?.currentCommits?.indexOf(graphInfo.addedBranch?.baseCommit!!) ?: 0) + 1
