@@ -1,6 +1,8 @@
 package com.jetbrains.interactiveRebase.listeners
 
+import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.Palette
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.SideBranchPanel
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.SidePanel
@@ -20,11 +22,12 @@ class RemoveSideBranchListenerTest : BasePlatformTestCase() {
         parent.sideBranchPanels.add(sideBranchPanel)
         parent.sideBranchPanels.add(SideBranchPanel("feature", project))
         parent.sideBranchPanels.add(SideBranchPanel("bugfix", project))
-        removeSideBranchListener = RemoveSideBranchListener(project, sideBranchPanel, parent)
+        removeSideBranchListener = RemoveSideBranchListener(sideBranchPanel, parent)
         mouseEvent = MouseEvent(sideBranchPanel, 0, 0, 0, 0, 0, 0, false)
     }
 
     fun testMouseClickedBranchSelected() {
+        project.service<RebaseInvoker>().commands.clear()
         sideBranchPanel.isSelected = true
         removeSideBranchListener.mouseClicked(mouseEvent)
         assertThat(sideBranchPanel.isSelected).isFalse()

@@ -45,6 +45,9 @@ class CommitService(private val project: Project) {
         return getDisplayableCommitsOfBranch(branchName, repo, consumer)
     }
 
+    /**
+     * Gets the commits that are on wanted branch but not on reference branch
+     */
     fun getCommitsWithReference(
         wantedBranch: String,
         referenceBranch: String,

@@ -30,6 +30,7 @@ class GraphService(private val project: Project) {
         graphInfo: GraphInfo,
         addedBranch: String,
     ) {
+        project.service<ActionService>().resetAllChangesAction()
         // update the checked-out branch using the added branch as reference
         commitService.referenceBranchName = addedBranch
         updateBranchInfo(graphInfo.mainBranch)
@@ -51,6 +52,7 @@ class GraphService(private val project: Project) {
      * Called when a branch is de-selected from the side panel
      */
     fun removeBranch(graphInfo: GraphInfo) {
+        project.service<ActionService>().resetAllChangesAction()
         commitService.referenceBranchName = ""
         updateBranchInfo(graphInfo.mainBranch)
         graphInfo.changeAddedBranch(null)

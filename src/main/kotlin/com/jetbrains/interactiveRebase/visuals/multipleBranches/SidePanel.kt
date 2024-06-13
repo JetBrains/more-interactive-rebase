@@ -11,8 +11,6 @@ import java.awt.GridBagLayout
 
 class SidePanel(var branches: MutableList<String>, val project: Project) : JBPanel<JBPanel<*>>() {
     internal var isVisible: Boolean = false
-
-//    internal var branches: MutableList<String> = mutableListOf()
     internal var sideBranchPanels: MutableList<SideBranchPanel> = mutableListOf()
 
     init {
@@ -67,7 +65,7 @@ class SidePanel(var branches: MutableList<String>, val project: Project) : JBPan
      * Adds a listener to the remove button of the branch panel.
      */
     fun addRemoveBranchButtonListener(branch: SideBranchPanel) {
-        val removeListener = RemoveSideBranchListener(project, branch, this)
+        val removeListener = RemoveSideBranchListener(branch, this)
         branch.button.addMouseListener(removeListener)
         branch.button.addMouseMotionListener(removeListener)
     }
