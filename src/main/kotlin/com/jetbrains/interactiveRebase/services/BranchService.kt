@@ -81,8 +81,7 @@ class BranchService(private val project: Project) {
      * Gets the local branch names except the checked out one
      */
     fun getBranchesExceptCheckedOut(): List<String> {
-        val repo = gitUtils.getRepository()
-        val branchName = repo.currentBranchName ?: throw IRInaccessibleException("Branch cannot be accessed")
+        val branchName = gitUtils.retrieveBranchName()
         return getBranches().filter { it != branchName }
     }
 
@@ -96,4 +95,5 @@ class BranchService(private val project: Project) {
         lineHandler.addParameters(params)
         return gitUtils.runCommand(lineHandler)
     }
+
 }

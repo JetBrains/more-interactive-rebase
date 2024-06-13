@@ -13,7 +13,8 @@ import java.awt.GridBagLayout
 
 class SidePanel(var branches: MutableList<String>, val project: Project) : JBPanel<JBPanel<*>>() {
     internal var isVisible: Boolean = false
-    internal var sideBranchPanels: MutableList<SideBranchPanel> = mutableListOf()
+
+    var sideBranchPanels: MutableList<SideBranchPanel> = mutableListOf()
 
     init {
         layout = GridBagLayout()

@@ -1,6 +1,8 @@
 package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.service
+import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.SideBranchPanel
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.SidePanel
 import java.awt.event.MouseAdapter

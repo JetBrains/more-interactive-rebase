@@ -22,7 +22,7 @@ class CommitService(private val project: Project) {
      */
     var referenceBranchName: String = ""
     private var gitUtils: IRGitUtils = IRGitUtils(project)
-    private var branchSer = project.service<BranchService>()
+    internal var branchSer = project.service<BranchService>()
 
     /**
      * Secondary constructor for testing
@@ -115,7 +115,6 @@ class CommitService(private val project: Project) {
         }
         return consumer.commits[0]
     }
-
     /**
      * Gets branch name from utils
      */
