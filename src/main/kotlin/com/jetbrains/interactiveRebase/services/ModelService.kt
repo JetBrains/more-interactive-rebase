@@ -13,6 +13,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.IRGitRefreshListener
+import git4idea.cherrypick.GitCherryPicker
 import git4idea.status.GitRefreshListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -208,6 +209,12 @@ class ModelService(
                     showWarningGitDialogClosesPlugin("There was an error while fetching data from Git.")
                 }
             }
+        }
+    }
+
+    fun fetchCherry() {
+        coroutineScope.launch {
+            GitCherryPicker(project).cherryPick(mutableListOf(graphInfo.addedBranch!!.currentCommits[0].commit))
         }
     }
 

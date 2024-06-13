@@ -7,21 +7,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.IRCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.*
 import com.jetbrains.interactiveRebase.visuals.HeaderPanel
 import com.jetbrains.interactiveRebase.visuals.MainPanel
 import com.squareup.wire.get
 
 @Service(Service.Level.PROJECT)
-class ActionService(project: Project) {
+class ActionService(val project: Project) {
     internal var modelService = project.service<ModelService>()
     private var invoker = modelService.invoker
     lateinit var mainPanel: MainPanel
@@ -73,6 +65,41 @@ class ActionService(project: Project) {
             invoker.addCommand(command)
         }
         modelService.branchInfo.clearSelectedCommits()
+    }
+
+
+    /**
+     * Creates a rebase command for a cherry-picking rebase
+     */
+    fun takeCherryPickAction() {
+        invoker.undoneCommands.clear()
+        val commits = modelService.graphInfo.addedBranch?.selectedCommits
+        commits?.forEach {
+            commitInfo ->
+                val newCommit = CommitInfo(commitInfo.commit, project,
+                        mutableListOf(), false, false,
+                        false, false, false,
+                        false, false)
+                modelService.graphInfo.mainBranch.currentCommits.add(0,newCommit)
+                val command = CherryCommand(newCommit)
+                newCommit.addChange(command)
+                invoker.addCommand(command)
+
+
+
+        }
+        modelService.branchInfo.clearSelectedCommits()
+        modelService.graphInfo.addedBranch?.clearSelectedCommits()
+
+    }
+
+    /**
+     * Enables the Cherry Pick button.
+     * Commits form the checked out branch cannot be cherry-picked
+     */
+    fun checkCherryPick(e: AnActionEvent) {
+        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isEmpty() &&
+                areDisabledCommitsSelected()
     }
 
     /**
@@ -467,6 +494,9 @@ class ActionService(project: Project) {
         if (command is PickCommand) {
             removePickFromSquashOrFixup(commitToBeUndone)
         }
+        if (command is CherryCommand) {
+            undoCherryPick(commitToBeUndone, command)
+        }
 
         commitToBeUndone.removeChange(command)
         invoker.undoneCommands.add(command)
@@ -495,6 +525,9 @@ class ActionService(project: Project) {
         }
         if (command is PickCommand) {
             redoPick(commitToBeRedone)
+        }
+        if (command is CherryCommand) {
+            redoCherryPick(commitToBeRedone)
         }
 
         commitToBeRedone.addChange(command)
@@ -528,6 +561,30 @@ class ActionService(project: Project) {
             }
         }
     }
+
+    /**
+     * If the last action that was performed by the user was a cherry-pick,
+     * this removes it from the checked out branch.
+     */
+    internal fun undoCherryPick(
+            commit: CommitInfo,
+            command: CherryCommand,
+    ) {
+        modelService.graphInfo.mainBranch.currentCommits.remove(commit)
+
+    }
+
+    /**
+     * If the last action that was undone by the user was a cherry-pick,
+     * this adds it back to the checked out branch.
+     */
+    internal fun redoCherryPick(
+            commit: CommitInfo,
+    ) {
+        modelService.graphInfo.mainBranch.currentCommits.add(0,commit)
+
+    }
+
 
     /**
      * If the command is a squash or fixup command, it undoes it,
@@ -617,6 +674,7 @@ class ActionService(project: Project) {
         commit.setReorderedTo(false)
         mainPanel.graphPanel.mainBranchPanel.branch.updateCurrentCommits(command.newIndex, command.oldIndex, commit)
     }
+
 
     /**
      * If the last undone action that was performed by the user was a reorder,
