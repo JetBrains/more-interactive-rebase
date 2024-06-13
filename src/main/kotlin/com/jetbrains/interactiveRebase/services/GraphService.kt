@@ -52,6 +52,7 @@ class GraphService(private val project: Project) {
      * Called when a branch is de-selected from the side panel
      */
     fun removeBranch(graphInfo: GraphInfo) {
+        project.service<ActionService>().resetAllChangesAction()
         commitService.referenceBranchName = ""
         updateBranchInfo(graphInfo.mainBranch)
         graphInfo.changeAddedBranch(null)

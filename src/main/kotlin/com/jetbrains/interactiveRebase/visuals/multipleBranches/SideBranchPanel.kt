@@ -135,7 +135,7 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
     internal fun selectBranch(): Boolean {
         // if there are staged changes, trigger warning that they might be overwritten
         if (project.service<RebaseInvoker>().commands.isNotEmpty()) {
-            return triggerOverwriteWarning()
+            return triggerWarningForAddingBranch()
         }
         addSelectedBranchToView()
         return true
@@ -155,10 +155,28 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
     }
 
     /**
+     * Triggers an overwriting changes warning, returns true if the answer to the warning is yes, false otherwise.
+     * Goes through with the removal if the change is made
+     */
+    internal fun deselectBranch(): Boolean {
+        if (project.service<RebaseInvoker>().commands.isNotEmpty()) {
+            val answer: Boolean =
+                dialogService.warningYesNoDialog(
+                    "Overwriting Changes",
+                    "Removing this branch from the view will reset the actions you have made. Do you want to continue?",
+                )
+            // if the answer is no, do not remove the branch
+            if (!answer) return false
+        }
+        modelService.removeSecondBranchFromGraphInfo()
+        return true
+    }
+
+    /**
      * Shows dialogue stating that the staged changes will be overwritten
      * If branch is added and yes is chosen, returns true, false otherwise
      */
-    private fun triggerOverwriteWarning(): Boolean {
+    private fun triggerWarningForAddingBranch(): Boolean {
         val answer: Boolean =
             dialogService.warningYesNoDialog(
                 "Overwriting Changes",

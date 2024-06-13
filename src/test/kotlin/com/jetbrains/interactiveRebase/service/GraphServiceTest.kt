@@ -244,6 +244,10 @@ class GraphServiceTest : BasePlatformTestCase() {
     }
 
     fun testRemoveBranch() {
+        val command = DropCommand(CommitInfo(TestGitCommitProvider(project).createCommit("add test"), project))
+        project.service<RebaseInvoker>().addCommand(
+            command,
+        )
         val b1 = BranchInfo("feature", initialCommits = listOf(commit2, commit1))
         val b2 = BranchInfo("dev", initialCommits = listOf(addedCommit1))
 
@@ -256,6 +260,7 @@ class GraphServiceTest : BasePlatformTestCase() {
         graphService.removeBranch(graph)
         assertThat(graph.addedBranch).isNull()
         assertThat(graph.mainBranch.isPrimary).isFalse()
+        assertThat(project.service<RebaseInvoker>().commands.isEmpty()).isTrue()
     }
 
     private inline fun <reified T> anyCustom(): T = any(T::class.java)

@@ -23,6 +23,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
     val branchName = "main"
 
     fun testSelectBranchTriggersAcceptedWarning() {
+        project.service<RebaseInvoker>().commands.clear()
         project.service<RebaseInvoker>().addCommand(
             DropCommand(CommitInfo(TestGitCommitProvider(project).createCommit("add test"), project)),
         )
@@ -45,6 +46,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
     }
 
     fun testSelectBranchTriggersRejectedWarning() {
+        project.service<RebaseInvoker>().commands.clear()
         project.service<RebaseInvoker>().addCommand(
             DropCommand(CommitInfo(TestGitCommitProvider(project).createCommit("add test"), project)),
         )
@@ -65,7 +67,67 @@ class SideBranchPanelTest : BasePlatformTestCase() {
         assertThat(sideBranchPanel.backgroundColor).isNotEqualTo(Palette.JETBRAINS_SELECTED)
     }
 
+    fun testDeSelectBranchTriggersRejectedWarning() {
+        project.service<RebaseInvoker>().commands.clear()
+        val command = DropCommand(CommitInfo(TestGitCommitProvider(project).createCommit("add test"), project))
+        project.service<RebaseInvoker>().addCommand(
+            command,
+        )
+        val dialog: DialogService = mock(DialogService::class.java)
+
+        `when`(dialog.warningYesNoDialog(anyString(), anyString())).thenReturn(false)
+        val modelService = mock(ModelService::class.java)
+        val sideBranchPanel = SideBranchPanel(branchName, project, dialog, modelService)
+        sideBranchPanel.isSelected = true
+        val result = sideBranchPanel.deselectBranch()
+        verify(dialog).warningYesNoDialog(
+            "Overwriting Changes",
+            "Removing this branch from the view will reset the actions you have made. " +
+                "Do you want to continue?",
+        )
+        verify(modelService, never()).removeSecondBranchFromGraphInfo()
+        assertThat(result).isFalse()
+        assertThat(sideBranchPanel.isSelected).isTrue()
+        assertThat(project.service<RebaseInvoker>().commands).isEqualTo(listOf(command))
+    }
+
+    fun testDeSelectBranchTriggersAcceptedWarning() {
+        project.service<RebaseInvoker>().commands.clear()
+        val command = DropCommand(CommitInfo(TestGitCommitProvider(project).createCommit("add test"), project))
+        project.service<RebaseInvoker>().addCommand(
+            command,
+        )
+        val dialog: DialogService = mock(DialogService::class.java)
+
+        `when`(dialog.warningYesNoDialog(anyString(), anyString())).thenReturn(true)
+        val modelService = mock(ModelService::class.java)
+        val sideBranchPanel = SideBranchPanel(branchName, project, dialog, modelService)
+        sideBranchPanel.isSelected = true
+        val result = sideBranchPanel.deselectBranch()
+        verify(dialog).warningYesNoDialog(
+            "Overwriting Changes",
+            "Removing this branch from the view will reset the actions you have made. " +
+                "Do you want to continue?",
+        )
+        verify(modelService).removeSecondBranchFromGraphInfo()
+        assertThat(result).isTrue()
+    }
+
+    fun testDeselectBranchConsidersEmptyChanges() {
+        project.service<RebaseInvoker>().commands.clear()
+        val dialog: DialogService = mock(DialogService::class.java)
+        `when`(dialog.warningYesNoDialog(anyString(), anyString())).thenReturn(false)
+        val modelService = mock(ModelService::class.java)
+        val sideBranchPanel = SideBranchPanel(branchName, project, dialog, modelService)
+
+        val result = sideBranchPanel.deselectBranch()
+        verify(dialog, never()).warningYesNoDialog(anyString(), anyString())
+        verify(modelService).removeSecondBranchFromGraphInfo()
+        assertThat(result).isTrue()
+    }
+
     fun testSelectBranchConsidersEmptyChanges() {
+        project.service<RebaseInvoker>().commands.clear()
         val dialog: DialogService = mock(DialogService::class.java)
         `when`(dialog.warningYesNoDialog(anyString(), anyString())).thenReturn(false)
         val modelService = mock(ModelService::class.java)
