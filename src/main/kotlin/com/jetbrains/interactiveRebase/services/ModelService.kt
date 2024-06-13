@@ -187,11 +187,7 @@ class ModelService(
      */
     fun fetchGraphInfo() {
         coroutineScope.launch(Dispatchers.IO) {
-            try {
-                graphService.updateGraphInfo(graphInfo)
-            } catch (e: Exception) {
-                println(e.message)
-            }
+            graphService.updateGraphInfo(graphInfo)
         }
     }
 
@@ -201,11 +197,7 @@ class ModelService(
     fun populateLocalBranches() {
         val branchService = project.service<BranchService>()
         coroutineScope.launch(Dispatchers.IO) {
-            try {
-                graphInfo.branchList = branchService.getBranchesExceptCheckedOut().toMutableList()
-            } catch (e: Exception) {
-                println(e.message)
-            }
+            graphInfo.branchList = branchService.getBranchesExceptCheckedOut().toMutableList()
         }
     }
 
@@ -214,11 +206,7 @@ class ModelService(
      */
     fun addSecondBranchToGraphInfo(addedBranch: String) {
         coroutineScope.launch(Dispatchers.IO) {
-            try {
-                graphService.addBranch(graphInfo, addedBranch)
-            } catch (e: Exception) {
-                println(e.message)
-            }
+            graphService.addBranch(graphInfo, addedBranch)
         }
     }
 
@@ -227,11 +215,7 @@ class ModelService(
      */
     fun removeSecondBranchFromGraphInfo() {
         coroutineScope.launch(Dispatchers.IO) {
-            try {
-                graphService.removeBranch(graphInfo)
-            } catch (e: Exception) {
-                println(e.message)
-            }
+            graphService.removeBranch(graphInfo)
         }
     }
 

@@ -99,6 +99,8 @@ class TwoBranchesActionTest:IRGitPlatformTest(){
             assertThat(sidePanel.isVisible).isTrue()
 
             Awaitility.await()
+                .pollInSameThread()
+                .alias("open side panel and check if correct branches are displayed")
                 .atMost(30000, TimeUnit.MILLISECONDS)
                 .pollDelay(50, TimeUnit.MILLISECONDS)
                 .until {
@@ -126,6 +128,8 @@ class TwoBranchesActionTest:IRGitPlatformTest(){
             //check if the correct information about the 2 branches is added to the model
             val addedBranch = modelService.graphInfo.addedBranch
             Awaitility.await()
+                .pollInSameThread()
+                .alias("add main to view")
                 .atMost(15000, TimeUnit.MILLISECONDS)
                 .pollDelay(50, TimeUnit.MILLISECONDS)
                 .until {
@@ -133,6 +137,8 @@ class TwoBranchesActionTest:IRGitPlatformTest(){
                 }
 
             Awaitility.await()
+                .pollInSameThread()
+                .alias("correct commits on main branch")
                 .atMost(15000, TimeUnit.MILLISECONDS)
                 .pollDelay(50, TimeUnit.MILLISECONDS)
                 .until {
@@ -167,7 +173,7 @@ class TwoBranchesActionTest:IRGitPlatformTest(){
             Awaitility.await()
                 .atMost(15000, TimeUnit.MILLISECONDS)
                 .pollDelay(50, TimeUnit.MILLISECONDS)
-                .alias("adding a second branch to the view and refreshing")
+                .alias("adding dev branch to the view and refreshing")
                 .pollInSameThread()
                 .until {
                     modelService.graphInfo.addedBranch != null
@@ -181,7 +187,7 @@ class TwoBranchesActionTest:IRGitPlatformTest(){
             Awaitility.await()
                 .atMost(15000, TimeUnit.MILLISECONDS)
                 .pollDelay(50, TimeUnit.MILLISECONDS)
-                .alias("adding a second branch to the view and refreshing")
+                .alias("check commits in dev branch are correct")
                 .pollInSameThread()
                 .until {
                     val commitsOnDevBranch = devBranch?.initialCommits?.map { it.commit.subject }

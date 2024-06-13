@@ -28,6 +28,15 @@ class RebaseInvoker(val project: Project) {
     var commands = mutableListOf<IRCommand>()
     var undoneCommands = mutableListOf<IRCommand>()
 
+    fun removeChangesBeforePick(){
+        val changesToRemove = mutableListOf<IRCommand>()
+        for (commitInfo in branchInfo.currentCommits) {
+            val changes = commitInfo.changes.filter { it !in commitInfo.getChangesAfterPick() }
+            changesToRemove.addAll(changes)
+        }
+        commands.removeAll(changesToRemove)
+    }
+
     /**
      * Creates a git model for the rebase, from the
      * correct list of current commits.
@@ -35,6 +44,7 @@ class RebaseInvoker(val project: Project) {
     fun createModel() {
         expandCollapsedCommits()
         expandCurrentCommitsForSquashed()
+        removeChangesBeforePick()
         val commits =
             branchInfo.currentCommits.map {
                     commitInfo ->
