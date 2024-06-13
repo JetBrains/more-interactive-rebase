@@ -144,19 +144,30 @@ class ActionService(project: Project) {
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
 
-        val notCollapsed = checkParentNotCollapsed()
+        val validParent = checkValidParent()
 
-        e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && notCollapsed && !areDisabledCommitsSelected()
+        e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && validParent && !areDisabledCommitsSelected()
     }
 
-    fun checkParentNotCollapsed(): Boolean {
+    fun checkValidParent(): Boolean {
         if (modelService.branchInfo.getActualSelectedCommitsSize() != 1) return true
 
-        val commit = modelService.getSelectedCommits().last()
-        val index = modelService.branchInfo.currentCommits.indexOf(commit)
-        if (index == modelService.branchInfo.currentCommits.size - 1) return true
+        var commit = modelService.getSelectedCommits().last()
 
-        return !modelService.branchInfo.currentCommits[index+1].isCollapsed
+        if(commit == modelService.getCurrentCommits().last()){
+            return false
+        }
+
+        var index = modelService.branchInfo.currentCommits.indexOf(commit) + 1
+        commit = modelService.branchInfo.currentCommits[index]
+        while(commit.getChangesAfterPick().filterIsInstance<DropCommand>().isNotEmpty() &&
+            index < modelService.getCurrentCommits().size - 1){
+            index++
+            commit = modelService.getCurrentCommits()[index]
+        }
+
+        return !modelService.branchInfo.currentCommits[index].isCollapsed &&
+                commit.getChangesAfterPick().filterIsInstance<DropCommand>().isEmpty()
     }
 
     /**

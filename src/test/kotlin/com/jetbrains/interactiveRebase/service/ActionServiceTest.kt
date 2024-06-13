@@ -808,7 +808,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(testEvent.presentation.isEnabled).isFalse()
     }
 
-    fun testCheckParentNotCollapsedWhenSquashing() {
+    fun testCheckValidParentWhenSquashing() {
         val commitProvider = TestGitCommitProvider(project)
         val commitInfo3 = CommitInfo(commitProvider.createCommit("bbb"), project, mutableListOf())
         val commitInfo4 = CommitInfo(commitProvider.createCommit("aaa"), project, mutableListOf())
@@ -852,7 +852,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(testEvent.presentation.isEnabled).isFalse()
     }
 
-    fun testCheckParentNotCollapsedWhenSquashingIsNotCollapsed() {
+    fun testCheckValidParentWhenSquashingIs() {
         val commitProvider = TestGitCommitProvider(project)
         val commitInfo3 = CommitInfo(commitProvider.createCommit("bbb"), project, mutableListOf())
         val commitInfo4 = CommitInfo(commitProvider.createCommit("aaa"), project, mutableListOf())

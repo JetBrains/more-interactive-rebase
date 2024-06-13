@@ -124,6 +124,17 @@ class ModelService(
         return branchInfo.selectedCommits
     }
 
+
+    /**
+     * Clears the selected commits
+     * from both the main and the added
+     * branch
+     */
+    fun clearSelectedCommits() {
+        graphInfo.mainBranch.clearSelectedCommits()
+        graphInfo.addedBranch?.clearSelectedCommits()
+    }
+
     /**
      * Returns the selected commit which is the lowest visually in the list.
      */
