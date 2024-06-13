@@ -63,13 +63,6 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
         val toolbar = actionManager.createActionToolbar(ActionPlaces.EDITOR_TAB, group, true)
         val toolbarComponent: JComponent = toolbar.component
         toolbar.targetComponent = buttonPanel
-
-        var normalButton = RoundedButton("Normal", Palette.GRAY_BUTTON, Palette.WHITE_TEXT)
-        normalButton.addActionListener {
-            project.service<ActionService>().takeNormalRebaseAction()
-        }
-
-        buttonPanel.add(normalButton)
         buttonPanel.add(toolbarComponent)
     }
 }
