@@ -164,9 +164,8 @@ class LabeledBranchPanel(
 
         panel.backgroundColor = colorTheme.branchNameColor
         if (branch.isRebased) {
-            label.foreground = JBColor.BLUE
             panel.backgroundColor = Palette.TRANSPARENT
-            panel.addBorderGradient(colorTheme.regularCircleColor, Palette.TOMATO_THEME.regularCircleColor)
+            panel.addBackgroundGradient(colorTheme.branchNameColor, Palette.TOMATO_THEME.branchNameColor)
         }
         panel.add(label)
         return panel

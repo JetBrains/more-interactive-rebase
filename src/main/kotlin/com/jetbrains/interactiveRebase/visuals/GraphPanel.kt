@@ -18,6 +18,7 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
 import java.awt.LinearGradientPaint
+import java.awt.Point
 import java.awt.RenderingHints
 import java.awt.geom.CubicCurve2D
 import javax.swing.SwingConstants
@@ -248,7 +249,14 @@ class GraphPanel(
             } catch (e: Exception) {
                 println("Mn burzash")
             }
-            val (addedCircleCenterX, addedCircleCenterY) = centerCoordinatesOfBaseCircleInAddedBranch()
+            var (addedCircleCenterX, addedCircleCenterY) = centerCoordinatesOfBaseCircleInAddedBranch()
+
+            if (Point(mainCircleCenterX, mainCircleCenterY) ==
+                Point(addedCircleCenterX, addedCircleCenterY)
+            ) {
+                addedCircleCenterX++
+                addedCircleCenterY++
+            }
 
             gradientTransition(
                 g2d,

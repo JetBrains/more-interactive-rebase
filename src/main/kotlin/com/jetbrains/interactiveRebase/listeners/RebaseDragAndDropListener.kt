@@ -4,8 +4,8 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
-import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.services.ActionService
+import com.jetbrains.interactiveRebase.visuals.DragPanel
 import com.jetbrains.interactiveRebase.visuals.GraphPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
@@ -26,7 +26,7 @@ class RebaseDragAndDropListener(
 
     private val mainBranchPanel = mainBranchNameLabel.parent as LabeledBranchPanel
     private val addedBranchPanel = addedBranchNameLabel.parent as LabeledBranchPanel
-    private val dragPanel = graphPanel.parent.getComponent(0) as JBPanel<*>
+    private val dragPanel = graphPanel.parent.getComponent(0) as DragPanel
     private val gbcMain = (mainBranchPanel.layout as GridBagLayout).getConstraints(mainBranchNameLabel)
     private val gbcAdded = (addedBranchPanel.layout as GridBagLayout).getConstraints(addedBranchNameLabel)
 
@@ -82,6 +82,23 @@ class RebaseDragAndDropListener(
         updateMousePosition(e)
 
         indicateDraggedLabelCanBeDroppedOnTheSecondLabel()
+
+        renderCurvedArrow()
+    }
+
+    private fun renderCurvedArrow() {
+        dragPanel.labelIsDragged = true
+        dragPanel.startDragPoint =
+            Point(
+                mainBranchNameLabel.x + mainBranchNameLabel.width / 2,
+                mainBranchNameLabel.y + mainBranchNameLabel.height + 5
+            )
+        dragPanel.endDragPoint =
+            Point(
+                addedBranchNameLabel.x + addedBranchNameLabel.width / 2,
+                addedBranchNameLabel.y + addedBranchNameLabel.height + 5
+            )
+        dragPanel.repaint()
     }
 
     /**
@@ -95,14 +112,18 @@ class RebaseDragAndDropListener(
      * 4. refreshes the drag panel (to visually remove the labels from it)
      */
     override fun mouseReleased(e: MouseEvent) {
+        dragPanel.labelIsDragged = false
         resetFormattingOfSecondLabel()
-        mainBranchNameLabel.backgroundColor = mainBranchPanel.colorTheme.branchNameColor
         if (mainBranchPanel.branch.isRebased) {
             formatDraggedLabelOnDrop()
+        } else {
+            mainBranchNameLabel.backgroundColor = mainBranchPanel.colorTheme.branchNameColor
         }
-
+        dragPanel.repaint()
         if (mainBranchNameLabel.bounds.intersects(addedBranchNameLabel.bounds)
-            && addedBranchPanel.branchPanel.circles.size != 1) {
+            && addedBranchPanel.branchPanel.circles.size != 1
+        ) {
+            formatDraggedLabelOnDrop()
             rebase()
         }
 
@@ -129,12 +150,10 @@ class RebaseDragAndDropListener(
 
     private fun formatDraggedLabelOnDrag() {
         if (mainBranchPanel.branch.isRebased) {
-            mainBranchNameLabel.removeBorderGradient()
             mainBranchNameLabel.addBackgroundGradient(
                 mainBranchPanel.colorTheme.regularCircleColor,
                 addedBranchPanel.colorTheme.regularCircleColor
             )
-            mainBranchNameLabel.getComponent(0).foreground = JBColor.BLACK
             mainBranchNameLabel.repaint()
         } else {
             mainBranchNameLabel.backgroundColor = mainBranchPanel.colorTheme.regularCircleColor
@@ -160,7 +179,8 @@ class RebaseDragAndDropListener(
             initialOffsetMain,
             initialOffsetAdded,
             finalOffsetMain,
-            finalOffsetAdded)
+            finalOffsetAdded
+        )
     }
 
     private fun resetFormattingOfSecondLabel() {
@@ -169,13 +189,11 @@ class RebaseDragAndDropListener(
     }
 
     private fun formatDraggedLabelOnDrop() {
-        mainBranchNameLabel.getComponent(0).foreground = JBColor.BLUE
+        mainBranchNameLabel.addBackgroundGradient(
+            mainBranchPanel.colorTheme.branchNameColor,
+            addedBranchPanel.colorTheme.branchNameColor)
+
         mainBranchNameLabel.backgroundColor = Palette.TRANSPARENT
-        mainBranchNameLabel.removeBackgroundGradient()
-        mainBranchNameLabel.addBorderGradient(
-            mainBranchPanel.colorTheme.regularCircleColor,
-            addedBranchPanel.colorTheme.regularCircleColor
-        )
         mainBranchNameLabel.repaint()
     }
 
@@ -213,6 +231,7 @@ class RebaseDragAndDropListener(
         placeholderPanel.getComponent(0).foreground = labeledBranchPanel.background
         placeholderPanel.isOpaque = false
         placeholderPanel.removeBorderGradient()
+        placeholderPanel.removeBackgroundGradient()
         return placeholderPanel
     }
 
@@ -246,12 +265,12 @@ class RebaseDragAndDropListener(
         val timer = Timer(delay) {
             if (currentOffsetMain > finalOffsetMain || currentOffsetAdded < finalOffsetAdded) {
 //                if (currentOffsetMain < finalOffsetMain) {
-                    currentOffsetMain += incrementMain
-                    updateOffsetOfMainBranch(currentOffsetMain)
+                currentOffsetMain += incrementMain
+                updateOffsetOfMainBranch(currentOffsetMain)
 //                }
 //                if (currentOffsetAdded < finalOffsetAdded) {
-                    currentOffsetAdded += incrementAdded
-                    updateOffsetOfAddedBranch(currentOffsetAdded)
+                currentOffsetAdded += incrementAdded
+                updateOffsetOfAddedBranch(currentOffsetAdded)
 //                }
             } else {
                 (it.source as Timer).stop()

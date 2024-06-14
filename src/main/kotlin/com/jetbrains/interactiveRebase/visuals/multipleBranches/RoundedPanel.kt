@@ -66,7 +66,7 @@ open class RoundedPanel : JBPanel<JBPanel<*>>() {
             0f,
             width / 2f,
             height.toFloat(),
-            floatArrayOf(0.2f, 0.8f),
+            floatArrayOf(0.2f, 1.0f),
             gradientColors.toTypedArray(),
         )
     }

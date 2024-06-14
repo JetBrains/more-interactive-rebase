@@ -32,7 +32,7 @@ class MainPanel(
     internal var sidePanelPane: JBScrollPane
     var sidePanel: SidePanel
     var graphPanel: GraphPanel
-    internal val dragPanel = JBPanel<JBPanel<*>>()
+    internal val dragPanel: DragPanel = DragPanel()
     private val graphInfoListener: GraphInfo.Listener
     private val branchInfoListener: BranchInfo.Listener
     private val commitInfoListener: CommitInfo.Listener
@@ -44,9 +44,6 @@ class MainPanel(
 
     init {
         graphWrapper.layout = OverlayLayout(graphWrapper)
-        dragPanel.background = Palette.TRANSPARENT
-        dragPanel.isOpaque = false
-        dragPanel.layout = null
 
         graphPanel = createGraphPanel()
         contentPanel = createContentPanel()
