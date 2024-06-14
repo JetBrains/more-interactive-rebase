@@ -38,9 +38,21 @@ class SidePanel(var branches: MutableList<String>, val project: Project) : JBPan
         removeAll()
         sideBranchPanels.clear()
         updateBranches()
+        val addedBranch = project.service<ModelService>().graphInfo.addedBranch?.name
+        var addedPanel: SideBranchPanel? = null
         for (i in 0 until branches.size) {
             createSideBranchPanel(i)
+            val panel: SideBranchPanel = sideBranchPanels[i]
+
+            if (panel.branchName == addedBranch) {
+                panel.selectBranchVisually()
+                addedPanel = panel
+            }
         }
+        if (addedPanel != null) {
+            makeBranchesUnavailableExceptCurrent(addedPanel)
+        }
+
         revalidate()
         repaint()
     }

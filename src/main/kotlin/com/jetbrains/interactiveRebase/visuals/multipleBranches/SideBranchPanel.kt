@@ -51,10 +51,6 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
         layout = GridBagLayout()
         addSideBranchLabel()
         addRemoveBranchButton()
-
-        val name = modelService.graphInfo.addedBranch?.name
-
-        if (name == branchName) selectBranch()
     }
 
     /**
@@ -146,6 +142,10 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
      */
     private fun addSelectedBranchToView() {
         modelService.addSecondBranchToGraphInfo(branchName)
+        selectBranchVisually()
+    }
+
+    fun selectBranchVisually() {
         this.isOpaque = true
         backgroundColor = Palette.JETBRAINS_SELECTED
         this.isSelected = true
@@ -182,6 +182,7 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
                 "Overwriting Changes",
                 "Adding another branch to the view will reset the actions you have made. Do you want to continue?",
             )
+        println("Adding another branch dialog happened")
         if (answer) {
             addSelectedBranchToView()
             return true
