@@ -124,7 +124,6 @@ class ModelService(
         return branchInfo.selectedCommits
     }
 
-
     /**
      * Clears the selected commits
      * from both the main and the added

@@ -161,7 +161,7 @@ class ActionService(project: Project) {
 
         var commit = modelService.getLastSelectedCommit(modelService.branchInfo)
 
-        if(commit == modelService.getCurrentCommits().last()){
+        if (commit == modelService.getCurrentCommits().last()) {
             return false
         }
 
@@ -181,8 +181,9 @@ class ActionService(project: Project) {
 
         var index = modelService.branchInfo.currentCommits.indexOf(commit) + 1
         commit = modelService.branchInfo.currentCommits[index]
-        while(commit.getChangesAfterPick().filterIsInstance<DropCommand>().isNotEmpty() &&
-            index < modelService.getCurrentCommits().size - 1){
+        while (commit.getChangesAfterPick().filterIsInstance<DropCommand>().isNotEmpty() &&
+            index < modelService.getCurrentCommits().size - 1
+        ) {
             index++
             commit = modelService.getCurrentCommits()[index]
         }
@@ -385,9 +386,25 @@ class ActionService(project: Project) {
         selectedCommits: List<CommitInfo>,
     ): MutableList<CommitInfo> {
         val ret = mutableListOf<CommitInfo>()
+
         selectedCommits.forEach {
             removeSquashFixChange(it)
             ret.add(it)
+        }
+
+        parent.changes.forEach {
+                change ->
+            if (change is SquashCommand) {
+                change.squashedCommits.forEach {
+                    removeSquashFixChange(it)
+                    ret.add(it)
+                }
+            } else if (change is FixupCommand) {
+                change.fixupCommits.forEach {
+                    removeSquashFixChange(it)
+                    ret.add(it)
+                }
+            }
         }
 
         removeSquashFixChange(parent)

@@ -5,10 +5,8 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.OnePixelSplitter
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.util.ui.UIUtil
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
@@ -128,6 +126,11 @@ class MainPanel(
         gbc.anchor = GridBagConstraints.CENTER
         gbc.fill = GridBagConstraints.BOTH
 
+        contentPanel.add(
+            graphPanel,
+            gbc,
+        )
+
         val help = HelpPanel()
         gbc.insets.left = help.width
 
@@ -147,27 +150,29 @@ class MainPanel(
         gbc.insets.left = 0
         contentPanel.add(help, gbc)
 
-        contentPanel.addMouseListener(object : MouseListener{
-            override fun mouseClicked(e: MouseEvent?) {
-                SwingUtilities.invokeLater { requestFocusInWindow() }
-            }
+        contentPanel.addMouseListener(
+            object : MouseListener {
+                override fun mouseClicked(e: MouseEvent?) {
+                    SwingUtilities.invokeLater { requestFocusInWindow() }
+                }
 
-            override fun mousePressed(e: MouseEvent?) {
-                SwingUtilities.invokeLater { requestFocusInWindow() }
-            }
+                override fun mousePressed(e: MouseEvent?) {
+                    SwingUtilities.invokeLater { requestFocusInWindow() }
+                }
 
-            override fun mouseReleased(e: MouseEvent?) {
-                SwingUtilities.invokeLater { requestFocusInWindow() }
-            }
+                override fun mouseReleased(e: MouseEvent?) {
+                    SwingUtilities.invokeLater { requestFocusInWindow() }
+                }
 
-            override fun mouseEntered(e: MouseEvent?) {
-                SwingUtilities.invokeLater { requestFocusInWindow() }
-            }
+                override fun mouseEntered(e: MouseEvent?) {
+                    SwingUtilities.invokeLater { requestFocusInWindow() }
+                }
 
-            override fun mouseExited(e: MouseEvent?) {
-                SwingUtilities.invokeLater { requestFocusInWindow() }
-            }
-        })
+                override fun mouseExited(e: MouseEvent?) {
+                    SwingUtilities.invokeLater { requestFocusInWindow() }
+                }
+            },
+        )
 
         return scrollable
     }

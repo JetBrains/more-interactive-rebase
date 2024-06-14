@@ -17,7 +17,7 @@ class BranchNavigationListener(project: Project, private val modelService: Model
      * arrow key press
      */
     override fun keyPressed(e: KeyEvent?) {
-        if(e?.keyCode == KeyEvent.VK_ESCAPE) {
+        if (e?.keyCode == KeyEvent.VK_ESCAPE) {
             modelService.clearSelectedCommits()
         }
         if (e?.isShiftDown!!) {
