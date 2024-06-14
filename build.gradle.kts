@@ -226,7 +226,7 @@ tasks {
             finalizedBy(jacocoTestCoverageVerification)
 
         }
-        systemProperty("java.awt.headless", "false")
+
         pitest {
             targetClasses.set(setOf("com.jetbrains.interactiveRebase.*")) //by default "${project.group}.*"
             pitestVersion.set("1.15.0") //not needed when a default PIT version should be used
