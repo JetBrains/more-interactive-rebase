@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.ui.components.JBPanel
 import java.awt.BorderLayout
 import java.awt.Desktop
+import java.awt.GraphicsEnvironment
 import java.awt.event.ActionEvent
 import java.net.URI
 import javax.swing.AbstractAction
@@ -10,7 +11,7 @@ import javax.swing.Action
 import javax.swing.JButton
 
 class HelpPanel() : JBPanel<JBPanel<*>>() {
-    var desktop: Desktop = Desktop.getDesktop()
+    var desktop: Desktop? = if (Desktop.isDesktopSupported() && !GraphicsEnvironment.isHeadless()) Desktop.getDesktop() else null
 
     /**
      * Secondary constructor for testing
@@ -21,11 +22,13 @@ class HelpPanel() : JBPanel<JBPanel<*>>() {
 
     init {
         this.layout = BorderLayout()
-        val action: Action = MyHelpAction(desktop)
-        val help = JButton(action)
-        help.toolTipText = "Show help contents"
-        help.putClientProperty("JButton.buttonType", "help")
-        this.add(help, BorderLayout.SOUTH)
+        if (desktop != null) {
+            val action: Action = MyHelpAction(desktop!!)
+            val help = JButton(action)
+            help.toolTipText = "Show help contents"
+            help.putClientProperty("JButton.buttonType", "help")
+            this.add(help, BorderLayout.SOUTH)
+        }
     }
 
     class MyHelpAction(private var desktop: Desktop) : AbstractAction() {
