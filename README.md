@@ -59,16 +59,21 @@ You can easily get started with setting up the plugin by following these guideli
 Navigate to <kbd>Tools</kbd> > <kbd> Interactive Rebase Current Branch</kbd>. The Plugin opens as a file in
 the editor tab. The branch drawn shows the latest commits on the checked out branch. Closing the Plugin and opening it
 again keeps the changes that were made.
+<img src="Images/entry.png" alt="entry.png" width="500">
 
-![entry.png](Images/entry.png)
+[//]: # (![entry.png]&#40;Images/entry.png&#41;)
 
-![view.png](Images/view.png)
+<img src="Images/view.png" alt="view.png" width="800">
+
+[//]: # (![view.png]&#40;Images/view.png&#41;)
 
 ### Commit Information
 Clicking on one or multiple commits selects them. The commit information and file changes of the selected commits
 are presented on the right side of the screen. Double-clicking on a file change opens its diff and shows the changes.
 
-![commit.png](Images/commit.png)
+<img src="Images/commit.png" alt="commit" width="800">
+
+[//]: # (![commit.png]&#40;Images/commit.png&#41;)
 
 ### Interactive Rebase Actions
 After selecting the commits, the buttons that are *active* show the available Interactive Rebase actions. **It is
@@ -84,13 +89,21 @@ for more information.
   commit message, which will also enable the text field. You can edit the message and press `Enter`.
   If you want to cancel your rewording, pressing `Escape` closes the text field.
 
-![reword.gif](Images/reword.gif)
+<img src="Images/reword.gif" alt="reword" width="500">
+
+[//]: # (![reword.gif]&#40;Images/reword.gif&#41;)
 * **<u>Reorder</u>** - You can drag and drop the commits along the branch if you want to reorder them.
+  
+<img src="Images/reorder.gif" alt="reorder" width="500">
 
-![reorder.gif](Images/reorder.gif)
-* **<u>Drop</u>** - After selecting commits, pressing the `drop` button will drop the selected commits.
+[//]: # (![reorder.gif]&#40;Images/reorder.gif&#41;)
+* **<u>Drop</u>** - After selecting commits, pressing the `drop` button will remove the selected commits from the commit history.
+  
+<img src="Images/drop.gif" alt="drop" width="500">
 
-![drop.gif](Images/drop.gif)
+
+[//]: # (![drop.gif]&#40;Images/drop.gif&#41;)
+
 * **<u>Squash</u>** - If there is only one selected commit pressing the `squash` button will squash that commit with the
   previous one (older in the commit history). In the case where multiple commits are selected, they get squashed into
 the oldest selected commit. After squashing, a text field opens for you to reword the commit message
@@ -108,8 +121,24 @@ the oldest selected commit. After squashing, a text field opens for you to rewor
 * **<u>Pick</u>** - Selecting the commits and pressing `Pick` reverts all changes done on them except for reordering.
 * **<u>Reset</u>** - clicking the `Reset` button reverts the graph to its initial state,
   before any changes were indicated.
-* **<u>Start Rebasing</u>** - Pressing `Start Rebasing` starts the Interactive Rebase and executes all the changes
+* **<u>Start Rebasing</u>** - Pressing `Rebase` starts the Interactive Rebase and executes all the changes
   that were made starting from the lowest changed commit on the graph.
+
+### Keyboard Shortcuts
+* **<u>Selecting a commit</u>** - Use arrow keys `↑` and `↓` to move up and down on a branch. Press `←` and `→` to move between branches. Use `Shift` for range selection.
+*  **<u>Selecting multiple commits</u>** - Press `Shift` + `Click` for range selection and `Command`/`Ctrl` + `Click` for non-contiguous selection.
+* **<u>Add branch</u>** - `Option`/`Alt` + `A`
+* **<u>Undo</u>** - `Ctrl` + `Z`
+* **<u>Redo</u>** - `Ctrl` + `Shift` + `Z`
+* **<u>Collapse commits</u>** - `Option`/`Alt` + `C`
+* **<u>Pick</u>** - `Option`/`Alt` + `P`
+* **<u>Squash</u>** - `Option`/`Alt` + `S`
+* **<u>Fixup</u>** - `Option`/`Alt` + `F`
+* **<u>Reword</u>** - `Option`/`Alt` + `R`
+* **<u>Drop</u>** - `Delete`
+* **<u>Stop to Edit</u>** - `Option`/`Alt` + `E`
+* **<u>Reset</u>** - `Ctrl` + `R`
+* **<u>Start rebasing</u>** - `Option`/`Alt` + `Enter`
 
 ##  🔗 Dependencies
 
