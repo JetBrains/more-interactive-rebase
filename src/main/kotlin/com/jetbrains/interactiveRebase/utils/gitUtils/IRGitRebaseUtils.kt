@@ -64,10 +64,10 @@ class IRGitRebaseUtils(private val project: Project) {
                     project.service<RebaseInvoker>().commands.clear()
                     project.service<RebaseInvoker>().undoneCommands.clear()
                     project.service<ModelService>().graphInfo.mainBranch.currentCommits.forEach {
-                        c -> c.changes.clear()
+                            c ->
+                        c.changes.clear()
                     }
                     project.service<ModelService>().fetchGraphInfo()
-
                 }
             }
         }.queue()

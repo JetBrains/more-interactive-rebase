@@ -42,7 +42,7 @@ class CommitService(private val project: Project) {
         var repo: GitRepository?
         try {
             repo = gitUtils.getRepository()
-        }catch(_:IRInaccessibleException){
+        } catch (_: IRInaccessibleException) {
             return getCommits(branchName)
         }
         val consumer = GeneralCommitConsumer()
@@ -52,9 +52,6 @@ class CommitService(private val project: Project) {
             referenceBranchName = branchSer.getDefaultReferenceBranchName() ?: branchName
         }
         return getDisplayableCommitsOfBranch(branchName, repo, consumer)
-
-
-
     }
 
     /**

@@ -25,7 +25,6 @@ class IRFileEditorBase(private val project: Project, private val virtualFile: Vi
         component = MainPanel(project)
         actionService.mainPanel = component
         modelService = project.service<ModelService>()
-
     }
 
     /**

@@ -44,10 +44,10 @@ class IRGitUtils(private val project: Project) {
         repo: GitRepository,
         consumer: Consumer<GitCommit>,
     ) {
-        try{
+        try {
             GitHistoryUtils.loadDetails(project, repo.root, consumer, currentBranch, "--not", referenceBranch)
-        }catch(_:VcsException){
-            getCommitDifferenceBetweenBranches(currentBranch,referenceBranch, repo, consumer)
+        } catch (_: VcsException) {
+            getCommitDifferenceBetweenBranches(currentBranch, referenceBranch, repo, consumer)
         }
     }
 
@@ -70,13 +70,11 @@ class IRGitUtils(private val project: Project) {
         consumer: Consumer<GitCommit>,
         branchName: String,
     ) {
-        try{
+        try {
             GitHistoryUtils.loadDetails(project, repo.root, consumer, branchName)
-        }catch(_:VcsException){
+        } catch (_: VcsException) {
             getCommitsOfBranch(repo, consumer, branchName)
         }
-
-
     }
 
     /**

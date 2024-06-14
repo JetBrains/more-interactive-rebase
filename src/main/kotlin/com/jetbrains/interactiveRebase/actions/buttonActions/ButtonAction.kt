@@ -30,7 +30,7 @@ abstract class ButtonAction(
     protected val button =
         object : JButton(title) {
             init {
-                if(title=="Rebase"){
+                if (title == "Rebase") {
                     this.putClientProperty(DarculaButtonUI.DEFAULT_STYLE_KEY, true)
                 }
                 val buttonHeight = JBUI.scale(28)
