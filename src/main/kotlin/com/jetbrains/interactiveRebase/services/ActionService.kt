@@ -314,20 +314,27 @@ class ActionService(project: Project) {
         val currentBranchInfo = invoker.branchInfo
         invoker.branchInfo.currentCommits = currentBranchInfo.initialCommits.toMutableList()
         invoker.branchInfo.initialCommits.forEach { commitInfo ->
-            commitInfo.changes.clear()
-            commitInfo.isSelected = false
-            commitInfo.isSquashed = false
-            commitInfo.isTextFieldEnabled = false
-            commitInfo.isDragged = false
-            commitInfo.isReordered = false
-            commitInfo.isHovered = false
-            commitInfo.isCollapsed = false
+            resetCommitInfo(commitInfo)
         }
         modelService.graphInfo.mainBranch.isRebased = false
         modelService.graphInfo.addedBranch?.baseCommit =
             modelService.graphInfo.addedBranch?.currentCommits?.last()
         invoker.branchInfo.clearSelectedCommits()
         takeCollapseAction()
+    }
+
+    /**
+     * Resets all fields of a CommitInfo
+     */
+    fun resetCommitInfo(commitInfo : CommitInfo) {
+        commitInfo.changes.clear()
+        commitInfo.isSelected = false
+        commitInfo.isSquashed = false
+        commitInfo.isTextFieldEnabled = false
+        commitInfo.isDragged = false
+        commitInfo.isReordered = false
+        commitInfo.isHovered = false
+        commitInfo.isCollapsed = false
     }
 
     /**
@@ -760,6 +767,10 @@ class ActionService(project: Project) {
             it.removeChange(collapseCommand)
         }
         branch.addCommitsToCurrentCommits(index, collapsedCommits)
+    }
+
+    fun removeCollapseCommands() {
+
     }
 
     /**

@@ -46,6 +46,11 @@
                     description="Collapse commits">
                 <keyboard-shortcut first-keystroke="ctrl c" keymap="$default"/>
             </action>
+            <action id="com.jetbrains.interactiveRebase.actions.changePanel.ViewDiffAction"
+                    class="com.jetbrains.interactiveRebase.actions.changePanel.ViewDiffAction" text="ViewDiffAction"
+                    description="See the difference with initial state">
+                <keyboard-shortcut first-keystroke="ctrl d" keymap="$default"/>
+            </action>
 
             <separator/>
             <group id="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup"
@@ -113,6 +118,7 @@
             </action>
 
         </group>
+
 
     </actions>
 
