@@ -2,6 +2,7 @@ package com.jetbrains.interactiveRebase.utils.gitUtils
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.vcs.VcsException
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.Consumer
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
@@ -43,7 +44,11 @@ class IRGitUtils(private val project: Project) {
         repo: GitRepository,
         consumer: Consumer<GitCommit>,
     ) {
-        GitHistoryUtils.loadDetails(project, repo.root, consumer, currentBranch, "--not", referenceBranch)
+        try{
+            GitHistoryUtils.loadDetails(project, repo.root, consumer, currentBranch, "--not", referenceBranch)
+        }catch(_:VcsException){
+            getCommitDifferenceBetweenBranches(currentBranch,referenceBranch, repo, consumer)
+        }
     }
 
     /**
@@ -65,7 +70,13 @@ class IRGitUtils(private val project: Project) {
         consumer: Consumer<GitCommit>,
         branchName: String,
     ) {
-        GitHistoryUtils.loadDetails(project, repo.root, consumer, branchName)
+        try{
+            GitHistoryUtils.loadDetails(project, repo.root, consumer, branchName)
+        }catch(_:VcsException){
+            getCommitsOfBranch(repo, consumer, branchName)
+        }
+
+
     }
 
     /**
