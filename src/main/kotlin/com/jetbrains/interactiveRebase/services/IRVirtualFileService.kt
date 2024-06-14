@@ -33,4 +33,12 @@ class IRVirtualFileService(private val project: Project) {
         virtualFile.putUserData(FileEditorProvider.KEY, IRFileEditorProvider())
         FileEditorManager.getInstance(project).openFile(virtualFile, true)
     }
+
+    /**
+     * Closes the IRVirtualFile associated with the project.
+     */
+    fun closeIRVirtualFile() {
+        val virtualFile = getVirtualFileForProject()
+        FileEditorManager.getInstance(project).closeFile(virtualFile)
+    }
 }

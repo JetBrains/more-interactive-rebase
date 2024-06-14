@@ -141,7 +141,7 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
      * Adds the selected branch to the graph visualization next to the checked out branch
      */
     private fun addSelectedBranchToView() {
-        modelService.addSecondBranchToGraphInfo(branchName)
+        modelService.addSecondBranchToGraphInfo(branchName, 0)
         selectBranchVisually()
     }
 
@@ -150,6 +150,7 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
      * does not actually select the branch and add it to the view
      */
     fun selectBranchVisually() {
+        modelService.addSecondBranchToGraphInfo(branchName, 0)
         this.isOpaque = true
         backgroundColor = Palette.JETBRAINS_SELECTED
         this.isSelected = true
@@ -172,7 +173,7 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
             // if the answer is no, do not remove the branch
             if (!answer) return false
         }
-        modelService.removeSecondBranchFromGraphInfo()
+        modelService.removeSecondBranchFromGraphInfo(0)
         return true
     }
 

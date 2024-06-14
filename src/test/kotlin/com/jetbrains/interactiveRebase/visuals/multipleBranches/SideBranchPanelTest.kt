@@ -38,7 +38,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
             "Adding another branch to the view will reset the actions you have made. " +
                 "Do you want to continue?",
         )
-        verify(modelService).addSecondBranchToGraphInfo(branchName)
+        verify(modelService).addSecondBranchToGraphInfo(branchName, 0)
         assertThat(sideBranchPanel.isOpaque).isTrue()
         assertThat(result).isTrue()
         assertThat(sideBranchPanel.isSelected).isTrue()
@@ -61,7 +61,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
             "Adding another branch to the view will reset the actions you have made. " +
                 "Do you want to continue?",
         )
-        verify(modelService, never()).addSecondBranchToGraphInfo(branchName)
+        verify(modelService, never()).addSecondBranchToGraphInfo(branchName, 0)
         assertThat(result).isFalse()
         assertThat(sideBranchPanel.isSelected).isFalse()
         assertThat(sideBranchPanel.backgroundColor).isNotEqualTo(Palette.JETBRAINS_SELECTED)
@@ -85,7 +85,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
             "Removing this branch from the view will reset the actions you have made. " +
                 "Do you want to continue?",
         )
-        verify(modelService, never()).removeSecondBranchFromGraphInfo()
+        verify(modelService, never()).removeSecondBranchFromGraphInfo(0)
         assertThat(result).isFalse()
         assertThat(sideBranchPanel.isSelected).isTrue()
         assertThat(project.service<RebaseInvoker>().commands).isEqualTo(listOf(command))
@@ -109,7 +109,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
             "Removing this branch from the view will reset the actions you have made. " +
                 "Do you want to continue?",
         )
-        verify(modelService).removeSecondBranchFromGraphInfo()
+        verify(modelService).removeSecondBranchFromGraphInfo(0)
         assertThat(result).isTrue()
     }
 
@@ -122,7 +122,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
 
         val result = sideBranchPanel.deselectBranch()
         verify(dialog, never()).warningYesNoDialog(anyString(), anyString())
-        verify(modelService).removeSecondBranchFromGraphInfo()
+        verify(modelService).removeSecondBranchFromGraphInfo(0)
         assertThat(result).isTrue()
     }
 
@@ -135,7 +135,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
 
         val result = sideBranchPanel.selectBranch()
         verify(dialog, never()).warningYesNoDialog(anyString(), anyString())
-        verify(modelService).addSecondBranchToGraphInfo(branchName)
+        verify(modelService).addSecondBranchToGraphInfo(branchName, 0)
         assertThat(result).isTrue()
         assertThat(sideBranchPanel.isSelected).isTrue()
         assertThat(sideBranchPanel.backgroundColor).isEqualTo(Palette.JETBRAINS_SELECTED)

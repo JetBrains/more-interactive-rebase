@@ -67,7 +67,7 @@ class IRGitRebaseUtils(private val project: Project) {
                             c ->
                         c.changes.clear()
                     }
-                    project.service<ModelService>().fetchGraphInfo()
+                    project.service<ModelService>().fetchGraphInfo(0)
                 }
             }
         }.queue()

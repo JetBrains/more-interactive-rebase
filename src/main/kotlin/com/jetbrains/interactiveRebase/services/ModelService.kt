@@ -1,9 +1,11 @@
 package com.jetbrains.interactiveRebase.services
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vcs.VcsException
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
@@ -27,7 +29,7 @@ class ModelService(
     val branchInfo = BranchInfo()
     val graphInfo = GraphInfo(branchInfo)
     private val graphService = project.service<GraphService>()
-
+    private val dialogService = project.service<DialogService>()
     internal val invoker = project.service<RebaseInvoker>()
 
     /**
@@ -36,8 +38,8 @@ class ModelService(
      * to the GitRefreshListener
      */
     init {
-        fetchGraphInfo()
-        populateLocalBranches()
+        fetchGraphInfo(0)
+        populateLocalBranches(0)
         project.messageBus.connect(this).subscribe(GitRefreshListener.TOPIC, IRGitRefreshListener(project))
     }
 
@@ -185,38 +187,102 @@ class ModelService(
      * info inside a
      * coroutine
      */
-    fun fetchGraphInfo() {
+    fun fetchGraphInfo(n: Int) {
         coroutineScope.launch(Dispatchers.IO) {
-            graphService.updateGraphInfo(graphInfo)
-            project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
+            try {
+                graphService.updateGraphInfo(graphInfo)
+            } catch (e: VcsException) {
+                if (n < 3) {
+                    fetchGraphInfo(n + 1)
+                } else {
+                    showWarningGitDialogClosesPlugin("There was an error while fetching data from Git.")
+                }
+            }
         }
     }
 
     /**
      * Populates the GraphInfo field in order to be able to display the side panel of local branches
      */
-    fun populateLocalBranches() {
+    fun populateLocalBranches(n: Int) {
         val branchService = project.service<BranchService>()
         coroutineScope.launch(Dispatchers.IO) {
-            graphInfo.branchList = branchService.getBranchesExceptCheckedOut().toMutableList()
+            try {
+                val list = branchService.getBranchesExceptCheckedOut()
+                if (!list.isNullOrEmpty()) {
+                    graphInfo.branchList = list.toMutableList()
+                }
+            } catch (e: VcsException) {
+                if (n < 3) {
+                    populateLocalBranches(n + 1)
+                }
+            }
         }
     }
 
     /**
      * Populates the added branch field in the graph info with the given branch
      */
-    fun addSecondBranchToGraphInfo(addedBranch: String) {
+    fun addSecondBranchToGraphInfo(
+        addedBranch: String,
+        n: Int,
+    ) {
         coroutineScope.launch(Dispatchers.IO) {
-            graphService.addBranch(graphInfo, addedBranch)
+            try {
+                graphService.addBranch(graphInfo, addedBranch)
+            } catch (e: VcsException) {
+                if (n < 3) {
+                    addSecondBranchToGraphInfo(addedBranch, n + 1)
+                } else {
+                    showWarningGitDialogForBranch("This branch cannot be added.")
+                    project.service<ActionService>().mainPanel.sidePanel.sideBranchPanels
+                        .find { it.isSelected }?.deselectBranch()
+                    project.service<ActionService>().mainPanel.sidePanel.resetAllBranchesVisually()
+                }
+            }
         }
     }
 
     /**
      * Removes the added branch field in the graph info
      */
-    fun removeSecondBranchFromGraphInfo() {
+    fun removeSecondBranchFromGraphInfo(n: Int) {
         coroutineScope.launch(Dispatchers.IO) {
-            graphService.removeBranch(graphInfo)
+            try {
+                graphService.removeBranch(graphInfo)
+            } catch (e: VcsException) {
+                if (n < 3) {
+                    removeSecondBranchFromGraphInfo(n + 1)
+                }
+                // TODO Handle
+            }
+        }
+    }
+
+    /**
+     * When there is a problem with fetching the git information and displaying the graph
+     * the dialog pops up and when clicked closes the plugin
+     */
+    fun showWarningGitDialogClosesPlugin(description: String) {
+        coroutineScope.launch(Dispatchers.EDT) {
+            dialogService.warningOkCancelDialog(
+                "Git Issue",
+                description,
+            )
+            project.service<IRVirtualFileService>().closeIRVirtualFile()
+        }
+    }
+
+    /**
+     * When there is a problem with fetching the git information for the second branch
+     * the dialog pops up and deselects the branch
+     */
+    fun showWarningGitDialogForBranch(description: String) {
+        coroutineScope.launch(Dispatchers.EDT) {
+            dialogService.warningOkCancelDialog(
+                "Git Issue",
+                description,
+            )
         }
     }
 
