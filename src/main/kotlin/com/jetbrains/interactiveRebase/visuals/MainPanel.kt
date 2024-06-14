@@ -49,7 +49,6 @@ class MainPanel(
         dragPanel.layout = null
 
         graphPanel = createGraphPanel()
-        graphPanel.border = BorderFactory.createLineBorder(graphWrapper.background)
         contentPanel = createContentPanel()
         sidePanel = SidePanel(project.service<ModelService>().graphInfo.branchList, project)
         sidePanelPane = createSidePanel()

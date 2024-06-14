@@ -119,7 +119,7 @@ class GraphPanel(
      * a lower position than the primary branch.
      * The default padding is 5 px.
      */
-    private fun computeVerticalOffsets(): Pair<Int, Int> {
+    fun computeVerticalOffsets(): Pair<Int, Int> {
         val offset = computeVerticalOffsetOfSecondBranch()
         var offsetMain = 5
         var offsetAdded = 5
@@ -137,7 +137,7 @@ class GraphPanel(
      * This ensures that the second added branch is always positioned
      * below the primary one
      */
-    internal fun computeVerticalOffsetOfSecondBranch(): Int {
+    private fun computeVerticalOffsetOfSecondBranch(): Int {
         val mainCircleCount = mainBranchPanel.branchPanel.circles.size
         val addedCircleCount =
             (graphInfo.addedBranch?.currentCommits?.indexOf(graphInfo.addedBranch?.baseCommit!!) ?: 0) + 1
@@ -185,11 +185,12 @@ class GraphPanel(
      * 3. spans vertically over the entire editor tab
      */
     private fun alignSecondBranch(gbc: GridBagConstraints) {
-        gbc.gridx = 1
+        gbc.gridx = 2
         gbc.gridy = 0
-        gbc.weightx = 0.0
+        gbc.weightx = 0.5
         gbc.weighty = 1.0
         gbc.anchor = GridBagConstraints.NORTH
+
         gbc.insets =
             Insets(
                 0,
@@ -210,7 +211,7 @@ class GraphPanel(
     private fun alignPrimaryBranch(gbc: GridBagConstraints) {
         gbc.gridx = 0
         gbc.gridy = 0
-        gbc.weightx = 0.0
+        gbc.weightx = 0.3
         gbc.weighty = 1.0
         gbc.anchor = GridBagConstraints.NORTH
         gbc.fill = GridBagConstraints.BOTH
@@ -272,7 +273,7 @@ class GraphPanel(
             // If added branch is not rendered because the screen is too small
             // coordinates appear to be 0
             // Hence, we don't draw the line in this case
-            if (Pair(addedCircleCenterX, addedCircleCenterY) != Pair(0, 0)) {
+            if (addedCircleCenterX != 0 && addedCircleCenterY != 0) {
                 g2d.draw(curve)
             }
         }

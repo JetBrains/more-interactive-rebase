@@ -8,9 +8,10 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
+import com.intellij.ui.util.minimumHeight
 import com.intellij.ui.util.minimumWidth
 import com.intellij.ui.util.preferredHeight
-import com.intellij.ui.util.preferredWidth
+import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
@@ -33,6 +34,7 @@ import java.awt.GridBagLayout
 import java.awt.Insets
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.BorderFactory
 import javax.swing.JComponent
 import javax.swing.JTextField
 import javax.swing.OverlayLayout
@@ -63,6 +65,7 @@ class LabeledBranchPanel(
     internal val labelPanelWrapper = JBPanel<JBPanel<*>>()
 
     init {
+        labelPanelWrapper.isOpaque = false
         layout = GridBagLayout()
         isOpaque = false
         val gbc = GridBagConstraints()
@@ -130,7 +133,7 @@ class LabeledBranchPanel(
         panel.addMouseListener(object : MouseAdapter() {
             override fun mouseEntered(e: MouseEvent?) {
                 cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-                if(branch.isRebased) {
+                if (branch.isRebased) {
                     panel.backgroundColor = Palette.TRANSPARENT
                 } else {
                     panel.backgroundColor = colorTheme.regularCircleColor
@@ -140,7 +143,7 @@ class LabeledBranchPanel(
 
             override fun mouseExited(e: MouseEvent?) {
                 cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
-                if(branch.isRebased) {
+                if (branch.isRebased) {
                     panel.backgroundColor = Palette.TRANSPARENT
                 } else {
                     panel.backgroundColor = colorTheme.branchNameColor
@@ -194,8 +197,7 @@ class LabeledBranchPanel(
                 }
                 if (it is DropCommand) {
                     commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.CROSSED)
-                    // TODO: when drag-and-drop is implemented, this will probably break because
-                    // TODO: the alignment setting logic was changed
+                    commitLabel.foreground = JBColor.LIGHT_GRAY.brighter()
                     commitLabel.horizontalAlignment = alignment
                     commitLabel.alignmentX = RIGHT_ALIGNMENT
                 }
@@ -211,6 +213,7 @@ class LabeledBranchPanel(
                 commitLabel.text = TextStyle.addStyling(commitLabel.text, TextStyle.BOLD)
             }
         }
+        commitLabel.autoscrolls = true
         commitLabel.labelFor = circle
         commitLabel.horizontalAlignment = alignment
         commitLabel.verticalTextPosition = SwingConstants.CENTER
@@ -239,6 +242,8 @@ class LabeledBranchPanel(
      */
     fun addComponents() {
         labelPanelWrapper.layout = GridBagLayout()
+//        labelPanelWrapper.border = BorderFactory.createLineBorder(JBColor.GREEN)
+        labelPanelWrapper.minimumSize = Dimension(JBUI.scale(300), labelPanelWrapper.minimumHeight)
 
         val circles = branchPanel.circles
         messages.clear()
@@ -248,7 +253,7 @@ class LabeledBranchPanel(
             val wrappedLabel = wrapLabelWithTextField(commitLabel, branch.currentCommits[i])
             wrappedLabel.preferredSize =
                 Dimension(
-                    wrappedLabel.preferredWidth,
+                    wrappedLabel.minimumWidth,
                     circle.preferredHeight,
                 )
             wrappedLabel.minimumSize =
@@ -260,6 +265,7 @@ class LabeledBranchPanel(
             if (i == 0) {
                 gbc.insets.top = branchPanel.diameter
             }
+            gbc.weightx = 1.0
             labelPanelWrapper.add(wrappedLabel, gbc)
             commitLabels.add(commitLabel)
 
@@ -399,8 +405,7 @@ class LabeledBranchPanel(
         commitInfo: CommitInfo,
         textField: JTextField,
     ) {
-        commitInfo.getChangesAfterPick().forEach {
-                command ->
+        commitInfo.getChangesAfterPick().forEach { command ->
             if (command is SquashCommand) {
                 listener.strategy = SquashTextStrategy(command, textField)
             }
@@ -429,10 +434,12 @@ class LabeledBranchPanel(
         commitLabel: JBLabel,
         commitInfo: CommitInfo,
     ): RoundedTextField {
-        val textField = RoundedTextField(commitInfo, TextStyle.stripTextFromStyling(commitLabel.text), colorTheme.regularCircleColor)
-        SwingUtilities.invokeLater {
-            textField.maximumSize = commitLabel.size
-        }
+        val textField = RoundedTextField(
+            commitInfo,
+            TextStyle.stripTextFromStyling(commitLabel.text),
+            colorTheme.regularCircleColor
+        )
+        textField.minimumSize = Dimension(JBUI.scale(300), textField.minimumHeight)
         textField.horizontalAlignment = alignment
         return textField
     }
