@@ -513,7 +513,6 @@ class ActionService(project: Project) {
             redoRebase(commitToBeRedone)
         } else {
             commitToBeRedone.addChange(command)
-
         }
 
         invoker.commands.add(command)
@@ -640,8 +639,6 @@ class ActionService(project: Project) {
         commit.setReorderedTo(false)
         mainPanel.graphPanel.mainBranchPanel.branch.updateCurrentCommits(command.newIndex, command.oldIndex, commit)
     }
-
-
 
     /**
      * If the last undone action that was performed by the user was a reorder,

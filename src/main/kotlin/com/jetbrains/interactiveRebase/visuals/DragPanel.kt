@@ -11,7 +11,6 @@ import java.awt.geom.Path2D
 import java.awt.geom.QuadCurve2D
 
 class DragPanel : JBPanel<JBPanel<*>>() {
-
     var labelIsDragged: Boolean = false
     var startDragPoint: Point? = null
     var endDragPoint: Point? = null
@@ -22,7 +21,7 @@ class DragPanel : JBPanel<JBPanel<*>>() {
         this.layout = null
     }
 
-    override fun paintComponent(g: Graphics) {
+    public override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
 
         if (labelIsDragged) {
@@ -30,26 +29,29 @@ class DragPanel : JBPanel<JBPanel<*>>() {
             g2.stroke = BasicStroke(2f)
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
-            if(labelIsDragged) {
-                drawCurvedArrow(g2, startDragPoint!!, endDragPoint!!)
-            }
+            drawCurvedArrow(g2, startDragPoint!!, endDragPoint!!)
         }
     }
 
-    private fun drawCurvedArrow(g2: Graphics2D, start: Point, end: Point) {
+    fun drawCurvedArrow(
+        g2: Graphics2D,
+        start: Point,
+        end: Point,
+    ) {
         val controlX = (start.x + end.x) / 2
         val controlY = start.y + 80 // Adjust the curve control point as needed
 
         g2.color = JBColor.LIGHT_GRAY
 
-        val curve = QuadCurve2D.Float(
-            start.x.toFloat(),
-            start.y.toFloat(),
-            controlX.toFloat(),
-            controlY.toFloat(),
-            end.x.toFloat(),
-            end.y.toFloat()
-        )
+        val curve =
+            QuadCurve2D.Float(
+                start.x.toFloat(),
+                start.y.toFloat(),
+                controlX.toFloat(),
+                controlY.toFloat(),
+                end.x.toFloat(),
+                end.y.toFloat(),
+            )
 
         g2.draw(curve)
 

@@ -5,7 +5,6 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.jetbrains.interactiveRebase.services.ActionService
-import com.jetbrains.interactiveRebase.visuals.DragPanel
 import com.jetbrains.interactiveRebase.visuals.GraphPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
@@ -23,15 +22,14 @@ class RebaseDragAndDropListener(
     private val addedBranchNameLabel: RoundedPanel,
     private val graphPanel: GraphPanel,
 ) : MouseAdapter(), Disposable {
-
     private val mainBranchPanel = mainBranchNameLabel.parent as LabeledBranchPanel
     private val addedBranchPanel = addedBranchNameLabel.parent as LabeledBranchPanel
-    private val dragPanel = graphPanel.parent.getComponent(0) as DragPanel
+    private val dragPanel = project.service<ActionService>().mainPanel.dragPanel // graphPanel.parent.getComponent(0) as DragPanel
     private val gbcMain = (mainBranchPanel.layout as GridBagLayout).getConstraints(mainBranchNameLabel)
     private val gbcAdded = (addedBranchPanel.layout as GridBagLayout).getConstraints(addedBranchNameLabel)
 
-    private var initialPositionMain = Point()
-    private var initialPositionAdded = Point()
+    internal var initialPositionMain = Point()
+    internal var initialPositionAdded = Point()
     private var mousePosition = Point()
     private var mainPlaceholderPanel = placeholderPanel(mainBranchPanel)
     private var addedPlaceholderPanel = placeholderPanel(addedBranchPanel)
@@ -49,14 +47,16 @@ class RebaseDragAndDropListener(
      */
     override fun mousePressed(e: MouseEvent) {
         updateMousePosition(e)
-        initialPositionMain = Point(
-            mainBranchNameLabel.x + mainBranchPanel.x,
-            mainBranchNameLabel.y + mainBranchPanel.y
-        )
-        initialPositionAdded = Point(
-            addedBranchNameLabel.x + addedBranchPanel.x,
-            addedBranchNameLabel.y + addedBranchPanel.y
-        )
+        initialPositionMain =
+            Point(
+                mainBranchNameLabel.x + mainBranchPanel.x,
+                mainBranchNameLabel.y + mainBranchPanel.y,
+            )
+        initialPositionAdded =
+            Point(
+                addedBranchNameLabel.x + addedBranchPanel.x,
+                addedBranchNameLabel.y + addedBranchPanel.y,
+            )
 
         addLabelsToDragPanel()
 
@@ -86,21 +86,6 @@ class RebaseDragAndDropListener(
         renderCurvedArrow()
     }
 
-    private fun renderCurvedArrow() {
-        dragPanel.labelIsDragged = true
-        dragPanel.startDragPoint =
-            Point(
-                mainBranchNameLabel.x + mainBranchNameLabel.width / 2,
-                mainBranchNameLabel.y + mainBranchNameLabel.height + 5
-            )
-        dragPanel.endDragPoint =
-            Point(
-                addedBranchNameLabel.x + addedBranchNameLabel.width / 2,
-                addedBranchNameLabel.y + addedBranchNameLabel.height + 5
-            )
-        dragPanel.repaint()
-    }
-
     /**
      * On drop of the branch name label:
      * 1. resets the formatting of the labels that was set on drag to highlight them
@@ -120,8 +105,8 @@ class RebaseDragAndDropListener(
             mainBranchNameLabel.backgroundColor = mainBranchPanel.colorTheme.branchNameColor
         }
         dragPanel.repaint()
-        if (mainBranchNameLabel.bounds.intersects(addedBranchNameLabel.bounds)
-            && addedBranchPanel.branchPanel.circles.size != 1
+        if (mainBranchNameLabel.bounds.intersects(addedBranchNameLabel.bounds) &&
+            addedBranchPanel.branchPanel.circles.size != 1
         ) {
             formatDraggedLabelOnDrop()
             rebase()
@@ -132,10 +117,25 @@ class RebaseDragAndDropListener(
         refreshDraggableArea()
     }
 
+    internal fun renderCurvedArrow() {
+        dragPanel.labelIsDragged = true
+        dragPanel.startDragPoint =
+            Point(
+                mainBranchNameLabel.x + mainBranchNameLabel.width / 2,
+                mainBranchNameLabel.y + mainBranchNameLabel.height + 5,
+            )
+        dragPanel.endDragPoint =
+            Point(
+                addedBranchNameLabel.x + addedBranchNameLabel.width / 2,
+                addedBranchNameLabel.y + addedBranchNameLabel.height + 5,
+            )
+        dragPanel.repaint()
+    }
+
     /**
      * Changes the formatting of the second
      */
-    private fun indicateDraggedLabelCanBeDroppedOnTheSecondLabel() {
+    internal fun indicateDraggedLabelCanBeDroppedOnTheSecondLabel() {
         if (mainBranchNameLabel.bounds.intersects(addedBranchNameLabel.bounds)) {
             changeFormattingOfSecondLabelWhenUserCanDropOnIt()
         } else {
@@ -143,16 +143,24 @@ class RebaseDragAndDropListener(
         }
     }
 
-    private fun changeFormattingOfSecondLabelWhenUserCanDropOnIt() {
+    /**
+     * Make the second branch name label gray
+     * to indicate you can drop on it
+     */
+    internal fun changeFormattingOfSecondLabelWhenUserCanDropOnIt() {
         addedBranchNameLabel.backgroundColor = JBColor.LIGHT_GRAY
         addedBranchNameLabel.repaint()
     }
 
-    private fun formatDraggedLabelOnDrag() {
+    /**
+     * Changes the formatting of the dragged label to indicate
+     * that is being dragged
+     */
+    internal fun formatDraggedLabelOnDrag() {
         if (mainBranchPanel.branch.isRebased) {
             mainBranchNameLabel.addBackgroundGradient(
                 mainBranchPanel.colorTheme.regularCircleColor,
-                addedBranchPanel.colorTheme.regularCircleColor
+                addedBranchPanel.colorTheme.regularCircleColor,
             )
             mainBranchNameLabel.repaint()
         } else {
@@ -160,7 +168,11 @@ class RebaseDragAndDropListener(
         }
     }
 
-    private fun returnNameLabelsBackInGraph() {
+    /**
+     * Brings the labels back to the graph panel
+     * from the dragging area
+     */
+    internal fun returnNameLabelsBackInGraph() {
         mainBranchPanel.remove(mainPlaceholderPanel)
         mainBranchPanel.add(mainBranchNameLabel, gbcMain)
 
@@ -168,7 +180,11 @@ class RebaseDragAndDropListener(
         addedBranchPanel.add(addedBranchNameLabel, gbcAdded)
     }
 
-    private fun rebase() {
+    /**
+     * Calculates the correct offset for the animation
+     * and updates branch info to the rebased values
+     */
+    internal fun rebase() {
         val (initialOffsetMain, initialOffsetAdded) = graphPanel.computeVerticalOffsets()
         graphPanel.graphInfo.addedBranch!!.baseCommit =
             graphPanel.graphInfo.addedBranch!!.currentCommits[0]
@@ -179,40 +195,63 @@ class RebaseDragAndDropListener(
             initialOffsetMain,
             initialOffsetAdded,
             finalOffsetMain,
-            finalOffsetAdded
+            finalOffsetAdded,
         )
     }
 
-    private fun resetFormattingOfSecondLabel() {
+    /**
+     * Set the format of the second branch label to
+     * be the initial formatting
+     */
+    internal fun resetFormattingOfSecondLabel() {
         addedBranchNameLabel.backgroundColor = initialColor
         addedBranchNameLabel.repaint()
     }
 
-    private fun formatDraggedLabelOnDrop() {
+    /**
+     * Change the formatting of the branch label name
+     * to indicate the branch has been rebased
+     */
+    internal fun formatDraggedLabelOnDrop() {
         mainBranchNameLabel.addBackgroundGradient(
             mainBranchPanel.colorTheme.branchNameColor,
-            addedBranchPanel.colorTheme.branchNameColor)
+            addedBranchPanel.colorTheme.branchNameColor,
+        )
 
         mainBranchNameLabel.backgroundColor = Palette.TRANSPARENT
         mainBranchNameLabel.repaint()
     }
 
-
-    private fun substituteLabelForPlaceholderAddedBranch() {
+    /**
+     * Make the placeholder panel
+     * for the second branch name label
+     * and add it to the position of the second branch name label
+     */
+    internal fun substituteLabelForPlaceholderAddedBranch() {
         addedBranchPanel.remove(addedBranchNameLabel)
         addedBranchPanel.add(addedPlaceholderPanel, gbcAdded)
         addedBranchPanel.revalidate()
         addedBranchPanel.repaint()
     }
 
-    private fun substituteLabelForPlaceholderMainBranch() {
+    /**
+     * Make the placeholder panel
+     * for the first branch name label
+     * and add it to the position of the first branch name label
+     */
+    internal fun substituteLabelForPlaceholderMainBranch() {
         mainBranchPanel.remove(mainBranchNameLabel)
         mainBranchPanel.add(mainPlaceholderPanel, gbcMain)
         mainBranchPanel.revalidate()
         mainBranchPanel.repaint()
     }
 
-    private fun addLabelsToDragPanel() {
+    /**
+     * Puts the branch name labels
+     * in the dragging area and
+     * sets their positions to the initial ones
+     */
+    internal fun addLabelsToDragPanel() {
         dragPanel.add(mainBranchNameLabel)
         dragPanel.add(addedBranchNameLabel)
         mainBranchNameLabel.location = initialPositionMain
@@ -220,12 +259,18 @@ class RebaseDragAndDropListener(
         refreshDraggableArea()
     }
 
-    private fun refreshDraggableArea() {
+    /**
+     * Refreshes the dragging area
+     */
+    internal fun refreshDraggableArea() {
         dragPanel.revalidate()
         dragPanel.repaint()
     }
 
-    private fun placeholderPanel(labeledBranchPanel: LabeledBranchPanel): RoundedPanel {
+    /**
+     * Instantiates a placeholder panel
+     */
+    internal fun placeholderPanel(labeledBranchPanel: LabeledBranchPanel): RoundedPanel {
         val placeholderPanel = labeledBranchPanel.instantiateBranchNamePanel()
         placeholderPanel.backgroundColor = Palette.TRANSPARENT
         placeholderPanel.getComponent(0).foreground = labeledBranchPanel.background
@@ -235,7 +280,12 @@ class RebaseDragAndDropListener(
         return placeholderPanel
     }
 
-    private fun setBranchNameLocation(e: MouseEvent) {
+    /**
+     * Sets the location of the dragged label
+     * and puts constraints on it so one
+     * cannot drag it outside the content panel
+     */
+    internal fun setBranchNameLocation(e: MouseEvent) {
         val thisX = mainBranchNameLabel.x
         val thisY = mainBranchNameLabel.y
 
@@ -249,7 +299,12 @@ class RebaseDragAndDropListener(
         mainBranchNameLabel.setLocation(newXBounded, newYBounded)
     }
 
-    private fun animateAndPropagateToBackend(
+    /**
+     * Executes the animation of rebasing
+     * and adds the actual rebase command in
+     * the backend
+     */
+    internal fun animateAndPropagateToBackend(
         initialOffsetMain: Int,
         initialOffsetAdded: Int,
         finalOffsetMain: Int,
@@ -262,38 +317,43 @@ class RebaseDragAndDropListener(
         val incrementAdded = ((finalOffsetAdded - initialOffsetAdded).toDouble() / steps.toDouble()).toInt()
         var currentOffsetMain = initialOffsetMain
         var currentOffsetAdded = initialOffsetAdded
-        val timer = Timer(delay) {
-            if (currentOffsetMain > finalOffsetMain || currentOffsetAdded < finalOffsetAdded) {
-//                if (currentOffsetMain < finalOffsetMain) {
-                currentOffsetMain += incrementMain
-                updateOffsetOfMainBranch(currentOffsetMain)
-//                }
-//                if (currentOffsetAdded < finalOffsetAdded) {
-                currentOffsetAdded += incrementAdded
-                updateOffsetOfAddedBranch(currentOffsetAdded)
-//                }
-            } else {
-                (it.source as Timer).stop()
-                updateOffsetOfAddedBranch(finalOffsetAdded)
-                updateOffsetOfMainBranch(finalOffsetMain)
-                if (mainBranchPanel.branch.isRebased) {
-                    project.service<ActionService>().takeNormalRebaseAction()
+        val timer =
+            Timer(delay) {
+                if (currentOffsetMain > finalOffsetMain || currentOffsetAdded < finalOffsetAdded) {
+                    currentOffsetMain += incrementMain
+                    updateOffsetOfMainBranch(currentOffsetMain)
+                    currentOffsetAdded += incrementAdded
+                    updateOffsetOfAddedBranch(currentOffsetAdded)
+                } else {
+                    (it.source as Timer).stop()
+                    updateOffsetOfAddedBranch(finalOffsetAdded)
+                    updateOffsetOfMainBranch(finalOffsetMain)
+                    if (mainBranchPanel.branch.isRebased) {
+                        project.service<ActionService>().takeNormalRebaseAction()
+                    }
                 }
             }
-        }
         timer.initialDelay = 0
         timer.isRepeats = true
         timer.start()
     }
 
-    private fun updateOffsetOfAddedBranch(offset: Int) {
+    /**
+     * Updates the position of the added branch
+     * during animation
+     */
+    internal fun updateOffsetOfAddedBranch(offset: Int) {
         addedBranchPanel.addBranchWithVerticalOffset(offset)
         graphPanel.repaint()
         addedBranchPanel.revalidate()
         addedBranchPanel.repaint()
     }
 
-    private fun updateOffsetOfMainBranch(offset: Int) {
+    /**
+     * Updates the position of the main branch
+     * during animation
+     */
+    internal fun updateOffsetOfMainBranch(offset: Int) {
         mainBranchPanel.addBranchWithVerticalOffset(offset)
         graphPanel.repaint()
         mainBranchPanel.revalidate()
@@ -304,7 +364,7 @@ class RebaseDragAndDropListener(
      * Updates the coordinates of the mouse cursor
      * upon mouse press and while dragging
      */
-    private fun updateMousePosition(e: MouseEvent) {
+    internal fun updateMousePosition(e: MouseEvent) {
         mousePosition.x = e.xOnScreen
         mousePosition.y = e.yOnScreen
     }

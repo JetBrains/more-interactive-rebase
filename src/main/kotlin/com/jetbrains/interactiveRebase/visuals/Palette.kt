@@ -76,7 +76,7 @@ object Palette {
             selectedBorderColor = LIME_BORDER,
             hoverCircleColor = JETBRAINS_HOVER,
             branchNameColor = PALE_LIME,
-            )
+        )
 
     public final val TOMATO_THEME =
         Theme(

@@ -44,6 +44,7 @@ class MainPanel(
 
     init {
         graphWrapper.layout = OverlayLayout(graphWrapper)
+//        graphWrapper.border = BorderFactory.createLineBorder(JBColor.GREEN)
 
         graphPanel = createGraphPanel()
         contentPanel = createContentPanel()
@@ -134,8 +135,7 @@ class MainPanel(
         gbc.weightx = 1.0
         gbc.weighty = 1.0
         gbc.anchor = GridBagConstraints.CENTER
-        //used to be vertical and without inset so if it breaks thats the reason
-        gbc.fill = GridBagConstraints.BOTH
+        gbc.fill = GridBagConstraints.VERTICAL
 
         val help = HelpPanel()
         gbc.insets.left = help.width

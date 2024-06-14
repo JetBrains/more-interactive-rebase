@@ -361,7 +361,7 @@ class TestFile internal constructor(val repo: GitRepository, val file: File) {
 
 fun getGitCommandInstance(commandName: String): GitCommand {
     return try {
-        val fieldName = commandName.toUpperCase().replace('-', '_')
+        val fieldName = commandName.uppercase().replace('-', '_')
         GitCommand::class.java.getDeclaredField(fieldName).get(null) as GitCommand
     } catch (e: NoSuchFieldException) {
         val constructor = GitCommand::class.java.getDeclaredConstructor(String::class.java)

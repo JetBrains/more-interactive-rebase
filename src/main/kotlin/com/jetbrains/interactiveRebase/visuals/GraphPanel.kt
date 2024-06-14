@@ -33,7 +33,6 @@ class GraphPanel(
     private val mainTheme: Palette.Theme = Palette.BLUE_THEME,
     private val addedTheme: Palette.Theme = Palette.TOMATO_THEME,
 ) : JBPanel<JBPanel<*>>() {
-
     lateinit var rebaseCircleInAddedBranch: CirclePanel
 
     var mainBranchPanel: LabeledBranchPanel =
@@ -167,12 +166,13 @@ class GraphPanel(
      */
     private fun GraphPanel.makeBranchNamePanelDraggable() {
         if (addedBranchPanel != null) {
-            val rebaseDragAndDropListener = RebaseDragAndDropListener(
-                project,
-                mainBranchPanel.branchNamePanel,
-                addedBranchPanel!!.branchNamePanel,
-                this
-            )
+            val rebaseDragAndDropListener =
+                RebaseDragAndDropListener(
+                    project,
+                    mainBranchPanel.branchNamePanel,
+                    addedBranchPanel!!.branchNamePanel,
+                    this,
+                )
             mainBranchPanel.branchNamePanel.addMouseListener(rebaseDragAndDropListener)
             mainBranchPanel.branchNamePanel.addMouseMotionListener(rebaseDragAndDropListener)
         }
@@ -186,7 +186,7 @@ class GraphPanel(
      * 3. spans vertically over the entire editor tab
      */
     private fun alignSecondBranch(gbc: GridBagConstraints) {
-        gbc.gridx = 2
+        gbc.gridx = 1
         gbc.gridy = 0
         gbc.weightx = 0.5
         gbc.weighty = 1.0
@@ -212,13 +212,14 @@ class GraphPanel(
     private fun alignPrimaryBranch(gbc: GridBagConstraints) {
         gbc.gridx = 0
         gbc.gridy = 0
-        gbc.weightx = 0.3
+        gbc.weightx = 0.5 // if (graphInfo.addedBranch != null) 0.3 else 0.0
         gbc.weighty = 1.0
         gbc.anchor = GridBagConstraints.NORTH
-        gbc.fill = GridBagConstraints.BOTH
 
         if (graphInfo.mainBranch.isPrimary) {
             gbc.fill = GridBagConstraints.HORIZONTAL
+        } else {
+            gbc.fill = GridBagConstraints.BOTH
         }
     }
 
@@ -243,9 +244,10 @@ class GraphPanel(
         // Coordinates of the last circle of the added branch
         if (addedBranchPanel != null) {
             try {
-                rebaseCircleInAddedBranch = addedBranchPanel!!.branchPanel.circles.filter { c ->
-                    c.commit == graphInfo.addedBranch?.baseCommit
-                }[0]
+                rebaseCircleInAddedBranch =
+                    addedBranchPanel!!.branchPanel.circles.filter { c ->
+                        c.commit == graphInfo.addedBranch?.baseCommit
+                    }[0]
             } catch (e: Exception) {
                 println("Mn burzash")
             }
@@ -310,14 +312,14 @@ class GraphPanel(
             val mainLastCircle = mainBranchPanel.branchPanel.circles.last()
             mainCircleCenterX =
                 mainBranchPanel.x + // start of the labeled branch panel
-                        mainBranchPanel.branchPanel.x + // start of the internal branch panel
-                        mainLastCircle.x + // start of the circle
-                        mainLastCircle.width / 2 // center of the circle
+                mainBranchPanel.branchPanel.x + // start of the internal branch panel
+                mainLastCircle.x + // start of the circle
+                mainLastCircle.width / 2 // center of the circle
             mainCircleCenterY =
                 mainBranchPanel.y + // start of the labeled branch panel
-                        mainBranchPanel.branchPanel.y + // start of the internal branch panel
-                        mainLastCircle.y + // start of the circle
-                        mainLastCircle.height / 2 // center of the circle
+                mainBranchPanel.branchPanel.y + // start of the internal branch panel
+                mainLastCircle.y + // start of the circle
+                mainLastCircle.height / 2 // center of the circle
         }
         return Pair(mainCircleCenterX, mainCircleCenterY)
     }
@@ -326,6 +328,7 @@ class GraphPanel(
      * Update branch panels
      */
     fun updateGraphPanel() {
+        addedBranchPanel = null
         removeAll()
 
         mainBranchPanel =
@@ -335,7 +338,6 @@ class GraphPanel(
                 mainTheme,
             )
 
-        addedBranchPanel = null
         if (graphInfo.addedBranch != null) {
             addedBranchPanel =
                 createLabeledBranchPanel(

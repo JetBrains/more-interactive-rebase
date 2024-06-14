@@ -34,7 +34,6 @@ import java.awt.GridBagLayout
 import java.awt.Insets
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.BorderFactory
 import javax.swing.JComponent
 import javax.swing.JTextField
 import javax.swing.OverlayLayout
@@ -130,27 +129,29 @@ class LabeledBranchPanel(
     private fun branchNamePanel(): RoundedPanel {
         val panel = instantiateBranchNamePanel()
 
-        panel.addMouseListener(object : MouseAdapter() {
-            override fun mouseEntered(e: MouseEvent?) {
-                cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-                if (branch.isRebased) {
-                    panel.backgroundColor = Palette.TRANSPARENT
-                } else {
-                    panel.backgroundColor = colorTheme.regularCircleColor
+        panel.addMouseListener(
+            object : MouseAdapter() {
+                override fun mouseEntered(e: MouseEvent?) {
+                    cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                    if (branch.isRebased) {
+                        panel.backgroundColor = Palette.TRANSPARENT
+                    } else {
+                        panel.backgroundColor = colorTheme.regularCircleColor
+                    }
+                    panel.repaint()
                 }
-                panel.repaint()
-            }
 
-            override fun mouseExited(e: MouseEvent?) {
-                cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
-                if (branch.isRebased) {
-                    panel.backgroundColor = Palette.TRANSPARENT
-                } else {
-                    panel.backgroundColor = colorTheme.branchNameColor
+                override fun mouseExited(e: MouseEvent?) {
+                    cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
+                    if (branch.isRebased) {
+                        panel.backgroundColor = Palette.TRANSPARENT
+                    } else {
+                        panel.backgroundColor = colorTheme.branchNameColor
+                    }
+                    panel.repaint()
                 }
-                panel.repaint()
-            }
-        })
+            },
+        )
 
         return panel
     }
@@ -170,7 +171,6 @@ class LabeledBranchPanel(
         panel.add(label)
         return panel
     }
-
 
     /**
      * Sets up the appearance of a commit label
@@ -241,7 +241,6 @@ class LabeledBranchPanel(
      */
     fun addComponents() {
         labelPanelWrapper.layout = GridBagLayout()
-//        labelPanelWrapper.border = BorderFactory.createLineBorder(JBColor.GREEN)
         labelPanelWrapper.minimumSize = Dimension(JBUI.scale(300), labelPanelWrapper.minimumHeight)
 
         val circles = branchPanel.circles
@@ -433,11 +432,12 @@ class LabeledBranchPanel(
         commitLabel: JBLabel,
         commitInfo: CommitInfo,
     ): RoundedTextField {
-        val textField = RoundedTextField(
-            commitInfo,
-            TextStyle.stripTextFromStyling(commitLabel.text),
-            colorTheme.regularCircleColor
-        )
+        val textField =
+            RoundedTextField(
+                commitInfo,
+                TextStyle.stripTextFromStyling(commitLabel.text),
+                colorTheme.regularCircleColor,
+            )
         textField.minimumSize = Dimension(JBUI.scale(300), textField.minimumHeight)
         textField.horizontalAlignment = alignment
         return textField
@@ -480,8 +480,7 @@ class LabeledBranchPanel(
      * If the branch panel displays an additional branch
      * we offset the branch down.
      */
-    private fun offsetBranchIfAdded(offset: Int): Insets =
-        Insets(offset, 5, branchPanel.diameter, 5)
+    private fun offsetBranchIfAdded(offset: Int): Insets = Insets(offset, 5, branchPanel.diameter, 5)
 
     /**
      * Sets the position of the branch name label

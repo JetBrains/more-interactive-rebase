@@ -42,7 +42,10 @@ open class RoundedPanel : JBPanel<JBPanel<*>>() {
         g2.drawRoundRect(0, 0, width - 3, height - 3, cornerRadius, cornerRadius)
     }
 
-    fun addBorderGradient(topColor: Color, bottomColor: Color) {
+    fun addBorderGradient(
+        topColor: Color,
+        bottomColor: Color,
+    ) {
         borderGradientColors = mutableListOf(topColor, bottomColor)
         borderColor = Palette.TRANSPARENT
     }
@@ -51,7 +54,10 @@ open class RoundedPanel : JBPanel<JBPanel<*>>() {
         borderGradientColors = mutableListOf()
     }
 
-    fun addBackgroundGradient(topColor: Color, bottomColor: Color) {
+    fun addBackgroundGradient(
+        topColor: Color,
+        bottomColor: Color,
+    ) {
         backgroundColor = Palette.TRANSPARENT
         backgroundGradientColors = mutableListOf(topColor, bottomColor)
     }
