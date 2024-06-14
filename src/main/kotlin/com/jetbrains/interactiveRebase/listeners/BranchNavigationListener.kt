@@ -24,6 +24,8 @@ class BranchNavigationListener(project: Project, private val modelService: Model
             when (e.keyCode) {
                 KeyEvent.VK_UP -> shiftUp()
                 KeyEvent.VK_DOWN -> shiftDown()
+                KeyEvent.VK_RIGHT -> right()
+                KeyEvent.VK_LEFT -> left()
             }
             e.consume()
             return
@@ -33,6 +35,8 @@ class BranchNavigationListener(project: Project, private val modelService: Model
             when (e.keyCode) {
                 KeyEvent.VK_UP -> altUp()
                 KeyEvent.VK_DOWN -> altDown()
+                KeyEvent.VK_RIGHT -> right()
+                KeyEvent.VK_LEFT -> left()
             }
             e.consume()
             return
@@ -41,6 +45,8 @@ class BranchNavigationListener(project: Project, private val modelService: Model
         when (e.keyCode) {
             KeyEvent.VK_UP -> up()
             KeyEvent.VK_DOWN -> down()
+            KeyEvent.VK_RIGHT -> right()
+            KeyEvent.VK_LEFT -> left()
         }
         e.consume()
     }
@@ -58,7 +64,7 @@ class BranchNavigationListener(project: Project, private val modelService: Model
             return
         }
 
-        var commit = modelService.getLastSelectedCommit(branch)
+        var commit = modelService.getLastSelectedCommit()
 
         val index = branch.currentCommits.indexOf(commit)
         if (index == 0) {
@@ -86,7 +92,7 @@ class BranchNavigationListener(project: Project, private val modelService: Model
             modelService.selectSingleCommit(commit, branch)
             return
         }
-        var commit = modelService.getLastSelectedCommit(branch)
+        var commit = modelService.getLastSelectedCommit()
 
         val index = branch.currentCommits.indexOf(commit)
         if (index == branch.currentCommits.size - 1) {
@@ -115,7 +121,7 @@ class BranchNavigationListener(project: Project, private val modelService: Model
             modelService.addToSelectedCommits(commit, branch)
             return
         }
-        val commit = modelService.getLastSelectedCommit(branch)
+        val commit = modelService.getLastSelectedCommit()
 
         val index = branch.currentCommits.indexOf(commit)
         if (index == 0) {
@@ -146,7 +152,7 @@ class BranchNavigationListener(project: Project, private val modelService: Model
             modelService.addToSelectedCommits(commit, branch)
             return
         }
-        val commit = modelService.getLastSelectedCommit(branch)
+        val commit = modelService.getLastSelectedCommit()
 
         val index = branch.currentCommits.indexOf(commit)
         if (index == branch.currentCommits.size - 1) {
@@ -208,6 +214,32 @@ class BranchNavigationListener(project: Project, private val modelService: Model
                 branch.updateCurrentCommits(oldIndex, newIndex, commit)
             }
         }
+    }
+
+    fun right(){
+        val branch = modelService.getSelectedBranch()
+
+        if(modelService.graphInfo.addedBranch == null ||
+            modelService.getSelectedCommits().isEmpty() ||
+            branch == modelService.graphInfo.addedBranch) return
+
+        modelService.selectSingleCommit(
+            modelService.graphInfo.addedBranch!!.currentCommits.last(),
+            modelService.graphInfo.addedBranch!!
+        )
+    }
+
+    fun left(){
+        val branch = modelService.getSelectedBranch()
+
+        if(modelService.getSelectedCommits().isEmpty() ||
+            branch == modelService.graphInfo.mainBranch) return
+
+        modelService.selectSingleCommit(
+            modelService.graphInfo.mainBranch.currentCommits.last(),
+            modelService.graphInfo.mainBranch
+        )
+
     }
 
     override fun keyTyped(e: KeyEvent?) {

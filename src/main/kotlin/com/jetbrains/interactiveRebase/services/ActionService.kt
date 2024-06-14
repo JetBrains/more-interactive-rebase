@@ -18,7 +18,6 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 import com.jetbrains.interactiveRebase.visuals.HeaderPanel
 import com.jetbrains.interactiveRebase.visuals.MainPanel
-import com.squareup.wire.get
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
@@ -151,7 +150,7 @@ class ActionService(project: Project) {
     fun checkValidParent(): Boolean {
         if (modelService.branchInfo.getActualSelectedCommitsSize() != 1) return true
 
-        var commit = modelService.getLastSelectedCommit(modelService.branchInfo)
+        var commit = modelService.getLastSelectedCommit()
 
         if (commit == modelService.getCurrentCommits().last()) {
             return false
@@ -169,7 +168,7 @@ class ActionService(project: Project) {
      */
 
     fun getParent(): CommitInfo {
-        var commit = modelService.getLastSelectedCommit(modelService.branchInfo)
+        var commit = modelService.getLastSelectedCommit()
 
         var index = modelService.getCurrentCommits().indexOf(commit) + 1
         commit = modelService.getCurrentCommits()[index]

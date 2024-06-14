@@ -173,7 +173,7 @@ class ModelService(
      * Returns the last commit that is selected
      * but is not squashed or fixed up
      */
-    fun getLastSelectedCommit(branchInfo: BranchInfo): CommitInfo {
+    fun getLastSelectedCommit(): CommitInfo {
         var commit = getSelectedCommits().last()
 
         // Ensure that the commit we are moving is actually displayed
