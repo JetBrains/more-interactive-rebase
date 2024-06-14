@@ -8,6 +8,7 @@ import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import git4idea.GitCommit
 import git4idea.GitUtil
 import git4idea.commands.Git
+import git4idea.commands.GitCommand
 import git4idea.commands.GitCommandResult
 import git4idea.commands.GitLineHandler
 import git4idea.history.GitHistoryUtils
@@ -72,5 +73,15 @@ class IRGitUtils(private val project: Project) {
      */
     fun runCommand(lineHandler: GitLineHandler): GitCommandResult {
         return Git.getInstance().runCommand(lineHandler)
+    }
+
+    fun retrieveBranchName(): String {
+        val branchCommand: GitCommand = GitCommand.REV_PARSE
+        val root: VirtualFile = getRoot() ?: throw IRInaccessibleException("Project root cannot be found")
+        val lineHandler = GitLineHandler(project, root, branchCommand)
+        val params = listOf("--abbrev-ref", "HEAD")
+        lineHandler.addParameters(params)
+        val output: GitCommandResult = runCommand(lineHandler)
+        return output.getOutputOrThrow()
     }
 }

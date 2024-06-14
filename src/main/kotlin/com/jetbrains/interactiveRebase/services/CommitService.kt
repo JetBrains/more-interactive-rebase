@@ -3,12 +3,16 @@ package com.jetbrains.interactiveRebase.services
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import com.jetbrains.interactiveRebase.utils.consumers.CommitConsumer
 import com.jetbrains.interactiveRebase.utils.consumers.GeneralCommitConsumer
 import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
 import git4idea.GitCommit
+import git4idea.commands.GitCommand
+import git4idea.commands.GitCommandResult
+import git4idea.commands.GitLineHandler
 import git4idea.repo.GitRepository
 
 @Service(Service.Level.PROJECT)
@@ -18,7 +22,7 @@ class CommitService(private val project: Project) {
      */
     var referenceBranchName: String = ""
     private var gitUtils: IRGitUtils = IRGitUtils(project)
-    private var branchSer = project.service<BranchService>()
+    internal var branchSer = project.service<BranchService>()
 
     /**
      * Secondary constructor for testing
@@ -116,6 +120,12 @@ class CommitService(private val project: Project) {
      * Gets branch name from utils
      */
     fun getBranchName(): String {
-        return gitUtils.getRepository().currentBranchName.toString()
+        val branchCommand: GitCommand = GitCommand.REV_PARSE
+        val root: VirtualFile = gitUtils.getRoot() ?: throw IRInaccessibleException("Project root cannot be found")
+        val lineHandler = GitLineHandler(project, root, branchCommand)
+        val params = listOf("--abbrev-ref", "HEAD")
+        lineHandler.addParameters(params)
+        val output: GitCommandResult = gitUtils.runCommand(lineHandler)
+        return output.getOutputOrThrow()
     }
 }

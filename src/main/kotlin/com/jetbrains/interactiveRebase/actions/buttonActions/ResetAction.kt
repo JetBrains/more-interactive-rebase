@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.services.ActionService
 
-internal class ResetAction :
+public class ResetAction :
     ButtonAction("Reset", "Reset all changes", "ResetAction") {
     override fun actionPerformed(e: AnActionEvent) {
         val actionService = e.project?.service<ActionService>()

@@ -21,7 +21,7 @@ import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JComponent
 
-internal abstract class ButtonAction(
+abstract class ButtonAction(
     title: String,
     description: String,
     actionId: String,
@@ -81,5 +81,5 @@ internal abstract class ButtonAction(
     }
 }
 
-internal abstract class IRAction(title: String, description: String, icon: Icon?) :
+abstract class IRAction(title: String, description: String, icon: Icon?) :
     DumbAwareAction(title, description, icon)

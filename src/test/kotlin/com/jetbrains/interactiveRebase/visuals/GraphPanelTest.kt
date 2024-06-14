@@ -36,10 +36,6 @@ class GraphPanelTest : BasePlatformTestCase() {
     private lateinit var addedCirclePanel: CirclePanel
     private lateinit var graphPanel: GraphPanel
 
-    init {
-        System.setProperty("idea.home.path", "/tmp")
-    }
-
     override fun setUp() {
         super.setUp()
         commitProvider = TestGitCommitProvider(project)

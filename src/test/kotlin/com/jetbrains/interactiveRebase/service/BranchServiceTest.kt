@@ -251,6 +251,9 @@ class BranchServiceTest : BasePlatformTestCase() {
         Mockito.doAnswer {
             commandResult
         }.`when`(utils).runCommand(anyCustom())
+        Mockito.doAnswer {
+            "current"
+        }.`when`(utils).retrieveBranchName()
 
         val list = controlledService.getBranchesExceptCheckedOut()
         assertFalse(list.contains("current"))
@@ -275,6 +278,9 @@ class BranchServiceTest : BasePlatformTestCase() {
         Mockito.doAnswer {
             commandResult
         }.`when`(utils).runCommand(anyCustom())
+        Mockito.doAnswer {
+            "bee"
+        }.`when`(utils).retrieveBranchName()
 
         val list = controlledService.getBranchesExceptCheckedOut()
         assertEquals(list, listOf(b1, b2, b3, b4))

@@ -213,12 +213,5 @@ class CommitServiceTest : BasePlatformTestCase() {
         assertThrows<IRInaccessibleException> { controlledCommitService.turnHashToCommit(commit1.id.toString()) }
     }
 
-    fun testGetBranchName() {
-        doAnswer {
-            MockGitRepository("current-branch")
-        }.`when`(utils).getRepository()
-        assertEquals(controlledCommitService.getBranchName(), "current-branch")
-    }
-
     private inline fun <reified T> anyCustom(): T = any(T::class.java)
 }

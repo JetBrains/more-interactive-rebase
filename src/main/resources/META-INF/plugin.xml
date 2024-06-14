@@ -13,6 +13,8 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.jetbrains.interactiveRebase.providers.IRFileEditorProvider"/>
+        <fileIconProvider
+                implementation="com.jetbrains.interactiveRebase.providers.IRFileIconProvider"/>
     </extensions>
     <applicationListeners>
     </applicationListeners>
@@ -93,5 +95,6 @@
         </group>
 
     </actions>
+
 
 </idea-plugin>

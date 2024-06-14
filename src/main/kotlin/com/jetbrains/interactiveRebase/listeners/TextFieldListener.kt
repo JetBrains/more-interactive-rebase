@@ -10,7 +10,7 @@ import java.awt.event.KeyListener
 
 class TextFieldListener(
     commitInfo: CommitInfo,
-    internal val textField: RoundedTextField,
+    val textField: RoundedTextField,
     invoker: RebaseInvoker,
 ) : KeyListener {
     /**
@@ -35,7 +35,7 @@ class TextFieldListener(
         e?.consume()
     }
 
-    internal fun processEnter() {
+    fun processEnter() {
         strategy.handleEnter()
         textField.exitTextBox()
     }

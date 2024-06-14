@@ -13,6 +13,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.IRGitRefreshListener
 import git4idea.status.GitRefreshListener
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Service(Service.Level.PROJECT)
@@ -185,7 +186,7 @@ class ModelService(
      * coroutine
      */
     fun fetchGraphInfo() {
-        coroutineScope.launch {
+        coroutineScope.launch(Dispatchers.IO) {
             graphService.updateGraphInfo(graphInfo)
         }
     }
@@ -195,7 +196,7 @@ class ModelService(
      */
     fun populateLocalBranches() {
         val branchService = project.service<BranchService>()
-        coroutineScope.launch {
+        coroutineScope.launch(Dispatchers.IO) {
             graphInfo.branchList = branchService.getBranchesExceptCheckedOut().toMutableList()
         }
     }
@@ -204,7 +205,7 @@ class ModelService(
      * Populates the added branch field in the graph info with the given branch
      */
     fun addSecondBranchToGraphInfo(addedBranch: String) {
-        coroutineScope.launch {
+        coroutineScope.launch(Dispatchers.IO) {
             graphService.addBranch(graphInfo, addedBranch)
         }
     }
@@ -213,7 +214,7 @@ class ModelService(
      * Removes the added branch field in the graph info
      */
     fun removeSecondBranchFromGraphInfo() {
-        coroutineScope.launch {
+        coroutineScope.launch(Dispatchers.IO) {
             graphService.removeBranch(graphInfo)
         }
     }

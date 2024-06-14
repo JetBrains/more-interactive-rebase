@@ -6,7 +6,7 @@ import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 
-internal class StartRebaseAction :
+class StartRebaseAction :
     ButtonAction(
         "Rebase",
         "Start the rebase process with the indicated changes",
