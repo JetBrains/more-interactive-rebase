@@ -138,13 +138,13 @@ class ModelService(
      * Returns the selected commit which is the lowest visually in the list.
      */
     fun getLowestSelectedCommit(): CommitInfo {
-        var commit = branchInfo.selectedCommits[0]
-        var index = branchInfo.currentCommits.indexOf(commit)
+        var commit = getSelectedCommits()[0]
+        var index = getCurrentCommits().indexOf(commit)
 
-        branchInfo.selectedCommits.forEach {
-            if (branchInfo.currentCommits.indexOf(it) > index && !it.isSquashed) {
+        getSelectedCommits().forEach {
+            if (getCurrentCommits().indexOf(it) > index && !it.isSquashed) {
                 commit = it
-                index = branchInfo.currentCommits.indexOf(it)
+                index = getCurrentCommits().indexOf(it)
             }
         }
 

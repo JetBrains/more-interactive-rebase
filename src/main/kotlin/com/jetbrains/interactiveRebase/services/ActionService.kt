@@ -331,7 +331,6 @@ class ActionService(project: Project) {
         selectedCommits.sortBy { modelService.branchInfo.indexOfCommit(it) }
         var parentCommit = selectedCommits.last()
         if (modelService.branchInfo.getActualSelectedCommitsSize() == 1) {
-            val selectedIndex = modelService.getCurrentCommits().indexOf(parentCommit)
             parentCommit = getParent()
         }
         selectedCommits.remove(parentCommit)
@@ -665,17 +664,24 @@ class ActionService(project: Project) {
      */
     fun checkCollapse(e: AnActionEvent) {
         // check if there are any already collapsed commits
-        val currentCommits = modelService.getCurrentCommits()
-        if (modelService.branchInfo.initialCommits.size <= 7) {
+        if (modelService.getSelectedBranch().initialCommits.size <= 7) {
             e.presentation.isEnabled = false
             return
         }
 
-        if (currentCommits.any { it.isCollapsed }) {
-            e.presentation.isEnabled = false
-            return
+        if (modelService.graphInfo.mainBranch.currentCommits.any { it.isCollapsed }) {
+            if(modelService.graphInfo.addedBranch != null){
+                if(modelService.graphInfo.addedBranch!!.currentCommits.any { it.isCollapsed }){
+                    e.presentation.isEnabled = false
+                    return
+                }
+            }
+            else{
+                e.presentation.isEnabled = false
+                return
+            }
         }
-        if (modelService.branchInfo.getActualSelectedCommitsSize() == 1) {
+        if (modelService.getSelectedBranch().getActualSelectedCommitsSize() == 1) {
             e.presentation.isEnabled = false
             return
         }
@@ -711,7 +717,7 @@ class ActionService(project: Project) {
      */
     fun expandCollapsedCommits(
         parentCommit: CommitInfo,
-        branchInfo: BranchInfo,
+        branch: BranchInfo,
     ) {
         if (!parentCommit.isCollapsed) return
         parentCommit.isCollapsed = false
@@ -719,13 +725,13 @@ class ActionService(project: Project) {
         if (collapseCommand == null) return
 
         parentCommit.removeChange(collapseCommand)
-        val index = modelService.getCurrentCommits().indexOf(parentCommit)
+        val index = branch.currentCommits.indexOf(parentCommit)
         val collapsedCommits = collapseCommand.collapsedCommits
         collapsedCommits.forEach {
             it.isCollapsed = false
             it.removeChange(collapseCommand)
         }
-        branchInfo.addCommitsToCurrentCommits(index, collapsedCommits)
+        branch.addCommitsToCurrentCommits(index, collapsedCommits)
     }
 
     /**
@@ -733,24 +739,24 @@ class ActionService(project: Project) {
      * keeping the first 5 commits and last commit, or the selected commits.
      */
     fun takeCollapseAction() {
-        val selectedCommits = modelService.getSelectedCommits()
-        selectedCommits.sortBy { modelService.branchInfo.indexOfCommit(it) }
-        takeCollapseActionOnSecondBranch()
         if (modelService.getSelectedCommits().isEmpty()) {
-            modelService.branchInfo.collapseCommits()
+            autoCollapseBranch(modelService.graphInfo.mainBranch)
+            autoCollapseBranch(modelService.graphInfo.addedBranch)
         } else {
+            val selectedCommits = modelService.getSelectedCommits()
+            selectedCommits.sortBy { modelService.getSelectedBranch().indexOfCommit(it) }
+
             val currentCommits = modelService.getCurrentCommits()
             val indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
             val indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
 
-            modelService.branchInfo.collapseCommits(indexFirstCommit, indexLastCommit)
+            modelService.getSelectedBranch().collapseCommits(indexFirstCommit, indexLastCommit)
         }
     }
 
-    fun takeCollapseActionOnSecondBranch() {
-        val addedBranch = modelService.graphInfo.addedBranch
-        if (addedBranch != null && addedBranch.currentCommits.none { it.isCollapsed }) {
-            modelService.graphInfo.addedBranch?.collapseCommits()
+    fun autoCollapseBranch(branch: BranchInfo?) {
+        if (branch != null && branch.currentCommits.none { it.isCollapsed }) {
+            branch.collapseCommits()
         }
     }
 
