@@ -59,7 +59,6 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
      */
     override fun mouseClicked(e: MouseEvent?) {
         if (e != null) {
-            val modelService = commit.project.service<ModelService>()
             if (e.isShiftDown) {
                 shiftClick()
                 return
@@ -71,11 +70,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
                 commit.project.service<ActionService>().expandCollapsedCommits(commit, branchInfo)
                 commit.isHovered = false
             } else if (e.button == MouseEvent.BUTTON1) {
-                if (!circlePanel.commit.isSelected || modelService.branchInfo.getActualSelectedCommitsSize() > 1) {
-                    modelService.selectSingleCommit(circlePanel.commit, branchInfo)
-                } else {
-                    modelService.removeFromSelectedCommits(circlePanel.commit, branchInfo)
-                }
+                normalClick()
             }
 
             e.consume()
@@ -115,13 +110,36 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
     }
 
     /**
+     * Selects a single commit if not selected and
+     * deselects if selected
+     */
+
+    private fun normalClick() {
+        val modelService = commit.project.service<ModelService>()
+        if (!circlePanel.commit.isSelected || branchInfo.getActualSelectedCommitsSize() > 1) {
+            modelService.selectSingleCommit(circlePanel.commit, branchInfo)
+        } else {
+            modelService.removeFromSelectedCommits(circlePanel.commit, branchInfo)
+        }
+    }
+
+    /**
      * Selects the range of commits
      * between the clicked and last
      * selected commit
      */
     private fun shiftClick() {
         val modelService = commit.project.service<ModelService>()
+
+        if(branchInfo != modelService.getSelectedBranch()){
+            modelService.clearSelectedCommits()
+        }
+
         val selectedCommits = modelService.getSelectedCommits()
+        if(selectedCommits.isEmpty()){
+            normalClick()
+            return
+        }
         val selectedCommit = selectedCommits[0]
         val selectedIndex = modelService.getCurrentCommits().indexOf(selectedCommit)
         val commitIndex = modelService.getCurrentCommits().indexOf(commit)
@@ -142,15 +160,28 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
      * the currently selected commit
      */
     private fun controlClick() {
-        val branchInfo = (circlePanel.parent as BranchPanel).branch
-
         val modelService = commit.project.service<ModelService>()
+
+        if(branchInfo != modelService.getSelectedBranch()){
+            modelService.clearSelectedCommits()
+        }
+
+        val selectedCommits = modelService.getSelectedCommits()
+        if(selectedCommits.isEmpty()){
+            normalClick()
+            return
+        }
+
         if (!commit.isSelected) {
             modelService.addToSelectedCommits(commit, branchInfo)
         } else {
             modelService.removeFromSelectedCommits(commit, branchInfo)
         }
     }
+
+    /**
+     * Shows context menu
+     */
 
     override fun invokePopup(
         comp: Component?,

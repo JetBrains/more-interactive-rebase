@@ -84,19 +84,10 @@ class ActionService(project: Project) {
      */
     fun checkDrop(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !areDisabledCommitsSelected() &&
+            !modelService.areDisabledCommitsSelected() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
-    }
-
-    /**
-     * Returns true if the there are currently any selected commits on the added branch,
-     * false otherwise or if there is no added branch
-     */
-    private fun areDisabledCommitsSelected(): Boolean {
-        val added = modelService.graphInfo.addedBranch
-        return (added != null && added.selectedCommits.isNotEmpty())
     }
 
     /**
@@ -107,7 +98,7 @@ class ActionService(project: Project) {
      */
     fun checkReword(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.getActualSelectedCommitsSize() == 1 &&
-            !areDisabledCommitsSelected() &&
+            !modelService.areDisabledCommitsSelected() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
@@ -121,7 +112,7 @@ class ActionService(project: Project) {
      */
     fun checkStopToEdit(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !areDisabledCommitsSelected() &&
+            !modelService.areDisabledCommitsSelected() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
@@ -148,7 +139,7 @@ class ActionService(project: Project) {
 
         val validParent = checkValidParent()
 
-        e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && validParent && !areDisabledCommitsSelected()
+        e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && validParent && !modelService.areDisabledCommitsSelected()
     }
 
     /**
@@ -180,11 +171,10 @@ class ActionService(project: Project) {
     fun getParent(): CommitInfo {
         var commit = modelService.getLastSelectedCommit(modelService.branchInfo)
 
-        var index = modelService.branchInfo.currentCommits.indexOf(commit) + 1
-        commit = modelService.branchInfo.currentCommits[index]
-        while (commit.getChangesAfterPick().filterIsInstance<DropCommand>().isNotEmpty() &&
-            index < modelService.getCurrentCommits().size - 1
-        ) {
+        var index = modelService.getCurrentCommits().indexOf(commit) + 1
+        commit = modelService.getCurrentCommits()[index]
+        while(commit.getChangesAfterPick().filterIsInstance<DropCommand>().isNotEmpty() &&
+            index < modelService.getCurrentCommits().size - 1){
             index++
             commit = modelService.getCurrentCommits()[index]
         }
@@ -200,7 +190,7 @@ class ActionService(project: Project) {
      */
     fun checkPick(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !areDisabledCommitsSelected()
+            !modelService.areDisabledCommitsSelected()
     }
 
     /**
@@ -729,7 +719,7 @@ class ActionService(project: Project) {
         if (collapseCommand == null) return
 
         parentCommit.removeChange(collapseCommand)
-        val index = branchInfo.currentCommits.indexOf(parentCommit)
+        val index = modelService.getCurrentCommits().indexOf(parentCommit)
         val collapsedCommits = collapseCommand.collapsedCommits
         collapsedCommits.forEach {
             it.isCollapsed = false
