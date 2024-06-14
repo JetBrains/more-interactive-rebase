@@ -14,8 +14,10 @@ import com.jetbrains.interactiveRebase.listeners.BranchNavigationListener
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.SidePanel
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import javax.swing.BorderFactory
 import javax.swing.ScrollPaneConstants
 
 class MainPanel(
