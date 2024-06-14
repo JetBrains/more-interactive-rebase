@@ -145,6 +145,10 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
         selectBranchVisually()
     }
 
+    /**
+     * Selects a branch panel by only making the visual changes,
+     * does not actually select the branch and add it to the view
+     */
     fun selectBranchVisually() {
         this.isOpaque = true
         backgroundColor = Palette.JETBRAINS_SELECTED
@@ -182,7 +186,6 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
                 "Overwriting Changes",
                 "Adding another branch to the view will reset the actions you have made. Do you want to continue?",
             )
-        println("Adding another branch dialog happened")
         if (answer) {
             addSelectedBranchToView()
             return true
