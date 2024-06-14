@@ -18,6 +18,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 import com.jetbrains.interactiveRebase.visuals.HeaderPanel
 import com.jetbrains.interactiveRebase.visuals.MainPanel
+import com.squareup.wire.get
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
@@ -149,14 +150,34 @@ class ActionService(project: Project) {
         e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && validParent && !areDisabledCommitsSelected()
     }
 
+    /**
+     * Checks that the if the commit to
+     * squash/fixup into would be a valid
+     * parent. Not dropped or collapsed
+     */
+
     fun checkValidParent(): Boolean {
         if (modelService.branchInfo.getActualSelectedCommitsSize() != 1) return true
 
-        var commit = modelService.getSelectedCommits().last()
+        var commit = modelService.getLastSelectedCommit(modelService.branchInfo)
 
         if(commit == modelService.getCurrentCommits().last()){
             return false
         }
+
+        commit = getParent()
+
+        return !commit.isCollapsed && commit.getChangesAfterPick().filterIsInstance<DropCommand>().isEmpty()
+    }
+
+    /**
+     * Gets parent of current commit to
+     * squash into, it should not be dropped
+     * nor collapsed
+     */
+
+    fun getParent(): CommitInfo {
+        var commit = modelService.getLastSelectedCommit(modelService.branchInfo)
 
         var index = modelService.branchInfo.currentCommits.indexOf(commit) + 1
         commit = modelService.branchInfo.currentCommits[index]
@@ -166,8 +187,7 @@ class ActionService(project: Project) {
             commit = modelService.getCurrentCommits()[index]
         }
 
-        return !modelService.branchInfo.currentCommits[index].isCollapsed &&
-                commit.getChangesAfterPick().filterIsInstance<DropCommand>().isEmpty()
+        return commit
     }
 
     /**
@@ -317,7 +337,7 @@ class ActionService(project: Project) {
         var parentCommit = selectedCommits.last()
         if (modelService.branchInfo.getActualSelectedCommitsSize() == 1) {
             val selectedIndex = modelService.getCurrentCommits().indexOf(parentCommit)
-            parentCommit = modelService.getCurrentCommits()[selectedIndex + 1]
+            parentCommit = getParent()
         }
         selectedCommits.remove(parentCommit)
         val fixupCommits = cleanSelectedCommits(parentCommit, selectedCommits)
