@@ -150,7 +150,6 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
      * does not actually select the branch and add it to the view
      */
     fun selectBranchVisually() {
-        modelService.addSecondBranchToGraphInfo(branchName, 0)
         this.isOpaque = true
         backgroundColor = Palette.JETBRAINS_SELECTED
         this.isSelected = true

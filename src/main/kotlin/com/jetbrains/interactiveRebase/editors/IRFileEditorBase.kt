@@ -21,8 +21,8 @@ class IRFileEditorBase(private val project: Project, private val virtualFile: Vi
     init {
         // done to be able to get an instance of the main panel if you
         // have a reference to the project
-        actionService = project.service<ActionService>()
         component = MainPanel(project)
+        actionService = project.service<ActionService>()
         actionService.mainPanel = component
         modelService = project.service<ModelService>()
     }

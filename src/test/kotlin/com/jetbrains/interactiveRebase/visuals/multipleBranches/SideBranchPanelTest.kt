@@ -13,7 +13,7 @@ import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.Palette
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mockito.mock
+import org.mockito.Mockito.`mock`
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`

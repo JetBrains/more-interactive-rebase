@@ -23,7 +23,7 @@ import com.jetbrains.interactiveRebase.visuals.MainPanel
 class ActionService(project: Project) {
     internal var modelService = project.service<ModelService>()
     private var invoker = modelService.invoker
-    var mainPanel = MainPanel(project)
+    lateinit var mainPanel: MainPanel
 
     /**
      * Constructor for injection during testing
