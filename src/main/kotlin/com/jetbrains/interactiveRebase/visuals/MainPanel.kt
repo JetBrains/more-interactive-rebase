@@ -31,8 +31,8 @@ class MainPanel(
     private val branchInfoListener: BranchInfo.Listener
     private val commitInfoListener: CommitInfo.Listener
     private val graphInfo: GraphInfo = project.service<ModelService>().graphInfo
-    private val branchInfo: BranchInfo = graphInfo.mainBranch
-    private var otherBranchInfo: BranchInfo? = graphInfo.addedBranch
+    private val primaryBranchInfo: BranchInfo = graphInfo.mainBranch
+    private var addedBranchInfo: BranchInfo? = graphInfo.addedBranch
     private val branchNavigationListener: BranchNavigationListener
 
     init {
@@ -84,7 +84,7 @@ class MainPanel(
         graphInfo.addListener(graphInfoListener)
         branchNavigationListener = BranchNavigationListener(project)
 
-        branchInfo.addListener(branchInfoListener)
+        primaryBranchInfo.addListener(branchInfoListener)
         registerCommitListener()
         this.addKeyListener(branchNavigationListener)
 
@@ -97,9 +97,9 @@ class MainPanel(
      * Creates a graph panel.
      */
     fun createGraphPanel(): GraphPanel {
-        if (otherBranchInfo != null) {
-            branchInfo.isPrimary = true
-            otherBranchInfo!!.isWritable = false
+        if (addedBranchInfo != null) {
+            primaryBranchInfo.isPrimary = true
+            addedBranchInfo!!.isWritable = false
         }
         return GraphPanel(
             project,
@@ -107,7 +107,7 @@ class MainPanel(
     }
 
     /**
-     * Creates a content panel.
+     * Creates a content panel. This includes the panel with the main graph and the panel with the help button
      */
     fun createContentPanel(): JBScrollPane {
         val scrollable = JBScrollPane()
@@ -121,16 +121,26 @@ class MainPanel(
         gbc.weightx = 1.0
         gbc.weighty = 1.0
         gbc.anchor = GridBagConstraints.CENTER
-        gbc.fill = GridBagConstraints.VERTICAL
+        gbc.fill = GridBagConstraints.BOTH
+
+        val help = HelpPanel()
+        gbc.insets.left = help.width
 
         contentPanel.add(
             graphPanel,
             gbc,
         )
-
         scrollable.setViewportView(contentPanel)
-        scrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
+        scrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)
         scrollable.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED)
+        gbc.gridx = 1
+        gbc.gridy = 0
+        gbc.fill = GridBagConstraints.VERTICAL
+        gbc.weightx = 0.0
+        gbc.weighty = 0.0
+        gbc.anchor = GridBagConstraints.SOUTHEAST
+        gbc.insets.left = 0
+        contentPanel.add(help, gbc)
         return scrollable
     }
 
@@ -170,10 +180,10 @@ class MainPanel(
     }
 
     fun registerCommitListener() {
-        branchInfo.currentCommits.forEach {
+        primaryBranchInfo.currentCommits.forEach {
             it.addListener(commitInfoListener)
         }
-        otherBranchInfo?.currentCommits?.forEach {
+        addedBranchInfo?.currentCommits?.forEach {
             it.addListener(commitInfoListener)
         }
     }
