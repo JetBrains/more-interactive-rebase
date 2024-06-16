@@ -1,6 +1,5 @@
 package com.jetbrains.interactiveRebase.actions.gitPanel
 
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
@@ -13,8 +12,8 @@ import icons.DvcsImplIcons
 import javax.swing.JComponent
 
 class CherryAction :
-        DumbAwareAction("Cherry Pick", "Removes a commit from history", DvcsImplIcons.CherryPick),
-        CustomComponentAction {
+    DumbAwareAction("Cherry Pick", "Removes a commit from history", DvcsImplIcons.CherryPick),
+    CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
         e.project?.service<ActionService>()?.takeCherryPickAction()
     }
@@ -28,15 +27,15 @@ class CherryAction :
     }
 
     override fun createCustomComponent(
-            presentation: Presentation,
-            place: String,
+        presentation: Presentation,
+        place: String,
     ): JComponent {
         return RebaseActionsGroup.makeTooltip(
-                this,
-                presentation,
-                place,
-                getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.CherryAction"),
-                "Removes a commit from history",
+            this,
+            presentation,
+            place,
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.CherryAction"),
+            "Removes a commit from history",
         )
     }
 }

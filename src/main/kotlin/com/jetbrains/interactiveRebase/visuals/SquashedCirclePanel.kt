@@ -9,7 +9,7 @@ import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.geom.Ellipse2D
 
-class SquashedCirclePanel(
+open class SquashedCirclePanel(
     diameter: Double,
     private val border: Float,
     colorTheme: Palette.Theme,

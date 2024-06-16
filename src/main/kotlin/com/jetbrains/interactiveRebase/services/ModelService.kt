@@ -13,7 +13,6 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.IRGitRefreshListener
-import git4idea.cherrypick.GitCherryPicker
 import git4idea.status.GitRefreshListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -211,7 +210,6 @@ class ModelService(
             }
         }
     }
-
 
     /**
      * Populates the GraphInfo field in order to be able to display the side panel of local branches

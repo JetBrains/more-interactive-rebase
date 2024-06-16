@@ -3,8 +3,13 @@ package com.jetbrains.interactiveRebase.services
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
-import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import com.jetbrains.interactiveRebase.dataClasses.commands.*
+import com.jetbrains.interactiveRebase.dataClasses.commands.CherryCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.IRCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitRebaseUtils
 import git4idea.GitCommit
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
@@ -89,7 +94,6 @@ class RebaseInvoker(val project: Project) {
         branchInfo.currentCommits = commits
     }
 
-
     /**
      * Converts the entries to a model
      */
@@ -130,13 +134,13 @@ class RebaseInvoker(val project: Project) {
         }
         var cherryCommits = mutableListOf<GitCommit>()
         commandz.forEach {
-            if(it is CherryCommand){
-                cherryCommits.add(it.commitOfCommand().commit)
+            if (it is CherryCommand) {
+                cherryCommits.add(it.baseCommit.commit)
             }
             it.execute(model, branchInfo)
         }
         if (base != null) {
-            IRGitRebaseUtils(project).rebase(base, model,cherryCommits )
+            IRGitRebaseUtils(project).rebase(base, model, cherryCommits)
         }
         commands.clear()
     }

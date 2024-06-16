@@ -1,6 +1,5 @@
 package com.jetbrains.interactiveRebase.visuals
 
-import com.intellij.icons.AllIcons
 import com.intellij.ui.JBColor
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import icons.DvcsImplIcons
@@ -9,14 +8,13 @@ import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
 
-
 class CherryCirclePanel(
-        diameter: Double,
-        private val border: Float,
-        colorTheme: Palette.Theme,
-        override var commit: CommitInfo,
-        override var next: CirclePanel? = null,
-        override var previous: CirclePanel? = null,
+    diameter: Double,
+    private val border: Float,
+    colorTheme: Palette.Theme,
+    override var commit: CommitInfo,
+    override var next: CirclePanel? = null,
+    override var previous: CirclePanel? = null,
 ) : CirclePanel(diameter, border, colorTheme, commit, next, previous) {
     override fun paintCircle(g: Graphics) {
         val g2d = g as Graphics2D

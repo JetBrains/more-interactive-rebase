@@ -7,11 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
-import com.jetbrains.interactiveRebase.services.ActionService
-import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
-import git4idea.cherrypick.GitCherryPicker
-import kotlinx.coroutines.launch
 import java.awt.BorderLayout
 import java.awt.Graphics
 import javax.swing.BoxLayout
@@ -68,6 +64,4 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
         toolbar.targetComponent = buttonPanel
         buttonPanel.add(toolbarComponent)
     }
-
-
 }
