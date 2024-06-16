@@ -2,7 +2,6 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.UIUtil

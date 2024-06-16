@@ -18,7 +18,6 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
-import javax.swing.BorderFactory
 import javax.swing.OverlayLayout
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingUtilities
