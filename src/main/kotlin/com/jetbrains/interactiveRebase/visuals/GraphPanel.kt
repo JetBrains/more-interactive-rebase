@@ -2,7 +2,9 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
+import com.intellij.util.ui.UIUtil
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.services.ModelService
@@ -74,6 +76,14 @@ class GraphPanel(
      */
 
     internal fun addBranches() {
+        if (project.service<ModelService>().getCurrentCommits().isEmpty()) {
+            val label = JBLabel("No commits to display, please check out a different branch")
+            label.setComponentStyle(UIUtil.ComponentStyle.LARGE)
+            add(label)
+
+            return
+        }
+
         val gbc = GridBagConstraints()
 
         val (offsetMain, offsetAdded) = computeVerticalOffsets()

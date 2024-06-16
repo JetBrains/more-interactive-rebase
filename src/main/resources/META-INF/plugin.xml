@@ -21,7 +21,7 @@
     <actions>
         <action class="com.jetbrains.interactiveRebase.actions.CreateEditorTabAction" id="com.jetbrains.interactive_rebase.CreateEditorTabAction"
                 text="Interactive Rebase Current Branch">
-            <add-to-group group-id="ToolsMenu" anchor="first"/>
+            <add-to-group group-id="Git.MainMenu" anchor="first"/>
         </action>
         <group id="ActionsGroup"
                class="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup" text="RebaseGlobalActionsGroup" description="Interactive rebase actions">

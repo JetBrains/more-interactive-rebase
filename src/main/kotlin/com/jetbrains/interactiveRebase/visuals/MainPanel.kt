@@ -16,7 +16,10 @@ import com.jetbrains.interactiveRebase.visuals.multipleBranches.SidePanel
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.awt.event.MouseEvent
+import java.awt.event.MouseListener
 import javax.swing.ScrollPaneConstants
+import javax.swing.SwingUtilities
 
 class MainPanel(
     private val project: Project,
@@ -123,6 +126,11 @@ class MainPanel(
         gbc.anchor = GridBagConstraints.CENTER
         gbc.fill = GridBagConstraints.BOTH
 
+        contentPanel.add(
+            graphPanel,
+            gbc,
+        )
+
         val help = HelpPanel()
         gbc.insets.left = help.width
 
@@ -141,6 +149,31 @@ class MainPanel(
         gbc.anchor = GridBagConstraints.SOUTHEAST
         gbc.insets.left = 0
         contentPanel.add(help, gbc)
+
+        contentPanel.addMouseListener(
+            object : MouseListener {
+                override fun mouseClicked(e: MouseEvent?) {
+                    SwingUtilities.invokeLater { requestFocusInWindow() }
+                }
+
+                override fun mousePressed(e: MouseEvent?) {
+                    SwingUtilities.invokeLater { requestFocusInWindow() }
+                }
+
+                override fun mouseReleased(e: MouseEvent?) {
+                    SwingUtilities.invokeLater { requestFocusInWindow() }
+                }
+
+                override fun mouseEntered(e: MouseEvent?) {
+                    SwingUtilities.invokeLater { requestFocusInWindow() }
+                }
+
+                override fun mouseExited(e: MouseEvent?) {
+                    SwingUtilities.invokeLater { requestFocusInWindow() }
+                }
+            },
+        )
+
         return scrollable
     }
 

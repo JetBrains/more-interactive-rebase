@@ -18,6 +18,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 import com.jetbrains.interactiveRebase.visuals.HeaderPanel
 import com.jetbrains.interactiveRebase.visuals.MainPanel
+import com.squareup.wire.get
 
 @Service(Service.Level.PROJECT)
 class ActionService(project: Project) {
@@ -144,19 +145,50 @@ class ActionService(project: Project) {
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
 
-        val notCollapsed = checkParentNotCollapsed()
+        val validParent = checkValidParent()
 
-        e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && notCollapsed && !areDisabledCommitsSelected()
+        e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && validParent && !areDisabledCommitsSelected()
     }
 
-    fun checkParentNotCollapsed(): Boolean {
+    /**
+     * Checks that the if the commit to
+     * squash/fixup into would be a valid
+     * parent. Not dropped or collapsed
+     */
+
+    fun checkValidParent(): Boolean {
         if (modelService.branchInfo.getActualSelectedCommitsSize() != 1) return true
 
-        val commit = modelService.getSelectedCommits().last()
-        val index = modelService.branchInfo.currentCommits.indexOf(commit)
-        if (index == modelService.branchInfo.currentCommits.size - 1) return true
+        var commit = modelService.getLastSelectedCommit(modelService.branchInfo)
 
-        return !modelService.branchInfo.currentCommits[index+1].isCollapsed
+        if (commit == modelService.getCurrentCommits().last()) {
+            return false
+        }
+
+        commit = getParent()
+
+        return !commit.isCollapsed && commit.getChangesAfterPick().filterIsInstance<DropCommand>().isEmpty()
+    }
+
+    /**
+     * Gets parent of current commit to
+     * squash into, it should not be dropped
+     * nor collapsed
+     */
+
+    fun getParent(): CommitInfo {
+        var commit = modelService.getLastSelectedCommit(modelService.branchInfo)
+
+        var index = modelService.branchInfo.currentCommits.indexOf(commit) + 1
+        commit = modelService.branchInfo.currentCommits[index]
+        while (commit.getChangesAfterPick().filterIsInstance<DropCommand>().isNotEmpty() &&
+            index < modelService.getCurrentCommits().size - 1
+        ) {
+            index++
+            commit = modelService.getCurrentCommits()[index]
+        }
+
+        return commit
     }
 
     /**
@@ -306,7 +338,7 @@ class ActionService(project: Project) {
         var parentCommit = selectedCommits.last()
         if (modelService.branchInfo.getActualSelectedCommitsSize() == 1) {
             val selectedIndex = modelService.getCurrentCommits().indexOf(parentCommit)
-            parentCommit = modelService.getCurrentCommits()[selectedIndex + 1]
+            parentCommit = getParent()
         }
         selectedCommits.remove(parentCommit)
         val fixupCommits = cleanSelectedCommits(parentCommit, selectedCommits)
@@ -354,9 +386,25 @@ class ActionService(project: Project) {
         selectedCommits: List<CommitInfo>,
     ): MutableList<CommitInfo> {
         val ret = mutableListOf<CommitInfo>()
+
         selectedCommits.forEach {
             removeSquashFixChange(it)
             ret.add(it)
+        }
+
+        parent.changes.forEach {
+                change ->
+            if (change is SquashCommand) {
+                change.squashedCommits.forEach {
+                    removeSquashFixChange(it)
+                    ret.add(it)
+                }
+            } else if (change is FixupCommand) {
+                change.fixupCommits.forEach {
+                    removeSquashFixChange(it)
+                    ret.add(it)
+                }
+            }
         }
 
         removeSquashFixChange(parent)
