@@ -25,4 +25,19 @@ class DialogService(private val project: Project) {
             )
             .ask(project)
     }
+
+    /**
+     * Triggers warning dialog with the given title and description
+     */
+    fun warningOkCancelDialog(
+        title: String,
+        description: String,
+    ): Boolean {
+        return MessageDialogBuilder
+            .okCancel(
+                title,
+                description,
+            )
+            .ask(project)
+    }
 }

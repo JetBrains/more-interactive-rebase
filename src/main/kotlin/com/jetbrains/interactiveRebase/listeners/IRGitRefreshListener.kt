@@ -12,9 +12,7 @@ class IRGitRefreshListener(private val project: Project) : GitRefreshListener {
      * when the repository is updated
      */
     override fun repositoryUpdated(repository: GitRepository) {
-        do {
-            project.service<ModelService>().fetchGraphInfo()
-        } while (project.service<ModelService>().graphInfo.mainBranch.initialCommits.isEmpty())
-        project.service<ModelService>().populateLocalBranches()
+        project.service<ModelService>().fetchGraphInfo(0)
+        project.service<ModelService>().populateLocalBranches(0)
     }
 }

@@ -2,6 +2,7 @@ package com.jetbrains.interactiveRebase.actions.buttonActions
 
 import com.intellij.ide.HelpTooltip
 import com.intellij.ide.ui.laf.darcula.ui.DarculaButtonPainter
+import com.intellij.ide.ui.laf.darcula.ui.DarculaButtonUI
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -29,6 +30,9 @@ abstract class ButtonAction(
     protected val button =
         object : JButton(title) {
             init {
+                if (title == "Rebase") {
+                    this.putClientProperty(DarculaButtonUI.DEFAULT_STYLE_KEY, true)
+                }
                 val buttonHeight = JBUI.scale(28)
                 preferredSize = Dimension(preferredSize.width, buttonHeight)
                 border =

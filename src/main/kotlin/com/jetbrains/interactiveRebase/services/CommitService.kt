@@ -39,7 +39,12 @@ class CommitService(private val project: Project) {
      * we disregard the reference branch
      */
     fun getCommits(branchName: String): List<GitCommit> {
-        val repo = gitUtils.getRepository()
+        var repo: GitRepository?
+        try {
+            repo = gitUtils.getRepository()
+        } catch (_: IRInaccessibleException) {
+            return getCommits(branchName)
+        }
         val consumer = GeneralCommitConsumer()
 
         // if the reference branch is not set for the branch

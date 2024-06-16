@@ -6,6 +6,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import git4idea.GitUtil
 import git4idea.branch.GitRebaseParams
 import git4idea.i18n.GitBundle
@@ -60,10 +61,13 @@ class IRGitRebaseUtils(private val project: Project) {
                     }
                 if (params != null) {
                     GitRebaseUtils.rebase(project, listOf(repo), params, indicator)
-
-                    do {
-                        project.service<ModelService>().fetchGraphInfo()
-                    } while (project.service<ModelService>().graphInfo.mainBranch.initialCommits.isEmpty())
+                    project.service<RebaseInvoker>().commands.clear()
+                    project.service<RebaseInvoker>().undoneCommands.clear()
+                    project.service<ModelService>().graphInfo.mainBranch.currentCommits.forEach {
+                            c ->
+                        c.changes.clear()
+                    }
+                    project.service<ModelService>().fetchGraphInfo(0)
                 }
             }
         }.queue()
