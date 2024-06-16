@@ -131,12 +131,12 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
     private fun shiftClick() {
         val modelService = commit.project.service<ModelService>()
 
-        if(branchInfo != modelService.getSelectedBranch()){
+        if (branchInfo != modelService.getSelectedBranch()) {
             modelService.clearSelectedCommits()
         }
 
         val selectedCommits = modelService.getSelectedCommits()
-        if(selectedCommits.isEmpty()){
+        if (selectedCommits.isEmpty()) {
             normalClick()
             return
         }
@@ -162,12 +162,12 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
     private fun controlClick() {
         val modelService = commit.project.service<ModelService>()
 
-        if(branchInfo != modelService.getSelectedBranch()){
+        if (branchInfo != modelService.getSelectedBranch()) {
             modelService.clearSelectedCommits()
         }
 
         val selectedCommits = modelService.getSelectedCommits()
-        if(selectedCommits.isEmpty()){
+        if (selectedCommits.isEmpty()) {
             normalClick()
             return
         }

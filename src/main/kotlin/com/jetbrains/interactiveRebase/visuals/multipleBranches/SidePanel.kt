@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.visuals.multipleBranches
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.listeners.RemoveSideBranchListener
@@ -155,9 +156,31 @@ class SidePanel(var branches: MutableList<String>, val project: Project) : JBPan
         }
     }
 
-    fun select() {
+    fun selectBranch(sideBranchPanel: SideBranchPanel) {
+        if (canSelectBranch(sideBranchPanel)) {
+            // make rest of the branches unavailable if branch is added successfully
+            if (sideBranchPanel.selectBranch()) {
+                makeBranchesUnavailableExceptCurrent(sideBranchPanel)
+                listener.selected = sideBranchPanel
+            }
+            return
+        }
+        if (sideBranchPanel.isSelected) {
+            // We possibly don't want to unselect the branch only by a single click on the panel, TBD
+            // if deselecting was successful then reset all branches visually
+            if (sideBranchPanel.deselectBranch()) resetAllBranchesVisually()
+        }
+    }
+
+    /**
+     * Gives focus to the panel
+     */
+    fun selectPanel() {
         SwingUtilities.invokeLater { requestFocusInWindow() }
-        sideBranchPanels.first().onHover()
-        listener.selected = sideBranchPanels.first()
+        background = JBColor.LIGHT_GRAY
+        if (listener.selected == null) {
+            sideBranchPanels.first().onHover()
+            listener.selected = sideBranchPanels.first()
+        }
     }
 }

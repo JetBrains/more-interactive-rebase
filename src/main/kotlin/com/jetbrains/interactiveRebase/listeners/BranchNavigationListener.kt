@@ -179,7 +179,7 @@ class BranchNavigationListener(val project: Project, private val modelService: M
      * commits, moves up
      */
     fun altUp() {
-        if(modelService.areDisabledCommitsSelected()) return
+        if (modelService.areDisabledCommitsSelected()) return
 
         val branch = modelService.getSelectedBranch()
         modelService.getSelectedCommits().sortBy { branch.indexOfCommit(it) }
@@ -202,7 +202,7 @@ class BranchNavigationListener(val project: Project, private val modelService: M
      * commits, moves down
      */
     fun altDown() {
-        if(modelService.areDisabledCommitsSelected()) return
+        if (modelService.areDisabledCommitsSelected()) return
 
         val branch = modelService.getSelectedBranch()
         modelService.getSelectedCommits().sortBy { branch.indexOfCommit(it) }
@@ -218,32 +218,33 @@ class BranchNavigationListener(val project: Project, private val modelService: M
         }
     }
 
-    fun right(){
+    fun right() {
         val branch = modelService.getSelectedBranch()
 
-        if(modelService.graphInfo.addedBranch == null ||
+        if (modelService.graphInfo.addedBranch == null ||
             modelService.getSelectedCommits().isEmpty() ||
-            branch == modelService.graphInfo.addedBranch) return
+            branch == modelService.graphInfo.addedBranch
+        ) {
+            return
+        }
 
         modelService.selectSingleCommit(
             modelService.graphInfo.addedBranch!!.currentCommits.last(),
-            modelService.graphInfo.addedBranch!!
+            modelService.graphInfo.addedBranch!!,
         )
     }
 
-    fun left(){
+    fun left() {
         val branch = modelService.getSelectedBranch()
 
-        if(modelService.getSelectedCommits().isEmpty()) return
-
-        if(branch == modelService.graphInfo.addedBranch){
+        if (branch == modelService.graphInfo.addedBranch) {
             modelService.selectSingleCommit(
                 modelService.graphInfo.mainBranch.currentCommits.last(),
-                modelService.graphInfo.mainBranch
+                modelService.graphInfo.mainBranch,
             )
         } else if (branch == modelService.graphInfo.mainBranch) {
             val actionService = project.service<ActionService>()
-            actionService.mainPanel.sidePanel.select()
+            actionService.mainPanel.sidePanel.selectPanel()
         }
     }
 

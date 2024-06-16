@@ -172,8 +172,9 @@ class ActionService(project: Project) {
 
         var index = modelService.getCurrentCommits().indexOf(commit) + 1
         commit = modelService.getCurrentCommits()[index]
-        while(commit.getChangesAfterPick().filterIsInstance<DropCommand>().isNotEmpty() &&
-            index < modelService.getCurrentCommits().size - 1){
+        while (commit.getChangesAfterPick().filterIsInstance<DropCommand>().isNotEmpty() &&
+            index < modelService.getCurrentCommits().size - 1
+        ) {
             index++
             commit = modelService.getCurrentCommits()[index]
         }
@@ -669,13 +670,12 @@ class ActionService(project: Project) {
         }
 
         if (modelService.graphInfo.mainBranch.currentCommits.any { it.isCollapsed }) {
-            if(modelService.graphInfo.addedBranch != null){
-                if(modelService.graphInfo.addedBranch!!.currentCommits.any { it.isCollapsed }){
+            if (modelService.graphInfo.addedBranch != null) {
+                if (modelService.graphInfo.addedBranch!!.currentCommits.any { it.isCollapsed }) {
                     e.presentation.isEnabled = false
                     return
                 }
-            }
-            else{
+            } else {
                 e.presentation.isEnabled = false
                 return
             }

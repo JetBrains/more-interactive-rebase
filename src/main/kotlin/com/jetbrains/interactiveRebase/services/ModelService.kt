@@ -302,7 +302,7 @@ class ModelService(
      * that has selected commits
      */
     fun getSelectedBranch(): BranchInfo {
-        if(!areDisabledCommitsSelected()) {
+        if (!areDisabledCommitsSelected()) {
             return graphInfo.mainBranch
         }
 
