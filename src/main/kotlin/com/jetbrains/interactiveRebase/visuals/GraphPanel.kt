@@ -83,7 +83,7 @@ class GraphPanel(
         if (project.service<ModelService>().getCurrentCommits().isEmpty()) {
             var message = "No commits to display, please check out a different branch"
 
-            if(!project.service<ModelService>().fetched) {
+            if (!project.service<ModelService>().fetched) {
                 message = "Fetching commits"
             }
             val label = JBLabel(message)
