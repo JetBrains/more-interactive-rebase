@@ -3,11 +3,7 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
-import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.*
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Graphics
@@ -75,6 +71,14 @@ class BranchPanel(
                     colorTheme,
                     branch.currentCommits[i],
                 )
+        } else if (visualChanges.any { it is CherryCommand }) {
+            circle =
+                    CherryCirclePanel(
+                            diameter.toDouble(),
+                            borderSize,
+                            colorTheme,
+                            branch.currentCommits[i],
+                    )
         } else if (visualChanges.any { it is StopToEditCommand }) {
             circle =
                 StopToEditCirclePanel(
