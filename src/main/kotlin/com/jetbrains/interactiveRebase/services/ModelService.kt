@@ -28,6 +28,7 @@ class ModelService(
 
     val branchInfo = BranchInfo()
     val graphInfo = GraphInfo(branchInfo)
+    var fetched = false
     private val graphService = project.service<GraphService>()
     private val dialogService = project.service<DialogService>()
     internal val invoker = project.service<RebaseInvoker>()
