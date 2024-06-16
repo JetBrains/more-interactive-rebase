@@ -212,11 +212,6 @@ class ModelService(
         }
     }
 
-    fun fetchCherry() {
-        coroutineScope.launch {
-            GitCherryPicker(project).cherryPick(mutableListOf(graphInfo.addedBranch!!.currentCommits[0].commit))
-        }
-    }
 
     /**
      * Populates the GraphInfo field in order to be able to display the side panel of local branches

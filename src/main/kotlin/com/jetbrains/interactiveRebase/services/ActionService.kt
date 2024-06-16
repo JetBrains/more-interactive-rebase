@@ -81,7 +81,7 @@ class ActionService(val project: Project) {
                         false, false, false,
                         false, false)
                 modelService.graphInfo.mainBranch.currentCommits.add(0,newCommit)
-                val command = CherryCommand(newCommit)
+                val command = CherryCommand(commitInfo)
                 newCommit.addChange(command)
                 invoker.addCommand(command)
 

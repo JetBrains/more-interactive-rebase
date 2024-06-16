@@ -3,8 +3,10 @@ package com.jetbrains.interactiveRebase.services
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.*
 import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitRebaseUtils
+import git4idea.GitCommit
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitEntry
 import git4ideaClasses.IRGitModel
@@ -87,13 +89,6 @@ class RebaseInvoker(val project: Project) {
         branchInfo.currentCommits = commits
     }
 
-    fun removeCherryPickedCommits() {
-        val commits = branchInfo.currentCommits.toMutableList()
-        commits.forEach{
-            commitInfo ->
-                commitInfo.changes.find{it is CherryCommand}!=null
-        }
-    }
 
     /**
      * Converts the entries to a model
@@ -133,9 +128,15 @@ class RebaseInvoker(val project: Project) {
         if (rebaseCommand != null) {
             base = (rebaseCommand as RebaseCommand).commit.commit.id.asString()
         }
-        commandz.forEach { it.execute(model, branchInfo) }
+        var cherryCommits = mutableListOf<GitCommit>()
+        commandz.forEach {
+            if(it is CherryCommand){
+                cherryCommits.add(it.commitOfCommand().commit)
+            }
+            it.execute(model, branchInfo)
+        }
         if (base != null) {
-            IRGitRebaseUtils(project).rebase(base, model)
+            IRGitRebaseUtils(project).rebase(base, model,cherryCommits )
         }
         commands.clear()
     }

@@ -5,10 +5,14 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.CherryCommand
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
+import git4idea.GitCommit
 import git4idea.GitUtil
 import git4idea.branch.GitRebaseParams
+import git4idea.cherrypick.GitCherryPicker
 import git4idea.i18n.GitBundle
 import git4idea.rebase.GitRebaseEditorHandler
 import git4idea.rebase.GitRebaseUtils
@@ -33,9 +37,11 @@ class IRGitRebaseUtils(private val project: Project) {
     internal fun rebase(
         commit: String,
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
+        cherryCommits: MutableList<GitCommit>
     ) {
         object : Task.Backgroundable(project, GitBundle.message("rebase.progress.indicator.preparing.title")) {
             override fun run(indicator: ProgressIndicator) {
+                GitCherryPicker(project).cherryPick(cherryCommits)
                 startInteractiveRebase(commit, repo?.let { IRGitEditorHandler(it, model) })
             }
         }.queue()

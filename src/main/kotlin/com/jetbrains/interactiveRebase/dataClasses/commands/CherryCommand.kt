@@ -5,6 +5,9 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
+/**
+ * Here the commit is the original one that belongs to the added branch
+ */
 data class CherryCommand(var commit: CommitInfo) : IRCommand() {
     /**
      * This method is to set up connection with the
