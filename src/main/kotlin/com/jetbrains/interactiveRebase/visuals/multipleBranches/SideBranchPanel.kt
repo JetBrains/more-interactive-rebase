@@ -19,6 +19,7 @@ import javax.swing.JLabel
 
 class SideBranchPanel(val branchName: String, val project: Project) : RoundedPanel(), Disposable {
     var isSelected: Boolean = false
+    var isHovered: Boolean = false
     lateinit var label: JLabel
     lateinit var button: RoundedButton
     var dialogService: DialogService = project.service<DialogService>()
@@ -106,6 +107,7 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
      */
     internal fun onHover() {
         backgroundColor = Palette.JETBRAINS_HOVER
+        isHovered = true
         this.repaint()
         this.revalidate()
     }
@@ -115,6 +117,7 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
      */
     internal fun resetSideBranchPanelVisually() {
         this.isOpaque = false
+        this.isHovered = false
         this.isSelected = false
         this.button.isVisible = false
         this.label.foreground = JBColor.BLACK

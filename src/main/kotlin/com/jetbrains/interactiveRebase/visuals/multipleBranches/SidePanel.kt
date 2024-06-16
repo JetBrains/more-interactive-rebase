@@ -7,12 +7,15 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.listeners.RemoveSideBranchListener
 import com.jetbrains.interactiveRebase.listeners.SideBranchPanelListener
+import com.jetbrains.interactiveRebase.listeners.SidePanelListener
 import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import javax.swing.SwingUtilities
 
 class SidePanel(var branches: MutableList<String>, val project: Project) : JBPanel<JBPanel<*>>() {
     internal var isVisible: Boolean = false
+    internal var listener: SidePanelListener = SidePanelListener(project, this)
 
     var sideBranchPanels: MutableList<SideBranchPanel> = mutableListOf()
 
@@ -20,6 +23,7 @@ class SidePanel(var branches: MutableList<String>, val project: Project) : JBPan
         layout = GridBagLayout()
 
         updateBranchNames()
+        addKeyListener(listener)
     }
 
     /**
@@ -149,5 +153,11 @@ class SidePanel(var branches: MutableList<String>, val project: Project) : JBPan
         for (branch in sideBranchPanels) {
             branch.resetSideBranchPanelVisually()
         }
+    }
+
+    fun select() {
+        SwingUtilities.invokeLater { requestFocusInWindow() }
+        sideBranchPanels.first().onHover()
+        listener.selected = sideBranchPanels.first()
     }
 }

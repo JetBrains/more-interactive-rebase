@@ -3,13 +3,14 @@ package com.jetbrains.interactiveRebase.listeners
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import kotlin.math.max
 import kotlin.math.min
 
-class BranchNavigationListener(project: Project, private val modelService: ModelService) : KeyListener, Disposable {
+class BranchNavigationListener(val project: Project, private val modelService: ModelService) : KeyListener, Disposable {
     constructor(project: Project) : this(project, project.service<ModelService>())
 
     /**
@@ -20,6 +21,7 @@ class BranchNavigationListener(project: Project, private val modelService: Model
         if (e?.keyCode == KeyEvent.VK_ESCAPE) {
             modelService.clearSelectedCommits()
         }
+
         if (e?.isShiftDown!!) {
             when (e.keyCode) {
                 KeyEvent.VK_UP -> shiftUp()
@@ -232,14 +234,17 @@ class BranchNavigationListener(project: Project, private val modelService: Model
     fun left(){
         val branch = modelService.getSelectedBranch()
 
-        if(modelService.getSelectedCommits().isEmpty() ||
-            branch == modelService.graphInfo.mainBranch) return
+        if(modelService.getSelectedCommits().isEmpty()) return
 
-        modelService.selectSingleCommit(
-            modelService.graphInfo.mainBranch.currentCommits.last(),
-            modelService.graphInfo.mainBranch
-        )
-
+        if(branch == modelService.graphInfo.addedBranch){
+            modelService.selectSingleCommit(
+                modelService.graphInfo.mainBranch.currentCommits.last(),
+                modelService.graphInfo.mainBranch
+            )
+        } else if (branch == modelService.graphInfo.mainBranch) {
+            val actionService = project.service<ActionService>()
+            actionService.mainPanel.sidePanel.select()
+        }
     }
 
     override fun keyTyped(e: KeyEvent?) {
