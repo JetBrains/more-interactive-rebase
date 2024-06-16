@@ -35,6 +35,7 @@ class SideBranchPanelListener(val sideBranchPanel: SideBranchPanel, val parent: 
         if (parent.canSelectBranch(sideBranchPanel)) {
             // make rest of the branches unavailable if branch is added successfully
             if (sideBranchPanel.selectBranch()) parent.makeBranchesUnavailableExceptCurrent(sideBranchPanel)
+            e?.consume()
             return
         }
         if (sideBranchPanel.isSelected) {

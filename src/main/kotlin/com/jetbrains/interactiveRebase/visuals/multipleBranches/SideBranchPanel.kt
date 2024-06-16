@@ -51,10 +51,6 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
         layout = GridBagLayout()
         addSideBranchLabel()
         addRemoveBranchButton()
-
-        val name = modelService.graphInfo.addedBranch?.name
-
-        if (name == branchName) selectBranch()
     }
 
     /**
@@ -146,6 +142,14 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
      */
     private fun addSelectedBranchToView() {
         modelService.addSecondBranchToGraphInfo(branchName)
+        selectBranchVisually()
+    }
+
+    /**
+     * Selects a branch panel by only making the visual changes,
+     * does not actually select the branch and add it to the view
+     */
+    fun selectBranchVisually() {
         this.isOpaque = true
         backgroundColor = Palette.JETBRAINS_SELECTED
         this.isSelected = true

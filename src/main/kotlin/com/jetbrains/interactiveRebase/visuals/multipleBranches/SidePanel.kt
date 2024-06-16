@@ -32,15 +32,28 @@ class SidePanel(var branches: MutableList<String>, val project: Project) : JBPan
     }
 
     /**
-     * Updates the branch names in the panel.
+     * Updates the branch names in the panel. Clears all panels and redraws, if a branch is selected, does
+     * the required styling
      */
     fun updateBranchNames() {
         removeAll()
         sideBranchPanels.clear()
         updateBranches()
+        val addedBranch = project.service<ModelService>().graphInfo.addedBranch?.name
+        var selectedPanel: SideBranchPanel? = null
         for (i in 0 until branches.size) {
             createSideBranchPanel(i)
+            val panel: SideBranchPanel = sideBranchPanels[i]
+
+            if (panel.branchName == addedBranch) {
+                panel.selectBranchVisually()
+                selectedPanel = panel
+            }
         }
+        if (selectedPanel != null) {
+            makeBranchesUnavailableExceptCurrent(selectedPanel)
+        }
+
         revalidate()
         repaint()
     }
