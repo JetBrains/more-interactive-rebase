@@ -39,7 +39,8 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
     }
 
     init {
-        backgroundColor = background
+        backgroundColor = Palette.TRANSPARENT
+        isOpaque = false
         cornerRadius = 15
         createSideBranchPanel()
     }
@@ -153,7 +154,7 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
      * does not actually select the branch and add it to the view
      */
     fun selectBranchVisually() {
-        this.isOpaque = true
+        this.isOpaque = false
         backgroundColor = Palette.JETBRAINS_SELECTED
         this.isSelected = true
         this.button.isVisible = true

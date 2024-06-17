@@ -39,7 +39,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
                 "Do you want to continue?",
         )
         verify(modelService).addSecondBranchToGraphInfo(branchName, 0)
-        assertThat(sideBranchPanel.isOpaque).isTrue()
+        assertThat(sideBranchPanel.isOpaque).isFalse()
         assertThat(result).isTrue()
         assertThat(sideBranchPanel.isSelected).isTrue()
         assertThat(sideBranchPanel.backgroundColor).isEqualTo(Palette.JETBRAINS_SELECTED)
@@ -194,7 +194,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
     fun testButtonOnHover() {
         val sideBranchPanel = SideBranchPanel(branchName, project)
         sideBranchPanel.buttonOnHover()
-        assertThat(sideBranchPanel.button.backgroundColor).isEqualTo(sideBranchPanel.background.darker())
+        assertThat(sideBranchPanel.button.backgroundColor).isEqualTo(Palette.TRANSPARENT)
     }
 
     fun testButtonOnHoverExit() {
