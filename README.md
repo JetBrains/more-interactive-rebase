@@ -34,8 +34,10 @@ A More Interactive Rebase offers the following functionality for a better user e
 * Opens in the editor tab for a better visualization
 * Shows clearly the commit history in the form of a graph
 * Gives details about the commits and their file changes
-* Allows performing Interactive Rebase actions on selected commits
+* Allows performing interactive rebase actions on selected commits
 * Allows reordering of commits by drag-and-drop
+* Displays two branches with their relation visually
+* Allows changing the base of a branch on top of another branch
 
 [//]: # (Add short video here)
 
@@ -97,8 +99,6 @@ for more information.
   
 <img src="Images/drop.gif" alt="drop" width="500">
 
-
-[//]: # (![drop.gif]&#40;Images/drop.gif&#41;)
 
 * **<u>Squash</u>** - If there is only one selected commit pressing the `squash` button will squash that commit with the
   previous one (older in the commit history). In the case where multiple commits are selected, they get squashed into
