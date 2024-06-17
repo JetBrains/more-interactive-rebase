@@ -136,6 +136,11 @@ class MainPanel(
         gbc.anchor = GridBagConstraints.CENTER
         gbc.fill = GridBagConstraints.VERTICAL
 
+        contentPanel.add(
+            graphPanel,
+            gbc,
+        )
+
         val help = HelpPanel()
         gbc.insets.left = help.width
 

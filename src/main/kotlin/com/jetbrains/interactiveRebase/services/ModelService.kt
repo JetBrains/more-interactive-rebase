@@ -28,6 +28,7 @@ class ModelService(
 
     val branchInfo = BranchInfo()
     val graphInfo = GraphInfo(branchInfo)
+    var fetched = false
     private val graphService = project.service<GraphService>()
     private val dialogService = project.service<DialogService>()
     internal val invoker = project.service<RebaseInvoker>()
@@ -52,7 +53,7 @@ class ModelService(
         commit: CommitInfo,
         branchInfo: BranchInfo,
     ) {
-        branchInfo.clearSelectedCommits()
+        clearSelectedCommits()
         addToSelectedCommits(commit, branchInfo)
     }
 
@@ -121,7 +122,7 @@ class ModelService(
      * commits
      */
     fun getSelectedCommits(): MutableList<CommitInfo> {
-        return branchInfo.selectedCommits
+        return getSelectedBranch().selectedCommits
     }
 
     /**
@@ -138,13 +139,13 @@ class ModelService(
      * Returns the selected commit which is the lowest visually in the list.
      */
     fun getLowestSelectedCommit(): CommitInfo {
-        var commit = branchInfo.selectedCommits[0]
-        var index = branchInfo.currentCommits.indexOf(commit)
+        var commit = getSelectedCommits()[0]
+        var index = getCurrentCommits().indexOf(commit)
 
-        branchInfo.selectedCommits.forEach {
-            if (branchInfo.currentCommits.indexOf(it) > index && !it.isSquashed) {
+        getSelectedCommits().forEach {
+            if (getCurrentCommits().indexOf(it) > index && !it.isSquashed) {
                 commit = it
-                index = branchInfo.currentCommits.indexOf(it)
+                index = getCurrentCommits().indexOf(it)
             }
         }
 
@@ -155,13 +156,14 @@ class ModelService(
      * Returns the selected commit which is the highest visually in the list.
      */
     fun getHighestSelectedCommit(): CommitInfo {
-        var commit = branchInfo.selectedCommits[0]
-        var index = branchInfo.currentCommits.indexOf(commit)
+        val branch = getSelectedBranch()
+        var commit = branch.selectedCommits[0]
+        var index = branch.currentCommits.indexOf(commit)
 
-        branchInfo.selectedCommits.forEach {
-            if (branchInfo.currentCommits.indexOf(it) < index && !it.isSquashed) {
+        branch.selectedCommits.forEach {
+            if (branch.currentCommits.indexOf(it) < index && !it.isSquashed) {
                 commit = it
-                index = branchInfo.currentCommits.indexOf(it)
+                index = branch.currentCommits.indexOf(it)
             }
         }
 
@@ -172,13 +174,13 @@ class ModelService(
      * Returns the last commit that is selected
      * but is not squashed or fixed up
      */
-    fun getLastSelectedCommit(branchInfo: BranchInfo): CommitInfo {
-        var commit = branchInfo.selectedCommits.last()
+    fun getLastSelectedCommit(): CommitInfo {
+        var commit = getSelectedCommits().last()
 
         // Ensure that the commit we are moving is actually displayed
         while (commit.isSquashed) {
-            val index = branchInfo.selectedCommits.indexOf(commit)
-            commit = branchInfo.selectedCommits[index - 1]
+            val index = getSelectedCommits().indexOf(commit)
+            commit = getSelectedCommits()[index - 1]
         }
 
         return commit
@@ -189,7 +191,7 @@ class ModelService(
      * displayed commits
      */
     fun getCurrentCommits(): MutableList<CommitInfo> {
-        return branchInfo.currentCommits
+        return getSelectedBranch().currentCommits
     }
 
     /**
@@ -294,6 +296,27 @@ class ModelService(
                 description,
             )
         }
+    }
+
+    /**
+     * Return the branchInfo of the branch
+     * that has selected commits
+     */
+    fun getSelectedBranch(): BranchInfo {
+        if (!areDisabledCommitsSelected()) {
+            return graphInfo.mainBranch
+        }
+
+        return graphInfo.addedBranch!!
+    }
+
+    /**
+     * Returns true if the there are currently any selected commits on the added branch,
+     * false otherwise or if there is no added branch
+     */
+    internal fun areDisabledCommitsSelected(): Boolean {
+        val added = graphInfo.addedBranch
+        return (added != null && added.selectedCommits.isNotEmpty())
     }
 
     /**

@@ -81,7 +81,12 @@ class GraphPanel(
 
     internal fun addBranches() {
         if (project.service<ModelService>().getCurrentCommits().isEmpty()) {
-            val label = JBLabel("No commits to display, please check out a different branch")
+            var message = "No commits to display, please check out a different branch"
+
+            if (!project.service<ModelService>().fetched) {
+                message = "Fetching commits"
+            }
+            val label = JBLabel(message)
             label.setComponentStyle(UIUtil.ComponentStyle.LARGE)
             add(label)
 
