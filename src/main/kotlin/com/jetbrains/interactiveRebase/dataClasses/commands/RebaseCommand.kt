@@ -22,6 +22,6 @@ class RebaseCommand(val commit: CommitInfo) :
     }
 
     override fun commitOfCommand(): CommitInfo {
-        TODO("Not yet implemented")
+        return commit
     }
 }

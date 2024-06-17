@@ -3,21 +3,23 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
-import com.intellij.ui.components.labels.BoldLabel
+import com.intellij.ui.util.minimumHeight
+import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.listeners.LabelListener
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
+import com.jetbrains.interactiveRebase.visuals.multipleBranches.RoundedPanel
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito.mock
 import java.awt.Component.RIGHT_ALIGNMENT
+import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
 import javax.swing.SwingConstants
-import javax.swing.SwingUtilities
 
 class LabelBranchPanelTest : BasePlatformTestCase() {
     private lateinit var circle: CirclePanel
@@ -144,9 +146,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
     fun testCreateTextBoxSetsAlignments() {
         val commitLabel = JBLabel("label")
         val textField = labeledBranch.createTextBox(commitLabel, commit1)
-        SwingUtilities.invokeLater {
-            assertThat(textField.maximumSize).isEqualTo(commitLabel.size)
-        }
+        assertThat(textField.minimumSize).isEqualTo(Dimension(JBUI.scale(300), textField.minimumHeight))
         assertThat(textField.horizontalAlignment).isEqualTo(SwingConstants.LEFT)
     }
 
@@ -162,7 +162,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
     fun testAddNotifyAddsComponents() {
         labeledBranch.addNotify()
         assertThat(labeledBranch.layout).isInstanceOf(GridBagLayout::class.java)
-        assertThat(labeledBranch.getComponent(0)).isInstanceOf(BoldLabel::class.java)
+        assertThat(labeledBranch.getComponent(0)).isInstanceOf(RoundedPanel::class.java)
         assertThat(labeledBranch.getComponent(1)).isInstanceOf(BranchPanel::class.java)
         assertThat(labeledBranch.getComponent(2)).isInstanceOf(JBPanel::class.java)
     }
