@@ -11,7 +11,14 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
-import com.jetbrains.interactiveRebase.dataClasses.commands.*
+import com.jetbrains.interactiveRebase.dataClasses.commands.CherryCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.CommitService
@@ -36,7 +43,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     private lateinit var commitInfo3: CommitInfo
     private lateinit var branchInfo: BranchInfo
     private lateinit var actionService: ActionService
-    private var addedBranch : BranchInfo = BranchInfo()
+    private var addedBranch: BranchInfo = BranchInfo()
 
     override fun setUp() {
         super.setUp()
@@ -60,7 +67,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         addedBranch.name = "added"
         addedBranch.currentCommits.add(commitInfo3)
         addedBranch.baseCommit = commitInfo3
-        modelService.graphInfo = GraphInfo( modelService.branchInfo, addedBranch)
+        modelService.graphInfo = GraphInfo(modelService.branchInfo, addedBranch)
         modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
 
         modelService.branchInfo.setName("feature1")
@@ -1041,9 +1048,10 @@ class ActionServiceTest : BasePlatformTestCase() {
         actionService.takeCherryPickAction()
         assertThat(branchInfo.selectedCommits.isEmpty()).isTrue()
         assertThat(addedBranch.selectedCommits.isEmpty()).isTrue()
-        assertTrue(branchInfo.currentCommits.size==3)
-        assertTrue(branchInfo.currentCommits[0].changes.any{ it is CherryCommand })
+        assertTrue(branchInfo.currentCommits.size == 3)
+        assertTrue(branchInfo.currentCommits[0].changes.any { it is CherryCommand })
     }
+
     fun testCheckCherryPickAction() {
         modelService.addToSelectedCommits(commitInfo3, addedBranch)
         modelService.invoker.commands.clear()
@@ -1053,7 +1061,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         branchInfo.selectedCommits.clear()
         actionService.checkCherryPick(testEvent)
         assertThat(testEvent.presentation.isEnabled).isTrue()
-
     }
 
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)
