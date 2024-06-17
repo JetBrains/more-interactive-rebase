@@ -1,7 +1,7 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <id>com.jetbrains.interactiveRebase</id>
-    <name>Interactive Rebase</name>
+    <name>A More Interactive Rebase</name>
     <vendor>Software Project</vendor>
     <description><![CDATA[
     My description would go here if I had one</em>
@@ -13,13 +13,15 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.jetbrains.interactiveRebase.providers.IRFileEditorProvider"/>
+        <fileIconProvider
+                implementation="com.jetbrains.interactiveRebase.providers.IRFileIconProvider"/>
     </extensions>
     <applicationListeners>
     </applicationListeners>
     <actions>
         <action class="com.jetbrains.interactiveRebase.actions.CreateEditorTabAction" id="com.jetbrains.interactive_rebase.CreateEditorTabAction"
                 text="Interactive Rebase Current Branch">
-            <add-to-group group-id="ToolsMenu" anchor="first"/>
+            <add-to-group group-id="Git.MainMenu" anchor="first"/>
         </action>
         <group id="ActionsGroup"
                class="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup" text="RebaseGlobalActionsGroup" description="Interactive rebase actions">
@@ -41,7 +43,7 @@
             <action id="com.jetbrains.interactiveRebase.actions.changePanel.CollapseAction"
                     class="com.jetbrains.interactiveRebase.actions.changePanel.CollapseAction" text="CollapseAction"
                     description="Collapse commits">
-                <keyboard-shortcut first-keystroke="alt c" keymap="$default"/>
+                <keyboard-shortcut first-keystroke="ctrl c" keymap="$default"/>
             </action>
 
             <separator/>
@@ -74,8 +76,25 @@
                     <keyboard-shortcut first-keystroke="alt E" keymap="$default"/>
                 </action>
             </group>
+
+        </group>
+        <group id="ActionButtonsGroup"
+               class="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup" text="RebaseGlobalActionsGroup" description="Interactive rebase actions">
+            <action id="ResetAction"
+                    class="com.jetbrains.interactiveRebase.actions.buttonActions.ResetAction" text="ResetAction"
+                    description="Reset">
+                <keyboard-shortcut first-keystroke="ctrl R" keymap="$default"/>
+            </action>
+            <action id="StartRebaseAction"
+                    class="com.jetbrains.interactiveRebase.actions.buttonActions.StartRebaseAction" text="StartRebaseAction"
+                    description="Rebase">
+                <keyboard-shortcut first-keystroke="alt ENTER" keymap="$default"/>
+            </action>
+
+
         </group>
 
     </actions>
+
 
 </idea-plugin>

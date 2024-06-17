@@ -5,8 +5,8 @@ import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
+import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
-import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import java.awt.BorderLayout
 import java.awt.Graphics
@@ -22,6 +22,7 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
     init {
         gitActionsPanel.layout = BoxLayout(gitActionsPanel, BoxLayout.X_AXIS)
         addGitButtons(gitActionsPanel)
+        withMinimumHeight(JBUI.scale(30))
 
         changeActionsPanel.layout = BoxLayout(changeActionsPanel, BoxLayout.X_AXIS)
         addChangeButtons(changeActionsPanel)
@@ -54,25 +55,13 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
      * At the moment, the buttons are hardcoded, but we will replace them with icons and listeners later.
      */
     fun addChangeButtons(buttonPanel: JBPanel<JBPanel<*>>) {
-        val rebaseButton = RoundedButton("Rebase", Palette.BLUE_BUTTON, Palette.WHITE_TEXT)
-
-        rebaseButton.addActionListener {
-            invoker.createModel()
-            invoker.executeCommands()
-        }
-
-        val resetButton = RoundedButton("Reset", Palette.GRAY_BUTTON, Palette.WHITE_TEXT)
-
-        resetButton.addActionListener { project.service<ActionService>().resetAllChangesAction() }
-
-        var normalButton = RoundedButton("Normal", Palette.GRAY_BUTTON, Palette.WHITE_TEXT)
-        normalButton.addActionListener {
-//            project.service<ModelService>().addBranchToGraphInfo("main")
-//            println(project.service<ModelService>().graphInfo)
-            project.service<ActionService>().takeNormalRebaseAction()
-        }
-        buttonPanel.add(normalButton)
-        buttonPanel.add(resetButton)
-        buttonPanel.add(rebaseButton)
+        val group =
+            actionManager.getAction(
+                "ActionButtonsGroup",
+            ) as RebaseActionsGroup
+        val toolbar = actionManager.createActionToolbar(ActionPlaces.EDITOR_TAB, group, true)
+        val toolbarComponent: JComponent = toolbar.component
+        toolbar.targetComponent = buttonPanel
+        buttonPanel.add(toolbarComponent)
     }
 }

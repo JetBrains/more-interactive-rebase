@@ -76,6 +76,6 @@ class ModelServiceTest : BasePlatformTestCase() {
 
         commit1.isSquashed = true
         commit2.isSquashed = true
-        assertThat(modelService.getLastSelectedCommit(modelService.branchInfo)).isEqualTo(commit3)
+        assertThat(modelService.getLastSelectedCommit()).isEqualTo(commit3)
     }
 }

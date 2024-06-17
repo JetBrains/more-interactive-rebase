@@ -5,6 +5,7 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.CommitService
@@ -42,8 +43,6 @@ class GraphServiceTest : BasePlatformTestCase() {
 
         this.commitService = mock(CommitService::class.java)
         this.graphService = GraphService(project, commitService)
-
-//        this.commit1 = CommitInfo(provider.createCommit("add tests"), project)
     }
 
     fun testGetBranchingCommit() {
@@ -89,7 +88,6 @@ class GraphServiceTest : BasePlatformTestCase() {
             .withFailMessage("Trying to display parents of initial commit")
     }
 
-//
     fun testGetBranchingCommitChecksMergeCommit() {
         val mergeCommit =
             CommitInfo(
@@ -169,6 +167,7 @@ class GraphServiceTest : BasePlatformTestCase() {
     }
 
     fun testAddBranchOneInEach() {
+        project.service<RebaseInvoker>().addCommand(DropCommand(commit1))
         val checkedOut = BranchInfo("")
         val startingCommit1 = CommitInfo(provider.createCommitWithParent("with parent in f1", "parent"), project)
         val startingCommit2 = CommitInfo(provider.createCommitWithParent("with parent in f2", "parent"), project)
@@ -187,6 +186,7 @@ class GraphServiceTest : BasePlatformTestCase() {
         assertThat(graphInfo.addedBranch).isEqualTo(expAdded)
         assertThat(checkedOut.name).isEqualTo("feature1")
         assertThat(checkedOut.currentCommits).doesNotContain(parentCommit)
+        assertThat(project.service<RebaseInvoker>().commands).isEmpty()
     }
 
     fun testAddBranchChecksEmptyPrimary() {
@@ -244,6 +244,10 @@ class GraphServiceTest : BasePlatformTestCase() {
     }
 
     fun testRemoveBranch() {
+        val command = DropCommand(CommitInfo(TestGitCommitProvider(project).createCommit("add test"), project))
+        project.service<RebaseInvoker>().addCommand(
+            command,
+        )
         val b1 = BranchInfo("feature", initialCommits = listOf(commit2, commit1))
         val b2 = BranchInfo("dev", initialCommits = listOf(addedCommit1))
 
@@ -256,6 +260,7 @@ class GraphServiceTest : BasePlatformTestCase() {
         graphService.removeBranch(graph)
         assertThat(graph.addedBranch).isNull()
         assertThat(graph.mainBranch.isPrimary).isFalse()
+        assertThat(project.service<RebaseInvoker>().commands.isEmpty()).isTrue()
     }
 
     private inline fun <reified T> anyCustom(): T = any(T::class.java)

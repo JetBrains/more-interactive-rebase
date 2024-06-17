@@ -354,6 +354,22 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(testEvent.presentation.isEnabled).isFalse()
     }
 
+    fun testCheckRebaseAndResetDisabled() {
+        modelService.invoker.commands.clear()
+        val testEvent = createTestEvent()
+        actionService.checkRebaseAndReset(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isFalse()
+    }
+
+    fun testCheckRebaseAndResetEnabled() {
+        modelService.invoker.commands.clear()
+        val command1 = RewordCommand(commitInfo1, "reorderTest")
+        modelService.invoker.addCommand(command1)
+        val testEvent = createTestEvent()
+        actionService.checkRebaseAndReset(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isTrue()
+    }
+
     fun testCheckUndoEnabled() {
         modelService.invoker.commands.clear()
         val command1 = RewordCommand(commitInfo1, "reorderTest")
@@ -792,7 +808,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(testEvent.presentation.isEnabled).isFalse()
     }
 
-    fun testCheckParentNotCollapsedWhenSquashing() {
+    fun testCheckValidParentWhenSquashing() {
         val commitProvider = TestGitCommitProvider(project)
         val commitInfo3 = CommitInfo(commitProvider.createCommit("bbb"), project, mutableListOf())
         val commitInfo4 = CommitInfo(commitProvider.createCommit("aaa"), project, mutableListOf())
@@ -836,7 +852,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(testEvent.presentation.isEnabled).isFalse()
     }
 
-    fun testCheckParentNotCollapsedWhenSquashingIsNotCollapsed() {
+    fun testCheckValidParentWhenSquashingIs() {
         val commitProvider = TestGitCommitProvider(project)
         val commitInfo3 = CommitInfo(commitProvider.createCommit("bbb"), project, mutableListOf())
         val commitInfo4 = CommitInfo(commitProvider.createCommit("aaa"), project, mutableListOf())

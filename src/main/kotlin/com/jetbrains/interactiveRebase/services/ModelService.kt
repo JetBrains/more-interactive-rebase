@@ -1,9 +1,11 @@
 package com.jetbrains.interactiveRebase.services
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vcs.VcsException
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
@@ -13,6 +15,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.IRGitRefreshListener
 import git4idea.status.GitRefreshListener
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Service(Service.Level.PROJECT)
@@ -25,8 +28,9 @@ class ModelService(
 
     val branchInfo = BranchInfo()
     val graphInfo = GraphInfo(branchInfo)
+    var fetched = false
     private val graphService = project.service<GraphService>()
-
+    private val dialogService = project.service<DialogService>()
     internal val invoker = project.service<RebaseInvoker>()
 
     /**
@@ -35,8 +39,8 @@ class ModelService(
      * to the GitRefreshListener
      */
     init {
-        fetchGraphInfo()
-        populateLocalBranches()
+        fetchGraphInfo(0)
+        populateLocalBranches(0)
         project.messageBus.connect(this).subscribe(GitRefreshListener.TOPIC, IRGitRefreshListener(project))
     }
 
@@ -49,7 +53,7 @@ class ModelService(
         commit: CommitInfo,
         branchInfo: BranchInfo,
     ) {
-        branchInfo.clearSelectedCommits()
+        clearSelectedCommits()
         addToSelectedCommits(commit, branchInfo)
     }
 
@@ -118,20 +122,30 @@ class ModelService(
      * commits
      */
     fun getSelectedCommits(): MutableList<CommitInfo> {
-        return branchInfo.selectedCommits
+        return getSelectedBranch().selectedCommits
+    }
+
+    /**
+     * Clears the selected commits
+     * from both the main and the added
+     * branch
+     */
+    fun clearSelectedCommits() {
+        graphInfo.mainBranch.clearSelectedCommits()
+        graphInfo.addedBranch?.clearSelectedCommits()
     }
 
     /**
      * Returns the selected commit which is the lowest visually in the list.
      */
     fun getLowestSelectedCommit(): CommitInfo {
-        var commit = branchInfo.selectedCommits[0]
-        var index = branchInfo.currentCommits.indexOf(commit)
+        var commit = getSelectedCommits()[0]
+        var index = getCurrentCommits().indexOf(commit)
 
-        branchInfo.selectedCommits.forEach {
-            if (branchInfo.currentCommits.indexOf(it) > index && !it.isSquashed) {
+        getSelectedCommits().forEach {
+            if (getCurrentCommits().indexOf(it) > index && !it.isSquashed) {
                 commit = it
-                index = branchInfo.currentCommits.indexOf(it)
+                index = getCurrentCommits().indexOf(it)
             }
         }
 
@@ -142,13 +156,14 @@ class ModelService(
      * Returns the selected commit which is the highest visually in the list.
      */
     fun getHighestSelectedCommit(): CommitInfo {
-        var commit = branchInfo.selectedCommits[0]
-        var index = branchInfo.currentCommits.indexOf(commit)
+        val branch = getSelectedBranch()
+        var commit = branch.selectedCommits[0]
+        var index = branch.currentCommits.indexOf(commit)
 
-        branchInfo.selectedCommits.forEach {
-            if (branchInfo.currentCommits.indexOf(it) < index && !it.isSquashed) {
+        branch.selectedCommits.forEach {
+            if (branch.currentCommits.indexOf(it) < index && !it.isSquashed) {
                 commit = it
-                index = branchInfo.currentCommits.indexOf(it)
+                index = branch.currentCommits.indexOf(it)
             }
         }
 
@@ -159,13 +174,13 @@ class ModelService(
      * Returns the last commit that is selected
      * but is not squashed or fixed up
      */
-    fun getLastSelectedCommit(branchInfo: BranchInfo): CommitInfo {
-        var commit = branchInfo.selectedCommits.last()
+    fun getLastSelectedCommit(): CommitInfo {
+        var commit = getSelectedCommits().last()
 
         // Ensure that the commit we are moving is actually displayed
         while (commit.isSquashed) {
-            val index = branchInfo.selectedCommits.indexOf(commit)
-            commit = branchInfo.selectedCommits[index - 1]
+            val index = getSelectedCommits().indexOf(commit)
+            commit = getSelectedCommits()[index - 1]
         }
 
         return commit
@@ -176,7 +191,7 @@ class ModelService(
      * displayed commits
      */
     fun getCurrentCommits(): MutableList<CommitInfo> {
-        return branchInfo.currentCommits
+        return getSelectedBranch().currentCommits
     }
 
     /**
@@ -184,38 +199,124 @@ class ModelService(
      * info inside a
      * coroutine
      */
-    fun fetchGraphInfo() {
-        coroutineScope.launch {
-            graphService.updateGraphInfo(graphInfo)
+    fun fetchGraphInfo(n: Int) {
+        coroutineScope.launch(Dispatchers.IO) {
+            try {
+                graphService.updateGraphInfo(graphInfo)
+            } catch (e: VcsException) {
+                if (n < 3) {
+                    fetchGraphInfo(n + 1)
+                } else {
+                    showWarningGitDialogClosesPlugin("There was an error while fetching data from Git.")
+                }
+            }
         }
     }
 
     /**
      * Populates the GraphInfo field in order to be able to display the side panel of local branches
      */
-    fun populateLocalBranches() {
+    fun populateLocalBranches(n: Int) {
         val branchService = project.service<BranchService>()
-        coroutineScope.launch {
-            graphInfo.branchList = branchService.getBranchesExceptCheckedOut().toMutableList()
+        coroutineScope.launch(Dispatchers.IO) {
+            try {
+                val list = branchService.getBranchesExceptCheckedOut()
+                if (!list.isNullOrEmpty()) {
+                    graphInfo.branchList = list.toMutableList()
+                }
+            } catch (e: VcsException) {
+                if (n < 3) {
+                    populateLocalBranches(n + 1)
+                }
+            }
         }
     }
 
     /**
      * Populates the added branch field in the graph info with the given branch
      */
-    fun addSecondBranchToGraphInfo(addedBranch: String) {
-        coroutineScope.launch {
-            graphService.addBranch(graphInfo, addedBranch)
+    fun addSecondBranchToGraphInfo(
+        addedBranch: String,
+        n: Int,
+    ) {
+        coroutineScope.launch(Dispatchers.IO) {
+            try {
+                graphService.addBranch(graphInfo, addedBranch)
+            } catch (e: VcsException) {
+                if (n < 3) {
+                    addSecondBranchToGraphInfo(addedBranch, n + 1)
+                } else {
+                    showWarningGitDialogForBranch("This branch cannot be added.")
+                    project.service<ActionService>().mainPanel.sidePanel.sideBranchPanels
+                        .find { it.isSelected }?.deselectBranch()
+                    project.service<ActionService>().mainPanel.sidePanel.resetAllBranchesVisually()
+                }
+            }
         }
     }
 
     /**
      * Removes the added branch field in the graph info
      */
-    fun removeSecondBranchFromGraphInfo() {
-        coroutineScope.launch {
-            graphService.removeBranch(graphInfo)
+    fun removeSecondBranchFromGraphInfo(n: Int) {
+        coroutineScope.launch(Dispatchers.IO) {
+            try {
+                graphService.removeBranch(graphInfo)
+            } catch (e: VcsException) {
+                if (n < 3) {
+                    removeSecondBranchFromGraphInfo(n + 1)
+                }
+                // TODO Handle
+            }
         }
+    }
+
+    /**
+     * When there is a problem with fetching the git information and displaying the graph
+     * the dialog pops up and when clicked closes the plugin
+     */
+    fun showWarningGitDialogClosesPlugin(description: String) {
+        coroutineScope.launch(Dispatchers.EDT) {
+            dialogService.warningOkCancelDialog(
+                "Git Issue",
+                description,
+            )
+            project.service<IRVirtualFileService>().closeIRVirtualFile()
+        }
+    }
+
+    /**
+     * When there is a problem with fetching the git information for the second branch
+     * the dialog pops up and deselects the branch
+     */
+    fun showWarningGitDialogForBranch(description: String) {
+        coroutineScope.launch(Dispatchers.EDT) {
+            dialogService.warningOkCancelDialog(
+                "Git Issue",
+                description,
+            )
+        }
+    }
+
+    /**
+     * Return the branchInfo of the branch
+     * that has selected commits
+     */
+    fun getSelectedBranch(): BranchInfo {
+        if (!areDisabledCommitsSelected()) {
+            return graphInfo.mainBranch
+        }
+
+        return graphInfo.addedBranch!!
+    }
+
+    /**
+     * Returns true if the there are currently any selected commits on the added branch,
+     * false otherwise or if there is no added branch
+     */
+    internal fun areDisabledCommitsSelected(): Boolean {
+        val added = graphInfo.addedBranch
+        return (added != null && added.selectedCommits.isNotEmpty())
     }
 
     /**

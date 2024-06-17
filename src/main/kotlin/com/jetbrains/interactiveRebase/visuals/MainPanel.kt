@@ -16,7 +16,11 @@ import com.jetbrains.interactiveRebase.visuals.multipleBranches.SidePanel
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.awt.event.MouseEvent
+import java.awt.event.MouseListener
+import javax.swing.OverlayLayout
 import javax.swing.ScrollPaneConstants
+import javax.swing.SwingUtilities
 
 class MainPanel(
     private val project: Project,
@@ -24,20 +28,30 @@ class MainPanel(
     JBPanel<JBPanel<*>>(), Disposable {
     internal var commitInfoPanel = CommitInfoPanel(project)
     internal var contentPanel: JBScrollPane
-    internal var sidePanel: JBScrollPane
-    internal var graphPanel: GraphPanel
+    internal var sidePanelPane: JBScrollPane
+    var sidePanel: SidePanel
+    var graphPanel: GraphPanel
+    internal val dragPanel: DragPanel = DragPanel()
     private val graphInfoListener: GraphInfo.Listener
     private val branchInfoListener: BranchInfo.Listener
     private val commitInfoListener: CommitInfo.Listener
     private val graphInfo: GraphInfo = project.service<ModelService>().graphInfo
-    private val branchInfo: BranchInfo = graphInfo.mainBranch
-    private var otherBranchInfo: BranchInfo? = graphInfo.addedBranch
+    private val primaryBranchInfo: BranchInfo = graphInfo.mainBranch
+    private var addedBranchInfo: BranchInfo? = graphInfo.addedBranch
     private val branchNavigationListener: BranchNavigationListener
+    private val graphWrapper = JBPanel<JBPanel<*>>()
 
     init {
+        graphWrapper.layout = OverlayLayout(graphWrapper)
+//        graphWrapper.border = BorderFactory.createLineBorder(JBColor.GREEN)
+
         graphPanel = createGraphPanel()
         contentPanel = createContentPanel()
-        sidePanel = createSidePanel()
+        sidePanel = SidePanel(project.service<ModelService>().graphInfo.branchList, project)
+        sidePanelPane = createSidePanel()
+
+        graphWrapper.add(dragPanel, BorderLayout.CENTER)
+        graphWrapper.add(graphPanel, BorderLayout.CENTER)
 
         this.layout = BorderLayout()
         createMainPanel()
@@ -82,7 +96,7 @@ class MainPanel(
         graphInfo.addListener(graphInfoListener)
         branchNavigationListener = BranchNavigationListener(project)
 
-        branchInfo.addListener(branchInfoListener)
+        primaryBranchInfo.addListener(branchInfoListener)
         registerCommitListener()
         this.addKeyListener(branchNavigationListener)
 
@@ -95,9 +109,9 @@ class MainPanel(
      * Creates a graph panel.
      */
     fun createGraphPanel(): GraphPanel {
-        if (otherBranchInfo != null) {
-            branchInfo.isPrimary = true
-            otherBranchInfo!!.isWritable = false
+        if (addedBranchInfo != null) {
+            primaryBranchInfo.isPrimary = true
+            addedBranchInfo!!.isWritable = false
         }
         return GraphPanel(
             project,
@@ -106,6 +120,7 @@ class MainPanel(
 
     /**
      * Creates a content panel.
+     * This includes the panel with the main graph and the panel with the help button
      */
     fun createContentPanel(): JBScrollPane {
         val scrollable = JBScrollPane()
@@ -126,15 +141,54 @@ class MainPanel(
             gbc,
         )
 
+        val help = HelpPanel()
+        gbc.insets.left = help.width
+
+        contentPanel.add(
+            graphWrapper,
+            gbc,
+        )
         scrollable.setViewportView(contentPanel)
         scrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
         scrollable.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED)
+        gbc.gridx = 1
+        gbc.gridy = 0
+        gbc.fill = GridBagConstraints.VERTICAL
+        gbc.weightx = 0.0
+        gbc.weighty = 0.0
+        gbc.anchor = GridBagConstraints.SOUTHEAST
+        gbc.insets.left = 0
+        contentPanel.add(help, gbc)
+
+        contentPanel.addMouseListener(
+            object : MouseListener {
+                override fun mouseClicked(e: MouseEvent?) {
+                    SwingUtilities.invokeLater { requestFocusInWindow() }
+                }
+
+                override fun mousePressed(e: MouseEvent?) {
+                    SwingUtilities.invokeLater { requestFocusInWindow() }
+                }
+
+                override fun mouseReleased(e: MouseEvent?) {
+                    SwingUtilities.invokeLater { requestFocusInWindow() }
+                }
+
+                override fun mouseEntered(e: MouseEvent?) {
+                    SwingUtilities.invokeLater { requestFocusInWindow() }
+                }
+
+                override fun mouseExited(e: MouseEvent?) {
+                    SwingUtilities.invokeLater { requestFocusInWindow() }
+                }
+            },
+        )
+
         return scrollable
     }
 
     fun createSidePanel(): JBScrollPane {
         val scrollable = JBScrollPane()
-        val sidePanel = SidePanel(project.service<ModelService>().graphInfo.branchList, project)
         scrollable.setViewportView(sidePanel)
         scrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
         scrollable.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED)
@@ -155,8 +209,8 @@ class MainPanel(
 
         val secondDivider =
             OnePixelSplitter(false, 0.18f).apply {
-                sidePanel.setVisible(false)
-                firstComponent = sidePanel
+                sidePanelPane.setVisible(false)
+                firstComponent = sidePanelPane
                 secondComponent = firstDivider
             }
         val thirdDivider =
@@ -169,10 +223,10 @@ class MainPanel(
     }
 
     fun registerCommitListener() {
-        branchInfo.currentCommits.forEach {
+        primaryBranchInfo.currentCommits.forEach {
             it.addListener(commitInfoListener)
         }
-        otherBranchInfo?.currentCommits?.forEach {
+        addedBranchInfo?.currentCommits?.forEach {
             it.addListener(commitInfoListener)
         }
     }

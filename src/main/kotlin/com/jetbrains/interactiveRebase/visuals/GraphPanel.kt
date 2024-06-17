@@ -2,9 +2,12 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
+import com.intellij.util.ui.UIUtil
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
+import com.jetbrains.interactiveRebase.listeners.RebaseDragAndDropListener
 import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.BasicStroke
 import java.awt.Color
@@ -14,6 +17,7 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
 import java.awt.LinearGradientPaint
+import java.awt.Point
 import java.awt.RenderingHints
 import java.awt.geom.CubicCurve2D
 import javax.swing.SwingConstants
@@ -28,6 +32,8 @@ class GraphPanel(
     private val mainTheme: Palette.Theme = Palette.BLUE_THEME,
     private val addedTheme: Palette.Theme = Palette.TOMATO_THEME,
 ) : JBPanel<JBPanel<*>>() {
+    lateinit var rebaseCircleInAddedBranch: CirclePanel
+
     var mainBranchPanel: LabeledBranchPanel =
         createLabeledBranchPanel(
             graphInfo.mainBranch,
@@ -74,6 +80,19 @@ class GraphPanel(
      */
 
     internal fun addBranches() {
+        if (project.service<ModelService>().getCurrentCommits().isEmpty()) {
+            var message = "No commits to display, please check out a different branch"
+
+            if (!project.service<ModelService>().fetched) {
+                message = "Fetching commits"
+            }
+            val label = JBLabel(message)
+            label.setComponentStyle(UIUtil.ComponentStyle.LARGE)
+            add(label)
+
+            return
+        }
+
         val gbc = GridBagConstraints()
 
         val (offsetMain, offsetAdded) = computeVerticalOffsets()
@@ -104,7 +123,7 @@ class GraphPanel(
      * a lower position than the primary branch.
      * The default padding is 5 px.
      */
-    private fun computeVerticalOffsets(): Pair<Int, Int> {
+    fun computeVerticalOffsets(): Pair<Int, Int> {
         val offset = computeVerticalOffsetOfSecondBranch()
         var offsetMain = 5
         var offsetAdded = 5
@@ -124,7 +143,8 @@ class GraphPanel(
      */
     private fun computeVerticalOffsetOfSecondBranch(): Int {
         val mainCircleCount = mainBranchPanel.branchPanel.circles.size
-        val addedCircleCount = addedBranchPanel?.branchPanel?.circles?.size ?: 0
+        val addedCircleCount =
+            (graphInfo.addedBranch?.currentCommits?.indexOf(graphInfo.addedBranch?.baseCommit!!) ?: 0) + 1
         val difference = mainCircleCount - addedCircleCount + 2
         return difference * mainBranchPanel.branchPanel.diameter * 2
     }
@@ -140,6 +160,26 @@ class GraphPanel(
         alignPrimaryBranch(gbc)
         mainBranchPanel.addBranchWithVerticalOffset(offset)
         add(mainBranchPanel, gbc)
+        makeBranchNamePanelDraggable()
+    }
+
+    /**
+     * Adds a drag and drop listener to the branch name panel
+     * to make it support rebasing on top of another branch
+     * iff there's a second branch added to the view
+     */
+    private fun GraphPanel.makeBranchNamePanelDraggable() {
+        if (addedBranchPanel != null) {
+            val rebaseDragAndDropListener =
+                RebaseDragAndDropListener(
+                    project,
+                    mainBranchPanel.branchNamePanel,
+                    addedBranchPanel!!.branchNamePanel,
+                    this,
+                )
+            mainBranchPanel.branchNamePanel.addMouseListener(rebaseDragAndDropListener)
+            mainBranchPanel.branchNamePanel.addMouseMotionListener(rebaseDragAndDropListener)
+        }
     }
 
     /**
@@ -152,9 +192,10 @@ class GraphPanel(
     private fun alignSecondBranch(gbc: GridBagConstraints) {
         gbc.gridx = 1
         gbc.gridy = 0
-        gbc.weightx = 1.0
+        gbc.weightx = 0.5
         gbc.weighty = 1.0
         gbc.anchor = GridBagConstraints.NORTH
+
         gbc.insets =
             Insets(
                 0,
@@ -175,13 +216,14 @@ class GraphPanel(
     private fun alignPrimaryBranch(gbc: GridBagConstraints) {
         gbc.gridx = 0
         gbc.gridy = 0
-        gbc.weightx = 0.0
+        gbc.weightx = 0.5 // if (graphInfo.addedBranch != null) 0.3 else 0.0
         gbc.weighty = 1.0
         gbc.anchor = GridBagConstraints.NORTH
-        gbc.fill = GridBagConstraints.BOTH
 
         if (graphInfo.mainBranch.isPrimary) {
             gbc.fill = GridBagConstraints.HORIZONTAL
+        } else {
+            gbc.fill = GridBagConstraints.BOTH
         }
     }
 
@@ -205,7 +247,22 @@ class GraphPanel(
 
         // Coordinates of the last circle of the added branch
         if (addedBranchPanel != null) {
-            val (addedCircleCenterX, addedCircleCenterY) = centerCoordinatesOfLastAddedCircle()
+            try {
+                rebaseCircleInAddedBranch =
+                    addedBranchPanel!!.branchPanel.circles.filter { c ->
+                        c.commit == graphInfo.addedBranch?.baseCommit
+                    }[0]
+            } catch (e: Exception) {
+                println("Mn burzash")
+            }
+            var (addedCircleCenterX, addedCircleCenterY) = centerCoordinatesOfBaseCircleInAddedBranch()
+
+            if (Point(mainCircleCenterX, mainCircleCenterY) ==
+                Point(addedCircleCenterX, addedCircleCenterY)
+            ) {
+                addedCircleCenterX++
+                addedCircleCenterY++
+            }
 
             gradientTransition(
                 g2d,
@@ -230,7 +287,7 @@ class GraphPanel(
             // If added branch is not rendered because the screen is too small
             // coordinates appear to be 0
             // Hence, we don't draw the line in this case
-            if (Pair(addedCircleCenterX, addedCircleCenterY) != Pair(0, 0)) {
+            if (addedCircleCenterX != 0 && addedCircleCenterY != 0) {
                 g2d.draw(curve)
             }
         }
@@ -240,12 +297,11 @@ class GraphPanel(
      * Find the coordinates of the center
      * of the last circle of the primary (checked out) branch
      */
-    fun centerCoordinatesOfLastAddedCircle(): Pair<Int, Int> {
-        val addedLastCircle = addedBranchPanel!!.branchPanel.circles.last()
+    fun centerCoordinatesOfBaseCircleInAddedBranch(): Pair<Int, Int> {
         val addedCircleCenterX =
-            addedBranchPanel!!.x + addedBranchPanel!!.branchPanel.x + addedLastCircle.x + addedLastCircle.width / 2
+            addedBranchPanel!!.x + addedBranchPanel!!.branchPanel.x + rebaseCircleInAddedBranch.x + rebaseCircleInAddedBranch.width / 2
         val addedCircleCenterY =
-            addedBranchPanel!!.y + addedBranchPanel!!.branchPanel.y + addedLastCircle.y + addedLastCircle.height / 2
+            addedBranchPanel!!.y + addedBranchPanel!!.branchPanel.y + rebaseCircleInAddedBranch.y + rebaseCircleInAddedBranch.height / 2
         return Pair(addedCircleCenterX, addedCircleCenterY)
     }
 
@@ -276,6 +332,7 @@ class GraphPanel(
      * Update branch panels
      */
     fun updateGraphPanel() {
+        addedBranchPanel = null
         removeAll()
 
         mainBranchPanel =
@@ -285,7 +342,6 @@ class GraphPanel(
                 mainTheme,
             )
 
-        addedBranchPanel = null
         if (graphInfo.addedBranch != null) {
             addedBranchPanel =
                 createLabeledBranchPanel(

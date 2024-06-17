@@ -1,7 +1,9 @@
 package com.jetbrains.interactiveRebase.visuals.multipleBranches
 
+import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.util.ui.JBUI
+import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.Palette
 import org.assertj.core.api.Assertions.assertThat
 import java.awt.GridBagConstraints
@@ -9,12 +11,9 @@ import java.awt.GridBagConstraints
 class SidePanelTest : BasePlatformTestCase() {
     val branches = mutableListOf("Branch 1", "Branch 2", "Branch 3")
 
-    init {
-        System.setProperty("idea.home.path", "/tmp")
-    }
-
     override fun setUp() {
         super.setUp()
+        project.service<ModelService>().graphInfo.branchList = branches
     }
 
     fun testSetVisible() {

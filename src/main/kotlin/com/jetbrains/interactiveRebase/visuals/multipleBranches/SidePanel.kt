@@ -1,24 +1,30 @@
 package com.jetbrains.interactiveRebase.visuals.multipleBranches
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.listeners.RemoveSideBranchListener
 import com.jetbrains.interactiveRebase.listeners.SideBranchPanelListener
+import com.jetbrains.interactiveRebase.listeners.SidePanelListener
+import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import javax.swing.SwingUtilities
 
 class SidePanel(var branches: MutableList<String>, val project: Project) : JBPanel<JBPanel<*>>() {
     internal var isVisible: Boolean = false
+    internal var listener: SidePanelListener = SidePanelListener(project, this)
 
-//    internal var branches: MutableList<String> = mutableListOf()
-    internal var sideBranchPanels: MutableList<SideBranchPanel> = mutableListOf()
+    var sideBranchPanels: MutableList<SideBranchPanel> = mutableListOf()
 
     init {
         layout = GridBagLayout()
 
         updateBranchNames()
+        addKeyListener(listener)
     }
 
     /**
@@ -31,12 +37,37 @@ class SidePanel(var branches: MutableList<String>, val project: Project) : JBPan
     }
 
     /**
-     * Updates the branch names in the panel.
+     * Updates the branch names in the panel. Clears all panels and redraws, if a branch is selected, does
+     * the required styling
      */
     fun updateBranchNames() {
+        removeAll()
+        sideBranchPanels.clear()
+        updateBranches()
+        val addedBranch = project.service<ModelService>().graphInfo.addedBranch?.name
+        var selectedPanel: SideBranchPanel? = null
         for (i in 0 until branches.size) {
             createSideBranchPanel(i)
+            val panel: SideBranchPanel = sideBranchPanels[i]
+
+            if (panel.branchName == addedBranch) {
+                panel.selectBranchVisually()
+                selectedPanel = panel
+            }
         }
+        if (selectedPanel != null) {
+            makeBranchesUnavailableExceptCurrent(selectedPanel)
+        }
+
+        revalidate()
+        repaint()
+    }
+
+    /**
+     * Updates the branches in the panel.
+     */
+    fun updateBranches() {
+        branches = project.service<ModelService>().graphInfo.branchList
     }
 
     /**
@@ -67,7 +98,7 @@ class SidePanel(var branches: MutableList<String>, val project: Project) : JBPan
      * Adds a listener to the remove button of the branch panel.
      */
     fun addRemoveBranchButtonListener(branch: SideBranchPanel) {
-        val removeListener = RemoveSideBranchListener(project, branch, this)
+        val removeListener = RemoveSideBranchListener(branch, this)
         branch.button.addMouseListener(removeListener)
         branch.button.addMouseMotionListener(removeListener)
     }
@@ -122,6 +153,34 @@ class SidePanel(var branches: MutableList<String>, val project: Project) : JBPan
     fun resetAllBranchesVisually() {
         for (branch in sideBranchPanels) {
             branch.resetSideBranchPanelVisually()
+        }
+    }
+
+    fun selectBranch(sideBranchPanel: SideBranchPanel) {
+        if (canSelectBranch(sideBranchPanel)) {
+            // make rest of the branches unavailable if branch is added successfully
+            if (sideBranchPanel.selectBranch()) {
+                makeBranchesUnavailableExceptCurrent(sideBranchPanel)
+                listener.selected = sideBranchPanel
+            }
+            return
+        }
+        if (sideBranchPanel.isSelected) {
+            // We possibly don't want to unselect the branch only by a single click on the panel, TBD
+            // if deselecting was successful then reset all branches visually
+            if (sideBranchPanel.deselectBranch()) resetAllBranchesVisually()
+        }
+    }
+
+    /**
+     * Gives focus to the panel
+     */
+    fun selectPanel() {
+        SwingUtilities.invokeLater { requestFocusInWindow() }
+        background = JBColor.LIGHT_GRAY
+        if (listener.selected == null) {
+            sideBranchPanels.first().onHover()
+            listener.selected = sideBranchPanels.first()
         }
     }
 }

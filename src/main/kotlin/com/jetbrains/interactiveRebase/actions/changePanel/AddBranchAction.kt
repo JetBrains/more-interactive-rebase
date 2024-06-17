@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.ui.getActionShortcutText
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
 import javax.swing.JComponent
@@ -21,10 +22,14 @@ class AddBranchAction :
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val mainPanel = project.service<ActionService>().mainPanel
-        val sidePanel = mainPanel.sidePanel
+        val sidePanelPane = mainPanel.sidePanelPane
 
-        sidePanel.isVisible = !sidePanel.isVisible
-        sidePanel.setVisible(sidePanel.isVisible)
+        sidePanelPane.isVisible = !sidePanelPane.isVisible
+        if (sidePanelPane.isVisible) {
+            mainPanel.sidePanel.updateBranchNames()
+        }
+
+        sidePanelPane.setVisible(sidePanelPane.isVisible)
 
         // This toggles the icon of the add branch
         // e.presentation.icon = if (sidePanel.isVisible) AllIcons.Actions.Exit else AllIcons.Actions.AddList
@@ -47,7 +52,7 @@ class AddBranchAction :
             this,
             presentation,
             place,
-            "Alt+A",
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.changePanel.AddBranchAction"),
             "Add another branch to the view",
         )
     }

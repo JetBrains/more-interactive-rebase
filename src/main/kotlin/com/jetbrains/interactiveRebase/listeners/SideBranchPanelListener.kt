@@ -32,13 +32,7 @@ class SideBranchPanelListener(val sideBranchPanel: SideBranchPanel, val parent: 
      * It can select a branch if none are selected, or reset the selection if the branch is already selected.
      */
     override fun mouseClicked(e: MouseEvent?) {
-        if (parent.canSelectBranch(sideBranchPanel)) {
-            sideBranchPanel.selectBranch()
-            parent.makeBranchesUnavailableExceptCurrent(sideBranchPanel)
-        } else if (sideBranchPanel.isSelected) {
-            // We possibly don't want to unselect the branch only by a single click on the panel, TBD
-            parent.resetAllBranchesVisually()
-        }
+        parent.selectBranch(sideBranchPanel)
         e?.consume()
     }
 

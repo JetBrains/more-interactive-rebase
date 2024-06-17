@@ -2,6 +2,7 @@ package com.jetbrains.interactiveRebase.services
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vcs.VcsException
 import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
@@ -67,15 +68,20 @@ class BranchService(private val project: Project) {
      */
     fun getBranches(): List<String> {
         val result: GitCommandResult = executeGitBranchCommand(listOf())
-        return formatBranchList(result.getOutputOrThrow())
+        var joinedString = ""
+        try {
+            joinedString = result.getOutputOrThrow()
+        } catch (e: VcsException) {
+            getBranches()
+        }
+        return formatBranchList(joinedString)
     }
 
     /**
      * Gets the local branch names except the checked out one
      */
     fun getBranchesExceptCheckedOut(): List<String> {
-        val repo = gitUtils.getRepository()
-        val branchName = repo.currentBranchName ?: throw IRInaccessibleException("Branch cannot be accessed")
+        val branchName = gitUtils.retrieveBranchName()
         return getBranches().filter { it != branchName }
     }
 
