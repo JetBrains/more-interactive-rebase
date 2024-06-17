@@ -296,6 +296,7 @@ class ActionService(project: Project) {
             commitInfo.isDragged = false
             commitInfo.isReordered = false
             commitInfo.isHovered = false
+            commitInfo.isCollapsed = false
         }
         modelService.graphInfo.mainBranch.isRebased = false
         modelService.graphInfo.addedBranch?.baseCommit =
