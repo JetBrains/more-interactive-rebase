@@ -11,13 +11,7 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
-import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.*
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.CommitService
@@ -39,14 +33,17 @@ class ActionServiceTest : BasePlatformTestCase() {
     private lateinit var modelService: ModelService
     private lateinit var commitInfo1: CommitInfo
     private lateinit var commitInfo2: CommitInfo
+    private lateinit var commitInfo3: CommitInfo
     private lateinit var branchInfo: BranchInfo
     private lateinit var actionService: ActionService
+    private var addedBranch : BranchInfo = BranchInfo()
 
     override fun setUp() {
         super.setUp()
         val commitProvider = TestGitCommitProvider(project)
         commitInfo1 = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf())
         commitInfo2 = CommitInfo(commitProvider.createCommit("fix tests"), project, mutableListOf())
+        commitInfo3 = CommitInfo(commitProvider.createCommit("belongs to added branch"), project, mutableListOf())
         val commitService = mock(CommitService::class.java)
 
         Mockito.doAnswer {
@@ -60,14 +57,19 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService = ModelService(project, CoroutineScope(Dispatchers.EDT), commitService)
         modelService.branchInfo.initialCommits = mutableListOf(commitInfo1, commitInfo2)
         modelService.branchInfo.currentCommits = mutableListOf(commitInfo1, commitInfo2)
+        addedBranch.name = "added"
+        addedBranch.currentCommits.add(commitInfo3)
+        addedBranch.baseCommit = commitInfo3
+        modelService.graphInfo = GraphInfo( modelService.branchInfo, addedBranch)
         modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
+
         modelService.branchInfo.setName("feature1")
         modelService.invoker.branchInfo = modelService.branchInfo
 
         branchInfo = modelService.branchInfo
         mainPanel = MainPanel(project)
         mainPanel.commitInfoPanel = mock(CommitInfoPanel::class.java)
-        mainPanel.graphPanel = GraphPanel(project, GraphInfo(branchInfo))
+        mainPanel.graphPanel = GraphPanel(project, modelService.graphInfo)
         Mockito.doNothing().`when`(mainPanel.commitInfoPanel).commitsSelected(anyCustom())
         Mockito.doNothing().`when`(mainPanel.commitInfoPanel).repaint()
         actionService = ActionService(project, modelService, modelService.invoker)
@@ -1032,6 +1034,26 @@ class ActionServiceTest : BasePlatformTestCase() {
             modelService.branchInfo.currentCommits,
         ).isEqualTo(mutableListOf(commitInfo2, commitInfo3, commitInfo4, commitInfo5, commitInfo6, commitInfo7, commitInfo8))
         assertThat(commitInfo2.changes.size).isEqualTo(1)
+    }
+
+    fun testTakeCherryPickAction() {
+        modelService.addToSelectedCommits(commitInfo3, addedBranch)
+        actionService.takeCherryPickAction()
+        assertThat(branchInfo.selectedCommits.isEmpty()).isTrue()
+        assertThat(addedBranch.selectedCommits.isEmpty()).isTrue()
+        assertTrue(branchInfo.currentCommits.size==3)
+        assertTrue(branchInfo.currentCommits[0].changes.any{ it is CherryCommand })
+    }
+    fun testCheckCherryPickAction() {
+        modelService.addToSelectedCommits(commitInfo3, addedBranch)
+        modelService.invoker.commands.clear()
+        val testEvent = createTestEvent()
+        actionService.checkCherryPick(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isFalse()
+        branchInfo.selectedCommits.clear()
+        actionService.checkCherryPick(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isTrue()
+
     }
 
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)

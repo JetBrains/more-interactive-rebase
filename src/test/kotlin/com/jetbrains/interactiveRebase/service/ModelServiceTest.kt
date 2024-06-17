@@ -1,7 +1,9 @@
 package com.jetbrains.interactiveRebase.service
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.services.CommitService
@@ -76,6 +78,23 @@ class ModelServiceTest : BasePlatformTestCase() {
 
         commit1.isSquashed = true
         commit2.isSquashed = true
-        assertThat(modelService.getLastSelectedCommit(modelService.branchInfo)).isEqualTo(commit3)
+        assertThat(modelService.getLastSelectedCommit()).isEqualTo(commit3)
+    }
+
+    fun testAreDisabledCommitsSelectedNull() {
+        assertFalse(modelService.areDisabledCommitsSelected())
+    }
+
+    fun testAreDisabledCommitsSelectedEmpty() {
+        val added = BranchInfo()
+        modelService.graphInfo = GraphInfo(modelService.branchInfo,added )
+        assertFalse(modelService.areDisabledCommitsSelected())
+    }
+
+    fun testAreDisabledCommitsSelectedTrue() {
+        val added = BranchInfo()
+        modelService.graphInfo = GraphInfo(modelService.branchInfo,added )
+        added.selectedCommits.add(commit1)
+        assertTrue(modelService.areDisabledCommitsSelected())
     }
 }

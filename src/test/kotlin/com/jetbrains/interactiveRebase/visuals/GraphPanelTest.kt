@@ -1,14 +1,18 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
+import com.jetbrains.interactiveRebase.services.ActionService
 import junit.framework.TestCase
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -57,14 +61,20 @@ class GraphPanelTest : BasePlatformTestCase() {
         commit6 = CommitInfo(commitProvider.createCommit("Six"), project, mutableListOf())
         otherBranchInfo = BranchInfo("other", mutableListOf(commit4, commit5, commit6))
         otherBranchInfo.currentCommits = mutableListOf(commit4, commit5, commit6)
+        otherBranchInfo.baseCommit = commit6
 
         addedCirclePanel = mock(CirclePanel::class.java)
         `when`(addedCirclePanel.x).thenReturn(15)
         `when`(addedCirclePanel.y).thenReturn(25)
         `when`(addedCirclePanel.width).thenReturn(35)
         `when`(addedCirclePanel.height).thenReturn(45)
+        `when`(addedCirclePanel.commit).thenReturn(commit6)
 
         graphInfo = GraphInfo(branchInfo, otherBranchInfo)
+
+        val mainPanel = mock(MainPanel::class.java)
+        project.service<ActionService>().mainPanel = mainPanel
+        `when`(mainPanel.getComponent(0)).thenReturn(DragPanel())
 
         graphPanel = spy(GraphPanel(project, graphInfo))
         graphPanel.mainBranchPanel.branchPanel.circles = mutableListOf(mainCirclePanel)
@@ -105,7 +115,12 @@ class GraphPanelTest : BasePlatformTestCase() {
     }
 
     fun testCenterCoordinatesOfLastAddedCircle() {
-        val coordinates = graphPanel.centerCoordinatesOfLastAddedCircle()
+        val g: Graphics = mock(Graphics::class.java)
+        val g2d = mock(Graphics2D::class.java)
+        `when`(g2d.create()).thenReturn(g)
+
+        graphPanel.paintComponent(g2d)
+        val coordinates = graphPanel.centerCoordinatesOfBaseCircleInAddedBranch()
         assertEquals(32, coordinates.first)
         assertEquals(47, coordinates.second)
     }
@@ -121,6 +136,119 @@ class GraphPanelTest : BasePlatformTestCase() {
         verify(g2d, times(1)).color = Palette.BLUE
         verify(g2d, times(1)).stroke = BasicStroke(2f)
         verify(g2d, times(1)).draw(any(CubicCurve2D.Float::class.java))
+    }
+
+    fun testPaintComponentEmpty() {
+        val g: Graphics = mock(Graphics::class.java)
+        val g2d = mock(Graphics2D::class.java)
+        `when`(g2d.create()).thenReturn(g)
+
+        graphPanel.mainBranchPanel.branchPanel.circles = mutableListOf()
+        graphPanel.paintComponent(g2d)
+
+        verify(g2d, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        verify(g2d, times(1)).color = Palette.BLUE
+        verify(g2d, times(1)).stroke = BasicStroke(2f)
+        verify(g2d, never()).draw(any(CubicCurve2D.Float::class.java))
+    }
+
+    fun testPaintComponentOneBranchOnly() {
+        val g: Graphics = mock(Graphics::class.java)
+        val g2d = mock(Graphics2D::class.java)
+        `when`(g2d.create()).thenReturn(g)
+
+        graphPanel.addedBranchPanel = null
+        graphPanel.paintComponent(g2d)
+
+        verify(g2d, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        verify(g2d, times(1)).color = Palette.BLUE
+        verify(g2d, times(1)).stroke = BasicStroke(2f)
+        verify(g2d, never()).draw(any(CubicCurve2D.Float::class.java))
+    }
+
+    fun testPaintComponentZero() {
+        addedCirclePanel = mock(CirclePanel::class.java)
+        `when`(addedCirclePanel.x).thenReturn(0)
+        `when`(addedCirclePanel.y).thenReturn(25)
+        `when`(addedCirclePanel.width).thenReturn(0)
+        `when`(addedCirclePanel.height).thenReturn(45)
+        `when`(addedCirclePanel.commit).thenReturn(commit6)
+
+        val g: Graphics = mock(Graphics::class.java)
+        val g2d = mock(Graphics2D::class.java)
+        `when`(g2d.create()).thenReturn(g)
+
+        graphPanel = spy(GraphPanel(project, graphInfo))
+        graphPanel.mainBranchPanel.branchPanel.circles = mutableListOf(mainCirclePanel)
+        graphPanel.addedBranchPanel!!.branchPanel.circles = mutableListOf(addedCirclePanel)
+
+        graphPanel.paintComponent(g2d)
+
+        verify(g2d, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        verify(g2d, times(1)).color = Palette.BLUE
+        verify(g2d, times(1)).stroke = BasicStroke(2f)
+        verify(g2d, never()).draw(any(CubicCurve2D.Float::class.java))
+
+        addedCirclePanel = mock(CirclePanel::class.java)
+        `when`(addedCirclePanel.x).thenReturn(25)
+        `when`(addedCirclePanel.y).thenReturn(0)
+        `when`(addedCirclePanel.width).thenReturn(35)
+        `when`(addedCirclePanel.height).thenReturn(0)
+        `when`(addedCirclePanel.commit).thenReturn(commit6)
+
+        graphPanel = spy(GraphPanel(project, graphInfo))
+        graphPanel.mainBranchPanel.branchPanel.circles = mutableListOf(mainCirclePanel)
+        graphPanel.addedBranchPanel!!.branchPanel.circles = mutableListOf(addedCirclePanel)
+
+        graphPanel.paintComponent(g2d)
+
+        verify(g2d, times(2)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        verify(g2d, times(2)).color = Palette.BLUE
+        verify(g2d, times(2)).stroke = BasicStroke(2f)
+        verify(g2d, never()).draw(any(CubicCurve2D.Float::class.java))
+    }
+
+    fun testPaintComponentNoLine() {
+        addedCirclePanel = mock(CirclePanel::class.java)
+        `when`(addedCirclePanel.x).thenReturn(0)
+        `when`(addedCirclePanel.y).thenReturn(0)
+        `when`(addedCirclePanel.width).thenReturn(0)
+        `when`(addedCirclePanel.height).thenReturn(0)
+        `when`(addedCirclePanel.commit).thenReturn(commit6)
+
+        graphPanel = spy(GraphPanel(project, graphInfo))
+        graphPanel.mainBranchPanel.branchPanel.circles = mutableListOf(mainCirclePanel)
+        graphPanel.addedBranchPanel!!.branchPanel.circles = mutableListOf(addedCirclePanel)
+
+        val g: Graphics = mock(Graphics::class.java)
+        val g2d = mock(Graphics2D::class.java)
+        `when`(g2d.create()).thenReturn(g)
+        graphPanel.paintComponent(g2d)
+
+        verify(g2d, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        verify(g2d, times(1)).color = Palette.BLUE
+        verify(g2d, times(1)).stroke = BasicStroke(2f)
+        verify(g2d, never()).draw(any(CubicCurve2D.Float::class.java))
+    }
+
+    fun testPaintComponentNoBase() {
+        addedCirclePanel = mock(CirclePanel::class.java)
+        `when`(addedCirclePanel.x).thenReturn(0)
+        `when`(addedCirclePanel.y).thenReturn(0)
+        `when`(addedCirclePanel.width).thenReturn(0)
+        `when`(addedCirclePanel.height).thenReturn(0)
+
+        graphPanel = spy(GraphPanel(project, graphInfo))
+        graphPanel.mainBranchPanel.branchPanel.circles = mutableListOf(mainCirclePanel)
+        graphPanel.addedBranchPanel!!.branchPanel.circles = mutableListOf(addedCirclePanel)
+
+        val g: Graphics = mock(Graphics::class.java)
+        val g2d = mock(Graphics2D::class.java)
+        `when`(g2d.create()).thenReturn(g)
+        assertThatThrownBy {
+            graphPanel.paintComponent(g2d)
+        }
+            .isInstanceOf(UninitializedPropertyAccessException::class.java)
     }
 
     fun testGradientTransition() {
@@ -147,5 +275,44 @@ class GraphPanelTest : BasePlatformTestCase() {
         verify(graphPanel).addBranches()
         verify(graphPanel).repaint()
         TestCase.assertNull(graphPanel.addedBranchPanel)
+    }
+
+    fun testComputeVerticalOffsets() {
+        val result = graphPanel.computeVerticalOffsets()
+        assertThat(result).isEqualTo(Pair(5, 5))
+
+        otherBranchInfo.currentCommits = mutableListOf(commit4, commit5, commit6)
+        otherBranchInfo.baseCommit = commit4
+
+        graphInfo = GraphInfo(branchInfo, otherBranchInfo)
+        graphPanel = spy(GraphPanel(project, graphInfo))
+
+        graphPanel.mainBranchPanel.branchPanel.circles =
+            mutableListOf(mainCirclePanel, mainCirclePanel, mainCirclePanel, mainCirclePanel)
+
+        val result2 = graphPanel.computeVerticalOffsets()
+        assertThat(result2).isEqualTo(Pair(5, 300))
+
+        otherBranchInfo.currentCommits = mutableListOf(commit1, commit2, commit4, commit5, commit6)
+        otherBranchInfo.baseCommit = commit6
+
+        graphInfo = GraphInfo(branchInfo, otherBranchInfo)
+        graphPanel = spy(GraphPanel(project, graphInfo))
+
+        graphPanel.mainBranchPanel.branchPanel.circles = mutableListOf(mainCirclePanel)
+
+        val result3 = graphPanel.computeVerticalOffsets()
+        assertThat(result3).isEqualTo(Pair(120, 5))
+
+        otherBranchInfo.currentCommits = mutableListOf(commit1, commit2, commit4, commit5, commit6)
+        otherBranchInfo.baseCommit = commit3
+
+        graphInfo = GraphInfo(branchInfo, otherBranchInfo)
+        graphPanel = spy(GraphPanel(project, graphInfo))
+
+        graphPanel.mainBranchPanel.branchPanel.circles = mutableListOf(mainCirclePanel)
+
+        val result4 = graphPanel.computeVerticalOffsets()
+        assertThat(result4).isEqualTo(Pair(5, 180))
     }
 }

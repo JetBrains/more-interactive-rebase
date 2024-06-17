@@ -20,7 +20,7 @@ data class CherryCommand(var baseCommit: CommitInfo, val commit: CommitInfo) : I
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
     ) {
-        // model.drop(listOf(branchInfo.currentCommits.reversed().indexOf(commit)))
+
     }
 
     override fun commitOfCommand(): CommitInfo {

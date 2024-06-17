@@ -18,6 +18,7 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
+import javax.swing.OverlayLayout
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingUtilities
 
@@ -30,6 +31,7 @@ class MainPanel(
     internal var sidePanelPane: JBScrollPane
     var sidePanel: SidePanel
     var graphPanel: GraphPanel
+    internal val dragPanel: DragPanel = DragPanel()
     private val graphInfoListener: GraphInfo.Listener
     private val branchInfoListener: BranchInfo.Listener
     private val commitInfoListener: CommitInfo.Listener
@@ -37,12 +39,19 @@ class MainPanel(
     private val primaryBranchInfo: BranchInfo = graphInfo.mainBranch
     private var addedBranchInfo: BranchInfo? = graphInfo.addedBranch
     private val branchNavigationListener: BranchNavigationListener
+    private val graphWrapper = JBPanel<JBPanel<*>>()
 
     init {
+        graphWrapper.layout = OverlayLayout(graphWrapper)
+//        graphWrapper.border = BorderFactory.createLineBorder(JBColor.GREEN)
+
         graphPanel = createGraphPanel()
         contentPanel = createContentPanel()
         sidePanel = SidePanel(project.service<ModelService>().graphInfo.branchList, project)
         sidePanelPane = createSidePanel()
+
+        graphWrapper.add(dragPanel, BorderLayout.CENTER)
+        graphWrapper.add(graphPanel, BorderLayout.CENTER)
 
         this.layout = BorderLayout()
         createMainPanel()
@@ -110,7 +119,8 @@ class MainPanel(
     }
 
     /**
-     * Creates a content panel. This includes the panel with the main graph and the panel with the help button
+     * Creates a content panel.
+     * This includes the panel with the main graph and the panel with the help button
      */
     fun createContentPanel(): JBScrollPane {
         val scrollable = JBScrollPane()
@@ -124,7 +134,7 @@ class MainPanel(
         gbc.weightx = 1.0
         gbc.weighty = 1.0
         gbc.anchor = GridBagConstraints.CENTER
-        gbc.fill = GridBagConstraints.BOTH
+        gbc.fill = GridBagConstraints.VERTICAL
 
         contentPanel.add(
             graphPanel,
@@ -135,11 +145,11 @@ class MainPanel(
         gbc.insets.left = help.width
 
         contentPanel.add(
-            graphPanel,
+            graphWrapper,
             gbc,
         )
         scrollable.setViewportView(contentPanel)
-        scrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)
+        scrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
         scrollable.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED)
         gbc.gridx = 1
         gbc.gridy = 0

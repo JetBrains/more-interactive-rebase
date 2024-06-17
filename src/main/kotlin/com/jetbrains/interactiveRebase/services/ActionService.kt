@@ -68,7 +68,8 @@ class ActionService(val project: Project) {
      * Creates a rebase command for a normal rebase
      */
     fun takeNormalRebaseAction() {
-        val command = modelService.graphInfo.addedBranch?.currentCommits?.get(1)?.let { RebaseCommand(it) }
+        invoker.undoneCommands.clear()
+        val command = modelService.graphInfo.addedBranch?.baseCommit?.let { RebaseCommand(it) }
         if (command != null) {
             invoker.addCommand(command)
         }
@@ -105,7 +106,7 @@ class ActionService(val project: Project) {
      */
     fun checkCherryPick(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isEmpty() &&
-            areDisabledCommitsSelected()
+            modelService.areDisabledCommitsSelected()
     }
 
     /**
@@ -116,19 +117,10 @@ class ActionService(val project: Project) {
      */
     fun checkDrop(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !areDisabledCommitsSelected() &&
+            !modelService.areDisabledCommitsSelected() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
-    }
-
-    /**
-     * Returns true if the there are currently any selected commits on the added branch,
-     * false otherwise or if there is no added branch
-     */
-    private fun areDisabledCommitsSelected(): Boolean {
-        val added = modelService.graphInfo.addedBranch
-        return (added != null && added.selectedCommits.isNotEmpty())
     }
 
     /**
@@ -139,7 +131,7 @@ class ActionService(val project: Project) {
      */
     fun checkReword(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.getActualSelectedCommitsSize() == 1 &&
-            !areDisabledCommitsSelected() &&
+            !modelService.areDisabledCommitsSelected() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
@@ -153,7 +145,7 @@ class ActionService(val project: Project) {
      */
     fun checkStopToEdit(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !areDisabledCommitsSelected() &&
+            !modelService.areDisabledCommitsSelected() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
@@ -180,7 +172,7 @@ class ActionService(val project: Project) {
 
         val validParent = checkValidParent()
 
-        e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && validParent && !areDisabledCommitsSelected()
+        e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && validParent && !modelService.areDisabledCommitsSelected()
     }
 
     /**
@@ -192,7 +184,7 @@ class ActionService(val project: Project) {
     fun checkValidParent(): Boolean {
         if (modelService.branchInfo.getActualSelectedCommitsSize() != 1) return true
 
-        var commit = modelService.getLastSelectedCommit(modelService.branchInfo)
+        var commit = modelService.getLastSelectedCommit()
 
         if (commit == modelService.getCurrentCommits().last()) {
             return false
@@ -210,10 +202,10 @@ class ActionService(val project: Project) {
      */
 
     fun getParent(): CommitInfo {
-        var commit = modelService.getLastSelectedCommit(modelService.branchInfo)
+        var commit = modelService.getLastSelectedCommit()
 
-        var index = modelService.branchInfo.currentCommits.indexOf(commit) + 1
-        commit = modelService.branchInfo.currentCommits[index]
+        var index = modelService.getCurrentCommits().indexOf(commit) + 1
+        commit = modelService.getCurrentCommits()[index]
         while (commit.getChangesAfterPick().filterIsInstance<DropCommand>().isNotEmpty() &&
             index < modelService.getCurrentCommits().size - 1
         ) {
@@ -232,7 +224,7 @@ class ActionService(val project: Project) {
      */
     fun checkPick(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !areDisabledCommitsSelected()
+            !modelService.areDisabledCommitsSelected()
     }
 
     /**
@@ -339,6 +331,9 @@ class ActionService(val project: Project) {
             commitInfo.isReordered = false
             commitInfo.isHovered = false
         }
+        modelService.graphInfo.mainBranch.isRebased = false
+        modelService.graphInfo.addedBranch?.baseCommit =
+            modelService.graphInfo.addedBranch?.currentCommits?.last()
         invoker.branchInfo.clearSelectedCommits()
         takeCollapseAction()
     }
@@ -370,7 +365,6 @@ class ActionService(val project: Project) {
         selectedCommits.sortBy { modelService.branchInfo.indexOfCommit(it) }
         var parentCommit = selectedCommits.last()
         if (modelService.branchInfo.getActualSelectedCommitsSize() == 1) {
-            val selectedIndex = modelService.getCurrentCommits().indexOf(parentCommit)
             parentCommit = getParent()
         }
         selectedCommits.remove(parentCommit)
@@ -503,11 +497,20 @@ class ActionService(val project: Project) {
         if (command is CherryCommand) {
             undoCherryPick(commitToBeUndone, command)
         }
-
-        commitToBeUndone.removeChange(command)
+        if (command is RebaseCommand) {
+            undoRebase()
+        } else {
+            commitToBeUndone.removeChange(command)
+        }
         invoker.undoneCommands.add(command)
 
         modelService.branchInfo.clearSelectedCommits()
+    }
+
+    private fun undoRebase() {
+        modelService.graphInfo.addedBranch?.baseCommit =
+            modelService.graphInfo.addedBranch?.currentCommits?.last()
+        modelService.graphInfo.mainBranch.isRebased = false
     }
 
     /**
@@ -535,11 +538,20 @@ class ActionService(val project: Project) {
         if (command is CherryCommand) {
             redoCherryPick(commitToBeRedone)
         }
+        if (command is RebaseCommand) {
+            redoRebase(commitToBeRedone)
+        } else {
+            commitToBeRedone.addChange(command)
+        }
 
-        commitToBeRedone.addChange(command)
         invoker.commands.add(command)
 
         modelService.branchInfo.clearSelectedCommits()
+    }
+
+    private fun redoRebase(commitToBeRedone: CommitInfo) {
+        modelService.graphInfo.addedBranch?.baseCommit = commitToBeRedone
+        modelService.graphInfo.mainBranch.isRebased = true
     }
 
     /**
@@ -711,17 +723,23 @@ class ActionService(val project: Project) {
      */
     fun checkCollapse(e: AnActionEvent) {
         // check if there are any already collapsed commits
-        val currentCommits = modelService.getCurrentCommits()
-        if (modelService.branchInfo.initialCommits.size <= 7) {
+        if (modelService.getSelectedBranch().initialCommits.size <= 7) {
             e.presentation.isEnabled = false
             return
         }
 
-        if (currentCommits.any { it.isCollapsed }) {
-            e.presentation.isEnabled = false
-            return
+        if (modelService.graphInfo.mainBranch.currentCommits.any { it.isCollapsed }) {
+            if (modelService.graphInfo.addedBranch != null) {
+                if (modelService.graphInfo.addedBranch!!.currentCommits.any { it.isCollapsed }) {
+                    e.presentation.isEnabled = false
+                    return
+                }
+            } else {
+                e.presentation.isEnabled = false
+                return
+            }
         }
-        if (modelService.branchInfo.getActualSelectedCommitsSize() == 1) {
+        if (modelService.getSelectedBranch().getActualSelectedCommitsSize() == 1) {
             e.presentation.isEnabled = false
             return
         }
@@ -757,7 +775,7 @@ class ActionService(val project: Project) {
      */
     fun expandCollapsedCommits(
         parentCommit: CommitInfo,
-        branchInfo: BranchInfo,
+        branch: BranchInfo,
     ) {
         if (!parentCommit.isCollapsed) return
         parentCommit.isCollapsed = false
@@ -765,13 +783,13 @@ class ActionService(val project: Project) {
         if (collapseCommand == null) return
 
         parentCommit.removeChange(collapseCommand)
-        val index = branchInfo.currentCommits.indexOf(parentCommit)
+        val index = branch.currentCommits.indexOf(parentCommit)
         val collapsedCommits = collapseCommand.collapsedCommits
         collapsedCommits.forEach {
             it.isCollapsed = false
             it.removeChange(collapseCommand)
         }
-        branchInfo.addCommitsToCurrentCommits(index, collapsedCommits)
+        branch.addCommitsToCurrentCommits(index, collapsedCommits)
     }
 
     /**
@@ -779,24 +797,24 @@ class ActionService(val project: Project) {
      * keeping the first 5 commits and last commit, or the selected commits.
      */
     fun takeCollapseAction() {
-        val selectedCommits = modelService.getSelectedCommits()
-        selectedCommits.sortBy { modelService.branchInfo.indexOfCommit(it) }
-        takeCollapseActionOnSecondBranch()
         if (modelService.getSelectedCommits().isEmpty()) {
-            modelService.branchInfo.collapseCommits()
+            autoCollapseBranch(modelService.graphInfo.mainBranch)
+            autoCollapseBranch(modelService.graphInfo.addedBranch)
         } else {
+            val selectedCommits = modelService.getSelectedCommits()
+            selectedCommits.sortBy { modelService.getSelectedBranch().indexOfCommit(it) }
+
             val currentCommits = modelService.getCurrentCommits()
             val indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
             val indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
 
-            modelService.branchInfo.collapseCommits(indexFirstCommit, indexLastCommit)
+            modelService.getSelectedBranch().collapseCommits(indexFirstCommit, indexLastCommit)
         }
     }
 
-    fun takeCollapseActionOnSecondBranch() {
-        val addedBranch = modelService.graphInfo.addedBranch
-        if (addedBranch != null && addedBranch.currentCommits.none { it.isCollapsed }) {
-            modelService.graphInfo.addedBranch?.collapseCommits()
+    fun autoCollapseBranch(branch: BranchInfo?) {
+        if (branch != null && branch.currentCommits.none { it.isCollapsed }) {
+            branch.collapseCommits()
         }
     }
 

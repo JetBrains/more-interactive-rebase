@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.openapi.Disposable
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
+import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import java.awt.BasicStroke
 import java.awt.Color
@@ -41,10 +42,10 @@ open class CirclePanel(
         isOpaque = false
         minimumSize =
             Dimension(
-                diameter.toInt(),
+                JBUI.scale(diameter.toInt()),
                 // Ensure there is always spacing between circles
                 // when drawing a branch
-                (diameter.toInt() * 2.0).toInt(),
+                JBUI.scale((diameter.toInt() * 2.0).toInt()),
             )
         preferredSize = minimumSize
         createCircle(diameter)
@@ -140,7 +141,7 @@ open class CirclePanel(
 
         // Calculate the diameter of the circle,
         // so that border is not cropped due to the panel size
-        val adjustedDiameter = diameter - 2 * (border + 0.5)
+        val adjustedDiameter = JBUI.scale((diameter - 2 * (border + 0.5)).toInt()).toDouble()
 
         // Calculate the x and y coordinates for drawing the circle at the center
         val originX = (width - adjustedDiameter) / 2
