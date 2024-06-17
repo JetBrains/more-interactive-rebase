@@ -87,13 +87,13 @@ class ModelServiceTest : BasePlatformTestCase() {
 
     fun testAreDisabledCommitsSelectedEmpty() {
         val added = BranchInfo()
-        modelService.graphInfo = GraphInfo(modelService.branchInfo,added )
+        modelService.graphInfo = GraphInfo(modelService.branchInfo, added)
         assertFalse(modelService.areDisabledCommitsSelected())
     }
 
     fun testAreDisabledCommitsSelectedTrue() {
         val added = BranchInfo()
-        modelService.graphInfo = GraphInfo(modelService.branchInfo,added )
+        modelService.graphInfo = GraphInfo(modelService.branchInfo, added)
         added.selectedCommits.add(commit1)
         assertTrue(modelService.areDisabledCommitsSelected())
     }

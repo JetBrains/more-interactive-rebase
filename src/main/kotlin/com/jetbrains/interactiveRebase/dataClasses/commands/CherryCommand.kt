@@ -20,7 +20,6 @@ data class CherryCommand(var baseCommit: CommitInfo, val commit: CommitInfo) : I
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
     ) {
-
     }
 
     override fun commitOfCommand(): CommitInfo {

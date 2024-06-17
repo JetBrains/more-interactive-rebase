@@ -137,10 +137,6 @@ class BranchInfo(
         listeners.forEach { it.onCurrentCommitsChange(currentCommits) }
     }
 
-    override fun toString(): String {
-        return "BranchInfo(name='$name', initialCommits=$initialCommits, selectedCommits=$selectedCommits)"
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -156,20 +152,10 @@ class BranchInfo(
         return true
     }
 
-    override fun hashCode(): Int {
-        var result = name.hashCode()
-        result = 31 * result + initialCommits.hashCode()
-        result = 31 * result + selectedCommits.hashCode()
-        result = 31 * result + isPrimary.hashCode()
-        result = 31 * result + currentCommits.hashCode()
-        return result
-    }
-
     /**
      * Gets the index of the current commit
      * taking into account squashed commits
      */
-
     internal fun indexOfCommit(commit: CommitInfo): Int {
         var ret = currentCommits.indexOf(commit)
 
