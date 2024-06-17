@@ -33,8 +33,8 @@ class HelpPanelTest : BasePlatformTestCase() {
         verify(desktopMock).browse(captor.capture())
         assertThat(captor.value.toString())
             .isEqualTo(
-                "https://gitlab.ewi.tudelft.nl/cse2000-software-project" +
-                    "/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/-/blob/main/README.md",
+                "https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/" +
+                    "interactive-rebase-jetbrains/-/blob/main/README.md?ref_type=heads#-quick-start",
             )
     }
 }

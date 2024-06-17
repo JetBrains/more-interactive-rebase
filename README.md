@@ -59,21 +59,17 @@ You can easily get started with setting up the plugin by following these guideli
 Navigate to <kbd>Tools</kbd> > <kbd> Interactive Rebase Current Branch</kbd>. The Plugin opens as a file in
 the editor tab. The branch drawn shows the latest commits on the checked out branch. Closing the Plugin and opening it
 again keeps the changes that were made.
+
+
 <img src="Images/entry.png" alt="entry.png" width="500">
 
-[//]: # (![entry.png]&#40;Images/entry.png&#41;)
-
 <img src="Images/view.png" alt="view.png" width="800">
-
-[//]: # (![view.png]&#40;Images/view.png&#41;)
 
 ### Commit Information
 Clicking on one or multiple commits selects them. The commit information and file changes of the selected commits
 are presented on the right side of the screen. Double-clicking on a file change opens its diff and shows the changes.
 
 <img src="Images/commit.png" alt="commit" width="800">
-
-[//]: # (![commit.png]&#40;Images/commit.png&#41;)
 
 ### Interactive Rebase Actions
 After selecting the commits, the buttons that are *active* show the available Interactive Rebase actions. **It is
@@ -124,6 +120,12 @@ the oldest selected commit. After squashing, a text field opens for you to rewor
 * **<u>Start Rebasing</u>** - Pressing `Rebase` starts the Interactive Rebase and executes all the changes
   that were made starting from the lowest changed commit on the graph.
 
+### Changing the Base of a Branch
+You can rebase the checked-out branch on top of the second branch by dragging and dropping the branch name labels.
+
+<img src="Images/rebase.gif" alt="drop" width="500">
+
+
 ### Keyboard Shortcuts
 * **<u>Selecting a commit</u>** - Use arrow keys `↑` and `↓` to move up and down on a branch. Press `←` and `→` to move between branches. Use `Shift` for range selection.
 *  **<u>Selecting multiple commits</u>** - Press `Shift` + `Click` for range selection and `Command`/`Ctrl` + `Click` for non-contiguous selection.
@@ -139,6 +141,8 @@ the oldest selected commit. After squashing, a text field opens for you to rewor
 * **<u>Stop to Edit</u>** - `Option`/`Alt` + `E`
 * **<u>Reset</u>** - `Ctrl` + `R`
 * **<u>Start rebasing</u>** - `Option`/`Alt` + `Enter`
+
+
 
 ##  🔗 Dependencies
 
