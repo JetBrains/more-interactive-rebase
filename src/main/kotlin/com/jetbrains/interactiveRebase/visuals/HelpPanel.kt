@@ -37,7 +37,7 @@ class HelpPanel() : JBPanel<JBPanel<*>>() {
             val uri =
                 URI(
                     "https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c" +
-                        "/interactive-rebase-jetbrains/-/blob/main/README.md",
+                        "/interactive-rebase-jetbrains/-/blob/main/README.md?ref_type=heads#-quick-start",
                 )
             desktop.browse(uri)
         }

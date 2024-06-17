@@ -34,8 +34,10 @@ A More Interactive Rebase offers the following functionality for a better user e
 * Opens in the editor tab for a better visualization
 * Shows clearly the commit history in the form of a graph
 * Gives details about the commits and their file changes
-* Allows performing Interactive Rebase actions on selected commits
+* Allows performing interactive rebase actions on selected commits
 * Allows reordering of commits by drag-and-drop
+* Displays two branches with their relation visually
+* Allows changing the base of a branch on top of another branch
 
 [//]: # (Add short video here)
 
@@ -59,21 +61,17 @@ You can easily get started with setting up the plugin by following these guideli
 Navigate to <kbd>Tools</kbd> > <kbd> Interactive Rebase Current Branch</kbd>. The Plugin opens as a file in
 the editor tab. The branch drawn shows the latest commits on the checked out branch. Closing the Plugin and opening it
 again keeps the changes that were made.
+
+
 <img src="Images/entry.png" alt="entry.png" width="500">
 
-[//]: # (![entry.png]&#40;Images/entry.png&#41;)
-
 <img src="Images/view.png" alt="view.png" width="800">
-
-[//]: # (![view.png]&#40;Images/view.png&#41;)
 
 ### Commit Information
 Clicking on one or multiple commits selects them. The commit information and file changes of the selected commits
 are presented on the right side of the screen. Double-clicking on a file change opens its diff and shows the changes.
 
 <img src="Images/commit.png" alt="commit" width="800">
-
-[//]: # (![commit.png]&#40;Images/commit.png&#41;)
 
 ### Interactive Rebase Actions
 After selecting the commits, the buttons that are *active* show the available Interactive Rebase actions. **It is
@@ -102,8 +100,6 @@ for more information.
 <img src="Images/drop.gif" alt="drop" width="500">
 
 
-[//]: # (![drop.gif]&#40;Images/drop.gif&#41;)
-
 * **<u>Squash</u>** - If there is only one selected commit pressing the `squash` button will squash that commit with the
   previous one (older in the commit history). In the case where multiple commits are selected, they get squashed into
 the oldest selected commit. After squashing, a text field opens for you to reword the commit message
@@ -124,6 +120,12 @@ the oldest selected commit. After squashing, a text field opens for you to rewor
 * **<u>Start Rebasing</u>** - Pressing `Rebase` starts the Interactive Rebase and executes all the changes
   that were made starting from the lowest changed commit on the graph.
 
+### Changing the Base of a Branch
+You can rebase the checked-out branch on top of the second branch by dragging and dropping the branch name labels.
+
+<img src="Images/rebase.gif" alt="drop" width="500">
+
+
 ### Keyboard Shortcuts
 * **<u>Selecting a commit</u>** - Use arrow keys `↑` and `↓` to move up and down on a branch. Press `←` and `→` to move between branches. Use `Shift` for range selection.
 *  **<u>Selecting multiple commits</u>** - Press `Shift` + `Click` for range selection and `Command`/`Ctrl` + `Click` for non-contiguous selection.
@@ -139,6 +141,8 @@ the oldest selected commit. After squashing, a text field opens for you to rewor
 * **<u>Stop to Edit</u>** - `Option`/`Alt` + `E`
 * **<u>Reset</u>** - `Ctrl` + `R`
 * **<u>Start rebasing</u>** - `Option`/`Alt` + `Enter`
+
+
 
 ##  🔗 Dependencies
 
