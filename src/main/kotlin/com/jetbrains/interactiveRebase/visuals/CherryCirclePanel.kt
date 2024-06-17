@@ -2,7 +2,6 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.ui.JBColor
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
-import icons.DvcsImplIcons
 import java.awt.BasicStroke
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -16,6 +15,9 @@ class CherryCirclePanel(
     override var next: CirclePanel? = null,
     override var previous: CirclePanel? = null,
 ) : CirclePanel(diameter, border, colorTheme, commit, next, previous) {
+    /**
+     * Draws a circle with a cherry inside
+     */
     override fun paintCircle(g: Graphics) {
         val g2d = g as Graphics2D
 
@@ -33,15 +35,6 @@ class CherryCirclePanel(
             g2d.draw(circle)
         }
 
-        // TODO: Very hard to unit test, icon cannot be mocked
-        paintIcon(g2d)
-    }
-
-    fun paintIcon(g: Graphics) {
-//         val icon = PlatformIcons.EDIT
-        val icon = DvcsImplIcons.CherryPick
-        val iconX = (width - icon.iconWidth) / 2
-        val iconY = (height - icon.iconHeight) / 2
-        icon.paintIcon(this, g, iconX, iconY)
+        paintCherry(g2d)
     }
 }

@@ -19,6 +19,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
+import com.jetbrains.interactiveRebase.listeners.CherryDragAndDropListener
 import com.jetbrains.interactiveRebase.listeners.CircleDragAndDropListener
 import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
 import com.jetbrains.interactiveRebase.listeners.LabelListener
@@ -282,6 +283,15 @@ class LabeledBranchPanel(
             circle.addMouseListener(circleHoverListener)
             circle.addMouseMotionListener(circleHoverListener)
             Disposer.register(this, circleHoverListener)
+
+            if (!branch.isWritable) {
+                val cherryDragAndDropListener = CherryDragAndDropListener(
+                    project, circle, this
+                )
+                circle.addMouseListener(cherryDragAndDropListener)
+                circle.addMouseMotionListener(cherryDragAndDropListener)
+                Disposer.register(this, cherryDragAndDropListener)
+            }
         }
     }
 
