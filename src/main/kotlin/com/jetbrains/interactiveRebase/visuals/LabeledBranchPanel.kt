@@ -163,7 +163,7 @@ class LabeledBranchPanel(
         val panel = RoundedPanel()
         panel.border = EmptyBorder(2, 3, 3, 3)
         panel.cornerRadius = 15
-
+        panel.removeBackgroundGradient()
         panel.backgroundColor = colorTheme.branchNameColor
         if (branch.isRebased) {
             panel.backgroundColor = Palette.TRANSPARENT
@@ -284,10 +284,17 @@ class LabeledBranchPanel(
             circle.addMouseMotionListener(circleHoverListener)
             Disposer.register(this, circleHoverListener)
 
-            if (!branch.isWritable) {
-                val cherryDragAndDropListener = CherryDragAndDropListener(
-                    project, circle, this
-                )
+            if (
+                !branch.isWritable &&
+                circle !is CollapseCirclePanel &&
+                !circle.commit.isCherryPicked
+            ) {
+                val cherryDragAndDropListener =
+                    CherryDragAndDropListener(
+                        project,
+                        circle,
+                        this,
+                    )
                 circle.addMouseListener(cherryDragAndDropListener)
                 circle.addMouseMotionListener(cherryDragAndDropListener)
                 Disposer.register(this, cherryDragAndDropListener)

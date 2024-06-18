@@ -24,7 +24,7 @@ class RebaseDragAndDropListener(
 ) : MouseAdapter(), Disposable {
     private val mainBranchPanel = mainBranchNameLabel.parent as LabeledBranchPanel
     private val addedBranchPanel = addedBranchNameLabel.parent as LabeledBranchPanel
-    private val dragPanel = project.service<ActionService>().mainPanel.dragPanel // graphPanel.parent.getComponent(0) as DragPanel
+    private val dragPanel = project.service<ActionService>().mainPanel.dragPanel
     private val gbcMain = (mainBranchPanel.layout as GridBagLayout).getConstraints(mainBranchNameLabel)
     private val gbcAdded = (addedBranchPanel.layout as GridBagLayout).getConstraints(addedBranchNameLabel)
 
@@ -82,7 +82,6 @@ class RebaseDragAndDropListener(
         updateMousePosition(e)
 
         indicateDraggedLabelCanBeDroppedOnTheSecondLabel()
-
         renderCurvedArrow()
     }
 
@@ -228,7 +227,7 @@ class RebaseDragAndDropListener(
      * and add it to the position of the second branch name label
      */
     internal fun substituteLabelForPlaceholderAddedBranch() {
-        addedBranchPanel.remove(addedBranchNameLabel)
+//        addedBranchPanel.remove(addedBranchNameLabel)
         addedBranchPanel.add(addedPlaceholderPanel, gbcAdded)
         addedBranchPanel.revalidate()
         addedBranchPanel.repaint()
@@ -240,7 +239,6 @@ class RebaseDragAndDropListener(
      * and add it to the position of the first branch name label
      */
     internal fun substituteLabelForPlaceholderMainBranch() {
-        mainBranchPanel.remove(mainBranchNameLabel)
         mainBranchPanel.add(mainPlaceholderPanel, gbcMain)
         mainBranchPanel.revalidate()
         mainBranchPanel.repaint()

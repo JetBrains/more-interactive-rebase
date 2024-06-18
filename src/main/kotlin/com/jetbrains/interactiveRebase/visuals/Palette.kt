@@ -97,4 +97,14 @@ object Palette {
             hoverCircleColor = JETBRAINS_HOVER,
             branchNameColor = PALE_LIME_GREEN,
         )
+
+    public final val GRAY_THEME =
+        Theme(
+            regularCircleColor = GRAY,
+            borderColor = DARK_GRAY,
+            selectedCircleColor = GRAY.darker() as JBColor,
+            selectedBorderColor = DARK_GRAY.darker() as JBColor,
+            hoverCircleColor = JETBRAINS_HOVER,
+            branchNameColor = GRAY,
+        )
 }

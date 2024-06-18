@@ -100,6 +100,15 @@ class BranchPanel(
                     colorTheme,
                     branch.currentCommits[i],
                 )
+        } else if (commit.isCherryPicked) {
+            circle =
+                CherryCirclePanel(
+                    diameter.toDouble(),
+                    borderSize,
+                    colorTheme,
+                    commit,
+                    isModifiable = branch.isWritable,
+                )
         }
 
         circles.add(circle)

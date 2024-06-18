@@ -25,7 +25,7 @@ import javax.imageio.ImageIO
 open class CirclePanel(
     open val diameter: Double,
     private val border: Float,
-    var colorTheme: Palette.Theme,
+    open var colorTheme: Palette.Theme,
     open var commit: CommitInfo,
     open var next: CirclePanel? = null,
     open var previous: CirclePanel? = null,
@@ -101,9 +101,7 @@ open class CirclePanel(
             cursor = Cursor.getDefaultCursor()
         }
 
-        if (commit.isCherryPicked) {
-            paintCherry(g2d)
-        }
+        if (commit.isCherryPicked) paintCherry(g2d)
     }
 
     fun openHandCursor(): Cursor {
