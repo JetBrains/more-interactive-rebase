@@ -72,14 +72,11 @@ class CherryDragAndDropListener(
         setCherryLocation(e)
         updateMousePosition(e)
 
-        val extendedRect = mainBranchPanel.branchPanel.bounds
-        extendedRect.height += mainBranchPanel.branchPanel.diameter * 2
-        if (cherry.bounds.intersects(extendedRect)) {
+        if (onTopOfMainBranch()) {
             val newIndex = findCherryIndex()
             if ((mainIndex != newIndex || !wasHoveringOnMainBranch) && !animationInProgress) {
                 mainIndex = newIndex
                 val (initialConstraints, finalConstraints, lineOffsets) = getConstraintsForRepositioning()
-
                 animateTransition(initialConstraints, finalConstraints, lineOffsets)
             }
             wasHoveringOnMainBranch = true
@@ -90,6 +87,12 @@ class CherryDragAndDropListener(
             }
             wasHoveringOnMainBranch = false
         }
+    }
+
+    private fun onTopOfMainBranch(): Boolean {
+        val extendedRect = mainBranchPanel.branchPanel.bounds
+        extendedRect.height += mainBranchPanel.branchPanel.diameter * 2
+        return cherry.bounds.intersects(extendedRect)
     }
 
     private fun reposition(
@@ -106,26 +109,6 @@ class CherryDragAndDropListener(
         graphPanel.revalidate()
         graphPanel.repaint()
     }
-
-//    private fun resetOnDrag() {
-//        mainCircles.forEachIndexed { index, circle ->
-//            val message = mainBranchPanel.messages[index]
-//            val gbcCircle = (mainBranchPanel.branchPanel.layout as GridBagLayout).getConstraints(circle)
-//            val gbcMessage = (mainBranchPanel.labelPanelWrapper.layout as GridBagLayout).getConstraints(message)
-//            gbcCircle.insets.bottom = 0
-//            gbcMessage.insets.bottom = 0
-//            if (index == 0) {
-//                gbcCircle.insets.top = mainBranchPanel.branchPanel.diameter
-//                gbcMessage.insets.top = mainBranchPanel.branchPanel.diameter
-//            }
-//            mainBranchPanel.branchPanel.add(circle, gbcCircle)
-//            mainBranchPanel.labelPanelWrapper.add(message, gbcMessage)
-//        }
-//
-//        graphPanel.lineOffset = mainBranchPanel.branchPanel.diameter * 2
-//        mainBranchPanel.revalidate()
-//        graphPanel.repaint()
-//    }
 
     private fun getConstraintsForReset(): Triple<
         List<Pair<GridBagConstraints, GridBagConstraints>>,
@@ -260,38 +243,6 @@ class CherryDragAndDropListener(
     ): Int {
         return (start + (end - start) * progress).toInt()
     }
-
-//    private fun repositionOnDrag() {
-//        for (i in mainCircles.indices) {
-//            val circle = mainCircles[i]
-//            val message = mainBranchPanel.messages[i]
-//            val gbcCircle = (mainBranchPanel.branchPanel.layout as GridBagLayout).getConstraints(circle)
-//            val gbcMessage = (mainBranchPanel.labelPanelWrapper.layout as GridBagLayout).getConstraints(message)
-//            if (mainIndex == i + 1) {
-//                gbcCircle.insets.bottom = cherry.minimumHeight
-//                gbcMessage.insets.bottom = cherry.minimumHeight
-//            } else {
-//                gbcCircle.insets.bottom = 0
-//                gbcMessage.insets.bottom = 0
-//            }
-//            if (i == mainCircles.size - 1 && mainIndex == mainCircles.size) {
-//                graphPanel.lineOffset = mainBranchPanel.branchPanel.diameter * 2 + cherry.minimumHeight
-//            } else {
-//                graphPanel.lineOffset = mainBranchPanel.branchPanel.diameter * 2
-//            }
-//            if (i == 0 && mainIndex == 0) {
-//                gbcCircle.insets.top = mainBranchPanel.branchPanel.diameter + cherry.minimumHeight
-//                gbcMessage.insets.top = mainBranchPanel.branchPanel.diameter + cherry.minimumHeight
-//            } else {
-//                gbcCircle.insets.top = if (i == 0) mainBranchPanel.branchPanel.diameter else 0
-//                gbcMessage.insets.top = if (i == 0) mainBranchPanel.branchPanel.diameter else 0
-//            }
-//            mainBranchPanel.branchPanel.add(circle, gbcCircle)
-//            mainBranchPanel.labelPanelWrapper.add(message, gbcMessage)
-//        }
-//        graphPanel.revalidate()
-//        graphPanel.repaint()
-//    }
 
     private fun getConstraintsForRepositioning(): Triple<
         List<Pair<GridBagConstraints, GridBagConstraints>>,

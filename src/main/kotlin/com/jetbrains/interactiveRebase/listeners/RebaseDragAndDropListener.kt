@@ -35,6 +35,7 @@ class RebaseDragAndDropListener(
     private var addedPlaceholderPanel = placeholderPanel(addedBranchPanel)
 
     private val initialColor = addedBranchNameLabel.backgroundColor
+    private var wasDragged: Boolean = false
 
     /**
      * On pressing on a name label of a branch
@@ -58,13 +59,7 @@ class RebaseDragAndDropListener(
                 addedBranchNameLabel.y + addedBranchPanel.y,
             )
 
-        addLabelsToDragPanel()
-
-        // Create a transparent placeholder panels
-        // at the initial positions of the name labels
-        substituteLabelForPlaceholderMainBranch()
-
-        substituteLabelForPlaceholderAddedBranch()
+        wasDragged = false
     }
 
     /**
@@ -76,6 +71,17 @@ class RebaseDragAndDropListener(
      * indicate user can drop on top of it
      */
     override fun mouseDragged(e: MouseEvent) {
+        if (!wasDragged) {
+            addLabelsToDragPanel()
+
+            // Create a transparent placeholder panels
+            // at the initial positions of the name labels
+            substituteLabelForPlaceholderMainBranch()
+
+            substituteLabelForPlaceholderAddedBranch()
+            wasDragged = true
+        }
+
         dragPanel.cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
         formatDraggedLabelOnDrag()
         setBranchNameLocation(e)
