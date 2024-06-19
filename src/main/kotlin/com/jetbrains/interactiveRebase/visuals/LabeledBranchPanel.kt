@@ -287,7 +287,7 @@ class LabeledBranchPanel(
             if (
                 !branch.isWritable &&
                 circle !is CollapseCirclePanel &&
-                !circle.commit.isCherryPicked
+                !circle.commit.wasCherryPicked
             ) {
                 val cherryDragAndDropListener =
                     CherryDragAndDropListener(

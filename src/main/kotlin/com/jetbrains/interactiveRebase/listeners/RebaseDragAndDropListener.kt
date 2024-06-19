@@ -40,11 +40,8 @@ class RebaseDragAndDropListener(
     /**
      * On pressing on a name label of a branch
      * 1. the initial positions of the name labels of both branches are stored
-     * 2. the main branch name label moves to a drag panel laying over the graph panel
-     * 3. the branch name label of the second branch is also moved to the drag panel
-     * 4. transparent panels with the same sizing as the original ones are added
-     * in their positions in the graph panel in order to keep the same layout
-     * when revalidating; i.e., the layout doesn't jiggle during drag and drop
+     * 2. sets flag that the label has not been dragged yet
+     * 3. puts appropriate formatting on the label
      */
     override fun mousePressed(e: MouseEvent) {
         updateMousePosition(e)
@@ -60,10 +57,17 @@ class RebaseDragAndDropListener(
             )
 
         wasDragged = false
+        formatDraggedLabelOnDrag()
     }
 
     /**
-     * On dragging the branch name label:
+     * On starting to drag the branch name label:
+     * 1. the main branch name label moves to a drag panel laying over the graph panel
+     * 2. the branch name label of the second branch is also moved to the drag panel
+     * 3. transparent panels with the same sizing as the original ones are added
+     * in their positions in the graph panel in order to keep the same layout
+     * when revalidating; i.e., the layout doesn't jiggle during drag and drop
+     * On continuous dragging of the branch name label:
      * 1. set the cursor to be the default cursor
      * 2. highlight the branch name label to indicate it's being dragged
      * 3. update the position of the branch name label according to mouse position
@@ -122,6 +126,10 @@ class RebaseDragAndDropListener(
         refreshDraggableArea()
     }
 
+    /**
+     * Draws a curved arrow to indicate
+     * the target the label should be dragged towards
+     */
     internal fun renderCurvedArrow() {
         dragPanel.labelIsDragged = true
         dragPanel.startDragPoint =
@@ -334,6 +342,8 @@ class RebaseDragAndDropListener(
                     updateOffsetOfMainBranch(finalOffsetMain)
                     if (mainBranchPanel.branch.isRebased) {
                         project.service<ActionService>().takeNormalRebaseAction()
+                        project.service<ActionService>().mainPanel.revalidate()
+                        project.service<ActionService>().mainPanel.repaint()
                     }
                 }
             }

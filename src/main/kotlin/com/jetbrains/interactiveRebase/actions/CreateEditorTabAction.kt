@@ -5,7 +5,9 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.services.IRVirtualFileService
 
-class CreateEditorTabAction : AnAction() {
+class CreateEditorTabAction : AnAction(
+//    CustomIcon.IRIcon
+) {
     /**
      * This method is called when the entry point
      * for the plugin is invoked.

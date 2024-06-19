@@ -6,6 +6,8 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.util.preferredHeight
+import com.intellij.ui.util.preferredWidth
 import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.services.DialogService
 import com.jetbrains.interactiveRebase.services.ModelService
@@ -60,13 +62,15 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
      */
     internal fun addSideBranchLabel() {
         label = JBLabel(branchName)
+        label.preferredSize = Dimension(1, label.preferredHeight)
 
         val gbc = GridBagConstraints()
         gbc.gridx = 0
         gbc.gridy = 0
-        gbc.weightx = 0.9
+        gbc.weightx = 1.0
+        gbc.fill = GridBagConstraints.HORIZONTAL
         gbc.anchor = GridBagConstraints.LINE_START
-        gbc.insets = JBUI.insets(5, 20, 5, 5)
+        gbc.insets = JBUI.insets(5, 5, 5, 5)
 
         add(label, gbc)
     }
@@ -82,6 +86,7 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
         button.arcWidth = 5
         button.border = null
         button.preferredSize = Dimension((1.4 * button.icon.iconWidth).toInt(), (1.4 * button.icon.iconHeight).toInt())
+        button.maximumSize = Dimension((1.4 * button.icon.iconWidth).toInt(), (1.4 * button.icon.iconHeight).toInt())
         button.isOpaque = false
         button.setContentAreaFilled(false)
         button.isVisible = false
@@ -97,7 +102,7 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
     internal fun getAlignmentForButton(): GridBagConstraints {
         val gbc = GridBagConstraints()
         gbc.gridx = 1
-        gbc.weightx = 0.1
+        gbc.weightx = 0.0
         gbc.anchor = GridBagConstraints.LINE_END
         gbc.insets = JBUI.insetsRight(10)
         return gbc

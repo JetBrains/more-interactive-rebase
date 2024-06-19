@@ -20,7 +20,7 @@
     </applicationListeners>
     <actions>
         <action class="com.jetbrains.interactiveRebase.actions.CreateEditorTabAction" id="com.jetbrains.interactive_rebase.CreateEditorTabAction"
-                text="Interactive Rebase Current Branch">
+                text="Interactive Rebase Current Branch" icon="icons/cursor-hand-grab.png">
             <add-to-group group-id="Git.MainMenu" anchor="first"/>
         </action>
         <group id="ActionsGroup"

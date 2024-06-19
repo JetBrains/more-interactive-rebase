@@ -101,7 +101,7 @@ open class CirclePanel(
             cursor = Cursor.getDefaultCursor()
         }
 
-        if (commit.isCherryPicked) paintCherry(g2d)
+        if (commit.wasCherryPicked) paintCherry(g2d)
     }
 
     fun openHandCursor(): Cursor {

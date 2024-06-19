@@ -91,7 +91,8 @@ class BranchPanel(
                     borderSize,
                     colorTheme,
                     branch.currentCommits[i],
-                )
+                    isModifiable = branch.isWritable,
+                    )
         } else if (visualChanges.any { it is SquashCommand } || visualChanges.any { it is FixupCommand }) {
             circle =
                 SquashedCirclePanel(
@@ -100,7 +101,7 @@ class BranchPanel(
                     colorTheme,
                     branch.currentCommits[i],
                 )
-        } else if (commit.isCherryPicked) {
+        } else if (commit.wasCherryPicked) {
             circle =
                 CherryCirclePanel(
                     diameter.toDouble(),

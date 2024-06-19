@@ -17,7 +17,7 @@ data class CommitInfo(
     var isReordered: Boolean = false,
     var isDragged: Boolean = false,
     var isCollapsed: Boolean = false,
-    var isCherryPicked: Boolean = false,
+    var wasCherryPicked: Boolean = false,
 ) {
     internal val listeners: MutableList<Listener> = mutableListOf()
 

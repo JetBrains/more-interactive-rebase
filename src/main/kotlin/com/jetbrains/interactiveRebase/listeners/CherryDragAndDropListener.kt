@@ -32,6 +32,7 @@ class CherryDragAndDropListener(
     private var mainCircles = mainBranchPanel.branchPanel.circles
 
     private var initialPositionCherry = Point()
+    private val defaultLineOffset = graphPanel.lineOffset
     private var circlesPositions = mutableListOf<CirclePosition>()
     private var mousePosition = Point()
     private val initialIndex = addedBranchPanel.branchPanel.circles.indexOf(cherry)
@@ -63,52 +64,97 @@ class CherryDragAndDropListener(
 
     override fun mouseDragged(e: MouseEvent) {
         if (!wasDragged) {
-            clone = createClone()
-            formatCherryOnDrag()
-            addCherryToDragPanel()
-            wasDragged = true
+            setUpDrag()
         }
         dragPanel.cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
         setCherryLocation(e)
         updateMousePosition(e)
 
-        if (onTopOfMainBranch()) {
-            val newIndex = findCherryIndex()
-            if ((mainIndex != newIndex || !wasHoveringOnMainBranch) && !animationInProgress) {
-                mainIndex = newIndex
-                val (initialConstraints, finalConstraints, lineOffsets) = getConstraintsForRepositioning()
-                animateTransition(initialConstraints, finalConstraints, lineOffsets)
-            }
-            wasHoveringOnMainBranch = true
+        if (isOverMainBranch()) {
+            makeSpaceForCherryOnMainBranch()
         } else {
-            if (wasHoveringOnMainBranch) {
-                val (initialConstraints, finalConstraints, lineOffsets) = getConstraintsForReset()
-                animateTransition(initialConstraints, finalConstraints, lineOffsets)
-            }
-            wasHoveringOnMainBranch = false
+            turnBackToTheInitialLayoutOfMainBranch()
         }
+        cherry.repaint()
     }
 
-    private fun onTopOfMainBranch(): Boolean {
+    override fun mouseReleased(e: MouseEvent?) {
+        if (wasDragged) {
+            if (isOverMainBranch()) {
+                propagateCherryPickToBackend()
+            } else {
+                resetCherryFormatting()
+            }
+            clone.commit.isHovered = false
+            graphPanel.lineOffset = defaultLineOffset
+            graphPanel.updateGraphPanel()
+            emptyDraggableArea()
+            refreshDraggableArea()
+        }
+        e?.consume()
+    }
+
+    private fun emptyDraggableArea() {
+        dragPanel.remove(cherry)
+        dragPanel.remove(mainBranchPanel)
+    }
+
+    private fun resetCherryFormatting() {
+        clone.commit.wasCherryPicked = false
+        cherry.commit.wasCherryPicked = false
+    }
+
+    private fun propagateCherryPickToBackend() {
+        mainBranchPanel.branchPanel.branch.currentCommits.add(mainIndex, createCherryCommit())
+        addedBranchPanel.branchPanel.branch.currentCommits[initialIndex].wasCherryPicked = true
+        mainBranchPanel.updateCommits()
+    }
+
+    private fun turnBackToTheInitialLayoutOfMainBranch() {
+        if (wasHoveringOnMainBranch) {
+            val (initialConstraints, finalConstraints, lineOffsets) = getConstraintsForReset()
+            animateTransition(initialConstraints, finalConstraints, lineOffsets)
+        }
+        wasHoveringOnMainBranch = false
+    }
+
+    private fun makeSpaceForCherryOnMainBranch() {
+        val newIndex = findCherryIndex()
+        if ((mainIndex != newIndex || !wasHoveringOnMainBranch) && !animationInProgress) {
+            mainIndex = newIndex
+            val (initialConstraints, finalConstraints, lineOffsets) = getConstraintsForRepositioning()
+            animateTransition(initialConstraints, finalConstraints, lineOffsets)
+        }
+        wasHoveringOnMainBranch = true
+    }
+
+    private fun setUpDrag() {
+        clone = createClone()
+        formatCherryOnDrag()
+        addCherryToDragPanel()
+        wasDragged = true
+    }
+
+    private fun isOverMainBranch(): Boolean {
         val extendedRect = mainBranchPanel.branchPanel.bounds
-        extendedRect.height += mainBranchPanel.branchPanel.diameter * 2
+        extendedRect.height += defaultLineOffset
         return cherry.bounds.intersects(extendedRect)
     }
 
-    private fun reposition(
-        finalConstraints: List<Pair<GridBagConstraints, GridBagConstraints>>,
-        lineOffsets: Pair<Int, Int>,
-    ) {
-        finalConstraints.forEachIndexed { index, (gbcCircle, gbcMessage) ->
-            mainBranchPanel.branchPanel.add(mainCircles[index], gbcCircle)
-            mainBranchPanel.labelPanelWrapper.add(mainBranchPanel.messages[index], gbcMessage)
-        }
-
-        graphPanel.lineOffset = lineOffsets.second
-
-        graphPanel.revalidate()
-        graphPanel.repaint()
-    }
+//    private fun repositionToEndState(
+//        finalConstraints: List<Pair<GridBagConstraints, GridBagConstraints>>,
+//        lineOffsets: Pair<Int, Int>,
+//    ) {
+//        finalConstraints.forEachIndexed { index, (gbcCircle, gbcMessage) ->
+//            mainBranchPanel.branchPanel.add(mainCircles[index], gbcCircle)
+//            mainBranchPanel.labelPanelWrapper.add(mainBranchPanel.messages[index], gbcMessage)
+//        }
+//
+//        graphPanel.lineOffset = lineOffsets.second
+//
+//        graphPanel.revalidate()
+//        graphPanel.repaint()
+//    }
 
     private fun getConstraintsForReset(): Triple<
         List<Pair<GridBagConstraints, GridBagConstraints>>,
@@ -126,26 +172,26 @@ class CherryDragAndDropListener(
             val gbcMessageInitial = (mainBranchPanel.labelPanelWrapper.layout as GridBagLayout).getConstraints(message)
             initialConstraints.add(Pair(gbcCircleInitial, gbcMessageInitial))
 
-            // Create final constraints based on the logic in the method
             val gbcCircleFinal =
                 (mainBranchPanel.branchPanel.layout as GridBagLayout).getConstraints(circle).apply {
-                    insets.bottom = 0
-                    if (index == 0) {
-                        insets.top = mainBranchPanel.branchPanel.diameter
-                    }
+                    resetInsetsToInitialMainBranchLayout(index)
                 }
             val gbcMessageFinal =
                 (mainBranchPanel.labelPanelWrapper.layout as GridBagLayout).getConstraints(message).apply {
-                    insets.bottom = 0
-                    if (index == 0) {
-                        insets.top = mainBranchPanel.branchPanel.diameter
-                    }
+                    resetInsetsToInitialMainBranchLayout(index)
                 }
             finalConstraints.add(Pair(gbcCircleFinal, gbcMessageFinal))
         }
 
-        val lineOffset = Pair(graphPanel.lineOffset, mainBranchPanel.branchPanel.diameter * 2)
+        val lineOffset = Pair(graphPanel.lineOffset, defaultLineOffset)
         return Triple(initialConstraints, finalConstraints, lineOffset)
+    }
+
+    private fun GridBagConstraints.resetInsetsToInitialMainBranchLayout(index: Int) {
+        insets.bottom = 0
+        if (index == 0) {
+            insets.top = mainBranchPanel.branchPanel.diameter
+        }
     }
 
     internal fun animateTransition(
@@ -163,31 +209,27 @@ class CherryDragAndDropListener(
 
         var currentStep = 0
 
-        // Initialize Swing Timer
         val timer =
             Timer(animationDuration / animationSteps) {
                 if (currentStep < animationSteps) {
-                    val progress = (currentStep + 1).toFloat() / animationSteps.toFloat()
-
-                    // Update the constraints for each component
-                    updateComponentsWithInterpolation(initialConstraints, finalConstraints, progress)
-
-                    // Interpolate lineOffset
-                    graphPanel.lineOffset = interpolateValue(lineOffsets.first, lineOffsets.second, progress)
-
-                    // Repaint the graphPanel
-                    graphPanel.repaint()
 
                     currentStep++
+                    val progress = (currentStep).toFloat() / animationSteps.toFloat()
+                    updateComponentsWithInterpolation(initialConstraints, finalConstraints, progress)
+                    graphPanel.lineOffset = interpolateValue(lineOffsets.first, lineOffsets.second, progress)
+                    graphPanel.repaint()
+
                 } else {
-                    reposition(finalConstraints, lineOffsets)
                     animationInProgress = false
-                    // Stop the timer when animation is complete
                     (it.source as Timer).stop()
                 }
             }
 
         // Start the timer
+        startAnimation(timer)
+    }
+
+    private fun startAnimation(timer: Timer) {
         timer.initialDelay = 0
         timer.isRepeats = true
         timer.start()
@@ -203,23 +245,22 @@ class CherryDragAndDropListener(
         mainBranchPanel.labelPanelWrapper.removeAll()
 
         finalConstraints.forEachIndexed { index, (finalCircle, finalMessage) ->
-            val initialCircle = initialConstraints[index].first
-            val initialMessage = initialConstraints[index].second
+            val initialCircleGbc = initialConstraints[index].first
+            val initialMessageGbc = initialConstraints[index].second
 
             // Interpolate Insets
-            val interpolatedCircleInsets = interpolateInsets(initialCircle.insets, finalCircle.insets, progress)
-            val interpolatedMessageInsets = interpolateInsets(initialMessage.insets, finalMessage.insets, progress)
+            val interpolatedCircleInsets = interpolateInsets(initialCircleGbc.insets, finalCircle.insets, progress)
+            val interpolatedMessageInsets = interpolateInsets(initialMessageGbc.insets, finalMessage.insets, progress)
 
             // Update Insets in GridBagConstraints
-            initialCircle.insets = interpolatedCircleInsets
-            initialMessage.insets = interpolatedMessageInsets
+            initialCircleGbc.insets = interpolatedCircleInsets
+            initialMessageGbc.insets = interpolatedMessageInsets
 
             // Add components back to the panels with updated GridBagConstraints
-            mainBranchPanel.branchPanel.add(mainCircles[index], initialCircle)
-            mainBranchPanel.labelPanelWrapper.add(mainBranchPanel.messages[index], initialMessage)
+            mainBranchPanel.branchPanel.add(mainCircles[index], initialCircleGbc)
+            mainBranchPanel.labelPanelWrapper.add(mainBranchPanel.messages[index], initialMessageGbc)
         }
 
-        // Revalidate the panels
         mainBranchPanel.branchPanel.revalidate()
         mainBranchPanel.labelPanelWrapper.revalidate()
     }
@@ -229,10 +270,10 @@ class CherryDragAndDropListener(
         end: Insets,
         progress: Float,
     ): Insets {
-        val top = (start.top + (end.top - start.top) * progress).toInt()
-        val left = (start.left + (end.left - start.left) * progress).toInt()
-        val bottom = (start.bottom + (end.bottom - start.bottom) * progress).toInt()
-        val right = (start.right + (end.right - start.right) * progress).toInt()
+        val top = interpolateValue(start.top, end.top, progress)
+        val left = interpolateValue(start.left, end.left, progress)
+        val bottom = interpolateValue(start.bottom, end.bottom, progress)
+        val right = interpolateValue(start.right, end.right, progress)
         return Insets(top, left, bottom, right)
     }
 
@@ -273,16 +314,17 @@ class CherryDragAndDropListener(
             finalConstraints.add(Pair(gbcCircleFinal, gbcMessageFinal))
         }
 
-        val finalLineOffset =
-            if (mainCircles.size - 1 == mainIndex - 1) {
-                mainBranchPanel.branchPanel.diameter * 2 + cherry.minimumHeight
-            } else {
-                mainBranchPanel.branchPanel.diameter * 2
-            }
+        val finalLineOffset = computeFinalLineOffset()
 
         val lineOffset = Pair(graphPanel.lineOffset, finalLineOffset)
 
         return Triple(initialConstraints, finalConstraints, lineOffset)
+    }
+
+    private fun computeFinalLineOffset() = if (mainCircles.size - 1 == mainIndex - 1) {
+        defaultLineOffset + cherry.minimumHeight
+    } else {
+        defaultLineOffset
     }
 
     private fun GridBagConstraints.modifyInsetsToMakeSpaceForCherry(i: Int) {
@@ -301,29 +343,10 @@ class CherryDragAndDropListener(
             }
     }
 
-    override fun mouseReleased(e: MouseEvent?) {
-        if (wasDragged) {
-            if (cherry.bounds.intersects(mainBranchPanel.branchPanel.bounds)) {
-                mainIndex = findCherryIndex()
-                mainBranchPanel.branchPanel.branch.currentCommits.add(mainIndex, createCherryCommit())
-                addedBranchPanel.branchPanel.branch.currentCommits[initialIndex].isCherryPicked = true
-                mainBranchPanel.updateCommits()
-            } else {
-                clone.commit.isCherryPicked = false
-                cherry.commit.isCherryPicked = false
-            }
-            clone.commit.isHovered = false
-            graphPanel.lineOffset = mainBranchPanel.branchPanel.diameter * 2
-            graphPanel.updateGraphPanel()
-            dragPanel.remove(cherry)
-            dragPanel.remove(mainBranchPanel)
-            refreshDraggableArea()
-        }
-        e?.consume()
-    }
+
 
     private fun formatCherryOnDrag() {
-        cherry.commit.isCherryPicked = true
+        cherry.commit.wasCherryPicked = true
     }
 
     private fun createCherryCommit(): CommitInfo {
@@ -338,7 +361,7 @@ class CherryDragAndDropListener(
             cherry.commit.isReordered,
             cherry.commit.isDragged,
             cherry.commit.isCollapsed,
-            cherry.commit.isCherryPicked,
+            cherry.commit.wasCherryPicked,
         )
     }
 
@@ -399,7 +422,7 @@ class CherryDragAndDropListener(
     private fun createClone(): CirclePanel {
         val clone = cherry.clone()
         clone.commit = createCherryCommit()
-        clone.commit.isCherryPicked = false
+        clone.commit.wasCherryPicked = false
         return clone
     }
 
