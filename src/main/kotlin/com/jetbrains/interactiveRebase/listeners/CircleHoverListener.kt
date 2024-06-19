@@ -191,7 +191,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
 
         val point = SwingUtilities.convertPoint(circlePanel, x, y, mainPanel)
 
-        if(!commit.isSelected){
+        if (!commit.isSelected) {
             modelService.selectSingleCommit(circlePanel.commit, branchInfo)
         }
 
