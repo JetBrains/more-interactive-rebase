@@ -17,7 +17,7 @@ class RebaseAction :
     DumbAwareAction(
         "Rebase onto",
         "Change the base of your checked-out branch.",
-        AllIcons.Actions.DeleteTagHover,
+        AllIcons.Vcs.Branch,
     ),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
