@@ -1,12 +1,15 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
+import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
@@ -168,18 +171,24 @@ class MainPanel(
 
                 override fun mousePressed(e: MouseEvent?) {
                     SwingUtilities.invokeLater { requestFocusInWindow() }
+                    if (e != null && e.isPopupTrigger) {
+                        invokePopup(e.x, e.y)
+                        e.consume()
+                    }
                 }
 
                 override fun mouseReleased(e: MouseEvent?) {
                     SwingUtilities.invokeLater { requestFocusInWindow() }
+                    if (e != null && e.isPopupTrigger) {
+                        invokePopup(e.x, e.y)
+                        e.consume()
+                    }
                 }
 
                 override fun mouseEntered(e: MouseEvent?) {
-                    SwingUtilities.invokeLater { requestFocusInWindow() }
                 }
 
                 override fun mouseExited(e: MouseEvent?) {
-                    SwingUtilities.invokeLater { requestFocusInWindow() }
                 }
             },
         )
@@ -229,6 +238,24 @@ class MainPanel(
         addedBranchInfo?.currentCommits?.forEach {
             it.addListener(commitInfoListener)
         }
+    }
+
+    /**
+     * Shows context menu
+     */
+
+    fun invokePopup(
+        x: Int,
+        y: Int,
+    ) {
+        val actionManager = ActionManager.getInstance()
+        val actionsGroup =
+            actionManager.getAction(
+                "com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup",
+            ) as RebaseActionsGroup
+
+        val popupMenu = actionManager.createActionPopupMenu(ActionPlaces.EDITOR_TAB, actionsGroup)
+        popupMenu.component.show(this, x, y)
     }
 
     /**
