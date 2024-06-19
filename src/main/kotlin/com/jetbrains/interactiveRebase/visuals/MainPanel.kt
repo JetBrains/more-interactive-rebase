@@ -43,7 +43,6 @@ class MainPanel(
 
     init {
         graphWrapper.layout = OverlayLayout(graphWrapper)
-//        graphWrapper.border = BorderFactory.createLineBorder(JBColor.GREEN)
 
         graphPanel = createGraphPanel()
         contentPanel = createContentPanel()

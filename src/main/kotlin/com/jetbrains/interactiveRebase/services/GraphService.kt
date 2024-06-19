@@ -52,11 +52,11 @@ class GraphService(private val project: Project) {
      * Called when a branch is de-selected from the side panel
      */
     fun removeBranch(graphInfo: GraphInfo) {
+        graphInfo.mainBranch.isPrimary = false
         project.service<ActionService>().resetAllChangesAction()
         commitService.referenceBranchName = ""
         updateBranchInfo(graphInfo.mainBranch)
         graphInfo.changeAddedBranch(null)
-        graphInfo.mainBranch.isPrimary = false
     }
 
     /**

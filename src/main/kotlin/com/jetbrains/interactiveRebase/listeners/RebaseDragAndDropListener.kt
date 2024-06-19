@@ -4,6 +4,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
+import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.visuals.GraphPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
@@ -18,8 +19,8 @@ import javax.swing.Timer
 
 class RebaseDragAndDropListener(
     val project: Project,
-    private val mainBranchNameLabel: RoundedPanel,
-    private val addedBranchNameLabel: RoundedPanel,
+    private val mainBranchNameLabel: JBPanel<*>,
+    private val addedBranchNameLabel: JBPanel<*>,
     private val graphPanel: GraphPanel,
 ) : MouseAdapter(), Disposable {
     private val mainBranchPanel = mainBranchNameLabel.parent as LabeledBranchPanel
@@ -34,8 +35,9 @@ class RebaseDragAndDropListener(
     private var mainPlaceholderPanel = placeholderPanel(mainBranchPanel)
     private var addedPlaceholderPanel = placeholderPanel(addedBranchPanel)
 
-    private val initialColor = addedBranchNameLabel.backgroundColor
+    private val initialColor = (addedBranchNameLabel.getComponent(0) as RoundedPanel).backgroundColor
     private var wasDragged: Boolean = false
+    private lateinit var help: JBPanel<*>
 
     /**
      * On pressing on a name label of a branch
@@ -44,6 +46,7 @@ class RebaseDragAndDropListener(
      * 3. puts appropriate formatting on the label
      */
     override fun mousePressed(e: MouseEvent) {
+        help = (mainBranchNameLabel.getComponent(1) as JBPanel<*>)
         updateMousePosition(e)
         initialPositionMain =
             Point(
@@ -76,6 +79,8 @@ class RebaseDragAndDropListener(
      */
     override fun mouseDragged(e: MouseEvent) {
         if (!wasDragged) {
+
+            help.isVisible = false
             addLabelsToDragPanel()
 
             // Create a transparent placeholder panels
@@ -85,7 +90,6 @@ class RebaseDragAndDropListener(
             substituteLabelForPlaceholderAddedBranch()
             wasDragged = true
         }
-
         dragPanel.cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
         formatDraggedLabelOnDrag()
         setBranchNameLocation(e)
@@ -106,12 +110,15 @@ class RebaseDragAndDropListener(
      * 4. refreshes the drag panel (to visually remove the labels from it)
      */
     override fun mouseReleased(e: MouseEvent) {
+        help.isVisible = true
+
         dragPanel.labelIsDragged = false
         resetFormattingOfSecondLabel()
         if (mainBranchPanel.branch.isRebased) {
             formatDraggedLabelOnDrop()
         } else {
-            mainBranchNameLabel.backgroundColor = mainBranchPanel.colorTheme.branchNameColor
+            (mainBranchNameLabel.getComponent(0) as RoundedPanel).backgroundColor =
+                mainBranchPanel.colorTheme.branchNameColor
         }
         dragPanel.repaint()
         if (mainBranchNameLabel.bounds.intersects(addedBranchNameLabel.bounds) &&
@@ -135,7 +142,7 @@ class RebaseDragAndDropListener(
         dragPanel.startDragPoint =
             Point(
                 mainBranchNameLabel.x + mainBranchNameLabel.width / 2,
-                mainBranchNameLabel.y + mainBranchNameLabel.height + 5,
+                mainBranchNameLabel.y + mainBranchNameLabel.getComponent(0).height + 15,
             )
         dragPanel.endDragPoint =
             Point(
@@ -161,7 +168,7 @@ class RebaseDragAndDropListener(
      * to indicate you can drop on it
      */
     internal fun changeFormattingOfSecondLabelWhenUserCanDropOnIt() {
-        addedBranchNameLabel.backgroundColor = JBColor.LIGHT_GRAY
+        (addedBranchNameLabel.getComponent(0) as RoundedPanel).backgroundColor = JBColor.LIGHT_GRAY
         addedBranchNameLabel.repaint()
     }
 
@@ -171,13 +178,14 @@ class RebaseDragAndDropListener(
      */
     internal fun formatDraggedLabelOnDrag() {
         if (mainBranchPanel.branch.isRebased) {
-            mainBranchNameLabel.addBackgroundGradient(
+            (mainBranchNameLabel.getComponent(0) as RoundedPanel).addBackgroundGradient(
                 mainBranchPanel.colorTheme.regularCircleColor,
                 addedBranchPanel.colorTheme.regularCircleColor,
             )
             mainBranchNameLabel.repaint()
         } else {
-            mainBranchNameLabel.backgroundColor = mainBranchPanel.colorTheme.regularCircleColor
+            (mainBranchNameLabel.getComponent(0) as RoundedPanel).backgroundColor =
+                mainBranchPanel.colorTheme.regularCircleColor
         }
     }
 
@@ -217,7 +225,7 @@ class RebaseDragAndDropListener(
      * be the initial formatting
      */
     internal fun resetFormattingOfSecondLabel() {
-        addedBranchNameLabel.backgroundColor = initialColor
+        (addedBranchNameLabel.getComponent(0) as RoundedPanel).backgroundColor = initialColor
         addedBranchNameLabel.repaint()
     }
 
@@ -226,12 +234,12 @@ class RebaseDragAndDropListener(
      * to indicate the branch has been rebased
      */
     internal fun formatDraggedLabelOnDrop() {
-        mainBranchNameLabel.addBackgroundGradient(
+        (mainBranchNameLabel.getComponent(0) as RoundedPanel).addBackgroundGradient(
             mainBranchPanel.colorTheme.branchNameColor,
             addedBranchPanel.colorTheme.branchNameColor,
         )
 
-        mainBranchNameLabel.backgroundColor = Palette.TRANSPARENT
+        (mainBranchNameLabel.getComponent(0) as RoundedPanel).backgroundColor = Palette.TRANSPARENT
         mainBranchNameLabel.repaint()
     }
 
@@ -282,13 +290,16 @@ class RebaseDragAndDropListener(
     /**
      * Instantiates a placeholder panel
      */
-    internal fun placeholderPanel(labeledBranchPanel: LabeledBranchPanel): RoundedPanel {
+    internal fun placeholderPanel(labeledBranchPanel: LabeledBranchPanel): JBPanel<*> {
         val placeholderPanel = labeledBranchPanel.instantiateBranchNamePanel()
-        placeholderPanel.backgroundColor = Palette.TRANSPARENT
-        placeholderPanel.getComponent(0).foreground = labeledBranchPanel.background
-        placeholderPanel.isOpaque = false
-        placeholderPanel.removeBorderGradient()
-        placeholderPanel.removeBackgroundGradient()
+        (placeholderPanel.getComponent(0) as RoundedPanel).backgroundColor = Palette.TRANSPARENT
+        (placeholderPanel.getComponent(0) as RoundedPanel).getComponent(0).foreground = labeledBranchPanel.background
+        val help = placeholderPanel.components.getOrNull(1) as JBPanel<*>?
+        help?.components?.getOrNull(0)?.isVisible = false
+        help?.components?.getOrNull(1)?.foreground = labeledBranchPanel.background
+        (placeholderPanel.getComponent(0) as RoundedPanel).isOpaque = false
+        (placeholderPanel.getComponent(0) as RoundedPanel).removeBorderGradient()
+        (placeholderPanel.getComponent(0) as RoundedPanel).removeBackgroundGradient()
         return placeholderPanel
     }
 
