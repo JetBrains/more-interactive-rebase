@@ -84,6 +84,7 @@ class ActionService(val project: Project) {
         val commits = modelService.graphInfo.addedBranch?.selectedCommits
         commits?.forEach {
                 commitInfo ->
+            commitInfo.wasCherryPicked = true
             val newCommit =
                 CommitInfo(
                     commitInfo.commit, project,

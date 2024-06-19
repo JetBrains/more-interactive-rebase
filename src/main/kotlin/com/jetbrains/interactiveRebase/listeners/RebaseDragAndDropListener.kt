@@ -316,6 +316,42 @@ class RebaseDragAndDropListener(
      * and adds the actual rebase command in
      * the backend
      */
+//    internal fun animateAndPropagateToBackend(
+//        initialOffsetMain: Int,
+//        initialOffsetAdded: Int,
+//        finalOffsetMain: Int,
+//        finalOffsetAdded: Int,
+//        duration: Int = 300,
+//        delay: Int = 10,
+//    ) {
+//        val steps = duration / delay
+//        val incrementMain = ((finalOffsetMain - initialOffsetMain).toDouble() / steps.toDouble()).toInt()
+//        val incrementAdded = ((finalOffsetAdded - initialOffsetAdded).toDouble() / steps.toDouble()).toInt()
+//        var currentOffsetMain = initialOffsetMain
+//        var currentOffsetAdded = initialOffsetAdded
+//        val timer =
+//            Timer(delay) {
+//                if (currentOffsetMain > finalOffsetMain || currentOffsetAdded < finalOffsetAdded) {
+//                    currentOffsetMain += incrementMain
+//                    updateOffsetOfMainBranch(currentOffsetMain)
+//                    currentOffsetAdded += incrementAdded
+//                    updateOffsetOfAddedBranch(currentOffsetAdded)
+//                } else {
+//                    (it.source as Timer).stop()
+//                    updateOffsetOfAddedBranch(finalOffsetAdded)
+//                    updateOffsetOfMainBranch(finalOffsetMain)
+//                    if (mainBranchPanel.branch.isRebased) {
+//                        project.service<ActionService>().takeNormalRebaseAction()
+//                        project.service<ActionService>().mainPanel.revalidate()
+//                        project.service<ActionService>().mainPanel.repaint()
+//                    }
+//                }
+//            }
+//        timer.initialDelay = 0
+//        timer.isRepeats = true
+//        timer.start()
+//    }
+
     internal fun animateAndPropagateToBackend(
         initialOffsetMain: Int,
         initialOffsetAdded: Int,
@@ -325,21 +361,24 @@ class RebaseDragAndDropListener(
         delay: Int = 10,
     ) {
         val steps = duration / delay
-        val incrementMain = ((finalOffsetMain - initialOffsetMain).toDouble() / steps.toDouble()).toInt()
-        val incrementAdded = ((finalOffsetAdded - initialOffsetAdded).toDouble() / steps.toDouble()).toInt()
-        var currentOffsetMain = initialOffsetMain
-        var currentOffsetAdded = initialOffsetAdded
-        val timer =
-            Timer(delay) {
-                if (currentOffsetMain > finalOffsetMain || currentOffsetAdded < finalOffsetAdded) {
-                    currentOffsetMain += incrementMain
-                    updateOffsetOfMainBranch(currentOffsetMain)
-                    currentOffsetAdded += incrementAdded
-                    updateOffsetOfAddedBranch(currentOffsetAdded)
-                } else {
+        var currentStep = 0
+
+        val timer = Timer(delay) {
+            if (currentStep < steps) {
+                currentStep++
+                val progress = currentStep.toFloat() / steps.toFloat()
+
+                val interpolatedOffsetMain = interpolateValue(initialOffsetMain, finalOffsetMain, progress)
+                val interpolatedOffsetAdded = interpolateValue(initialOffsetAdded, finalOffsetAdded, progress)
+
+                updateOffsetOfMainBranch(interpolatedOffsetMain)
+                updateOffsetOfAddedBranch(interpolatedOffsetAdded)
+
+                if (currentStep == steps) {
                     (it.source as Timer).stop()
                     updateOffsetOfAddedBranch(finalOffsetAdded)
                     updateOffsetOfMainBranch(finalOffsetMain)
+
                     if (mainBranchPanel.branch.isRebased) {
                         project.service<ActionService>().takeNormalRebaseAction()
                         project.service<ActionService>().mainPanel.revalidate()
@@ -347,10 +386,21 @@ class RebaseDragAndDropListener(
                     }
                 }
             }
+        }
+
+        startAnimation(timer)
+    }
+
+    private fun startAnimation(timer: Timer) {
         timer.initialDelay = 0
         timer.isRepeats = true
         timer.start()
     }
+
+    private fun interpolateValue(start: Int, end: Int, progress: Float): Int {
+        return start + ((end - start) * progress).toInt()
+    }
+
 
     /**
      * Updates the position of the added branch
