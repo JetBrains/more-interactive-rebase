@@ -14,6 +14,7 @@ import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.listeners.BranchNavigationListener
+import com.jetbrains.interactiveRebase.listeners.TextFieldListener
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.SidePanel
 import java.awt.BorderLayout
@@ -168,6 +169,14 @@ class MainPanel(
             object : MouseListener {
                 override fun mouseClicked(e: MouseEvent?) {
                     SwingUtilities.invokeLater { requestFocusInWindow() }
+                    graphPanel.mainBranchPanel.openTextFields.forEach {
+                            textField ->
+                        if (textField.isVisible && e?.component !== textField) {
+                            if (textField.keyListeners.isEmpty() || textField.keyListeners[0] !is TextFieldListener) return
+                            val listener = textField.keyListeners[0] as TextFieldListener
+                            listener.processEnter()
+                        }
+                    }
                 }
 
                 override fun mousePressed(e: MouseEvent?) {
