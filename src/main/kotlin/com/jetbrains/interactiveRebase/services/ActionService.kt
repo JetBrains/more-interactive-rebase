@@ -229,6 +229,7 @@ class ActionService(project: Project) {
      * Adds a visual change for a commit that has to be stopped to edit
      */
     fun takeStopToEditAction() {
+        invoker.undoneCommands.clear()
         val commits = modelService.getSelectedCommits()
         commits.forEach {
                 commitInfo ->
@@ -239,7 +240,6 @@ class ActionService(project: Project) {
             }
         }
         modelService.branchInfo.clearSelectedCommits()
-        invoker.undoneCommands.clear()
     }
 
     /**
@@ -408,20 +408,20 @@ class ActionService(project: Project) {
 
         selectedCommits.forEach {
             removeSquashFixChange(it)
-            ret.add(it)
+            addIfNotExists(ret, it)
         }
 
-        parent.changes.forEach {
+        parent.getChangesAfterPick().forEach {
                 change ->
             if (change is SquashCommand) {
                 change.squashedCommits.forEach {
                     removeSquashFixChange(it)
-                    ret.add(it)
+                    addIfNotExists(ret, it)
                 }
             } else if (change is FixupCommand) {
                 change.fixupCommits.forEach {
                     removeSquashFixChange(it)
-                    ret.add(it)
+                    addIfNotExists(ret, it)
                 }
             }
         }
@@ -430,6 +430,7 @@ class ActionService(project: Project) {
 
         return ret
     }
+
 
     /**
      * Removes squash and fixup
@@ -816,5 +817,11 @@ class ActionService(project: Project) {
         headerPanel.rebaseProcessPanel.isVisible = false
         headerPanel.revalidate()
         headerPanel.repaint()
+    }
+
+    fun <T> addIfNotExists(list: MutableList<T>, element: T) {
+        if (!list.contains(element)) {
+            list.add(element)
+        }
     }
 }
