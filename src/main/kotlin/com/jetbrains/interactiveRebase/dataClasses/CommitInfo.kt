@@ -17,6 +17,8 @@ data class CommitInfo(
     var isReordered: Boolean = false,
     var isDragged: Boolean = false,
     var isCollapsed: Boolean = false,
+    var isPaused: Boolean = false,
+    var isRebased: Boolean = false,
 ) {
     internal val listeners: MutableList<Listener> = mutableListOf()
 
@@ -97,6 +99,21 @@ data class CommitInfo(
         } else {
             changes
         }
+    }
+
+    fun markAsPaused() {
+        isPaused = true
+        listeners.forEach { it.onCommitChange() }
+    }
+
+    fun markAsNotPaused() {
+        isPaused = false
+        listeners.forEach { it.onCommitChange() }
+    }
+
+    fun markAsRebased() {
+        isRebased = true
+        listeners.forEach { it.onCommitChange() }
     }
 
     /**

@@ -36,8 +36,9 @@ class AddBranchAction :
     }
 
     override fun update(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible = true
-//        super.update(e)
+        val project = e.project ?: return
+        e.presentation.isEnabled = project.service<ActionService>().checkRebaseIsNotInProgress()
+        e.presentation.isVisible = true
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {

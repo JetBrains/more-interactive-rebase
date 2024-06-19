@@ -23,7 +23,7 @@ import com.jetbrains.interactiveRebase.visuals.MainPanel
 class ActionService(project: Project) {
     internal var modelService = project.service<ModelService>()
     private var invoker = modelService.invoker
-    lateinit var mainPanel: MainPanel
+    var mainPanel = MainPanel(project)
 
     /**
      * Constructor for injection during testing
@@ -31,6 +31,10 @@ class ActionService(project: Project) {
     constructor(project: Project, modelService: ModelService, invoker: RebaseInvoker) : this(project) {
         this.modelService = modelService
         this.invoker = invoker
+    }
+
+    fun checkRebaseIsNotInProgress(): Boolean {
+        return !modelService.rebaseInProcess
     }
 
     /**
@@ -83,7 +87,7 @@ class ActionService(project: Project) {
      */
     fun checkDrop(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !modelService.areDisabledCommitsSelected() &&
+            !modelService.areDisabledCommitsSelected() && checkRebaseIsNotInProgress() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
@@ -97,7 +101,7 @@ class ActionService(project: Project) {
      */
     fun checkReword(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.getActualSelectedCommitsSize() == 1 &&
-            !modelService.areDisabledCommitsSelected() &&
+            !modelService.areDisabledCommitsSelected() && checkRebaseIsNotInProgress() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
@@ -111,7 +115,7 @@ class ActionService(project: Project) {
      */
     fun checkStopToEdit(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !modelService.areDisabledCommitsSelected() &&
+            !modelService.areDisabledCommitsSelected() && checkRebaseIsNotInProgress() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
@@ -138,7 +142,10 @@ class ActionService(project: Project) {
 
         val validParent = checkValidParent()
 
-        e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && validParent && !modelService.areDisabledCommitsSelected()
+        e.presentation.isEnabled = notEmpty &&
+            notFirstCommit && notDropped &&
+            validParent && !modelService.areDisabledCommitsSelected() &&
+            checkRebaseIsNotInProgress()
     }
 
     /**
@@ -190,7 +197,7 @@ class ActionService(project: Project) {
      */
     fun checkPick(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !modelService.areDisabledCommitsSelected()
+            !modelService.areDisabledCommitsSelected() && checkRebaseIsNotInProgress()
     }
 
     /**
@@ -760,8 +767,33 @@ class ActionService(project: Project) {
         }
     }
 
+    /**
+     * Gets the header panel instance
+     */
     fun getHeaderPanel(): HeaderPanel {
         val wrapper = mainPanel.getComponent(0) as OnePixelSplitter
         return wrapper.firstComponent as HeaderPanel
+    }
+
+    /**
+     * Removes the rebase + reset process panel and shows the continue + abort buttons
+     */
+    fun switchToRebaseProcessPanel() {
+        val headerPanel = getHeaderPanel()
+        headerPanel.changeActionsPanel.isVisible = false
+        headerPanel.rebaseProcessPanel.isVisible = true
+        headerPanel.revalidate()
+        headerPanel.repaint()
+    }
+
+    /**
+     * Removes the continue + abort process panel and shows the rebase + reset buttons
+     */
+    fun switchToChangeButtonsIfNeeded() {
+        val headerPanel = getHeaderPanel()
+        headerPanel.changeActionsPanel.isVisible = true
+        headerPanel.rebaseProcessPanel.isVisible = false
+        headerPanel.revalidate()
+        headerPanel.repaint()
     }
 }

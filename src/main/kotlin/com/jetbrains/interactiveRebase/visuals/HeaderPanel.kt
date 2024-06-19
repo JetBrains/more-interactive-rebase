@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
-import com.jetbrains.interactiveRebase.services.RebaseInvoker
+import com.jetbrains.interactiveRebase.services.ModelService
 import java.awt.BorderLayout
 import java.awt.Graphics
 import javax.swing.BoxLayout
@@ -17,7 +17,7 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
     JBPanel<JBPanel<*>>() {
     private val gitActionsPanel = JBPanel<JBPanel<*>>()
     val changeActionsPanel = JBPanel<JBPanel<*>>()
-    private val invoker = project.service<RebaseInvoker>()
+    val rebaseProcessPanel = JBPanel<JBPanel<*>>()
 
     init {
         gitActionsPanel.layout = BoxLayout(gitActionsPanel, BoxLayout.X_AXIS)
@@ -26,18 +26,27 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
 
         changeActionsPanel.layout = BoxLayout(changeActionsPanel, BoxLayout.X_AXIS)
         addChangeButtons(changeActionsPanel)
+        addRebaseProcessButtons(rebaseProcessPanel)
+
+        if (project.service<ModelService>().rebaseInProcess) {
+            changeActionsPanel.isVisible = false
+            rebaseProcessPanel.isVisible = true
+        }
     }
 
     override fun paintComponent(g: Graphics?) {
         this.layout = BorderLayout()
         super.paintComponent(g)
         this.add(gitActionsPanel, BorderLayout.WEST)
-        this.add(changeActionsPanel, BorderLayout.EAST)
+        if (changeActionsPanel.isVisible) {
+            this.add(changeActionsPanel, BorderLayout.EAST)
+        } else {
+            this.add(rebaseProcessPanel, BorderLayout.EAST)
+        }
     }
 
     /**
      * Add git action buttons to the header panel.
-     * At the moment, the buttons are hardcoded, but we will replace them with icons and listeners later.
      */
     private fun addGitButtons(buttonPanel: JBPanel<JBPanel<*>>) {
         val actionsGroup =
@@ -47,12 +56,13 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
         val toolbar = actionManager.createActionToolbar(ActionPlaces.EDITOR_TAB, actionsGroup, true)
         val toolbarComponent: JComponent = toolbar.component
         toolbar.targetComponent = buttonPanel
+        toolbarComponent.border = null
         buttonPanel.add(toolbarComponent)
+        buttonPanel.border = null
     }
 
     /**
      * Add change action buttons to the header panel.
-     * At the moment, the buttons are hardcoded, but we will replace them with icons and listeners later.
      */
     fun addChangeButtons(buttonPanel: JBPanel<JBPanel<*>>) {
         val group =
@@ -62,6 +72,25 @@ class HeaderPanel(private val project: Project, private val actionManager: Actio
         val toolbar = actionManager.createActionToolbar(ActionPlaces.EDITOR_TAB, group, true)
         val toolbarComponent: JComponent = toolbar.component
         toolbar.targetComponent = buttonPanel
+        toolbarComponent.border = null
         buttonPanel.add(toolbarComponent)
+        buttonPanel.border = null
+    }
+
+    /**
+     * Adds the continue and abort rebase buttons to the header panel.
+     */
+    fun addRebaseProcessButtons(buttonPanel: JBPanel<JBPanel<*>>) {
+        buttonPanel.layout = BoxLayout(buttonPanel, BoxLayout.X_AXIS)
+        val group =
+            actionManager.getAction(
+                "RebaseProcessActionsGroup",
+            ) as RebaseActionsGroup
+        val toolbar = actionManager.createActionToolbar(ActionPlaces.EDITOR_TAB, group, true)
+        val toolbarComponent: JComponent = toolbar.component
+        toolbarComponent.border = null
+        toolbar.targetComponent = buttonPanel
+        buttonPanel.add(toolbarComponent)
+        buttonPanel.border = null
     }
 }
