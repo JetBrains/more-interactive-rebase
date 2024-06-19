@@ -1,5 +1,6 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -19,26 +20,14 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
-import com.jetbrains.interactiveRebase.listeners.CircleDragAndDropListener
-import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
-import com.jetbrains.interactiveRebase.listeners.LabelListener
-import com.jetbrains.interactiveRebase.listeners.TextFieldListener
+import com.jetbrains.interactiveRebase.listeners.*
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.services.strategies.SquashTextStrategy
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.RoundedPanel
-import java.awt.Cursor
-import java.awt.Dimension
-import java.awt.Graphics
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
-import java.awt.Insets
+import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.JComponent
-import javax.swing.JTextField
-import javax.swing.OverlayLayout
-import javax.swing.SwingConstants
-import javax.swing.SwingUtilities
+import javax.swing.*
 import javax.swing.border.EmptyBorder
 
 /**
@@ -126,7 +115,7 @@ class LabeledBranchPanel(
         addBranchOfCommits(gbc, offset)
     }
 
-    private fun branchNamePanel(): RoundedPanel {
+    private fun branchNamePanel(): JBPanel<*> {
         val panel = instantiateBranchNamePanel()
 
         panel.addMouseListener(
@@ -134,9 +123,9 @@ class LabeledBranchPanel(
                 override fun mouseEntered(e: MouseEvent?) {
                     cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
                     if (branch.isRebased) {
-                        panel.backgroundColor = Palette.TRANSPARENT
+                        (panel.getComponent(0) as RoundedPanel).backgroundColor = Palette.TRANSPARENT
                     } else {
-                        panel.backgroundColor = colorTheme.regularCircleColor
+                        (panel.getComponent(0) as RoundedPanel).backgroundColor = colorTheme.regularCircleColor
                     }
                     panel.repaint()
                 }
@@ -144,9 +133,9 @@ class LabeledBranchPanel(
                 override fun mouseExited(e: MouseEvent?) {
                     cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
                     if (branch.isRebased) {
-                        panel.backgroundColor = Palette.TRANSPARENT
+                        (panel.getComponent(0) as RoundedPanel).backgroundColor = Palette.TRANSPARENT
                     } else {
-                        panel.backgroundColor = colorTheme.branchNameColor
+                        (panel.getComponent(0) as RoundedPanel).backgroundColor = colorTheme.branchNameColor
                     }
                     panel.repaint()
                 }
@@ -156,20 +145,84 @@ class LabeledBranchPanel(
         return panel
     }
 
-    fun instantiateBranchNamePanel(): RoundedPanel {
+    fun instantiateBranchNamePanel(): JBPanel<*> {
+        val panel = JBPanel<JBPanel<*>>()
+        panel.isOpaque = false
+        panel.layout = GridBagLayout()
         val label = BoldLabel(branch.name)
         label.horizontalAlignment = SwingConstants.CENTER
-        val panel = RoundedPanel()
-        panel.border = EmptyBorder(2, 3, 3, 3)
-        panel.cornerRadius = 15
-
-        panel.backgroundColor = colorTheme.branchNameColor
+        val roundedPanel = RoundedPanel()
+        roundedPanel.border = EmptyBorder(2, 3, 3, 3)
+        roundedPanel.cornerRadius = 15
+        roundedPanel.removeBackgroundGradient()
+        roundedPanel.backgroundColor = colorTheme.branchNameColor
         if (branch.isRebased) {
-            panel.backgroundColor = Palette.TRANSPARENT
-            panel.addBackgroundGradient(colorTheme.branchNameColor, Palette.TOMATO_THEME.branchNameColor)
+            roundedPanel.backgroundColor = Palette.TRANSPARENT
+            roundedPanel.addBackgroundGradient(colorTheme.branchNameColor, Palette.TOMATO_THEME.branchNameColor)
         }
-        panel.add(label)
+        roundedPanel.add(label)
+        panel.add(roundedPanel)
+        if (branch.isPrimary) {
+            addHelpMessage(panel)
+        }
         return panel
+    }
+
+    /**
+     * Adds an indication that the branch name label
+     * of the main branch panel
+     * can be dragged in the form of
+     * a help message beneath the label
+     */
+    private fun addHelpMessage(panel: JBPanel<JBPanel<*>>) {
+        val help = JBPanel<JBPanel<*>>()
+        help.layout = GridBagLayout()
+        help.isOpaque = false
+        addRebaseIcon(help)
+        addTextMessage(help)
+        val gbc = GridBagConstraints()
+        gbc.gridx = 0
+        gbc.gridy = 1
+        gbc.anchor = GridBagConstraints.CENTER
+        panel.add(help, gbc)
+    }
+
+    /**
+     * Adds a help message beneath
+     * the branch name label
+     * of the main branch panel
+     */
+    private fun addTextMessage(help: JBPanel<JBPanel<*>>) {
+        val msg = TextStyle.addStyling("drag to rebase", TextStyle.ITALIC)
+        val helpMsg = JBLabel(msg)
+        helpMsg.minimumSize = Dimension(helpMsg.minimumWidth, 22)
+        helpMsg.isOpaque = false
+        helpMsg.foreground = JBColor.LIGHT_GRAY.brighter()
+
+        val gbc = GridBagConstraints()
+        gbc.gridx = 1
+        help.add(helpMsg)
+    }
+
+    /**
+     * Adds the rebase icon at the bottom
+     * of the branch name label
+     * of the main branch panel
+     */
+    private fun addRebaseIcon(help: JBPanel<JBPanel<*>>) {
+        val iconPanel = object : JBPanel<JBPanel<*>>() {
+            override fun paintComponent(g: Graphics) {
+                super.paintComponent(g)
+                val g2d = g as Graphics2D
+                val originalComposite = g2d.composite
+                g2d.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f)
+                AllIcons.Vcs.Branch.paintIcon(this, g2d, 2, 2)
+                g2d.composite = originalComposite
+            }
+        }
+        iconPanel.isOpaque = false
+        iconPanel.preferredSize = Dimension(20, 20)
+        help.add(iconPanel)
     }
 
     /**
@@ -282,6 +335,22 @@ class LabeledBranchPanel(
             circle.addMouseListener(circleHoverListener)
             circle.addMouseMotionListener(circleHoverListener)
             Disposer.register(this, circleHoverListener)
+
+            if (
+                !branch.isWritable &&
+                circle !is CollapseCirclePanel &&
+                !circle.commit.wasCherryPicked
+            ) {
+                val cherryDragAndDropListener =
+                    CherryDragAndDropListener(
+                        project,
+                        circle,
+                        this,
+                    )
+                circle.addMouseListener(cherryDragAndDropListener)
+                circle.addMouseMotionListener(cherryDragAndDropListener)
+                Disposer.register(this, cherryDragAndDropListener)
+            }
         }
     }
 
@@ -290,7 +359,7 @@ class LabeledBranchPanel(
      * for a given circle index
      * and a list of circle panels.
      */
-    internal fun gridCellForCircle(
+    private fun gridCellForCircle(
         i: Int,
         circles: MutableList<CirclePanel>,
     ): GridBagConstraints {
@@ -500,7 +569,7 @@ class LabeledBranchPanel(
      * Updates branch name
      */
     fun updateBranchName() {
-        (branchNamePanel.getComponent(0) as BoldLabel).text = branch.name
+        ((branchNamePanel.getComponent(0) as RoundedPanel).getComponent(0) as BoldLabel).text = branch.name
     }
 
     /**

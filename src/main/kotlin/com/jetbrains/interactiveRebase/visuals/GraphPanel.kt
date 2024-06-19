@@ -42,6 +42,7 @@ class GraphPanel(
         )
 
     var addedBranchPanel: LabeledBranchPanel? = null
+    var lineOffset = mainBranchPanel.branchPanel.diameter * 2
 
     init {
         if (graphInfo.addedBranch != null) {
@@ -277,9 +278,9 @@ class GraphPanel(
                     mainCircleCenterX.toFloat(),
                     mainCircleCenterY.toFloat(),
                     mainCircleCenterX.toFloat(),
-                    mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 2,
+                    mainCircleCenterY.toFloat() + lineOffset,
                     mainCircleCenterX.toFloat(),
-                    mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 2,
+                    mainCircleCenterY.toFloat() + lineOffset,
                     addedCircleCenterX.toFloat(),
                     addedCircleCenterY.toFloat(),
                 )

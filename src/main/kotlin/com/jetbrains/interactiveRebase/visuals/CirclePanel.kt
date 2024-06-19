@@ -5,6 +5,7 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import icons.DvcsImplIcons
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Cursor
@@ -24,11 +25,11 @@ import javax.imageio.ImageIO
 open class CirclePanel(
     open val diameter: Double,
     private val border: Float,
-    var colorTheme: Palette.Theme,
+    open var colorTheme: Palette.Theme,
     open var commit: CommitInfo,
     open var next: CirclePanel? = null,
     open var previous: CirclePanel? = null,
-) : JBPanel<JBPanel<*>>(), Disposable {
+) : JBPanel<JBPanel<*>>(), Disposable, Cloneable {
     var centerX = 0.0
     var centerY = 0.0
     lateinit var circle: Ellipse2D.Double
@@ -99,6 +100,8 @@ open class CirclePanel(
         } else {
             cursor = Cursor.getDefaultCursor()
         }
+
+        if (commit.wasCherryPicked) paintCherry(g2d)
     }
 
     fun openHandCursor(): Cursor {
@@ -178,6 +181,17 @@ open class CirclePanel(
         g2d.color = borderColor
         g2d.stroke = BasicStroke(border)
         g2d.draw(circle)
+    }
+
+    fun paintCherry(g: Graphics) {
+        val icon = DvcsImplIcons.CherryPick
+        val iconX = (width - icon.iconWidth) / 2
+        val iconY = (height - icon.iconHeight) / 2
+        icon.paintIcon(this, g, iconX, iconY)
+    }
+
+    public override fun clone(): CirclePanel {
+        return super.clone() as CirclePanel
     }
 
     override fun dispose() {
