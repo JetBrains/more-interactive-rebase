@@ -326,7 +326,7 @@ class ActionService(project: Project) {
     /**
      * Resets all fields of a CommitInfo
      */
-    fun resetCommitInfo(commitInfo : CommitInfo) {
+    fun resetCommitInfo(commitInfo: CommitInfo) {
         commitInfo.changes.clear()
         commitInfo.isSelected = false
         commitInfo.isSquashed = false
@@ -767,10 +767,6 @@ class ActionService(project: Project) {
             it.removeChange(collapseCommand)
         }
         branch.addCommitsToCurrentCommits(index, collapsedCommits)
-    }
-
-    fun removeCollapseCommands() {
-
     }
 
     /**

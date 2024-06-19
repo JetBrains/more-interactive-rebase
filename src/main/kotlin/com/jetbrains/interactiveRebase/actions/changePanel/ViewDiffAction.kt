@@ -13,28 +13,25 @@ import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.visuals.GraphDiffDialog
 import javax.swing.JComponent
 
-class ViewDiffAction : DumbAwareAction(
-    "See Difference",
-    "See the difference with initial state",
-    AllIcons.Actions.Diff,
-),
+class ViewDiffAction :
+    DumbAwareAction(
+        "See Difference",
+        "See the difference with initial state",
+        AllIcons.Actions.Diff,
+    ),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        println("yaaa")
         val project = e.project
         if (null != project) {
             val dialog = GraphDiffDialog(project)
             dialog.show()
-
-
         }
-
-
     }
 
     override fun update(e: AnActionEvent) {
         e.project?.service<ActionService>()?.checkIfChangesMade(e)
     }
+
     override fun getActionUpdateThread(): ActionUpdateThread {
         return ActionUpdateThread.EDT
     }
@@ -51,5 +48,4 @@ class ViewDiffAction : DumbAwareAction(
             "See the difference with initial state",
         )
     }
-
 }

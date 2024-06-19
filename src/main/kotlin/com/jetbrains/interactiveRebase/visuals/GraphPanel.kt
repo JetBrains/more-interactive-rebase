@@ -253,7 +253,6 @@ class GraphPanel(
                         c.commit == graphInfo.addedBranch?.baseCommit
                     }[0]
             } catch (e: Exception) {
-
             }
             var (addedCircleCenterX, addedCircleCenterY) = centerCoordinatesOfBaseCircleInAddedBranch()
 

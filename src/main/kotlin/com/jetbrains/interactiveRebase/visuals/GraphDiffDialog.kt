@@ -15,20 +15,24 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.ModelService
-import com.jetbrains.rd.framework.base.deepClonePolymorphic
-import java.awt.*
-import javax.swing.*
+import java.awt.BorderLayout
+import java.awt.Dimension
+import javax.swing.Action
+import javax.swing.BorderFactory
+import javax.swing.JComponent
+import javax.swing.ScrollPaneConstants
 
-
-class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
-    private var diffPanel = JBPanel<JBPanel<*>>()
+class GraphDiffDialog(val project: Project) : DialogWrapper(project) {
+    private var modelService = project.service<ModelService>()
 
     init {
-        setTitle("Compare Interactive Rebase Changes")
+        title = "Compare Interactive Rebase Changes"
         init()
     }
 
-
+    /**
+     * Creates no actions such as cancel or OK
+     */
     override fun createActions(): Array<Action> {
         return arrayOf()
     }
@@ -36,11 +40,18 @@ class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
     override fun getHelpId(): String {
         return "IRGraphDiff"
     }
+
+    /**
+     * Sets the size
+     */
     override fun getDimensionServiceKey(): String {
-        setSize(500, 800)
+        setSize(550, 850)
         return "IRGraphDiffDialog"
     }
 
+    /**
+     * Creates the labels that distinguish the current and the initial version
+     */
     override fun createTitlePane(): JComponent {
         val titlePanel = JBPanel<JBPanel<*>>()
         titlePanel.layout = BorderLayout()
@@ -52,63 +63,64 @@ class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
         titlePanel.setBorder(
             BorderFactory.createCompoundBorder(
                 SideBorder(UIUtil.getPanelBackground().darker(), SideBorder.BOTTOM),
-                JBUI.Borders.empty(0, 5, 10, 5)
-            )
+                JBUI.Borders.empty(0, 5, 10, 5),
+            ),
         )
         return titlePanel
     }
 
     override fun getPreferredSize(): Dimension {
-        return Dimension(500,800)
+        return Dimension(550, 850)
     }
+
+    /**
+     * Duplicates the current GraphInfo two times and disables the listeners for both.
+     * One instance has changes reverted and one reflects the current stages.
+     */
     override fun createCenterPanel(): JComponent {
-        val diffPanel = JBPanel<JBPanel<*>>()
-        diffPanel.size = Dimension(480, 780)
-        diffPanel.layout = GridBagLayout()
+        val actualGraph = modelService.graphInfo
 
-        val actualGraph = project.service<ModelService>().graphInfo
+        // Create the graph without changes
+        val initialGraph: GraphInfo = modelService.duplicateGraphInfo(actualGraph)
+        expandBothBranches(initialGraph)
+        revertChangesVisually(initialGraph)
+        val initialGraphPanel: GraphPanel = createGraphDisplay(initialGraph)
 
-        val initialGraph : GraphInfo = duplicateGraphInfo(actualGraph)
-        expandCommitsInGraph(initialGraph)
-        revertChanges(initialGraph)
-        val initialGraphPanel : GraphPanel = createGraphDisplay(initialGraph)
+        initialGraphPanel.preferredSize = Dimension(260, 410)
 
-        initialGraphPanel.preferredSize = Dimension(240, 380)
+        // Create the graph with current changes
+        val currentGraph: GraphInfo = modelService.duplicateGraphInfo(actualGraph)
+        expandBothBranches(currentGraph)
+        val currentGraphPanel: GraphPanel = createGraphDisplay(currentGraph)
 
+        currentGraphPanel.preferredSize = Dimension(260, 410)
 
-        val currentGraph : GraphInfo = duplicateGraphInfo(actualGraph)
-        expandCommitsInGraph(currentGraph)
-        val currentGraphPanel : GraphPanel = createGraphDisplay(currentGraph)
-
-        currentGraphPanel.preferredSize = Dimension(240, 380)
-
+        // Make both scrollable
         val initialScrollable = JBScrollPane()
         initialScrollable.setViewportView(initialGraphPanel)
         initialScrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)
         initialScrollable.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED)
 
         val currentScrollable = JBScrollPane()
-
         currentScrollable.setViewportView(currentGraphPanel)
         currentScrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)
         currentScrollable.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED)
 
-        val split = OnePixelSplitter(false, 0.5f).apply {
-            firstComponent = initialScrollable
-            secondComponent = currentScrollable
-        }
+        // Put both in a split view
+        val split =
+            OnePixelSplitter(false, 0.5f).apply {
+                firstComponent = initialScrollable
+                secondComponent = currentScrollable
+            }
+        split.preferredSize = Dimension(520, 820)
         return split
     }
 
-
-    private fun expandCommitsInGraph(graphInfo: GraphInfo) {
-        expandCommits(graphInfo.mainBranch)
-        if (graphInfo.addedBranch != null) {
-            expandCommits(graphInfo.addedBranch!!)
-        }
-    }
-
-    private fun revertChanges(graphInfo: GraphInfo) {
+    /**
+     * Similar to the reset functionality, resets all changes without affecting the invoker.
+     * Do not use to reset changes, this will not reset them from the invoker.
+     */
+    fun revertChangesVisually(graphInfo: GraphInfo) {
         val primaryBranch = graphInfo.mainBranch
         val addedBranch = graphInfo.addedBranch
 
@@ -120,11 +132,21 @@ class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
         }
         primaryBranch.currentCommits = primaryBranch.initialCommits.toMutableList()
 
+        if (addedBranch != null) {
+            addedBranch.initialCommits.forEach {
+                project.service<ActionService>().resetCommitInfo(it)
+            }
+            addedBranch.currentCommits = addedBranch.initialCommits.toMutableList()
+        }
+
         primaryBranch.clearSelectedCommits()
         addedBranch?.clearSelectedCommits()
     }
 
-    fun createGraphDisplay(graphInfo : GraphInfo) : GraphPanel{
+    /**
+     * From the given GraphInfo, disables all listeners and creates a panel
+     */
+    fun createGraphDisplay(graphInfo: GraphInfo): GraphPanel {
         val graphPanel = GraphPanel(project, graphInfo)
         disableLabeledBranchPanel(graphPanel.mainBranchPanel)
 
@@ -134,32 +156,9 @@ class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
         return graphPanel
     }
 
-    fun duplicateGraphInfo(graphReference : GraphInfo) : GraphInfo {
-        return graphReference.copy(
-            mainBranch = duplicateBranchInfo(graphReference.mainBranch),
-            addedBranch = if (graphReference.addedBranch == null)  null else duplicateBranchInfo(graphReference.addedBranch!!)
-        )
-    }
-
-    fun duplicateBranchInfo(branchReference: BranchInfo) : BranchInfo {
-        val copy = branchReference.copy(
-            initialCommits = branchReference.initialCommits.map { duplicateCommitInfo(it) },
-        )
-        copy.baseCommit = branchReference.baseCommit
-        copy.currentCommits = branchReference.currentCommits.map{duplicateCommitInfo(it)}.toMutableList()
-        return copy
-    }
-
-    fun duplicateCommitInfo(commitReference: CommitInfo) : CommitInfo {
-        return commitReference.copy(
-            isSelected = false,
-            isHovered = false,
-            isDragged = false,
-            isCollapsed = commitReference.isCollapsed,
-            changes = commitReference.changes.deepClonePolymorphic()
-        )
-    }
-
+    /**
+     * Makes the panel read-only, also removing listeners of child components.
+     */
     fun disableLabeledBranchPanel(labeledBranchPanel: LabeledBranchPanel) {
         removeListeners(labeledBranchPanel.branchNamePanel)
         labeledBranchPanel.commitLabels.forEach {
@@ -172,22 +171,36 @@ class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
         }
     }
 
-    fun expandCommits(branchInfo : BranchInfo) {
-        var collapsedParent : CommitInfo? = null
+    /**
+     * Checks if there is a second branch and expands both if it exists, only primary otherwise
+     */
+    fun expandBothBranches(graphInfo: GraphInfo) {
+        expandCommitsForDisplay(graphInfo.mainBranch)
+        if (graphInfo.addedBranch != null) {
+            expandCommitsForDisplay(graphInfo.addedBranch!!)
+        }
+    }
 
+    /**
+     * Expands the given branch if it is collapsed. Finds the parent of the collapse first.
+     */
+    private fun expandCommitsForDisplay(branchInfo: BranchInfo) {
+        var collapsedParent: CommitInfo? = null
         branchInfo.currentCommits.forEach {
             if (it.isCollapsed) {
                 collapsedParent = it
             }
         }
-
         if (collapsedParent != null) {
-
             project.service<ActionService>().expandCollapsedCommits(collapsedParent!!, branchInfo)
         }
     }
 
-    fun removeListeners(component : JComponent) {
+    /**
+     * Removes key,mouse,focus, and mouseMotion listeners of the component.
+     * Used to create a read-only view of a graph.
+     */
+    fun removeListeners(component: JComponent) {
         component.keyListeners.forEach {
             component.removeKeyListener(it)
         }
@@ -201,9 +214,4 @@ class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
             component.removeMouseMotionListener(it)
         }
     }
-
-    override fun getPreferredFocusedComponent(): JComponent? {
-        return diffPanel
-    }
-
 }
