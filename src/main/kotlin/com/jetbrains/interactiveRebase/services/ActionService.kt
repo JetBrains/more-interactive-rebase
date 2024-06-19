@@ -680,7 +680,7 @@ class ActionService(project: Project) {
     /**
      * The undo button should be enabled if there are any actions to undo.
      */
-    fun checkUndo(e: AnActionEvent) {
+    fun checkIfChangesMade(e: AnActionEvent) {
         e.presentation.isEnabled = invoker.commands.isNotEmpty()
     }
 

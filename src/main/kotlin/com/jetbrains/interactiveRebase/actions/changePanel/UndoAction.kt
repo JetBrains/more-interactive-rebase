@@ -20,7 +20,7 @@ class UndoAction :
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkUndo(e)
+        e.project?.service<ActionService>()?.checkIfChangesMade(e)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {

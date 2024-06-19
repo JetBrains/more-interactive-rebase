@@ -27,6 +27,10 @@ class RebaseInvoker(val project: Project) {
      */
 
     var commands = mutableListOf<IRCommand>()
+
+    /**
+     * Commands that were removed with the undo action
+     */
     var undoneCommands = mutableListOf<IRCommand>()
     var commitsToDisplayDuringRebase = mutableListOf<CommitInfo>()
 

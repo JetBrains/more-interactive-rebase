@@ -393,7 +393,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     fun testCheckUndoDisabled() {
         modelService.invoker.commands.clear()
         val testEvent = createTestEvent()
-        actionService.checkUndo(testEvent)
+        actionService.checkIfChangesMade(testEvent)
         assertThat(testEvent.presentation.isEnabled).isFalse()
     }
 
@@ -418,7 +418,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         val command1 = RewordCommand(commitInfo1, "reorderTest")
         modelService.invoker.addCommand(command1)
         val testEvent = createTestEvent()
-        actionService.checkUndo(testEvent)
+        actionService.checkIfChangesMade(testEvent)
         assertThat(testEvent.presentation.isEnabled).isTrue()
     }
 

@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.SideBorder
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
@@ -17,56 +18,28 @@ import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.rd.framework.base.deepClonePolymorphic
 import java.awt.*
 import javax.swing.*
-import javax.swing.plaf.basic.BasicSplitPaneDivider
-import javax.swing.plaf.basic.BasicSplitPaneUI
 
 
 class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
     private var diffPanel = JBPanel<JBPanel<*>>()
 
     init {
-
-        println("in inint")
-        setTitle("title")
-        val maybe = JBPanel<JBPanel<*>>()
-        maybe.layout = BorderLayout()
-        maybe.add(JBLabel("maybe this?"))
-//        diffPanel.background = Color.GREEN
+        setTitle("Compare Interactive Rebase Changes")
         init()
-
-//        this.size = Dimension(500, 500)
-//        add(maybe)
-//        this.contentPane = maybe
     }
 
-    override fun createContentPane(): JComponent {
-//        val diffPanel = JBPanel<JBPanel<*>>()
-//        diffPanel.size = Dimension(700, 700)
-////        diffPanel.border = BorderFactory.createLineBorder(Color.MAGENTA)
-//        diffPanel.add(JBLabel("does it show this"))
-////        diffPanel.background = Color.MAGENTA
-//        diffPanel.preferredSize = Dimension(500, 500)
-//        this.diffPanel = diffPanel
-        return JBPanel<JBPanel<*>>()
-    }
 
     override fun createActions(): Array<Action> {
         return arrayOf()
     }
 
-    override fun getHelpId(): String? {
-        return "graph"
+    override fun getHelpId(): String {
+        return "IRGraphDiff"
     }
-    override fun getDimensionServiceKey(): String? {
-        setSize(800, 800)
-        return "GraphDiffDialog"
+    override fun getDimensionServiceKey(): String {
+        setSize(500, 800)
+        return "IRGraphDiffDialog"
     }
-
-//    override fun createNorthPanel(): JComponent? {
-//        val northPanel = JBPanel<JBPanel<*>>()
-//        northPanel.add(JBLabel("do you wrok"))
-//        return northPanel
-//    }
 
     override fun createTitlePane(): JComponent {
         val titlePanel = JBPanel<JBPanel<*>>()
@@ -75,7 +48,7 @@ class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
         val currentLabel = JBLabel("<html><b>Current changes</b></html>")
         titlePanel.add(initialLabel, BorderLayout.WEST)
         titlePanel.add(currentLabel, BorderLayout.EAST)
-//        titlePanel.background = UIUtil.getPanelBackground().darker()
+
         titlePanel.setBorder(
             BorderFactory.createCompoundBorder(
                 SideBorder(UIUtil.getPanelBackground().darker(), SideBorder.BOTTOM),
@@ -86,14 +59,13 @@ class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
     }
 
     override fun getPreferredSize(): Dimension {
-        return Dimension(8000,8000)
+        return Dimension(500,800)
     }
     override fun createCenterPanel(): JComponent {
         val diffPanel = JBPanel<JBPanel<*>>()
-        diffPanel.size = Dimension(700, 900)
+        diffPanel.size = Dimension(480, 780)
         diffPanel.layout = GridBagLayout()
 
-        val initialPane = JBPanel<JBPanel<*>>()
         val actualGraph = project.service<ModelService>().graphInfo
 
         val initialGraph : GraphInfo = duplicateGraphInfo(actualGraph)
@@ -101,15 +73,14 @@ class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
         revertChanges(initialGraph)
         val initialGraphPanel : GraphPanel = createGraphDisplay(initialGraph)
 
-        initialGraphPanel.preferredSize = Dimension(300, 700)
+        initialGraphPanel.preferredSize = Dimension(240, 380)
 
 
         val currentGraph : GraphInfo = duplicateGraphInfo(actualGraph)
         expandCommitsInGraph(currentGraph)
         val currentGraphPanel : GraphPanel = createGraphDisplay(currentGraph)
 
-        currentGraphPanel.preferredSize = Dimension(300, 700)
-
+        currentGraphPanel.preferredSize = Dimension(240, 380)
 
         val initialScrollable = JBScrollPane()
         initialScrollable.setViewportView(initialGraphPanel)
@@ -122,23 +93,11 @@ class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
         currentScrollable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)
         currentScrollable.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED)
 
-
-        val splitPane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, initialScrollable, currentScrollable)
-        splitPane.resizeWeight = 0.5
-
-        splitPane.dividerSize = 5  // Change the thickness of the divider
-        splitPane.setUI(object : BasicSplitPaneUI() {
-            override fun createDefaultDivider(): BasicSplitPaneDivider {
-                return object : BasicSplitPaneDivider(this) {
-                    override fun paint(g: Graphics) {
-                        g.color = UIUtil.getPanelBackground().darker()
-                        g.fillRect(0, 0, size.width, size.height)
-                        super.paint(g)
-                    }
-                }
-            }})
-
-        return splitPane
+        val split = OnePixelSplitter(false, 0.5f).apply {
+            firstComponent = initialScrollable
+            secondComponent = currentScrollable
+        }
+        return split
     }
 
 
@@ -156,9 +115,10 @@ class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
         primaryBranch.isRebased = false
         addedBranch?.baseCommit = graphInfo.addedBranch?.currentCommits?.last()
 
-        primaryBranch.currentCommits.forEach {
+        primaryBranch.initialCommits.forEach {
             project.service<ActionService>().resetCommitInfo(it)
         }
+        primaryBranch.currentCommits = primaryBranch.initialCommits.toMutableList()
 
         primaryBranch.clearSelectedCommits()
         addedBranch?.clearSelectedCommits()
@@ -213,7 +173,6 @@ class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
     }
 
     fun expandCommits(branchInfo : BranchInfo) {
-
         var collapsedParent : CommitInfo? = null
 
         branchInfo.currentCommits.forEach {
@@ -221,23 +180,7 @@ class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
                 collapsedParent = it
             }
         }
-//
-//        branchInfo.initialCommits.forEach { commit ->
-//            if (commit.isCollapsed) {
-//                val collapseCommand = commit.changes.filterIsInstance<CollapseCommand>().lastOrNull() as CollapseCommand
-//                commit.changes.remove()
-//            }
-//            commit.isCollapsed = false
-////            if (commit.isCollapsed) {
-////                collapsedCommit = commit
-////            }
-//            val collapsed = false
-//            commit.changes = commit.changes.filter{!it.instanceOf(CollapseCommand::class)}
-//        }
-//
-//        collapsedCommits.forEach {
-//
-//        }
+
         if (collapsedParent != null) {
 
             project.service<ActionService>().expandCollapsedCommits(collapsedParent!!, branchInfo)
@@ -263,9 +206,4 @@ class GraphDiffDialog(val project : Project) : DialogWrapper(project) {
         return diffPanel
     }
 
-//    override fun createSouthPanel(): JComponent {
-//        val south = super.createSouthPanel()
-////        south.border = BorderFactory.createLineBorder(Color.BLUE)
-//        return south
-//    }
 }
