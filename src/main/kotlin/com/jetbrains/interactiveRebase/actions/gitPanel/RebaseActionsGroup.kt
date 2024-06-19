@@ -11,6 +11,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.util.registry.Registry
+import com.intellij.ui.JBColor
 import java.util.function.Supplier
 import javax.swing.JComponent
 
@@ -39,6 +40,11 @@ class RebaseActionsGroup : DefaultActionGroup() {
                     ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
                 },
             ) {
+                override fun update() {
+                    this.putClientProperty("JButton.backgroundColor", JBColor.GREEN)
+                    super.update()
+                }
+
                 override fun updateToolTipText() {
                     val classesTabName =
                         java.lang.String.join(
@@ -60,6 +66,7 @@ class RebaseActionsGroup : DefaultActionGroup() {
                                 classesTabName,
                             )
                     }
+                    this.putClientProperty("JButton.backgroundColor", JBColor.GREEN)
                 }
             }
         }
