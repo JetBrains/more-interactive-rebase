@@ -109,9 +109,13 @@ class GraphService(private val project: Project) {
      */
     fun updateBranchInfo(branchInfo: BranchInfo) {
         val name = commitService.getBranchName()
+        val modelService = project.service<ModelService>()
 
         val commits = commitService.getCommitInfoForBranch(commitService.getCommits(name)).toMutableList()
         if (branchChange(name, commits, branchInfo)) {
+            if (name == modelService.graphInfo.addedBranch?.name) {
+                modelService.graphInfo.addedBranch = null
+            }
             branchInfo.setName(name)
             branchInfo.setCommits(commits)
             branchInfo.clearSelectedCommits()

@@ -2,6 +2,8 @@ package com.jetbrains.interactiveRebase.utils.gitUtils
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.util.io.FileUtil
+import com.intellij.openapi.vcs.VcsException
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.Consumer
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
@@ -12,7 +14,10 @@ import git4idea.commands.GitCommand
 import git4idea.commands.GitCommandResult
 import git4idea.commands.GitLineHandler
 import git4idea.history.GitHistoryUtils
+import git4idea.rebase.GitRebaseUtils
 import git4idea.repo.GitRepository
+import java.io.File
+import java.nio.charset.StandardCharsets
 
 /**
  * Isolated interaction with static git utility methods
@@ -43,7 +48,11 @@ class IRGitUtils(private val project: Project) {
         repo: GitRepository,
         consumer: Consumer<GitCommit>,
     ) {
-        GitHistoryUtils.loadDetails(project, repo.root, consumer, currentBranch, "--not", referenceBranch)
+        try {
+            GitHistoryUtils.loadDetails(project, repo.root, consumer, currentBranch, "--not", referenceBranch)
+        } catch (_: VcsException) {
+            getCommitDifferenceBetweenBranches(currentBranch, referenceBranch, repo, consumer)
+        }
     }
 
     /**
@@ -65,7 +74,11 @@ class IRGitUtils(private val project: Project) {
         consumer: Consumer<GitCommit>,
         branchName: String,
     ) {
-        GitHistoryUtils.loadDetails(project, repo.root, consumer, branchName)
+        try {
+            GitHistoryUtils.loadDetails(project, repo.root, consumer, branchName)
+        } catch (_: VcsException) {
+            getCommitsOfBranch(repo, consumer, branchName)
+        }
     }
 
     /**
@@ -83,5 +96,26 @@ class IRGitUtils(private val project: Project) {
         lineHandler.addParameters(params)
         val output: GitCommandResult = runCommand(lineHandler)
         return output.getOutputOrThrow()
+    }
+
+    /**
+     * Searches the git folder and looks for the commit that is currently being rebased
+     */
+    internal fun getCurrentRebaseCommit(
+        project: Project,
+        root: VirtualFile,
+    ): String {
+        val rebaseDir = GitRebaseUtils.getRebaseDir(project, root)
+        if (rebaseDir == null) {
+            return ""
+        }
+        val nextFile = File(rebaseDir, "stopped-sha")
+        val next: String
+        try {
+            next = FileUtil.loadFile(nextFile, StandardCharsets.UTF_8).trim { it <= ' ' }
+            return next
+        } catch (e: Exception) {
+            return ""
+        }
     }
 }

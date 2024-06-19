@@ -6,8 +6,10 @@ data class GraphInfo(var mainBranch: BranchInfo, var addedBranch: BranchInfo? = 
     internal var branchList = mutableListOf<String>()
     private val listeners: MutableList<Listener> = mutableListOf()
 
+    @Synchronized
     internal fun addListener(listener: Listener) = listeners.add(listener)
 
+    @Synchronized
     internal fun changeAddedBranch(branch: BranchInfo?) {
         addedBranch = branch
         listeners.forEach { it.onBranchChange() }

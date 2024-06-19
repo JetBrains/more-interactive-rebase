@@ -17,6 +17,8 @@ public class ResetAction :
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkRebaseAndReset(e)
+        val project = e.project ?: return
+        val actionService = project.service<ActionService>()
+        actionService.checkRebaseAndReset(e)
     }
 }

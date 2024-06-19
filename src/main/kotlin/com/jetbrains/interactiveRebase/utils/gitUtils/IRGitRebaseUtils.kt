@@ -8,6 +8,8 @@ import com.intellij.openapi.project.guessProjectDir
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import git4idea.GitCommit
+import com.intellij.openapi.wm.IdeFocusManager
+import com.jetbrains.interactiveRebase.services.ActionService
 import git4idea.GitUtil
 import git4idea.branch.GitRebaseParams
 import git4idea.cherrypick.GitCherryPicker
@@ -54,6 +56,7 @@ class IRGitRebaseUtils(private val project: Project) {
     ) {
         object : Task.Backgroundable(project, GitBundle.message("rebase.progress.indicator.title")) {
             override fun run(indicator: ProgressIndicator) {
+                IdeFocusManager.getInstance(project).requestFocus(project.service<ActionService>().mainPanel, true)
                 val params =
                     repo?.vcs?.let {
                         GitRebaseParams.editCommits(
@@ -65,13 +68,6 @@ class IRGitRebaseUtils(private val project: Project) {
                     }
                 if (params != null) {
                     GitRebaseUtils.rebase(project, listOf(repo), params, indicator)
-                    project.service<RebaseInvoker>().commands.clear()
-                    project.service<RebaseInvoker>().undoneCommands.clear()
-                    project.service<ModelService>().graphInfo.mainBranch.currentCommits.forEach {
-                            c ->
-                        c.changes.clear()
-                    }
-                    project.service<ModelService>().fetchGraphInfo(0)
                 }
             }
         }.queue()

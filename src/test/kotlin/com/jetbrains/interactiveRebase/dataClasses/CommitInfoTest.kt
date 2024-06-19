@@ -72,4 +72,30 @@ class CommitInfoTest : BasePlatformTestCase() {
     fun testToString() {
         assertEquals(commitInfo.toString(), "CommitInfo(commit=tests)")
     }
+
+    fun testMarkAsPaused() {
+        commitInfo.isPaused = false
+        commitInfo.markAsPaused()
+        assertTrue(commitInfo.isPaused)
+    }
+
+    fun testMarkAsNotPaused() {
+        commitInfo.isPaused = true
+        commitInfo.markAsNotPaused()
+        assertFalse(commitInfo.isPaused)
+    }
+
+    fun testMarkAsRebasedAndDispose() {
+        commitInfo.isRebased = false
+        commitInfo.markAsRebased()
+        assertTrue(commitInfo.isRebased)
+        listener.dispose()
+        listener =
+            spy(
+                object : CommitInfo.Listener {
+                    override fun onCommitChange() {
+                    }
+                },
+            )
+    }
 }
