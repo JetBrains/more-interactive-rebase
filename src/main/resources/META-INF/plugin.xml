@@ -75,6 +75,10 @@
                         class="com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction" text="StopToEditAction" description="Stop while rebasing to edit a commit">
                     <keyboard-shortcut first-keystroke="alt E" keymap="$default"/>
                 </action>
+                <action id="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseAction"
+                        class="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseAction" text="RebaseAction" description="Change the base of your checked-out branch.">
+                    <keyboard-shortcut first-keystroke="alt shift R" keymap="$default"/>
+                </action>
             </group>
 
         </group>
