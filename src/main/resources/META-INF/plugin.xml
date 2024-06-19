@@ -31,6 +31,11 @@
                     description="Add another branch to the view">
                 <keyboard-shortcut first-keystroke="alt A" keymap="$default"/>
             </action>
+            <action id="com.jetbrains.interactiveRebase.actions.changePanel.ViewDiffAction"
+                    class="com.jetbrains.interactiveRebase.actions.changePanel.ViewDiffAction" text="ViewDiffAction"
+                    description="See the difference with initial state">
+                <keyboard-shortcut first-keystroke="ctrl d" keymap="$default"/>
+            </action>
             <action id="com.jetbrains.interactiveRebase.actions.changePanel.UndoAction"
                     class="com.jetbrains.interactiveRebase.actions.changePanel.UndoAction" text="UndoAction"
                     description="Undo the last action you took">
@@ -45,11 +50,6 @@
                     class="com.jetbrains.interactiveRebase.actions.changePanel.CollapseAction" text="CollapseAction"
                     description="Collapse commits">
                 <keyboard-shortcut first-keystroke="ctrl c" keymap="$default"/>
-            </action>
-            <action id="com.jetbrains.interactiveRebase.actions.changePanel.ViewDiffAction"
-                    class="com.jetbrains.interactiveRebase.actions.changePanel.ViewDiffAction" text="ViewDiffAction"
-                    description="See the difference with initial state">
-                <keyboard-shortcut first-keystroke="ctrl d" keymap="$default"/>
             </action>
 
             <separator/>
