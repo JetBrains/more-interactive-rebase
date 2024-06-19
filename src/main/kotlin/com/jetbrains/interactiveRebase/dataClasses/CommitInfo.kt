@@ -48,7 +48,7 @@ data class CommitInfo(
      */
     @Synchronized
     fun removeChange(change: IRCommand) {
-        changes.remove(change)
+        changes.asReversed().remove(change)
         listeners.forEach { it.onCommitChange() }
     }
 

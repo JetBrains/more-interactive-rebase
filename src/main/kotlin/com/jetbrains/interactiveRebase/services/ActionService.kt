@@ -443,7 +443,7 @@ class ActionService(project: Project) {
             if (it is FixupCommand || it is SquashCommand) {
                 modelService.invoker.removeCommand(it)
                 if (modelService.invoker.undoneCommands.contains(it)) {
-                    modelService.invoker.undoneCommands.remove(it)
+                    modelService.invoker.undoneCommands.asReversed().remove(it)
                 }
                 changesToRemove.add(it)
             }
