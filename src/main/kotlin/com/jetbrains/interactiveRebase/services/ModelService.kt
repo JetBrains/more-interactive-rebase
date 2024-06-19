@@ -15,12 +15,10 @@ import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
-import com.jetbrains.interactiveRebase.listeners.IRGitRefreshListener
-import com.jetbrains.rd.framework.base.deepClonePolymorphic
-import git4idea.status.GitRefreshListener
 import com.jetbrains.interactiveRebase.listeners.IRRepositoryChangeListener
 import com.jetbrains.interactiveRebase.listeners.PopupListener
 import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
+import com.jetbrains.rd.framework.base.deepClonePolymorphic
 import git4idea.GitUtil
 import git4idea.merge.GitConflictResolver
 import git4idea.repo.GitRepository
