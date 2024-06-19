@@ -94,6 +94,7 @@ class GraphDiffDialogTest : BasePlatformTestCase() {
     fun testDisableAndCreateDisplay() {
         val primaryBranch = BranchInfo("primaryBranch", listOf(commit1, commit2))
         val secondaryBranch = BranchInfo("secondary", listOf(commit3))
+        secondaryBranch.baseCommit = commit3
 
         val graph = GraphInfo(primaryBranch, secondaryBranch)
         val graphPanel = dialog.createGraphDisplay(graph)
