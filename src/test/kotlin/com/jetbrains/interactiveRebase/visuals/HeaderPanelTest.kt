@@ -36,7 +36,7 @@ class HeaderPanelTest : BasePlatformTestCase() {
         val captorGroup = ArgumentCaptor.forClass(RebaseActionsGroup::class.java)
         val captorPlaces = ArgumentCaptor.forClass(String::class.java)
         val captorHorizontal = ArgumentCaptor.forClass(Boolean::class.java)
-        verify(actionManager, times(2)).createActionToolbar(
+        verify(actionManager, times(3)).createActionToolbar(
             captorPlaces.capture(),
             captorGroup.capture(),
             captorHorizontal.capture(),

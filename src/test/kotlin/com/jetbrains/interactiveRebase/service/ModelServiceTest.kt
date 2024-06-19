@@ -1,16 +1,24 @@
 package com.jetbrains.interactiveRebase.service
 
+import com.intellij.mock.MockVirtualFile
+import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
+import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
+import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
+import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
 import git4idea.GitCommit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.StandardTestDispatcher
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 
 class ModelServiceTest : BasePlatformTestCase() {
     private lateinit var modelService: ModelService
@@ -20,9 +28,7 @@ class ModelServiceTest : BasePlatformTestCase() {
     private lateinit var commit1: CommitInfo
     private lateinit var commit2: CommitInfo
 
-    init {
-        System.setProperty("idea.home.path", "/tmp")
-    }
+    private lateinit var testProvider: TestGitCommitProvider
 
     override fun setUp() {
         super.setUp()
@@ -35,6 +41,8 @@ class ModelServiceTest : BasePlatformTestCase() {
 
         modelService.branchInfo.initialCommits = mutableListOf(commit1, commit2)
         modelService.branchInfo.currentCommits = mutableListOf(commit2)
+
+        testProvider = TestGitCommitProvider(project)
     }
 
     fun testAddToSelectedCommitsFixupInvolved() {
@@ -77,5 +85,105 @@ class ModelServiceTest : BasePlatformTestCase() {
         commit1.isSquashed = true
         commit2.isSquashed = true
         assertThat(modelService.getLastSelectedCommit()).isEqualTo(commit3)
+    }
+
+    fun testMarkRebaseCommitAsPaused() {
+        val c1 = testProvider.createCommit("c1")
+        val c2 = testProvider.createCommit("c2")
+        val c3 = testProvider.createCommit("c3")
+        val c4 = testProvider.createCommit("c4")
+
+        modelService.branchInfo.initialCommits =
+            mutableListOf(
+                CommitInfo(c1, project),
+                CommitInfo(c2, project),
+                CommitInfo(c3, project),
+                CommitInfo(c4, project),
+            )
+
+        modelService.branchInfo.currentCommits = modelService.branchInfo.initialCommits.toMutableList()
+        modelService.branchInfo.currentCommits[2].isPaused = true
+
+        modelService.markRebaseCommitAsPaused("MockHash(string='c2')")
+        assertThat(modelService.branchInfo.initialCommits[1].isPaused).isTrue()
+        assertThat(modelService.branchInfo.initialCommits[0].isRebased).isFalse()
+        assertThat(modelService.branchInfo.initialCommits[2].isRebased).isTrue()
+        assertThat(modelService.branchInfo.initialCommits[3].isRebased).isTrue()
+    }
+
+    fun testRemoveAllChangesIfNeeded() {
+        val commit3 = CommitInfo(mock(GitCommit::class.java), project)
+        modelService.branchInfo.initialCommits = mutableListOf(commit1, commit2, commit3)
+        modelService.branchInfo.currentCommits = mutableListOf(commit2, commit3)
+
+        project.service<RebaseInvoker>().commands.add(PickCommand(commit2))
+        project.service<RebaseInvoker>().undoneCommands.add(PickCommand(commit1))
+
+        commit2.isSquashed = true
+        commit1.isRebased = true
+        commit1.isCollapsed = true
+        commit2.isPaused = true
+
+        commit2.changes.add(SquashCommand(commit2, mutableListOf(commit1), "squash"))
+        commit1.changes.add(FixupCommand(commit1, mutableListOf(commit2)))
+
+        modelService.removeAllChangesIfNeeded()
+        assertThat(commit1.isRebased).isFalse()
+        assertThat(commit1.isSquashed).isFalse()
+        assertThat(commit1.isPaused).isFalse()
+        assertThat(commit1.isCollapsed).isFalse()
+
+        assertThat(commit2.isRebased).isFalse()
+        assertThat(commit2.isSquashed).isFalse()
+        assertThat(commit2.isPaused).isFalse()
+        assertThat(commit2.isCollapsed).isFalse()
+
+        assertThat(project.service<RebaseInvoker>().commands).isEmpty()
+        assertThat(project.service<RebaseInvoker>().undoneCommands).isEmpty()
+    }
+
+    fun testRefreshDuringRebaseProcess() {
+        val gitUtil = mock(IRGitUtils::class.java)
+        val vf = MockVirtualFile("namey")
+        modelService.gitUtils = gitUtil
+        `when`(gitUtil.getCurrentRebaseCommit(project, vf)).thenReturn("MockHash(string='lala')")
+        val c3 = testProvider.createCommit("lala")
+        val commit3 = CommitInfo(c3, project)
+
+        modelService.branchInfo.initialCommits = mutableListOf(commit1, commit3)
+        modelService.branchInfo.currentCommits = mutableListOf(commit3)
+
+        modelService.refreshModelDuringRebaseProcess(vf)
+        assertThat(commit3.isPaused).isTrue()
+        assertThat(modelService.rebaseInProcess).isTrue()
+        assertThat(project.service<ActionService>().getHeaderPanel().rebaseProcessPanel.isVisible).isTrue()
+        assertThat(project.service<ActionService>().getHeaderPanel().changeActionsPanel.isVisible).isFalse()
+    }
+
+    fun testRefreshAfterRebaseProcess() {
+        val c1 = CommitInfo(testProvider.createCommit("c1"), project)
+        val c2 = CommitInfo(testProvider.createCommit("c2"), project)
+        val c3 = CommitInfo(testProvider.createCommit("c3"), project)
+        val c4 = CommitInfo(testProvider.createCommit("c4"), project)
+
+        modelService.branchInfo.initialCommits = mutableListOf(c1, c2, c3, c4)
+
+        modelService.branchInfo.currentCommits = mutableListOf(c1, c2, c3, c4)
+        c1.addChange(PickCommand(c1))
+        c2.addChange(PickCommand(c2))
+        c3.addChange(PickCommand(c3))
+        c3.isRebased = true
+
+        modelService.rebaseInProcess = true
+        modelService.previousConflictCommit = "lol"
+        modelService.refreshModel()
+        assertThat(modelService.rebaseInProcess).isFalse()
+        assertThat(project.service<ActionService>().getHeaderPanel().rebaseProcessPanel.isVisible).isFalse()
+        assertThat(project.service<ActionService>().getHeaderPanel().changeActionsPanel.isVisible).isTrue()
+        assertThat(c1.changes).isEmpty()
+        assertThat(c2.changes).isEmpty()
+        assertThat(c3.changes).isEmpty()
+        assertThat(c3.isRebased).isFalse()
+        assertThat(modelService.previousConflictCommit).isEqualTo("")
     }
 }

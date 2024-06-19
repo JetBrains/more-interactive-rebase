@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.services
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.IRCommand
@@ -27,6 +28,7 @@ class RebaseInvoker(val project: Project) {
 
     var commands = mutableListOf<IRCommand>()
     var undoneCommands = mutableListOf<IRCommand>()
+    var commitsToDisplayDuringRebase = mutableListOf<CommitInfo>()
 
     fun removeChangesBeforePick() {
         val changesToRemove = mutableListOf<IRCommand>()
@@ -43,6 +45,8 @@ class RebaseInvoker(val project: Project) {
      */
     fun createModel() {
         expandCollapsedCommits()
+
+        commitsToDisplayDuringRebase = branchInfo.currentCommits.toMutableList()
         expandCurrentCommitsForSquashed()
         removeChangesBeforePick()
         val commits =
@@ -57,12 +61,19 @@ class RebaseInvoker(val project: Project) {
     fun expandCollapsedCommits() {
         val commits = branchInfo.currentCommits.toMutableList()
         for (commitInfo in branchInfo.currentCommits) {
+            var collapseComm: CollapseCommand? = null
             for (command in commitInfo.changes) {
                 if (command is CollapseCommand) {
                     val parentCommit = command.firstCommit
                     val parentIndex = commits.indexOfFirst { it == parentCommit }
                     commits.addAll(parentIndex, command.collapsedCommits)
+                    command.collapsedCommits.forEach { it.removeChange(command) }
+                    collapseComm = command
                 }
+            }
+            commitInfo.isCollapsed = false
+            if (collapseComm != null) {
+                commitInfo.removeChange(collapseComm)
             }
         }
         branchInfo.currentCommits = commits
@@ -133,6 +144,8 @@ class RebaseInvoker(val project: Project) {
         commandz.forEach { it.execute(model, branchInfo) }
         if (base != null) {
             IRGitRebaseUtils(project).rebase(base, model)
+            branchInfo.currentCommits = commitsToDisplayDuringRebase
+            commitsToDisplayDuringRebase = mutableListOf()
         }
         commands.clear()
     }

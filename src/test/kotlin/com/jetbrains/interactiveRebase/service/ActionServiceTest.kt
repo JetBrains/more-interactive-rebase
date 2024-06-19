@@ -106,6 +106,10 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.addSelectedCommits(commitInfo1)
         actionService.checkReword(event)
         assertThat(presentation.isEnabledAndVisible).isTrue()
+        modelService.rebaseInProcess = true
+        actionService.checkReword(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
         modelService.branchInfo.addSelectedCommits(commitInfo2)
         actionService.checkReword(event)
         assertThat(presentation.isEnabledAndVisible).isFalse()
@@ -113,6 +117,11 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.removeSelectedCommits(commitInfo1)
         actionService.checkReword(event)
         assertThat(presentation.isEnabledAndVisible).isFalse()
+
+        modelService.rebaseInProcess = true
+        actionService.checkReword(event)
+        assertThat(event.presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
     }
 
     fun testCheckStopToEditDisables() {
@@ -126,9 +135,18 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.addSelectedCommits(commitInfo1)
         actionService.checkReword(event)
         assertThat(presentation.isEnabledAndVisible).isTrue()
+        modelService.rebaseInProcess = true
+        actionService.checkReword(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
         commitInfo1.addChange(DropCommand(commitInfo1))
         actionService.checkStopToEdit(event)
         assertThat(presentation.isEnabledAndVisible).isFalse()
+
+        modelService.rebaseInProcess = true
+        actionService.checkStopToEdit(event)
+        assertThat(event.presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
     }
 
     fun testCheckDropDisables() {
@@ -142,28 +160,44 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.addSelectedCommits(commitInfo1)
         actionService.checkDrop(event)
         assertThat(presentation.isEnabledAndVisible).isTrue()
+        modelService.rebaseInProcess = true
+        actionService.checkDrop(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
         commitInfo1.addChange(DropCommand(commitInfo1))
         actionService.checkDrop(event)
         assertThat(presentation.isEnabledAndVisible).isFalse()
+
+        modelService.rebaseInProcess = true
+        actionService.checkDrop(event)
+        assertThat(event.presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
     }
 
     fun testCheckFixupOrSquashDisables() {
         commitInfo1.isSelected = false
         modelService.branchInfo.clearSelectedCommits()
-        val presentation = Presentation()
-        presentation.isEnabled = true
-        val event = createEventWithPresentation(presentation)
-        actionService.checkFixupOrSquash(event)
-        assertThat(presentation.isEnabledAndVisible).isFalse()
+        val e = createTestEvent()
+        actionService.checkFixupOrSquash(e)
+        assertThat(e.presentation.isEnabledAndVisible).isFalse()
         modelService.branchInfo.addSelectedCommits(commitInfo2)
-        actionService.checkFixupOrSquash(event)
-        assertThat(presentation.isEnabledAndVisible).isFalse()
+        actionService.checkFixupOrSquash(e)
+        assertThat(e.presentation.isEnabledAndVisible).isFalse()
         modelService.branchInfo.addSelectedCommits(commitInfo1)
-        actionService.checkStopToEdit(event)
-        assertThat(presentation.isEnabledAndVisible).isTrue()
+        actionService.checkStopToEdit(e)
+        assertThat(e.presentation.isEnabledAndVisible).isTrue()
+
+        modelService.rebaseInProcess = true
+        actionService.checkFixupOrSquash(e)
+        assertThat(e.presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
         commitInfo1.addChange(DropCommand(commitInfo1))
-        actionService.checkStopToEdit(event)
-        assertThat(presentation.isEnabledAndVisible).isFalse()
+        actionService.checkStopToEdit(e)
+        assertThat(e.presentation.isEnabledAndVisible).isFalse()
+
+        modelService.rebaseInProcess = true
+        actionService.checkStopToEdit(e)
+        assertThat(e.presentation.isEnabledAndVisible).isFalse()
     }
 
     fun testCheckPickDisables() {
@@ -177,6 +211,15 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.addSelectedCommits(commitInfo2)
         actionService.checkPick(event)
         assertThat(presentation.isEnabledAndVisible).isTrue()
+        modelService.rebaseInProcess = true
+        actionService.checkPick(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
+
+        modelService.rebaseInProcess = true
+        actionService.checkPick(event)
+        assertThat(event.presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
     }
 
     private fun createEventWithPresentation(presentation: Presentation): AnActionEvent {
