@@ -125,6 +125,24 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         }
     }
 
+    fun testWrapsLabelWithTextFieldConsidersDoubleClick() {
+        val commitLabel = JBLabel("label")
+        commit2.isTextFieldEnabled = true
+        val mainWrapper = labeledBranch.wrapLabelWithTextField(commitLabel, commit2)
+        val labelWrapper = mainWrapper.getComponent(0) as JBPanel<*>
+        val textWrapper = mainWrapper.getComponent(1) as JBPanel<*>
+
+        assertThat(labelWrapper.getComponent(0)).isInstanceOf(JBLabel::class.java)
+        assertThat(textWrapper.getComponent(0)).isInstanceOf(RoundedTextField::class.java)
+        assertThat(textWrapper.isVisible).isTrue()
+        assertThat(labelWrapper.isVisible).isFalse()
+        assertThat(labelWrapper.getComponent(0)).isEqualTo(commitLabel)
+        assertThat(commitLabel.mouseListeners).hasOnlyOneElementSatisfying { element ->
+            assertThat(element).isInstanceOf(LabelListener::class.java)
+        }
+        assertThat(labeledBranch.mouseListeners).hasSize(1)
+    }
+
     fun testCreateTextBoxSetsAlignments() {
         val commitLabel = JBLabel("label")
         val textField = labeledBranch.createTextBox(commitLabel, commit1)
