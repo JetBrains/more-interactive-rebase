@@ -221,15 +221,16 @@ class ModelService(
         coroutineScope.launch(Dispatchers.IO) {
             try {
                 graphService.updateGraphInfo(graphInfo)
-//                coroutineScope.launch(Dispatchers.EDT) {
-//                    project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
-//                }
             } catch (e: VcsException) {
                 if (n < 3) {
                     fetchGraphInfo(n + 1)
                 } else {
                     showWarningGitDialogClosesPlugin("There was an error while fetching data from Git.")
                 }
+            }
+
+            coroutineScope.launch(Dispatchers.EDT) {
+                project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
             }
         }
     }

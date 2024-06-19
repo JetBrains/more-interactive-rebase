@@ -18,6 +18,7 @@ class BranchInfo(
     var currentCommits: MutableList<CommitInfo> = initialCommits.toMutableList()
     var baseCommit: CommitInfo? = null
 
+    @Synchronized
     internal fun addListener(listener: Listener) = listeners.add(listener)
 
     /**
@@ -25,6 +26,7 @@ class BranchInfo(
      * branch and notifies
      * listeners
      */
+    @Synchronized
     internal fun setName(name: String) {
         this.name = name
         listeners.forEach { it.onNameChange(name) }
@@ -35,6 +37,7 @@ class BranchInfo(
      * branch and notifies
      * listeners
      */
+    @Synchronized
     internal fun setCommits(commits: List<CommitInfo>) {
         this.initialCommits = commits
         this.currentCommits = commits.toMutableList()
@@ -70,6 +73,7 @@ class BranchInfo(
      * of branch and notifies
      * listeners
      */
+    @Synchronized
     internal fun addSelectedCommits(commit: CommitInfo) {
         selectedCommits.add(commit)
         listeners.forEach { it.onSelectedCommitChange(selectedCommits) }
@@ -80,6 +84,7 @@ class BranchInfo(
      * commits of branch and
      * notifies listeners
      */
+    @Synchronized
     internal fun removeSelectedCommits(commit: CommitInfo) {
         selectedCommits.remove(commit)
         commit.getChangesAfterPick().forEach {
@@ -98,6 +103,7 @@ class BranchInfo(
      * of branch and notifies
      * listeners
      */
+    @Synchronized
     internal fun clearSelectedCommits() {
         selectedCommits.forEach { it.isSelected = false }
         selectedCommits.clear()
@@ -119,6 +125,7 @@ class BranchInfo(
      * Updates the order of the current
      * commits
      */
+    @Synchronized
     internal fun updateCurrentCommits(
         oldIndex: Int,
         newIndex: Int,
@@ -129,6 +136,7 @@ class BranchInfo(
         listeners.forEach { it.onCurrentCommitsChange(currentCommits) }
     }
 
+    @Synchronized
     internal fun addCommitsToCurrentCommits(
         index: Int,
         commits: List<CommitInfo>,
