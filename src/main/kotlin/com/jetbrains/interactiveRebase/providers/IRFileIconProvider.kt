@@ -14,7 +14,7 @@ class IRFileIconProvider : FileIconProvider {
         project: Project?,
     ): Icon {
         if (file is IRVirtualFile) {
-            return AllIcons.Actions.Lightning
+            return AllIcons.Vcs.Branch
         }
         return file.fileType.icon
     }

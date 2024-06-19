@@ -202,6 +202,24 @@ class ActionService(project: Project) {
 
     /**
      * Enables rebase button
+     * depending on the number of selected commits
+     * and the state of the branch.
+     * Commits from the checked-out branch cannot be picked.
+     */
+    fun checkNormalRebaseAction(e: AnActionEvent) {
+        e.presentation.isEnabled = modelService.graphInfo.addedBranch != null &&
+            (
+                !modelService.areDisabledCommitsSelected() ||
+                    (
+                        modelService.graphInfo.addedBranch?.selectedCommits?.size!! <= 1 &&
+                            modelService.graphInfo.addedBranch?.selectedCommits!![0] !=
+                            modelService.graphInfo.addedBranch!!.baseCommit
+                    )
+            )
+    }
+
+    /**
+     * Enables rebase button
      */
     fun checkRebaseAndReset(e: AnActionEvent) {
         e.presentation.isEnabled = invoker.commands.size != 0
@@ -479,8 +497,11 @@ class ActionService(project: Project) {
     }
 
     private fun undoRebase() {
-        modelService.graphInfo.addedBranch?.baseCommit =
-            modelService.graphInfo.addedBranch?.currentCommits?.last()
+        val base = modelService.graphInfo.addedBranch?.currentCommits?.last()
+        val lastRebaseCommandCommit =
+            invoker.commands
+                .findLast { command -> command is RebaseCommand }?.commitOfCommand()
+        modelService.graphInfo.addedBranch?.baseCommit = lastRebaseCommandCommit ?: base
         modelService.graphInfo.mainBranch.isRebased = false
     }
 

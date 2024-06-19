@@ -4,6 +4,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.visuals.GraphPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
@@ -109,7 +110,7 @@ class RebaseDragAndDropListener(
             addedBranchPanel.branchPanel.circles.size != 1
         ) {
             formatDraggedLabelOnDrop()
-            rebase()
+            rebase(graphPanel.graphInfo.addedBranch!!.currentCommits[0])
         }
 
         returnNameLabelsBackInGraph()
@@ -184,10 +185,9 @@ class RebaseDragAndDropListener(
      * Calculates the correct offset for the animation
      * and updates branch info to the rebased values
      */
-    internal fun rebase() {
+    internal fun rebase(base: CommitInfo) {
         val (initialOffsetMain, initialOffsetAdded) = graphPanel.computeVerticalOffsets()
-        graphPanel.graphInfo.addedBranch!!.baseCommit =
-            graphPanel.graphInfo.addedBranch!!.currentCommits[0]
+        graphPanel.graphInfo.addedBranch!!.baseCommit = base
         graphPanel.graphInfo.mainBranch.isRebased = true
         val (finalOffsetMain, finalOffsetAdded) = graphPanel.computeVerticalOffsets()
 
@@ -330,6 +330,8 @@ class RebaseDragAndDropListener(
                     updateOffsetOfMainBranch(finalOffsetMain)
                     if (mainBranchPanel.branch.isRebased) {
                         project.service<ActionService>().takeNormalRebaseAction()
+                        project.service<ActionService>().mainPanel.revalidate()
+                        project.service<ActionService>().mainPanel.repaint()
                     }
                 }
             }
