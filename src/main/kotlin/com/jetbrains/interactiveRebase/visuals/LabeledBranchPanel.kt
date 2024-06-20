@@ -397,7 +397,6 @@ class LabeledBranchPanel(
             textField.requestFocusInWindow()
         }
 
-        listenForClickOutside(textField)
         openTextFields.add(textField)
     }
 
@@ -411,21 +410,6 @@ class LabeledBranchPanel(
                 listener.strategy = SquashTextStrategy(command, textField)
             }
         }
-    }
-
-    /**
-     * Instantiates a listener that exits the reword textbox when somewhere else on the component is clicked
-     */
-    private fun listenForClickOutside(textField: RoundedTextField) {
-        this.addMouseListener(
-            object : MouseAdapter() {
-                override fun mouseClicked(e: MouseEvent) {
-                    if (textField.isVisible && e.component !== textField) {
-                        textField.exitTextBox()
-                    }
-                }
-            },
-        )
     }
 
     /**
