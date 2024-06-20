@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit
  * and the branch has been rebased successfully.
  */
 class UseCase1Test : IRGitPlatformTest() {
-    fun testDropCommit() {
+    fun testUseCase1() {
         runBlocking(Dispatchers.EDT) {
             // this opens the editor tab, and initializes everything
             openAndInitializePlugin()

@@ -1,15 +1,23 @@
 package com.jetbrains.interactiveRebase.integrationTests
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.TestActionEvent.createTestEvent
 import com.jetbrains.interactiveRebase.actions.CreateEditorTabAction
+import com.jetbrains.interactiveRebase.actions.buttonActions.ResetAction
+import com.jetbrains.interactiveRebase.actions.buttonActions.StartRebaseAction
 import com.jetbrains.interactiveRebase.actions.changePanel.AddBranchAction
+import com.jetbrains.interactiveRebase.actions.changePanel.RedoAction
+import com.jetbrains.interactiveRebase.actions.changePanel.UndoAction
+import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseAction
+import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.checkout
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.checkoutNew
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.git
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
@@ -65,7 +73,7 @@ class TwoBranchesActionTest : IRGitPlatformTest() {
         }
     }
 
-    override fun openAndInitializePlugin() {
+    override fun openAndInitializePlugin(expectedCount: Int) {
         assertCorrectCheckedOutBranch(featureBranch)
         val openEditorTabAction = CreateEditorTabAction()
         val testEvent = createTestEvent(openEditorTabAction)
@@ -77,13 +85,13 @@ class TwoBranchesActionTest : IRGitPlatformTest() {
         Awaitility.await()
             .atMost(15000, TimeUnit.MILLISECONDS)
             .pollDelay(50, TimeUnit.MILLISECONDS)
-            .until { modelService.branchInfo.initialCommits.size == 5 }
+            .until { modelService.branchInfo.initialCommits.size == expectedCount }
         assertThat(modelService.branchInfo.name).isEqualTo(featureBranch)
     }
 
     fun testTwoBranchesInView() {
         runBlocking(Dispatchers.EDT) {
-            openAndInitializePlugin()
+            openAndInitializePlugin(5)
             val modelService = project.service<ModelService>()
 
             // open the side panel
@@ -94,7 +102,8 @@ class TwoBranchesActionTest : IRGitPlatformTest() {
             val sidePanel =
                 project.service<ActionService>()
                     .mainPanel.sidePanel
-            assertThat(sidePanel.isVisible).isTrue()
+            val sidePanelPane = project.service<ActionService>().mainPanel.sidePanelPane
+            assertThat(sidePanelPane.isVisible).isTrue()
 
             Awaitility.await()
                 .pollInSameThread()
@@ -195,6 +204,84 @@ class TwoBranchesActionTest : IRGitPlatformTest() {
             assertThat(modelService.graphInfo.mainBranch.name).isEqualTo(featureBranch)
             assertThat(modelService.graphInfo.mainBranch.initialCommits.map { it.commit.subject })
                 .isEqualTo(listOf("new file", "testy", "it works", "whatever", "refactor", "third", "second"))
+
+            val changeBaseAction = RebaseAction()
+            val changeBaseEvent = createTestEvent(changeBaseAction)
+            changeBaseAction.update(changeBaseEvent)
+            assertThat(changeBaseEvent.presentation.isEnabled).isTrue()
+
+            //because animation doesn't work in tests, we need to manually update the model
+            val headOfSecondBranch = modelService.graphInfo.addedBranch?.currentCommits!![0]
+            modelService.graphInfo.addedBranch?.baseCommit = headOfSecondBranch
+            project.service<ActionService>().takeNormalRebaseAction()
+
+            var invokerCommands = project.service<RebaseInvoker>().commands.filterIsInstance<RebaseCommand>()
+            assertThat(invokerCommands[0].commit).isEqualTo(headOfSecondBranch)
+
+            //undoes the rebase action
+            val undoAction = UndoAction()
+            val undoEvent = createTestEvent(undoAction)
+            undoAction.update(undoEvent)
+            assertThat(undoEvent.presentation.isEnabled).isTrue()
+
+            undoAction.actionPerformed(undoEvent)
+
+            modelService.selectSingleCommit(modelService.graphInfo.addedBranch!!.currentCommits[1],
+                modelService.graphInfo.addedBranch!!
+            )
+
+            //redoes the rebase action
+            val redoAction = RedoAction()
+            val redoEvent = createTestEvent(redoAction)
+            redoAction.update(redoEvent)
+            assertThat(redoEvent.presentation.isEnabled).isTrue()
+
+            redoAction.actionPerformed(redoEvent)
+            invokerCommands = project.service<RebaseInvoker>().commands.filterIsInstance<RebaseCommand>()
+            assertThat(invokerCommands[0].commit).isEqualTo(headOfSecondBranch)
+
+            //resets all changes made to the branch
+            val resetAction = ResetAction()
+            val resetEvent = createTestEvent(resetAction)
+            resetAction.update(resetEvent)
+            assertThat(resetEvent.presentation.isEnabled).isTrue()
+            resetAction.actionPerformed(resetEvent)
+
+            assertThat(project.service<RebaseInvoker>().commands.isEmpty()).isTrue()
+
+            assertThat(resetEvent.presentation.isEnabled).isTrue()
+            assertThat(resetAction.actionUpdateThread).isEqualTo(ActionUpdateThread.EDT)
+            resetAction.actionPerformed(resetEvent)
+
+            //move the base of the branch to be the second to last commit on the second branch
+            val secondChangeBaseEvent = createTestEvent(changeBaseAction)
+            changeBaseAction.update(secondChangeBaseEvent)
+            assertThat(secondChangeBaseEvent.presentation.isEnabled).isTrue()
+
+            val commitOnSecondBranch = modelService.graphInfo.addedBranch?.currentCommits!![1]
+            modelService.graphInfo.addedBranch?.baseCommit = commitOnSecondBranch
+            project.service<ActionService>().takeNormalRebaseAction()
+
+            invokerCommands = project.service<RebaseInvoker>().commands.filterIsInstance<RebaseCommand>()
+            assertThat(invokerCommands[0].commit).isEqualTo(commitOnSecondBranch)
+
+            //starts the rebase process
+            val rebaseAction = StartRebaseAction()
+            val rebaseEvent = createTestEvent(rebaseAction)
+            assertThat(rebaseAction.actionUpdateThread).isEqualTo(ActionUpdateThread.EDT)
+            rebaseAction.actionPerformed(rebaseEvent)
+
+            //asserts that the rebase action was done, moving it further away from the initial commit,
+            //3 commits to be exact
+            Awaitility.await()
+                .alias("rebase action being done")
+                .pollInSameThread()
+                .atMost(10000, TimeUnit.MILLISECONDS)
+                .pollDelay(50, TimeUnit.MILLISECONDS)
+                .until {
+                    countCommitsSinceSpecificCommit(initialCommitOnMain) == 10
+                }
+            }
         }
-    }
+
 }

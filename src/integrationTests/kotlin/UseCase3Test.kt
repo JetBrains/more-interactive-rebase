@@ -15,8 +15,8 @@ import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.awaitility.Awaitility
 import java.util.concurrent.TimeUnit
 
-class SquashActionTest : IRGitPlatformTest() {
-    fun testSquashCommits() {
+class UseCase3Test : IRGitPlatformTest() {
+    fun testUseCase3() {
         runBlocking(Dispatchers.EDT) {
             // this opens the editor tab, and initializes everything
             openAndInitializePlugin()

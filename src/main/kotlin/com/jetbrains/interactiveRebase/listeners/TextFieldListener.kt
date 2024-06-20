@@ -11,7 +11,7 @@ import java.awt.event.KeyListener
 class TextFieldListener(
     commitInfo: CommitInfo,
     val textField: RoundedTextField,
-    invoker: RebaseInvoker,
+    val invoker: RebaseInvoker,
 ) : KeyListener {
     /**
      * Set to reword by default, sets the logic to be executed once pressing enter in a text field
@@ -38,5 +38,6 @@ class TextFieldListener(
     fun processEnter() {
         strategy.handleEnter()
         textField.exitTextBox()
+        invoker.undoneCommands.clear()
     }
 }

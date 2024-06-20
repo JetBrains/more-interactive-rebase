@@ -19,7 +19,7 @@ class StopToEditAction :
     ),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.takeStopToEditAction()
+        e.project!!.service<ActionService>().takeStopToEditAction()
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
@@ -27,7 +27,7 @@ class StopToEditAction :
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkStopToEdit(e)
+        e.project!!.service<ActionService>().checkStopToEdit(e)
     }
 
     override fun createCustomComponent(

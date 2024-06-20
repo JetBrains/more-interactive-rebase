@@ -20,11 +20,11 @@ class CollapseAction :
     ),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.takeCollapseAction()
+        e.project!!.service<ActionService>().takeCollapseAction()
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkCollapse(e)
+        e.project!!.service<ActionService>().checkCollapse(e)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
