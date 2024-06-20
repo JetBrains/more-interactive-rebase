@@ -335,11 +335,12 @@ class LabeledBranchPanel(
             circle.addMouseListener(circleHoverListener)
             circle.addMouseMotionListener(circleHoverListener)
             Disposer.register(this, circleHoverListener)
-
+            val index = branch.currentCommits.indexOf(branch.baseCommit)
             if (
                 !branch.isWritable &&
                 circle !is CollapseCirclePanel &&
-                !circle.commit.wasCherryPicked
+                !circle.commit.wasCherryPicked &&
+                branch.currentCommits.indexOf(circle.commit) < index
             ) {
                 val cherryDragAndDropListener =
                     CherryDragAndDropListener(
