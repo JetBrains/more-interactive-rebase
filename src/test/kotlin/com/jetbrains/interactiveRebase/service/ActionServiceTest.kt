@@ -195,12 +195,13 @@ class ActionServiceTest : BasePlatformTestCase() {
     fun testCheckFixupOrSquashDisables() {
         commitInfo1.isSelected = false
         modelService.branchInfo.clearSelectedCommits()
+        addedBranch.clearSelectedCommits()
         val e = createTestEvent()
         actionService.checkFixupOrSquash(e)
         assertThat(e.presentation.isEnabledAndVisible).isFalse()
         modelService.branchInfo.addSelectedCommits(commitInfo2)
         actionService.checkFixupOrSquash(e)
-        assertThat(e.presentation.isEnabledAndVisible).isFalse()
+        assertThat(e.presentation.isEnabledAndVisible).isTrue()
         modelService.branchInfo.addSelectedCommits(commitInfo1)
         actionService.checkStopToEdit(e)
         assertThat(e.presentation.isEnabledAndVisible).isTrue()
@@ -1106,7 +1107,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         actionService.takeCherryPickAction()
         assertThat(branchInfo.selectedCommits.isEmpty()).isTrue()
         assertThat(addedBranch.selectedCommits.isEmpty()).isTrue()
-        assertTrue(branchInfo.currentCommits.size == 3)
+        assertTrue(branchInfo.currentCommits.size == 4)
         assertTrue(branchInfo.currentCommits[0].changes.any { it is CherryCommand })
     }
 

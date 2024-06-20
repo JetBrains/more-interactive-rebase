@@ -659,8 +659,7 @@ class ActionService(val project: Project) {
         val index =  command.index
         modelService.graphInfo.mainBranch.currentCommits.add(index, commit)
         original.wasCherryPicked = true
-
-        mainPanel.graphPanel.addedBranchPanel?.branchPanel?.updateCommits()
+        mainPanel.graphPanel.addedBranchPanel?.branchPanel!!.updateCommits()
     }
 
     /**

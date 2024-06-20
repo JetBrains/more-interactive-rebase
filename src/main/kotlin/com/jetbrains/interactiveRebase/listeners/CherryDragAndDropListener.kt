@@ -31,18 +31,16 @@ class CherryDragAndDropListener(
 ) : MouseAdapter(), Disposable {
     private lateinit var clone: CirclePanel
     private val dragPanel: DragPanel = project.service<ActionService>().mainPanel.dragPanel
-    private val graphPanel: GraphPanel = project.service<ActionService>().mainPanel.graphPanel
-    private val mainBranchPanel: LabeledBranchPanel = graphPanel.mainBranchPanel
+    private lateinit var graphPanel: GraphPanel
+    private lateinit var mainBranchPanel: LabeledBranchPanel
     private var gbc: GridBagConstraints =
         (addedBranchPanel.branchPanel.layout as GridBagLayout).getConstraints(cherry)
-    private val gbcMainBranch: GridBagConstraints =
-        (graphPanel.layout as GridBagLayout).getConstraints(mainBranchPanel)
-    private val gbcAddedBranch: GridBagConstraints =
-        (graphPanel.layout as GridBagLayout).getConstraints(addedBranchPanel)
-    private var mainCircles = mainBranchPanel.branchPanel.circles
+    private lateinit var gbcMainBranch: GridBagConstraints
+    private lateinit var gbcAddedBranch: GridBagConstraints
+    private lateinit var mainCircles: MutableList<CirclePanel>
 
     private var initialPositionCherry = Point()
-    private val defaultLineOffset = graphPanel.lineOffset
+    private var defaultLineOffset: Int = 30
     private var circlesPositions = mutableListOf<CirclePosition>()
     private var mousePosition = Point()
     private val initialIndex = addedBranchPanel.branchPanel.circles.indexOf(cherry)
@@ -52,6 +50,7 @@ class CherryDragAndDropListener(
     private var wasDragged: Boolean = false
 
     override fun mousePressed(e: MouseEvent) {
+        initializeLateFields()
         updateMousePosition(e)
         initialPositionCherry =
             Point(
@@ -70,6 +69,15 @@ class CherryDragAndDropListener(
 
         wasHoveringOnMainBranch = false
         wasDragged = false
+    }
+
+    private fun initializeLateFields() {
+        graphPanel = project.service<ActionService>().mainPanel.graphPanel
+        mainBranchPanel = graphPanel.mainBranchPanel
+        gbcMainBranch = (graphPanel.layout as GridBagLayout).getConstraints(mainBranchPanel)
+        gbcAddedBranch = (graphPanel.layout as GridBagLayout).getConstraints(addedBranchPanel)
+        mainCircles = mainBranchPanel.branchPanel.circles
+        defaultLineOffset = graphPanel.lineOffset
     }
 
     override fun mouseDragged(e: MouseEvent) {

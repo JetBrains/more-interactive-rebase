@@ -232,7 +232,7 @@ class ModelService(
                 if (n < 3) {
                     fetchGraphInfo(n + 1)
                 } else {
-                    showWarningGitDialogClosesPlugin("There was an error while fetching data from Git.")
+                    showWarningGitDialogClosesPlugin("There was an error while fetching data from Git.", dialogService)
                 }
             }
 
@@ -361,7 +361,7 @@ class ModelService(
      * When there is a problem with fetching the git information and displaying the graph
      * the dialog pops up and when clicked closes the plugin
      */
-    fun showWarningGitDialogClosesPlugin(description: String) {
+    fun showWarningGitDialogClosesPlugin(description: String, dialogService: DialogService) {
         coroutineScope.launch(Dispatchers.EDT) {
             dialogService.warningOkCancelDialog(
                 "Git Issue",
