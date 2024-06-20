@@ -42,6 +42,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     private lateinit var commitInfo2: CommitInfo
     private lateinit var commitInfo3: CommitInfo
     private lateinit var branchInfo: BranchInfo
+    private lateinit var commitInfo4: CommitInfo
     private lateinit var actionService: ActionService
     private var addedBranch: BranchInfo = BranchInfo()
 
@@ -51,6 +52,8 @@ class ActionServiceTest : BasePlatformTestCase() {
         commitInfo1 = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf())
         commitInfo2 = CommitInfo(commitProvider.createCommit("fix tests"), project, mutableListOf())
         commitInfo3 = CommitInfo(commitProvider.createCommit("belongs to added branch"), project, mutableListOf())
+        commitInfo4 = CommitInfo(commitProvider.createCommit("belongs to added branch too"), project, mutableListOf())
+
         val commitService = mock(CommitService::class.java)
 
         Mockito.doAnswer {
@@ -65,6 +68,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.initialCommits = mutableListOf(commitInfo1, commitInfo2)
         modelService.branchInfo.currentCommits = mutableListOf(commitInfo1, commitInfo2)
         addedBranch.name = "added"
+        addedBranch.currentCommits.add(commitInfo4)
         addedBranch.currentCommits.add(commitInfo3)
         addedBranch.baseCommit = commitInfo3
         modelService.graphInfo = GraphInfo(modelService.branchInfo, addedBranch)
@@ -1096,7 +1100,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     }
 
     fun testCheckCherryPickAction() {
-        modelService.addToSelectedCommits(commitInfo3, addedBranch)
+        modelService.addToSelectedCommits(commitInfo4, addedBranch)
         modelService.invoker.commands.clear()
         val testEvent = createTestEvent()
         actionService.checkCherryPick(testEvent)

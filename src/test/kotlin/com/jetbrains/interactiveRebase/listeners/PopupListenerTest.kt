@@ -59,6 +59,7 @@ class PopupListenerTest : BasePlatformTestCase() {
         val commit = TestGitCommitProvider(project).createCommit("abcdefgh")
         val commitInfo = CommitInfo(commit, project, mutableListOf())
         modelService.branchInfo.initialCommits = mutableListOf(commitInfo)
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo)
 
         val root = MockVirtualFile("mockFile")
         `when`(gitUtils.getRoot()).thenReturn(root)
