@@ -14,6 +14,7 @@ class RewordTextStrategy(
      * Adds a reword change to the list of changes of a commit
      */
     override fun handleEnter() {
+        if (commitInfo.commit.subject == textField.text && commitInfo.changes.filter { it is RewordCommand }.isEmpty()) return
         val command = RewordCommand(commitInfo, textField.text)
         commitInfo.addChange(command)
         invoker.addCommand(command)

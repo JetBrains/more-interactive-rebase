@@ -2,17 +2,17 @@ package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.components.service
-import com.intellij.ui.PopupHandler
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.BranchPanel
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
-import java.awt.Component
+import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.SwingUtilities
 
 /**
  * A listener that allows a circle panel to be hovered on.
@@ -20,7 +20,7 @@ import java.awt.event.MouseEvent
  * mouse actions that all reflect different parts of a "hover" action
  */
 
-class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler(), Disposable {
+class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter(), Disposable {
     val commit: CommitInfo = circlePanel.commit
     val branchInfo = (circlePanel.parent as BranchPanel).branch
 
@@ -70,7 +70,15 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
                 commit.project.service<ActionService>().expandCollapsedCommits(commit, branchInfo)
                 commit.isHovered = false
             } else if (e.button == MouseEvent.BUTTON1) {
-                normalClick()
+                if (e.clickCount >= 2 &&
+                    !commit.getChangesAfterPick().any { change -> change is DropCommand } &&
+                    branchInfo.isWritable
+                ) {
+                    commit.setTextFieldEnabledTo(true)
+                    commit.project.service<ModelService>().selectSingleCommit(commit, branchInfo)
+                } else {
+                    normalClick()
+                }
             }
 
             e.consume()
@@ -82,7 +90,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
      */
     override fun mousePressed(e: MouseEvent?) {
         if (e != null && e.isPopupTrigger) {
-            invokePopup(e.component, e.x, e.y)
+            invokePopup(e.x, e.y)
             e.consume()
         }
     }
@@ -92,7 +100,7 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
      */
     override fun mouseReleased(e: MouseEvent?) {
         if (e != null && e.isPopupTrigger) {
-            invokePopup(e.component, e.x, e.y)
+            invokePopup(e.x, e.y)
             e.consume()
         }
     }
@@ -183,13 +191,20 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : PopupHandler()
      * Shows context menu
      */
 
-    override fun invokePopup(
-        comp: Component?,
+    fun invokePopup(
         x: Int,
         y: Int,
     ) {
-        val popupMenu = actionManager.createActionPopupMenu(ActionPlaces.EDITOR_TAB, actionsGroup)
-        popupMenu.component.show(comp, x, y)
+        val modelService = commit.project.service<ModelService>()
+        val mainPanel = commit.project.service<ActionService>().mainPanel
+
+        val point = SwingUtilities.convertPoint(circlePanel, x, y, mainPanel)
+
+        if (!commit.isSelected) {
+            modelService.selectSingleCommit(circlePanel.commit, branchInfo)
+        }
+
+        mainPanel.invokePopup(point.x, point.y)
     }
 
     override fun dispose() {

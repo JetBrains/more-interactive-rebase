@@ -1,16 +1,20 @@
 package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
+import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.listeners.BranchNavigationListener
+import com.jetbrains.interactiveRebase.listeners.TextFieldListener
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.SidePanel
 import java.awt.BorderLayout
@@ -58,6 +62,7 @@ class MainPanel(
         branchInfoListener =
             object : BranchInfo.Listener {
                 override fun onNameChange(newName: String) {
+                    sidePanel.updateBranchNames()
                     graphPanel.mainBranchPanel.updateBranchName()
                 }
 
@@ -163,22 +168,36 @@ class MainPanel(
             object : MouseListener {
                 override fun mouseClicked(e: MouseEvent?) {
                     SwingUtilities.invokeLater { requestFocusInWindow() }
+                    graphPanel.mainBranchPanel.openTextFields.forEach {
+                            textField ->
+                        if (textField.isVisible && e?.component !== textField) {
+                            if (textField.keyListeners.isEmpty() || textField.keyListeners[0] !is TextFieldListener) return
+                            val listener = textField.keyListeners[0] as TextFieldListener
+                            listener.processEnter()
+                        }
+                    }
                 }
 
                 override fun mousePressed(e: MouseEvent?) {
                     SwingUtilities.invokeLater { requestFocusInWindow() }
+                    if (e != null && e.isPopupTrigger) {
+                        invokePopup(e.x, e.y)
+                        e.consume()
+                    }
                 }
 
                 override fun mouseReleased(e: MouseEvent?) {
                     SwingUtilities.invokeLater { requestFocusInWindow() }
+                    if (e != null && e.isPopupTrigger) {
+                        invokePopup(e.x, e.y)
+                        e.consume()
+                    }
                 }
 
                 override fun mouseEntered(e: MouseEvent?) {
-                    SwingUtilities.invokeLater { requestFocusInWindow() }
                 }
 
                 override fun mouseExited(e: MouseEvent?) {
-                    SwingUtilities.invokeLater { requestFocusInWindow() }
                 }
             },
         )
@@ -228,6 +247,24 @@ class MainPanel(
         addedBranchInfo?.currentCommits?.forEach {
             it.addListener(commitInfoListener)
         }
+    }
+
+    /**
+     * Shows context menu
+     */
+
+    fun invokePopup(
+        x: Int,
+        y: Int,
+    ) {
+        val actionManager = ActionManager.getInstance()
+        val actionsGroup =
+            actionManager.getAction(
+                "com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup",
+            ) as RebaseActionsGroup
+
+        val popupMenu = actionManager.createActionPopupMenu(ActionPlaces.EDITOR_TAB, actionsGroup)
+        popupMenu.component.show(this, x, y)
     }
 
     /**

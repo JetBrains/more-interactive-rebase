@@ -134,6 +134,9 @@ class GraphPanel(
      * below the primary one
      */
     private fun computeVerticalOffsetOfSecondBranch(): Int {
+        if (graphInfo.addedBranch == null || graphInfo.addedBranch?.baseCommit == null) {
+            return 0
+        }
         val mainCircleCount = mainBranchPanel.branchPanel.circles.size
         val addedCircleCount =
             (graphInfo.addedBranch?.currentCommits?.indexOf(graphInfo.addedBranch?.baseCommit!!) ?: 0) + 1
@@ -239,11 +242,13 @@ class GraphPanel(
 
         // Coordinates of the last circle of the added branch
         if (addedBranchPanel != null) {
+
             rebaseCircleInAddedBranch = addedBranchPanel?.branchPanel?.circles
                 ?.firstOrNull { c -> c.commit == graphInfo.addedBranch?.baseCommit }
                 ?: mainBranchPanel.branchPanel.circles[0]
             var (addedCircleCenterX, addedCircleCenterY) =
                 centerCoordinatesOfBaseCircleInAddedBranch()
+
 
             if (Point(mainCircleCenterX, mainCircleCenterY) ==
                 Point(addedCircleCenterX, addedCircleCenterY)

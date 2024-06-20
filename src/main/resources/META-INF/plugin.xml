@@ -21,8 +21,7 @@
     <actions>
         <action class="com.jetbrains.interactiveRebase.actions.CreateEditorTabAction" id="com.jetbrains.interactive_rebase.CreateEditorTabAction"
                 text="Interactive Rebase Current Branch">
-            <add-to-group group-id="Git.MainMenu" anchor="first"/>
-
+            <add-to-group group-id="Git.MainMenu" anchor="last"/>
         </action>
         <group id="ActionsGroup"
                class="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup" text="RebaseGlobalActionsGroup" description="Interactive rebase actions">
@@ -30,6 +29,11 @@
                     class="com.jetbrains.interactiveRebase.actions.changePanel.AddBranchAction" text="AddBranchAction"
                     description="Add another branch to the view">
                 <keyboard-shortcut first-keystroke="alt A" keymap="$default"/>
+            </action>
+            <action id="com.jetbrains.interactiveRebase.actions.changePanel.ViewDiffAction"
+                    class="com.jetbrains.interactiveRebase.actions.changePanel.ViewDiffAction" text="ViewDiffAction"
+                    description="See the difference with initial state">
+                <keyboard-shortcut first-keystroke="ctrl d" keymap="$default"/>
             </action>
             <action id="com.jetbrains.interactiveRebase.actions.changePanel.UndoAction"
                     class="com.jetbrains.interactiveRebase.actions.changePanel.UndoAction" text="UndoAction"
@@ -119,6 +123,7 @@
             </action>
 
         </group>
+
 
     </actions>
 
