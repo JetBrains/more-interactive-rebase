@@ -3,6 +3,7 @@ package com.jetbrains.interactiveRebase.actions.buttonActions
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
+import com.jetbrains.interactiveRebase.dataClasses.commands.CherryCommand
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 
@@ -14,8 +15,12 @@ class StartRebaseAction :
     ) {
     override fun actionPerformed(e: AnActionEvent) {
         val invoker = e.project?.service<RebaseInvoker>()
-        invoker?.createModel()
-        invoker?.executeCommands()
+        if(invoker?.commands?.filterIsInstance<CherryCommand>()?.size==0){
+            invoker.executeCommands()
+        }else{
+            invoker?.executeCherry()
+        }
+
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
@@ -23,6 +28,8 @@ class StartRebaseAction :
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkRebaseAndReset(e)
+        val project = e.project ?: return
+        val actionService = project.service<ActionService>()
+        actionService.checkRebaseAndReset(e)
     }
 }

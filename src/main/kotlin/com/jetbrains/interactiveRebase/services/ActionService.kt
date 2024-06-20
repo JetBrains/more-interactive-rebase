@@ -24,7 +24,7 @@ import com.jetbrains.interactiveRebase.visuals.MainPanel
 class ActionService(val project: Project) {
     internal var modelService = project.service<ModelService>()
     private var invoker = modelService.invoker
-    lateinit var mainPanel: MainPanel
+    var mainPanel = MainPanel(project)
 
     /**
      * Constructor for injection during testing
@@ -32,6 +32,10 @@ class ActionService(val project: Project) {
     constructor(project: Project, modelService: ModelService, invoker: RebaseInvoker) : this(project) {
         this.modelService = modelService
         this.invoker = invoker
+    }
+
+    fun checkRebaseIsNotInProgress(): Boolean {
+        return !modelService.rebaseInProcess
     }
 
     /**
@@ -74,6 +78,7 @@ class ActionService(val project: Project) {
             invoker.addCommand(command)
         }
         modelService.branchInfo.clearSelectedCommits()
+        modelService.graphInfo.addedBranch?.clearSelectedCommits()
     }
 
     /**
@@ -83,31 +88,41 @@ class ActionService(val project: Project) {
         invoker.undoneCommands.clear()
         val commits = modelService.graphInfo.addedBranch?.selectedCommits
         commits?.forEach {
-                commitInfo ->
-            commitInfo.wasCherryPicked = true
-            val newCommit =
-                CommitInfo(
-                    commitInfo.commit, project,
-                    mutableListOf(), false, false,
-                    false, false, false,
-                    false, false,
-                )
-            modelService.graphInfo.mainBranch.currentCommits.add(0, newCommit)
-            val command = CherryCommand(commitInfo, newCommit)
-            newCommit.addChange(command)
-            invoker.addCommand(command)
+                commitInfo -> prepareCherry(commitInfo)
         }
         modelService.branchInfo.clearSelectedCommits()
         modelService.graphInfo.addedBranch?.clearSelectedCommits()
     }
 
+    fun prepareCherry(commitInfo : CommitInfo, index : Int = 0){
+        commitInfo.wasCherryPicked = true
+        val newCommit =
+                CommitInfo(
+                        commitInfo.commit, project,
+                        mutableListOf(), false, false,
+                        false, false, false,
+                        false, false,
+                )
+        modelService.graphInfo.mainBranch.currentCommits.add(index, newCommit)
+        val command = CherryCommand(commitInfo, newCommit, index)
+        newCommit.addChange(command)
+        invoker.addCommand(command)
+
+    }
     /**
      * Enables the Cherry Pick button.
      * Commits form the checked out branch cannot be cherry-picked
      */
     fun checkCherryPick(e: AnActionEvent) {
+        val addedBranch = modelService.graphInfo.addedBranch
+        val index = addedBranch?.currentCommits?.indexOf(addedBranch.baseCommit)
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isEmpty() &&
-            modelService.areDisabledCommitsSelected()
+            modelService.areDisabledCommitsSelected() &&
+                addedBranch?.selectedCommits!!.all{
+                    !it.wasCherryPicked &&
+                            addedBranch.currentCommits.indexOf(it) < index!!
+                }
+
     }
 
     /**
@@ -118,7 +133,7 @@ class ActionService(val project: Project) {
      */
     fun checkDrop(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !modelService.areDisabledCommitsSelected() &&
+            !modelService.areDisabledCommitsSelected() && checkRebaseIsNotInProgress() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
@@ -132,7 +147,7 @@ class ActionService(val project: Project) {
      */
     fun checkReword(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.getActualSelectedCommitsSize() == 1 &&
-            !modelService.areDisabledCommitsSelected() &&
+            !modelService.areDisabledCommitsSelected() && checkRebaseIsNotInProgress() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
@@ -146,7 +161,7 @@ class ActionService(val project: Project) {
      */
     fun checkStopToEdit(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !modelService.areDisabledCommitsSelected() &&
+            !modelService.areDisabledCommitsSelected() && checkRebaseIsNotInProgress() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
@@ -173,7 +188,10 @@ class ActionService(val project: Project) {
 
         val validParent = checkValidParent()
 
-        e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && validParent && !modelService.areDisabledCommitsSelected()
+        e.presentation.isEnabled = notEmpty &&
+            notFirstCommit && notDropped &&
+            validParent && !modelService.areDisabledCommitsSelected() &&
+            checkRebaseIsNotInProgress()
     }
 
     /**
@@ -225,7 +243,25 @@ class ActionService(val project: Project) {
      */
     fun checkPick(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !modelService.areDisabledCommitsSelected()
+            !modelService.areDisabledCommitsSelected() && checkRebaseIsNotInProgress()
+    }
+
+    /**
+     * Enables rebase button
+     * depending on the number of selected commits
+     * and the state of the branch.
+     * Commits from the checked-out branch cannot be picked.
+     */
+    fun checkNormalRebaseAction(e: AnActionEvent) {
+        e.presentation.isEnabled = modelService.graphInfo.addedBranch != null &&
+            (
+                !modelService.areDisabledCommitsSelected() ||
+                    (
+                        modelService.graphInfo.addedBranch?.selectedCommits?.size!! <= 1 &&
+                            modelService.graphInfo.addedBranch?.selectedCommits!![0] !=
+                            modelService.graphInfo.addedBranch!!.baseCommit
+                    )
+            )
     }
 
     /**
@@ -331,6 +367,13 @@ class ActionService(val project: Project) {
             commitInfo.isDragged = false
             commitInfo.isReordered = false
             commitInfo.isHovered = false
+            commitInfo.isCollapsed = false
+        }
+        modelService.graphInfo.addedBranch?.initialCommits?.forEach { commitInfo ->
+            commitInfo.changes.clear()
+            commitInfo.isSelected = false
+            commitInfo.wasCherryPicked = false
+
         }
         modelService.graphInfo.mainBranch.isRebased = false
         modelService.graphInfo.addedBranch?.baseCommit =
@@ -509,8 +552,11 @@ class ActionService(val project: Project) {
     }
 
     private fun undoRebase() {
-        modelService.graphInfo.addedBranch?.baseCommit =
-            modelService.graphInfo.addedBranch?.currentCommits?.last()
+        val base = modelService.graphInfo.addedBranch?.currentCommits?.last()
+        val lastRebaseCommandCommit =
+            invoker.commands
+                .findLast { command -> command is RebaseCommand }?.commitOfCommand()
+        modelService.graphInfo.addedBranch?.baseCommit = lastRebaseCommandCommit ?: base
         modelService.graphInfo.mainBranch.isRebased = false
     }
 
@@ -537,7 +583,7 @@ class ActionService(val project: Project) {
             redoPick(commitToBeRedone)
         }
         if (command is CherryCommand) {
-            redoCherryPick(commitToBeRedone)
+            redoCherryPick(commitToBeRedone, command)
         }
         if (command is RebaseCommand) {
             redoRebase(commitToBeRedone)
@@ -590,14 +636,24 @@ class ActionService(val project: Project) {
         command: CherryCommand,
     ) {
         modelService.graphInfo.mainBranch.currentCommits.remove(commit)
+        val original = modelService.graphInfo.addedBranch?.currentCommits?.filter{it.wasCherryPicked}?.find{
+            it.commit==commit.commit
+        }
+        original?.wasCherryPicked = false
+        //mainPanel.graphPanel.addedBranchPanel?.updateCommits()
     }
 
     /**
      * If the last action that was undone by the user was a cherry-pick,
      * this adds it back to the checked out branch.
      */
-    internal fun redoCherryPick(commit: CommitInfo) {
-        modelService.graphInfo.mainBranch.currentCommits.add(0, commit)
+    internal fun redoCherryPick(commit: CommitInfo, command : CherryCommand) {
+        val original = command.baseCommit
+        val index =  command.index
+        modelService.graphInfo.mainBranch.currentCommits.add(index, commit)
+        original.wasCherryPicked = true
+
+        mainPanel.graphPanel.addedBranchPanel?.updateCommits()
     }
 
     /**
@@ -819,8 +875,33 @@ class ActionService(val project: Project) {
         }
     }
 
+    /**
+     * Gets the header panel instance
+     */
     fun getHeaderPanel(): HeaderPanel {
         val wrapper = mainPanel.getComponent(0) as OnePixelSplitter
         return wrapper.firstComponent as HeaderPanel
+    }
+
+    /**
+     * Removes the rebase + reset process panel and shows the continue + abort buttons
+     */
+    fun switchToRebaseProcessPanel() {
+        val headerPanel = getHeaderPanel()
+        headerPanel.changeActionsPanel.isVisible = false
+        headerPanel.rebaseProcessPanel.isVisible = true
+        headerPanel.revalidate()
+        headerPanel.repaint()
+    }
+
+    /**
+     * Removes the continue + abort process panel and shows the rebase + reset buttons
+     */
+    fun switchToChangeButtonsIfNeeded() {
+        val headerPanel = getHeaderPanel()
+        headerPanel.changeActionsPanel.isVisible = true
+        headerPanel.rebaseProcessPanel.isVisible = false
+        headerPanel.revalidate()
+        headerPanel.repaint()
     }
 }

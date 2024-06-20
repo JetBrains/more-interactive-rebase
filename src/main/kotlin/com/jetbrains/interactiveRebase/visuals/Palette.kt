@@ -13,6 +13,7 @@ object Palette {
     val BLUE = JBColor(Color(52, 152, 219), Color(41, 128, 185))
     val LIME = JBColor(Color(234, 217, 76), Color(192, 174, 57))
     val TOMATO = JBColor(Color(231, 76, 60), Color(192, 57, 43))
+    val TOMATO_DARK = JBColor(Color(92, 14, 13), Color(92, 14, 13))
     val LIME_GREEN = JBColor(Color(81, 203, 32), Color(66, 163, 27))
     val INDIGO = JBColor(Color(95, 96, 202), Color(78, 79, 179))
 
@@ -44,6 +45,8 @@ object Palette {
     val PALE_LIME = JBColor(Color(234, 217, 76, 85), Color(192, 174, 57, 85))
     val PALE_TOMATO = JBColor(Color(231, 76, 60, 85), Color(192, 57, 43, 85))
     val PALE_LIME_GREEN = JBColor(Color(81, 203, 32, 85), Color(66, 163, 27, 85))
+    val FADED_LIME_GREEN = JBColor(Color(45, 113, 18), Color(45, 113, 18))
+    val PALE_GREEN = JBColor(Color(39, 96, 15), Color(39, 96, 15))
 
     // Themes
     data class Theme(
@@ -88,9 +91,9 @@ object Palette {
             branchNameColor = PALE_TOMATO,
         )
 
-    public final val LIME_GREEN_THEME =
+    val LIME_GREEN_THEME =
         Theme(
-            regularCircleColor = LIME_GREEN,
+            regularCircleColor = LIME_GREEN_BORDER,
             borderColor = LIME_GREEN_BORDER,
             selectedCircleColor = DARKER_LIME_GREEN,
             selectedBorderColor = LIME_GREEN_BORDER,
@@ -98,7 +101,18 @@ object Palette {
             branchNameColor = PALE_LIME_GREEN,
         )
 
-    public final val GRAY_THEME =
+
+    val FADED_LIME_GREEN_THEME =
+        Theme(
+            regularCircleColor = PALE_GREEN,
+            borderColor = PALE_LIME_GREEN,
+            selectedCircleColor = DARKER_LIME_GREEN,
+            selectedBorderColor = LIME_GREEN_BORDER,
+            hoverCircleColor = JETBRAINS_HOVER,
+            branchNameColor = PALE_LIME_GREEN,
+        )
+
+    val GRAY_THEME =
         Theme(
             regularCircleColor = GRAY,
             borderColor = DARK_GRAY,
@@ -106,5 +120,6 @@ object Palette {
             selectedBorderColor = DARK_GRAY.darker() as JBColor,
             hoverCircleColor = JETBRAINS_HOVER,
             branchNameColor = GRAY,
+
         )
 }

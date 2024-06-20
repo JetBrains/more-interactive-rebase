@@ -22,6 +22,7 @@
         <action class="com.jetbrains.interactiveRebase.actions.CreateEditorTabAction" id="com.jetbrains.interactive_rebase.CreateEditorTabAction"
                 text="Interactive Rebase Current Branch">
             <add-to-group group-id="Git.MainMenu" anchor="first"/>
+
         </action>
         <group id="ActionsGroup"
                class="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup" text="RebaseGlobalActionsGroup" description="Interactive rebase actions">
@@ -75,9 +76,15 @@
                         class="com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction" text="StopToEditAction" description="Stop while rebasing to edit a commit">
                     <keyboard-shortcut first-keystroke="alt E" keymap="$default"/>
                 </action>
+
                 <action id="com.jetbrains.interactiveRebase.actions.gitPanel.CherryAction"
                         class="com.jetbrains.interactiveRebase.actions.gitPanel.CherryAction" text="CherryAction" description="Stop while rebasing to edit a commit">
                     <keyboard-shortcut first-keystroke="alt C" keymap="$default"/>
+                </action>
+                <action id="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseAction"
+                        class="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseAction" text="RebaseAction" description="Change the base of your checked-out branch.">
+                    <keyboard-shortcut first-keystroke="alt shift R" keymap="$default"/>
+
                 </action>
             </group>
 
@@ -95,6 +102,21 @@
                 <keyboard-shortcut first-keystroke="alt ENTER" keymap="$default"/>
             </action>
 
+
+        </group>
+
+        <group id="RebaseProcessActionsGroup" class="com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup">
+            <action id="ContinueRebaseAction"
+                    class="com.jetbrains.interactiveRebase.actions.buttonActions.ContinueRebaseAction" text="Continue"
+                    description="Continue">
+                <keyboard-shortcut first-keystroke="ctrl shift C" keymap="$default"/>
+            </action>
+
+            <action id="AbortRebaseAction"
+                    class="com.jetbrains.interactiveRebase.actions.buttonActions.AbortRebaseAction" text="Abort"
+                    description="Abort">
+                <keyboard-shortcut first-keystroke="ctrl shift A" keymap="$default"/>
+            </action>
 
         </group>
 

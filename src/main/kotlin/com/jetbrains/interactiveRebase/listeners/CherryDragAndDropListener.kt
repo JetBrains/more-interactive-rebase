@@ -11,6 +11,8 @@ import com.intellij.ui.util.preferredHeight
 import com.intellij.ui.util.preferredWidth
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.services.ActionService
+import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import com.jetbrains.interactiveRebase.visuals.DragPanel
 import com.jetbrains.interactiveRebase.visuals.GraphPanel
@@ -23,7 +25,7 @@ import javax.swing.SwingUtilities
 import javax.swing.Timer
 
 class CherryDragAndDropListener(
-    project: Project,
+    val project: Project,
     private val cherry: CirclePanel,
     private val addedBranchPanel: LabeledBranchPanel,
 ) : MouseAdapter(), Disposable {
@@ -114,8 +116,14 @@ class CherryDragAndDropListener(
     }
 
     private fun propagateCherryPickToBackend() {
-        mainBranchPanel.branchPanel.branch.currentCommits.add(mainIndex, createCherryCommit())
+        project.service<RebaseInvoker>().undoneCommands.clear()
+        project.service<ActionService>().prepareCherry(cherry.commit, mainIndex)
         addedBranchPanel.branchPanel.branch.currentCommits[initialIndex].wasCherryPicked = true
+
+        project.service<ModelService>().graphInfo.addedBranch?.clearSelectedCommits()
+        project.service<ModelService>().branchInfo.clearSelectedCommits()
+        mainBranchPanel.updateCommits()
+
     }
 
     private fun turnBackToTheInitialLayoutOfMainBranch() {
@@ -464,7 +472,7 @@ class CherryDragAndDropListener(
 
     private fun createClone(): CirclePanel {
         val clone = cherry.clone()
-        clone.commit = createCherryCommit()
+        //clone.commit = createCherryCommit()
         clone.commit.wasCherryPicked = false
         return clone
     }

@@ -14,7 +14,7 @@ import javax.swing.JComponent
 class PickAction :
     DumbAwareAction(
         "Pick",
-        "Undoes the changes made on the selected commit",
+        "Set commits to its initial state.",
         AllIcons.Diff.GutterCheckBoxSelected,
     ),
     CustomComponentAction {
@@ -39,7 +39,7 @@ class PickAction :
             presentation,
             place,
             getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.PickAction"),
-            "Undoes the changes made on the selected commit",
+            "Set commits to its initial state.",
         )
     }
 }

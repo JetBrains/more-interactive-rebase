@@ -8,7 +8,7 @@ import git4ideaClasses.IRGitModel
 /**
  * Here the commit is the original one that belongs to the added branch
  */
-data class CherryCommand(var baseCommit: CommitInfo, val commit: CommitInfo) : IRCommand() {
+data class CherryCommand(var baseCommit: CommitInfo, val commit: CommitInfo, val index: Int) : IRCommand() {
     /**
      * This method is to set up connection with the
      * Interactive Rebase mechanism.
@@ -19,6 +19,7 @@ data class CherryCommand(var baseCommit: CommitInfo, val commit: CommitInfo) : I
     override fun execute(
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,
+
     ) {
     }
 

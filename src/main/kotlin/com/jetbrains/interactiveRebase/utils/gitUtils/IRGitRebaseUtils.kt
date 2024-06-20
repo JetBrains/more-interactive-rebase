@@ -5,12 +5,20 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.vcs.VcsException
 import com.jetbrains.interactiveRebase.services.ModelService
-import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import git4idea.GitCommit
+import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.util.Consumer
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.CherryCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.IRCommand
+import com.jetbrains.interactiveRebase.services.ActionService
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import git4idea.GitUtil
 import git4idea.branch.GitRebaseParams
 import git4idea.cherrypick.GitCherryPicker
+import git4idea.history.GitHistoryUtils
 import git4idea.i18n.GitBundle
 import git4idea.rebase.GitRebaseEditorHandler
 import git4idea.rebase.GitRebaseUtils
@@ -26,6 +34,67 @@ import git4ideaClasses.IRGitModel
 class IRGitRebaseUtils(private val project: Project) {
     private val repo = GitUtil.getRepositoryManager(project).getRepositoryForRootQuick(project.guessProjectDir())
 
+
+    /**
+     * Start Cherry-Picking
+     */
+    internal fun cherryPick(
+            commands : List<IRCommand>,
+    ){
+        object : Task.Backgroundable(project, GitBundle.message("rebase.progress.indicator.preparing.title")) {
+            override fun run(indicator: ProgressIndicator) {
+                val modelService = project.service<ModelService>()
+                val cherryCommands = commands.filterIsInstance<CherryCommand>()
+
+                cherryCommands.forEachIndexed { index, command ->
+                    val base = command.baseCommit
+                    val newbie = command.commit
+                    GitCherryPicker(project).cherryPick(mutableListOf(base.commit))
+                    try{
+                        var head:GitCommit? = null
+                        val consumer = Consumer<GitCommit>{
+                            commit -> head = commit
+                        }
+                        println(head)
+                        GitHistoryUtils.loadDetails(project, repo?.root!!, consumer, "-n", "1")
+                        var previousHead = modelService.branchInfo.initialCommits[0].commit
+                        if(index!=0){
+                            previousHead = command.commit.commit
+                        }
+                        if(previousHead==head){
+                            IRGitUtils(project).gitReset()
+
+                            modelService.noMoreCherryPicking = true
+                            return
+                        }
+                        newbie.commit = head!!
+                    }catch(e: VcsException){
+                        println("Trying to display parents of initial commit")
+                    }
+
+                }
+                modelService.noMoreCherryPicking = true
+                project.service<RebaseInvoker>().executeCommands()
+
+            }
+        }.queue()
+    }
+
+    fun detectAddedCherry(commitInfo: CommitInfo,
+                          newCommits: MutableList<CommitInfo>, initialCommits: List<CommitInfo>) : Boolean{
+        var detectCherry = false
+        newCommits.forEach { newCommit ->
+            val commit = initialCommits.find{
+                initialCommit -> initialCommit.commit.id == newCommit.commit.id
+            }
+            if(commit==null){
+                detectCherry = true
+                commitInfo.commit = newCommit.commit
+            }
+        }
+        return detectCherry
+
+    }
     /**
      * Prepares for rebase. Runs the preparation in the background. Maybe it is not necessary.
      * The commit that is passed is the initial commit of the branch
@@ -35,11 +104,9 @@ class IRGitRebaseUtils(private val project: Project) {
     internal fun rebase(
         commit: String,
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
-        cherryCommits: MutableList<GitCommit>,
     ) {
         object : Task.Backgroundable(project, GitBundle.message("rebase.progress.indicator.preparing.title")) {
             override fun run(indicator: ProgressIndicator) {
-                GitCherryPicker(project).cherryPick(cherryCommits)
                 startInteractiveRebase(commit, repo?.let { IRGitEditorHandler(it, model) })
             }
         }.queue()
@@ -54,6 +121,7 @@ class IRGitRebaseUtils(private val project: Project) {
     ) {
         object : Task.Backgroundable(project, GitBundle.message("rebase.progress.indicator.title")) {
             override fun run(indicator: ProgressIndicator) {
+                IdeFocusManager.getInstance(project).requestFocus(project.service<ActionService>().mainPanel, true)
                 val params =
                     repo?.vcs?.let {
                         GitRebaseParams.editCommits(
@@ -65,13 +133,6 @@ class IRGitRebaseUtils(private val project: Project) {
                     }
                 if (params != null) {
                     GitRebaseUtils.rebase(project, listOf(repo), params, indicator)
-                    project.service<RebaseInvoker>().commands.clear()
-                    project.service<RebaseInvoker>().undoneCommands.clear()
-                    project.service<ModelService>().graphInfo.mainBranch.currentCommits.forEach {
-                            c ->
-                        c.changes.clear()
-                    }
-                    project.service<ModelService>().fetchGraphInfo(0)
                 }
             }
         }.queue()

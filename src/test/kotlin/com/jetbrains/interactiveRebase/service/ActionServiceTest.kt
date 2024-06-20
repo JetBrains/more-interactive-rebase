@@ -42,6 +42,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     private lateinit var commitInfo2: CommitInfo
     private lateinit var commitInfo3: CommitInfo
     private lateinit var branchInfo: BranchInfo
+    private lateinit var commitInfo4: CommitInfo
     private lateinit var actionService: ActionService
     private var addedBranch: BranchInfo = BranchInfo()
 
@@ -51,6 +52,8 @@ class ActionServiceTest : BasePlatformTestCase() {
         commitInfo1 = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf())
         commitInfo2 = CommitInfo(commitProvider.createCommit("fix tests"), project, mutableListOf())
         commitInfo3 = CommitInfo(commitProvider.createCommit("belongs to added branch"), project, mutableListOf())
+        commitInfo4 = CommitInfo(commitProvider.createCommit("belongs to added branch too"), project, mutableListOf())
+
         val commitService = mock(CommitService::class.java)
 
         Mockito.doAnswer {
@@ -65,6 +68,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.initialCommits = mutableListOf(commitInfo1, commitInfo2)
         modelService.branchInfo.currentCommits = mutableListOf(commitInfo1, commitInfo2)
         addedBranch.name = "added"
+        addedBranch.currentCommits.add(commitInfo4)
         addedBranch.currentCommits.add(commitInfo3)
         addedBranch.baseCommit = commitInfo3
         modelService.graphInfo = GraphInfo(modelService.branchInfo, addedBranch)
@@ -115,6 +119,10 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.addSelectedCommits(commitInfo1)
         actionService.checkReword(event)
         assertThat(presentation.isEnabledAndVisible).isTrue()
+        modelService.rebaseInProcess = true
+        actionService.checkReword(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
         modelService.branchInfo.addSelectedCommits(commitInfo2)
         actionService.checkReword(event)
         assertThat(presentation.isEnabledAndVisible).isFalse()
@@ -122,6 +130,11 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.removeSelectedCommits(commitInfo1)
         actionService.checkReword(event)
         assertThat(presentation.isEnabledAndVisible).isFalse()
+
+        modelService.rebaseInProcess = true
+        actionService.checkReword(event)
+        assertThat(event.presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
     }
 
     fun testCheckStopToEditDisables() {
@@ -135,9 +148,18 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.addSelectedCommits(commitInfo1)
         actionService.checkReword(event)
         assertThat(presentation.isEnabledAndVisible).isTrue()
+        modelService.rebaseInProcess = true
+        actionService.checkReword(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
         commitInfo1.addChange(DropCommand(commitInfo1))
         actionService.checkStopToEdit(event)
         assertThat(presentation.isEnabledAndVisible).isFalse()
+
+        modelService.rebaseInProcess = true
+        actionService.checkStopToEdit(event)
+        assertThat(event.presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
     }
 
     fun testCheckDropDisables() {
@@ -151,28 +173,44 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.addSelectedCommits(commitInfo1)
         actionService.checkDrop(event)
         assertThat(presentation.isEnabledAndVisible).isTrue()
+        modelService.rebaseInProcess = true
+        actionService.checkDrop(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
         commitInfo1.addChange(DropCommand(commitInfo1))
         actionService.checkDrop(event)
         assertThat(presentation.isEnabledAndVisible).isFalse()
+
+        modelService.rebaseInProcess = true
+        actionService.checkDrop(event)
+        assertThat(event.presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
     }
 
     fun testCheckFixupOrSquashDisables() {
         commitInfo1.isSelected = false
         modelService.branchInfo.clearSelectedCommits()
-        val presentation = Presentation()
-        presentation.isEnabled = true
-        val event = createEventWithPresentation(presentation)
-        actionService.checkFixupOrSquash(event)
-        assertThat(presentation.isEnabledAndVisible).isFalse()
+        val e = createTestEvent()
+        actionService.checkFixupOrSquash(e)
+        assertThat(e.presentation.isEnabledAndVisible).isFalse()
         modelService.branchInfo.addSelectedCommits(commitInfo2)
-        actionService.checkFixupOrSquash(event)
-        assertThat(presentation.isEnabledAndVisible).isFalse()
+        actionService.checkFixupOrSquash(e)
+        assertThat(e.presentation.isEnabledAndVisible).isFalse()
         modelService.branchInfo.addSelectedCommits(commitInfo1)
-        actionService.checkStopToEdit(event)
-        assertThat(presentation.isEnabledAndVisible).isTrue()
+        actionService.checkStopToEdit(e)
+        assertThat(e.presentation.isEnabledAndVisible).isTrue()
+
+        modelService.rebaseInProcess = true
+        actionService.checkFixupOrSquash(e)
+        assertThat(e.presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
         commitInfo1.addChange(DropCommand(commitInfo1))
-        actionService.checkStopToEdit(event)
-        assertThat(presentation.isEnabledAndVisible).isFalse()
+        actionService.checkStopToEdit(e)
+        assertThat(e.presentation.isEnabledAndVisible).isFalse()
+
+        modelService.rebaseInProcess = true
+        actionService.checkStopToEdit(e)
+        assertThat(e.presentation.isEnabledAndVisible).isFalse()
     }
 
     fun testCheckPickDisables() {
@@ -186,6 +224,15 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.addSelectedCommits(commitInfo2)
         actionService.checkPick(event)
         assertThat(presentation.isEnabledAndVisible).isTrue()
+        modelService.rebaseInProcess = true
+        actionService.checkPick(event)
+        assertThat(presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
+
+        modelService.rebaseInProcess = true
+        actionService.checkPick(event)
+        assertThat(event.presentation.isEnabledAndVisible).isFalse()
+        modelService.rebaseInProcess = false
     }
 
     private fun createEventWithPresentation(presentation: Presentation): AnActionEvent {
@@ -1053,7 +1100,7 @@ class ActionServiceTest : BasePlatformTestCase() {
     }
 
     fun testCheckCherryPickAction() {
-        modelService.addToSelectedCommits(commitInfo3, addedBranch)
+        modelService.addToSelectedCommits(commitInfo4, addedBranch)
         modelService.invoker.commands.clear()
         val testEvent = createTestEvent()
         actionService.checkCherryPick(testEvent)

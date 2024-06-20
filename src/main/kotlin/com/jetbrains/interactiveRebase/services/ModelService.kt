@@ -5,23 +5,32 @@ import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vcs.VcsException
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.xml.util.XmlStringUtil.wrapInHtml
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
-import com.jetbrains.interactiveRebase.listeners.IRGitRefreshListener
-import git4idea.status.GitRefreshListener
+import com.jetbrains.interactiveRebase.listeners.IRRepositoryChangeListener
+import com.jetbrains.interactiveRebase.listeners.PopupListener
+import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
+import git4idea.GitUtil
+import git4idea.merge.GitConflictResolver
+import git4idea.repo.GitRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.awt.AWTEvent
+import java.awt.Toolkit
 
 @Service(Service.Level.PROJECT)
 class ModelService(
     private val project: Project,
-    private val coroutineScope: CoroutineScope,
+    val coroutineScope: CoroutineScope,
     private val commitService: CommitService,
 ) : Disposable {
     constructor(project: Project, coroutineScope: CoroutineScope) : this(project, coroutineScope, project.service<CommitService>())
@@ -32,6 +41,18 @@ class ModelService(
     private val graphService = project.service<GraphService>()
     private val dialogService = project.service<DialogService>()
     internal val invoker = project.service<RebaseInvoker>()
+    internal val repositoryChangeListener = IRRepositoryChangeListener(project)
+    private val repo = GitUtil.getRepositoryManager(project).getRepositoryForRootQuick(project.guessProjectDir())
+    internal var rebaseInProcess: Boolean = false
+    internal var previousConflictCommit: String = ""
+    internal var gitDialog: GitConflictResolver? = null
+    var gitUtils = IRGitUtils(project)
+    internal var cherryPickInProcess: Boolean = false
+    internal var previousCherryCommit: String = ""
+    var isDoneCherryPicking = true
+    var noMoreCherryPicking = false
+    var counterForCherry = 0
+
 
     /**
      * Fetches current branch info
@@ -41,7 +62,10 @@ class ModelService(
     init {
         fetchGraphInfo(0)
         populateLocalBranches(0)
-        project.messageBus.connect(this).subscribe(GitRefreshListener.TOPIC, IRGitRefreshListener(project))
+        project.messageBus.connect(this).subscribe(GitRepository.GIT_REPO_CHANGE, repositoryChangeListener)
+
+        Toolkit.getDefaultToolkit().addAWTEventListener(PopupListener(project), AWTEvent.WINDOW_EVENT_MASK)
+        if (repo != null) rebaseInProcess = repo.isRebaseInProgress
     }
 
     /**
@@ -210,6 +234,10 @@ class ModelService(
                     showWarningGitDialogClosesPlugin("There was an error while fetching data from Git.")
                 }
             }
+
+            coroutineScope.launch(Dispatchers.EDT) {
+                project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
+            }
         }
     }
 
@@ -271,6 +299,63 @@ class ModelService(
         }
     }
 
+    internal fun markRebaseCommitAsPaused(head: String) {
+        for (commit in branchInfo.currentCommits.reversed()) {
+            if (commit.commit.id.toString() == head) {
+                commit.markAsPaused()
+                break
+            } else {
+                if (commit.isPaused) commit.markAsNotPaused()
+                commit.markAsRebased()
+            }
+        }
+    }
+
+    internal fun removeAllChangesIfNeeded() {
+        project.service<RebaseInvoker>().commands.clear()
+        project.service<RebaseInvoker>().undoneCommands.clear()
+        graphInfo.mainBranch.initialCommits.forEach {
+                c ->
+            c.isSquashed = false
+            c.isRebased = false
+            c.isPaused = false
+            c.isCollapsed = false
+            c.changes.clear()
+        }
+        graphInfo.addedBranch?.initialCommits?.forEach {
+            c ->
+            c.wasCherryPicked = false
+            c.changes.clear()
+        }
+        graphInfo.mainBranch.currentCommits = graphInfo.mainBranch.initialCommits.toMutableList()
+    }
+
+    /**
+     * Re-fetches everything and clears all saved fields in the model.
+     */
+    internal fun refreshModel() {
+        if (rebaseInProcess) {
+            removeAllChangesIfNeeded()
+            rebaseInProcess = false
+            previousConflictCommit = ""
+            project.service<ActionService>().switchToChangeButtonsIfNeeded()
+            project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
+        }
+        fetchGraphInfo(0)
+        populateLocalBranches(0)
+    }
+
+    /**
+     * Refreshes the model during a rebase process, such that the current commit is marked as paused
+     * and in the case of conflicts it re-triggers the popup with merge conflicts.
+     */
+    internal fun refreshModelDuringRebaseProcess(root: VirtualFile) {
+        rebaseInProcess = true
+        val currentCommit = gitUtils.getCurrentRebaseCommit(project, root)
+        markRebaseCommitAsPaused(currentCommit)
+        project.service<ActionService>().switchToRebaseProcessPanel()
+    }
+
     /**
      * When there is a problem with fetching the git information and displaying the graph
      * the dialog pops up and when clicked closes the plugin
@@ -317,6 +402,42 @@ class ModelService(
     internal fun areDisabledCommitsSelected(): Boolean {
         val added = graphInfo.addedBranch
         return (added != null && added.selectedCommits.isNotEmpty())
+    }
+
+    /**
+     * Creates our own merge conflict dialog for the commit,
+     * which has the current commit message and hash in it.
+     */
+    fun createMergeConflictDialogForCommit(
+        currentCommitHash: String,
+        root: VirtualFile,
+    ) {
+        val params = GitConflictResolver.Params(project)
+        params.setReverse(true)
+        params.setErrorNotificationTitle("Conflicts during rebasing.")
+        params.setErrorNotificationAdditionalDescription("Please resolve the conflicts and press continue to proceed with the rebase")
+
+        val commit = branchInfo.currentCommits.find { it.commit.id.toString() == currentCommitHash }!!.commit
+        val mergeConflictDescription = wrapInHtml("Conflicts in commit <b>" + commit.subject + "</b> (" + commit.id.toShortString() + ")")
+        params.setMergeDescription(mergeConflictDescription)
+
+        coroutineScope.launch(Dispatchers.IO) {
+            val dialog = gitDialog ?: GitConflictResolver(project, mutableListOf(root), params)
+            dialog.mergeNoProceed()
+        }
+    }
+
+    /**
+     * This sets all previous commits as rebased and the current commit as paused,
+     * keeps track of the current commit and shows the custom merge dialog.
+     */
+    fun showCustomMergeDialog(
+        currentMergingCommit: String,
+        root: VirtualFile,
+    ) {
+        previousConflictCommit = currentMergingCommit
+        markRebaseCommitAsPaused(currentMergingCommit)
+        createMergeConflictDialogForCommit(currentMergingCommit, root)
     }
 
     /**

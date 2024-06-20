@@ -208,7 +208,7 @@ class RebaseDragAndDropListenerTest : BasePlatformTestCase() {
         verify(listener, times(1)).resetFormattingOfSecondLabel()
         verify(listener, times(2)).formatDraggedLabelOnDrop()
         verify(dragPanel, times(4)).repaint()
-        verify(listener).rebase()
+        verify(listener).rebase(graphPanel.graphInfo.addedBranch!!.currentCommits[0])
         verify(listener).returnNameLabelsBackInGraph()
         verify(listener, times(2)).refreshDraggableArea()
     }
@@ -238,7 +238,7 @@ class RebaseDragAndDropListenerTest : BasePlatformTestCase() {
         verify(listener).formatDraggedLabelOnDrop()
         verify(dragPanel, times(4)).repaint()
         verify(listener).formatDraggedLabelOnDrop()
-        verify(listener, never()).rebase()
+        verify(listener, never()).rebase(graphPanel.graphInfo.addedBranch!!.currentCommits[0])
         verify(listener).returnNameLabelsBackInGraph()
         verify(listener, times(2)).refreshDraggableArea()
     }
@@ -272,7 +272,7 @@ class RebaseDragAndDropListenerTest : BasePlatformTestCase() {
         verify(listener).formatDraggedLabelOnDrop()
         verify(dragPanel, times(4)).repaint()
         verify(listener).formatDraggedLabelOnDrop()
-        verify(listener, never()).rebase()
+        verify(listener, never()).rebase(graphPanel.graphInfo.addedBranch!!.currentCommits[0])
         verify(listener).returnNameLabelsBackInGraph()
         verify(listener, times(2)).refreshDraggableArea()
     }
@@ -313,7 +313,7 @@ class RebaseDragAndDropListenerTest : BasePlatformTestCase() {
         verify(listener).formatDraggedLabelOnDrop()
         verify(dragPanel, times(4)).repaint()
         verify(listener).formatDraggedLabelOnDrop()
-        verify(listener, never()).rebase()
+        verify(listener, never()).rebase(graphPanel.graphInfo.addedBranch!!.currentCommits[0])
         verify(listener).returnNameLabelsBackInGraph()
         verify(listener, times(2)).refreshDraggableArea()
     }
@@ -344,7 +344,7 @@ class RebaseDragAndDropListenerTest : BasePlatformTestCase() {
         verify(listener, times(2)).resetFormattingOfSecondLabel()
         verify(listener, never()).formatDraggedLabelOnDrop()
         verify(dragPanel, times(4)).repaint()
-        verify(listener, never()).rebase()
+        verify(listener, never()).rebase(graphPanel.graphInfo.addedBranch!!.currentCommits[0])
         verify(listener).returnNameLabelsBackInGraph()
         verify(listener, times(2)).refreshDraggableArea()
     }
@@ -374,7 +374,7 @@ class RebaseDragAndDropListenerTest : BasePlatformTestCase() {
     }
 
     fun testRebase() {
-        listener.rebase()
+        listener.rebase(graphPanel.graphInfo.addedBranch!!.currentCommits[0])
         verify(graphPanel, times(2)).computeVerticalOffsets()
 
         verify(listener).animateAndPropagateToBackend(

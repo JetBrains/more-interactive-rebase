@@ -13,7 +13,7 @@ import java.awt.*
  */
 class BranchPanel(
     val branch: BranchInfo,
-    val colorTheme: Palette.Theme,
+    var colorTheme: Palette.Theme,
 ) : JBPanel<JBPanel<*>>() {
     val diameter = 30
     val borderSize = 1f
@@ -38,11 +38,18 @@ class BranchPanel(
      */
     fun initializeCirclePanel(i: Int): CirclePanel {
         val commit = branch.currentCommits[i]
+        var theme = colorTheme
+        if (commit.isRebased) {
+            theme = Palette.FADED_LIME_GREEN_THEME
+        } else if (commit.isPaused) {
+            theme = Palette.LIME_GREEN_THEME
+        }
+
         var circle =
             CirclePanel(
                 diameter.toDouble(),
                 borderSize,
-                colorTheme,
+                theme,
                 branch.currentCommits[i],
             )
 
@@ -53,7 +60,7 @@ class BranchPanel(
                 CollapseCirclePanel(
                     diameter.toDouble(),
                     4f,
-                    colorTheme,
+                    theme,
                     branch.currentCommits[i],
                 )
         } else if (visualChanges.any { it is DropCommand }) {
@@ -61,7 +68,7 @@ class BranchPanel(
                 DropCirclePanel(
                     (diameter + 2).toDouble(),
                     borderSize,
-                    colorTheme,
+                    theme,
                     branch.currentCommits[i],
                 )
         } else if (visualChanges.any { it is StopToEditCommand }) {
@@ -69,7 +76,7 @@ class BranchPanel(
                 StopToEditCirclePanel(
                     diameter.toDouble(),
                     borderSize,
-                    colorTheme,
+                    theme,
                     branch.currentCommits[i],
                 )
         } else if (visualChanges.any { it is CherryCommand }) {
@@ -77,7 +84,7 @@ class BranchPanel(
                 CherryCirclePanel(
                     diameter.toDouble(),
                     borderSize,
-                    colorTheme,
+                    theme,
                     branch.currentCommits[i],
                     isModifiable = branch.isWritable,
                 )
@@ -86,7 +93,7 @@ class BranchPanel(
                 SquashedCirclePanel(
                     diameter.toDouble(),
                     borderSize,
-                    colorTheme,
+                    theme,
                     branch.currentCommits[i],
                 )
         } else if (commit.wasCherryPicked) {
@@ -124,7 +131,7 @@ class BranchPanel(
         for (i in 0 until size - 1) {
             // Make line brush
             g2d.stroke = BasicStroke(borderSize)
-            g2d.color = colorTheme.regularCircleColor
+            g2d.color = circles[i].colorTheme.regularCircleColor
             drawLineBetweenCommits(i, g2d)
         }
 
@@ -160,10 +167,8 @@ class BranchPanel(
         endY: Int,
     ) {
         val fractions = floatArrayOf(0.0f, 0.5f)
-        val colors = arrayOf<Color>(
-            colorTheme.regularCircleColor,
-            JBColor.PanelBackground
-        )
+
+        val colors = arrayOf<Color>(circles[circles.size - 1].colorTheme.regularCircleColor, JBColor.PanelBackground)
 
         g2d.paint =
             LinearGradientPaint(
@@ -193,6 +198,7 @@ class BranchPanel(
         val startY = circle.y + circle.height / 2
         var endY = nextCircle.y + circle.height / 2
 
+
         val fractions = floatArrayOf(0.2f, 0.8f)
         val colors = arrayOf<Color>(
             circle.colorTheme.regularCircleColor,
@@ -211,6 +217,7 @@ class BranchPanel(
                 fractions,
                 colors,
             )
+
         g2d.stroke = BasicStroke(2f)
         g2d.drawLine(
             x,
