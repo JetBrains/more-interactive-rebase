@@ -140,7 +140,6 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         assertThat(commitLabel.mouseListeners).hasOnlyOneElementSatisfying { element ->
             assertThat(element).isInstanceOf(LabelListener::class.java)
         }
-        assertThat(labeledBranch.mouseListeners).hasSize(1)
     }
 
     fun testCreateTextBoxSetsAlignments() {

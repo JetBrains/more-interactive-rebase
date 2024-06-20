@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.components.service
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.BranchPanel
@@ -69,7 +70,15 @@ class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter()
                 commit.project.service<ActionService>().expandCollapsedCommits(commit, branchInfo)
                 commit.isHovered = false
             } else if (e.button == MouseEvent.BUTTON1) {
-                normalClick()
+                if (e.clickCount >= 2 &&
+                    !commit.getChangesAfterPick().any { change -> change is DropCommand } &&
+                    branchInfo.isWritable
+                ) {
+                    commit.setTextFieldEnabledTo(true)
+                    commit.project.service<ModelService>().selectSingleCommit(commit, branchInfo)
+                } else {
+                    normalClick()
+                }
             }
 
             e.consume()
