@@ -11,7 +11,6 @@ import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.RoundedPanel
 import java.awt.Cursor
-import java.awt.Graphics
 import java.awt.GridBagLayout
 import java.awt.Point
 import java.awt.event.MouseAdapter
@@ -385,17 +384,15 @@ class RebaseDragAndDropListener(
 
                 updateOffsetOfMainBranch(interpolatedOffsetMain)
                 updateOffsetOfAddedBranch(interpolatedOffsetAdded)
+            } else {
+                (it.source as Timer).stop()
+                updateOffsetOfAddedBranch(finalOffsetAdded)
+                updateOffsetOfMainBranch(finalOffsetMain)
 
-                if (currentStep == steps) {
-                    (it.source as Timer).stop()
-                    updateOffsetOfAddedBranch(finalOffsetAdded)
-                    updateOffsetOfMainBranch(finalOffsetMain)
-
-                    if (mainBranchPanel.branch.isRebased) {
-                        project.service<ActionService>().takeNormalRebaseAction()
-                        project.service<ActionService>().mainPanel.revalidate()
-                        project.service<ActionService>().mainPanel.repaint()
-                    }
+                if (mainBranchPanel.branch.isRebased) {
+                    project.service<ActionService>().takeNormalRebaseAction()
+                    project.service<ActionService>().mainPanel.revalidate()
+                    project.service<ActionService>().mainPanel.repaint()
                 }
             }
         }
