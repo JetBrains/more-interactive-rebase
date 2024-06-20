@@ -69,3 +69,15 @@ If you have completed an issue, please follow the set rules for creating a merge
 - Always write tests and do not lower the test coverage
 - Close the related issue
 - Put the time it took you to finish the issue on the time tracking
+
+## Our Codebase
+
+In the following section, we explain more in detail the functionality of each of the packages to get a proper
+understanding of the underlying implementation of the plugin.
+
+### Actions `com.jetbrains.interactiveRebase.actions`
+
+This package is responsible for managing all the actions that form part of the plugin. Inside there are three more
+packages, each one corresponds to a specific group of actions namely `buttonActions` (actions that affect all 
+commits), `changePanel` (actions that modify the main panel) and `gitPanel` (actions that affect individual commits, 
+all of them correlate )
