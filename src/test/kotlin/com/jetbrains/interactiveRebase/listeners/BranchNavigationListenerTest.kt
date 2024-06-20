@@ -1,12 +1,15 @@
 package com.jetbrains.interactiveRebase.listeners
 
+import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
+import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.MainPanel
+import com.jetbrains.interactiveRebase.visuals.multipleBranches.SideBranchPanel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.assertj.core.api.Assertions.assertThat
@@ -29,6 +32,8 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
     private lateinit var shiftDownEvent: KeyEvent
     private lateinit var altUpEvent: KeyEvent
     private lateinit var altDownEvent: KeyEvent
+    private lateinit var rightEvent: KeyEvent
+    private lateinit var leftEvent: KeyEvent
 
     override fun setUp() {
         super.setUp()
@@ -88,6 +93,26 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
                 System.currentTimeMillis(),
                 KeyEvent.ALT_DOWN_MASK,
                 KeyEvent.VK_DOWN,
+                KeyEvent.CHAR_UNDEFINED,
+            )
+
+        rightEvent =
+            KeyEvent(
+                mainPanel,
+                KeyEvent.KEY_PRESSED,
+                System.currentTimeMillis(),
+                KeyEvent.SHIFT_DOWN_MASK,
+                KeyEvent.VK_RIGHT,
+                KeyEvent.CHAR_UNDEFINED,
+            )
+
+        leftEvent =
+            KeyEvent(
+                mainPanel,
+                KeyEvent.KEY_PRESSED,
+                System.currentTimeMillis(),
+                KeyEvent.SHIFT_DOWN_MASK,
+                KeyEvent.VK_LEFT,
                 KeyEvent.CHAR_UNDEFINED,
             )
     }
@@ -221,4 +246,91 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(branchInfo.currentCommits[1]).isEqualTo(commit4)
         assertThat(branchInfo.currentCommits[0]).isEqualTo(commit3)
     }
+
+    fun testRightAddedBranchNull(){
+        modelService.graphInfo.addedBranch = null
+        branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
+        listener.keyPressed(downEvent)
+        listener.keyPressed(rightEvent)
+        assertThat(modelService.graphInfo.addedBranch).isNull()
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
+    }
+
+    fun testRightAddedBranchNotNull(){
+        modelService.graphInfo.addedBranch = BranchInfo("added branch", listOf(commit3, commit4))
+        branchInfo.setCommits(listOf(commit2, commit1))
+        listener.keyPressed(downEvent)
+        listener.keyPressed(rightEvent)
+        assertThat(modelService.graphInfo.addedBranch).isNotNull
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
+        assertThat(modelService.graphInfo.addedBranch?.selectedCommits?.get(0)).isEqualTo(commit4)
+
+        listener.keyPressed(rightEvent)
+        assertThat(modelService.graphInfo.addedBranch?.selectedCommits?.get(0)).isEqualTo(commit4)
+    }
+
+    fun testRightAddedBranchNotNullNoSelectedCommits(){
+        modelService.graphInfo.addedBranch = BranchInfo("added branch", listOf(commit3, commit4))
+        branchInfo.setCommits(listOf(commit2, commit1))
+        listener.keyPressed(rightEvent)
+        assertThat(modelService.graphInfo.addedBranch).isNotNull
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
+        assertThat(modelService.graphInfo.addedBranch?.selectedCommits?.size).isEqualTo(0)
+    }
+
+    fun testCurrentlyOnAddedBranch(){
+        modelService.graphInfo.addedBranch = BranchInfo("added branch", listOf(commit3, commit4))
+        branchInfo.setCommits(listOf(commit2, commit1))
+        listener.keyPressed(downEvent)
+        listener.keyPressed(rightEvent)
+        assertThat(modelService.graphInfo.addedBranch).isNotNull
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
+        assertThat(modelService.graphInfo.addedBranch?.selectedCommits?.get(0)).isEqualTo(commit4)
+
+        listener.keyPressed(leftEvent)
+        assertThat(modelService.graphInfo.addedBranch?.selectedCommits?.size).isEqualTo(0)
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
+    }
+
+    fun testLeftAlreadyOnMainBranch(){
+        branchInfo.setCommits(listOf(commit2, commit1))
+        val actionService = project.service<ActionService>()
+        val sidePanel = actionService.mainPanel.sidePanel
+        sidePanel.sideBranchPanels.add(0, SideBranchPanel("haha", project))
+        listener.keyPressed(downEvent)
+        listener.keyPressed(leftEvent)
+        assertThat(sidePanel.listener.selected).isEqualTo(sidePanel.sideBranchPanels[0])
+    }
+
+    fun testLeftSelectedBranchIsNoneOfTheTwo(){
+        branchInfo.setCommits(listOf(commit2, commit1))
+        val actionService = project.service<ActionService>()
+        val sidePanel = actionService.mainPanel.sidePanel
+        sidePanel.sideBranchPanels.add(0, SideBranchPanel("haha", project))
+        listener.keyPressed(downEvent)
+        modelService.graphInfo.mainBranch = BranchInfo("testing")
+        assertThat(modelService.graphInfo.mainBranch.selectedCommits.size).isEqualTo(0)
+    }
+
+    fun testEscape(){
+        branchInfo.setCommits(listOf(commit2, commit1))
+        listener.keyPressed(downEvent)
+        val esc = KeyEvent(
+            mainPanel,
+            KeyEvent.KEY_PRESSED,
+            System.currentTimeMillis(),
+            KeyEvent.SHIFT_DOWN_MASK,
+            KeyEvent.VK_ESCAPE,
+            KeyEvent.CHAR_UNDEFINED,
+        )
+        listener.keyPressed(esc)
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
+    }
+
+    fun testEventIsNull(){
+        branchInfo.setCommits(listOf(commit2, commit1))
+        listener.keyPressed(null)
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
+    }
+
 }
