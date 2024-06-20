@@ -34,10 +34,6 @@ class FixupActionTest : IRGitPlatformTest() {
             val rebaseAction = StartRebaseAction()
             val rebaseEvent = createTestEvent(rebaseAction)
             rebaseAction.actionPerformed(rebaseEvent)
-//            val rebaseButton = getRebaseButton()
-//            rebaseButton.doClick()
-
-//            Thread.sleep(5000)
 
             Awaitility.await()
                 .alias("3 commits left for fixup")

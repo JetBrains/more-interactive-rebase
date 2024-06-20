@@ -38,7 +38,8 @@ import java.util.concurrent.TimeUnit
  * 7. Redoes the rebase action
  * 8. Resets the changes made to the feature branch
  * 9. Moves the base of the feature branch to the second to last commit on the feature branch
- * 10. Starts the rebase process
+ * 10. Does some keyboard navigation to go through UI elements, but performs no action on them
+ * 11. Starts the rebase process
  */
 class UseCase4Test : IRGitPlatformTest() {
     lateinit var secondCommitOnMain: String
@@ -291,6 +292,12 @@ class UseCase4Test : IRGitPlatformTest() {
 
             invokerCommands = project.service<RebaseInvoker>().commands.filterIsInstance<RebaseCommand>()
             assertThat(invokerCommands[0].commit).isEqualTo(commitOnSecondBranch)
+
+            nav.down()
+            nav.left()
+            nav.right()
+            nav.right()
+            nav.left()
 
             //starts the rebase process
             val rebaseAction = StartRebaseAction()

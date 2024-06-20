@@ -22,6 +22,10 @@ import java.awt.event.InputEvent
 import java.awt.event.MouseEvent
 import java.util.concurrent.TimeUnit
 
+/**
+ * This test has to do with squashing mostly.
+ *
+ */
 class UseCase3Test : IRGitPlatformTest() {
     fun testUseCase3() {
         runBlocking(Dispatchers.EDT) {
