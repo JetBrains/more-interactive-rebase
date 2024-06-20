@@ -128,7 +128,7 @@ class RebaseInvoker(val project: Project) {
      * Removes a command from the list of commands to be executed.
      */
     fun removeCommand(command: IRCommand) {
-        commands.asReversed().remove(command)
+        commands.removeIf { it === command }
     }
 
     /**

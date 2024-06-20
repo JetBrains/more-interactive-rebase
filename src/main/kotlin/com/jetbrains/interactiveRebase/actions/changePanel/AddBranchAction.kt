@@ -32,7 +32,7 @@ class AddBranchAction :
         sidePanelPane.setVisible(sidePanelPane.isVisible)
 
         // This toggles the icon of the add branch
-         e.presentation.icon = if (sidePanelPane.isVisible) AllIcons.Actions.ListFiles else AllIcons.Actions.AddList
+        e.presentation.icon = if (sidePanelPane.isVisible) AllIcons.Actions.ListFiles else AllIcons.Actions.AddList
     }
 
     override fun update(e: AnActionEvent) {

@@ -425,12 +425,10 @@ class ActionService(project: Project) {
                 }
             }
         }
-
         removeSquashFixChange(parent)
 
         return ret
     }
-
 
     /**
      * Removes squash and fixup
@@ -443,7 +441,7 @@ class ActionService(project: Project) {
             if (it is FixupCommand || it is SquashCommand) {
                 modelService.invoker.removeCommand(it)
                 if (modelService.invoker.undoneCommands.contains(it)) {
-                    modelService.invoker.undoneCommands.asReversed().remove(it)
+                    modelService.invoker.undoneCommands.removeIf { x -> x === it }
                 }
                 changesToRemove.add(it)
             }
@@ -819,7 +817,10 @@ class ActionService(project: Project) {
         headerPanel.repaint()
     }
 
-    fun <T> addIfNotExists(list: MutableList<T>, element: T) {
+    fun <T> addIfNotExists(
+        list: MutableList<T>,
+        element: T,
+    ) {
         if (!list.contains(element)) {
             list.add(element)
         }
