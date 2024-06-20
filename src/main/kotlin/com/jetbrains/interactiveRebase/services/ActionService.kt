@@ -23,7 +23,7 @@ import com.jetbrains.interactiveRebase.visuals.MainPanel
 class ActionService(project: Project) {
     internal var modelService = project.service<ModelService>()
     private var invoker = modelService.invoker
-    lateinit var mainPanel: MainPanel
+    var mainPanel = MainPanel(project)
 
     /**
      * Constructor for injection during testing
@@ -31,6 +31,10 @@ class ActionService(project: Project) {
     constructor(project: Project, modelService: ModelService, invoker: RebaseInvoker) : this(project) {
         this.modelService = modelService
         this.invoker = invoker
+    }
+
+    fun checkRebaseIsNotInProgress(): Boolean {
+        return !modelService.rebaseInProcess
     }
 
     /**
@@ -83,7 +87,7 @@ class ActionService(project: Project) {
      */
     fun checkDrop(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !modelService.areDisabledCommitsSelected() &&
+            !modelService.areDisabledCommitsSelected() && checkRebaseIsNotInProgress() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
@@ -97,7 +101,7 @@ class ActionService(project: Project) {
      */
     fun checkReword(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.getActualSelectedCommitsSize() == 1 &&
-            !modelService.areDisabledCommitsSelected() &&
+            !modelService.areDisabledCommitsSelected() && checkRebaseIsNotInProgress() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
@@ -111,7 +115,7 @@ class ActionService(project: Project) {
      */
     fun checkStopToEdit(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !modelService.areDisabledCommitsSelected() &&
+            !modelService.areDisabledCommitsSelected() && checkRebaseIsNotInProgress() &&
             modelService.getSelectedCommits().none { commit ->
                 commit.getChangesAfterPick().any { change -> change is DropCommand }
             }
@@ -138,7 +142,10 @@ class ActionService(project: Project) {
 
         val validParent = checkValidParent()
 
-        e.presentation.isEnabled = notEmpty && notFirstCommit && notDropped && validParent && !modelService.areDisabledCommitsSelected()
+        e.presentation.isEnabled = notEmpty &&
+            notFirstCommit && notDropped &&
+            validParent && !modelService.areDisabledCommitsSelected() &&
+            checkRebaseIsNotInProgress()
     }
 
     /**
@@ -190,7 +197,25 @@ class ActionService(project: Project) {
      */
     fun checkPick(e: AnActionEvent) {
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isNotEmpty() &&
-            !modelService.areDisabledCommitsSelected()
+            !modelService.areDisabledCommitsSelected() && checkRebaseIsNotInProgress()
+    }
+
+    /**
+     * Enables rebase button
+     * depending on the number of selected commits
+     * and the state of the branch.
+     * Commits from the checked-out branch cannot be picked.
+     */
+    fun checkNormalRebaseAction(e: AnActionEvent) {
+        e.presentation.isEnabled = modelService.graphInfo.addedBranch != null &&
+            (
+                !modelService.areDisabledCommitsSelected() ||
+                    (
+                        modelService.graphInfo.addedBranch?.selectedCommits?.size!! <= 1 &&
+                            modelService.graphInfo.addedBranch?.selectedCommits!![0] !=
+                            modelService.graphInfo.addedBranch!!.baseCommit
+                    )
+            )
     }
 
     /**
@@ -204,6 +229,7 @@ class ActionService(project: Project) {
      * Adds a visual change for a commit that has to be stopped to edit
      */
     fun takeStopToEditAction() {
+        invoker.undoneCommands.clear()
         val commits = modelService.getSelectedCommits()
         commits.forEach {
                 commitInfo ->
@@ -214,7 +240,6 @@ class ActionService(project: Project) {
             }
         }
         modelService.branchInfo.clearSelectedCommits()
-        invoker.undoneCommands.clear()
     }
 
     /**
@@ -289,20 +314,27 @@ class ActionService(project: Project) {
         val currentBranchInfo = invoker.branchInfo
         invoker.branchInfo.currentCommits = currentBranchInfo.initialCommits.toMutableList()
         invoker.branchInfo.initialCommits.forEach { commitInfo ->
-            commitInfo.changes.clear()
-            commitInfo.isSelected = false
-            commitInfo.isSquashed = false
-            commitInfo.isTextFieldEnabled = false
-            commitInfo.isDragged = false
-            commitInfo.isReordered = false
-            commitInfo.isHovered = false
-            commitInfo.isCollapsed = false
+            resetCommitInfo(commitInfo)
         }
         modelService.graphInfo.mainBranch.isRebased = false
         modelService.graphInfo.addedBranch?.baseCommit =
             modelService.graphInfo.addedBranch?.currentCommits?.last()
         invoker.branchInfo.clearSelectedCommits()
         takeCollapseAction()
+    }
+
+    /**
+     * Resets all fields of a CommitInfo
+     */
+    fun resetCommitInfo(commitInfo: CommitInfo) {
+        commitInfo.changes.clear()
+        commitInfo.isSelected = false
+        commitInfo.isSquashed = false
+        commitInfo.isTextFieldEnabled = false
+        commitInfo.isDragged = false
+        commitInfo.isReordered = false
+        commitInfo.isHovered = false
+        commitInfo.isCollapsed = false
     }
 
     /**
@@ -383,24 +415,23 @@ class ActionService(project: Project) {
 
         selectedCommits.forEach {
             removeSquashFixChange(it)
-            ret.add(it)
+            addIfNotExists(ret, it)
         }
 
-        parent.changes.forEach {
+        parent.getChangesAfterPick().forEach {
                 change ->
             if (change is SquashCommand) {
                 change.squashedCommits.forEach {
                     removeSquashFixChange(it)
-                    ret.add(it)
+                    addIfNotExists(ret, it)
                 }
             } else if (change is FixupCommand) {
                 change.fixupCommits.forEach {
                     removeSquashFixChange(it)
-                    ret.add(it)
+                    addIfNotExists(ret, it)
                 }
             }
         }
-
         removeSquashFixChange(parent)
 
         return ret
@@ -417,7 +448,7 @@ class ActionService(project: Project) {
             if (it is FixupCommand || it is SquashCommand) {
                 modelService.invoker.removeCommand(it)
                 if (modelService.invoker.undoneCommands.contains(it)) {
-                    modelService.invoker.undoneCommands.remove(it)
+                    modelService.invoker.undoneCommands.removeIf { x -> x === it }
                 }
                 changesToRemove.add(it)
             }
@@ -472,8 +503,11 @@ class ActionService(project: Project) {
     }
 
     private fun undoRebase() {
-        modelService.graphInfo.addedBranch?.baseCommit =
-            modelService.graphInfo.addedBranch?.currentCommits?.last()
+        val base = modelService.graphInfo.addedBranch?.currentCommits?.last()
+        val lastRebaseCommandCommit =
+            invoker.commands
+                .findLast { command -> command is RebaseCommand }?.commitOfCommand()
+        modelService.graphInfo.addedBranch?.baseCommit = lastRebaseCommandCommit ?: base
         modelService.graphInfo.mainBranch.isRebased = false
     }
 
@@ -645,7 +679,7 @@ class ActionService(project: Project) {
     /**
      * The undo button should be enabled if there are any actions to undo.
      */
-    fun checkUndo(e: AnActionEvent) {
+    fun checkIfChangesMade(e: AnActionEvent) {
         e.presentation.isEnabled = invoker.commands.isNotEmpty()
     }
 
@@ -760,8 +794,42 @@ class ActionService(project: Project) {
         }
     }
 
+    /**
+     * Gets the header panel instance
+     */
     fun getHeaderPanel(): HeaderPanel {
         val wrapper = mainPanel.getComponent(0) as OnePixelSplitter
         return wrapper.firstComponent as HeaderPanel
+    }
+
+    /**
+     * Removes the rebase + reset process panel and shows the continue + abort buttons
+     */
+    fun switchToRebaseProcessPanel() {
+        val headerPanel = getHeaderPanel()
+        headerPanel.changeActionsPanel.isVisible = false
+        headerPanel.rebaseProcessPanel.isVisible = true
+        headerPanel.revalidate()
+        headerPanel.repaint()
+    }
+
+    /**
+     * Removes the continue + abort process panel and shows the rebase + reset buttons
+     */
+    fun switchToChangeButtonsIfNeeded() {
+        val headerPanel = getHeaderPanel()
+        headerPanel.changeActionsPanel.isVisible = true
+        headerPanel.rebaseProcessPanel.isVisible = false
+        headerPanel.revalidate()
+        headerPanel.repaint()
+    }
+
+    fun <T> addIfNotExists(
+        list: MutableList<T>,
+        element: T,
+    ) {
+        if (!list.contains(element)) {
+            list.add(element)
+        }
     }
 }

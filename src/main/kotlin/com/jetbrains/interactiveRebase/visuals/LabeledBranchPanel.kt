@@ -60,6 +60,7 @@ class LabeledBranchPanel(
     val commitLabels: MutableList<JBLabel> = mutableListOf()
     val messages: MutableList<JBPanel<JBPanel<*>>> = mutableListOf()
     val branchNamePanel = branchNamePanel()
+    val openTextFields: MutableList<RoundedTextField> = mutableListOf()
 
     internal val labelPanelWrapper = JBPanel<JBPanel<*>>()
 
@@ -395,7 +396,8 @@ class LabeledBranchPanel(
         SwingUtilities.invokeLater {
             textField.requestFocusInWindow()
         }
-        listenForClickOutside(textField)
+
+        openTextFields.add(textField)
     }
 
     private fun setTextFieldListenerStrategy(
@@ -408,21 +410,6 @@ class LabeledBranchPanel(
                 listener.strategy = SquashTextStrategy(command, textField)
             }
         }
-    }
-
-    /**
-     * Instantiates a listener that exits the reword textbox when somewhere else on the component is clicked
-     */
-    private fun listenForClickOutside(textField: RoundedTextField) {
-        this.addMouseListener(
-            object : MouseAdapter() {
-                override fun mouseClicked(e: MouseEvent) {
-                    if (textField.isVisible && e.component !== textField) {
-                        textField.exitTextBox()
-                    }
-                }
-            },
-        )
     }
 
     /**
@@ -501,23 +488,6 @@ class LabeledBranchPanel(
      */
     fun updateBranchName() {
         (branchNamePanel.getComponent(0) as BoldLabel).text = branch.name
-    }
-
-    /**
-     * Sets commits to be shown in branch
-     */
-    fun updateCommits() {
-        commitLabels.clear()
-        branchPanel.updateCommits()
-        val circles = branchPanel.circles
-        for ((i, circle) in circles.withIndex()) {
-            val commitLabel = generateCommitLabel(i, circle)
-            commitLabels.add(commitLabel)
-        }
-
-        labelPanelWrapper.removeAll()
-        addComponents()
-        revalidate()
     }
 
     /**

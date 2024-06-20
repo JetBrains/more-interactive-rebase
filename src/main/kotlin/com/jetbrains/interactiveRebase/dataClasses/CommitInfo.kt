@@ -17,6 +17,8 @@ data class CommitInfo(
     var isReordered: Boolean = false,
     var isDragged: Boolean = false,
     var isCollapsed: Boolean = false,
+    var isPaused: Boolean = false,
+    var isRebased: Boolean = false,
 ) {
     internal val listeners: MutableList<Listener> = mutableListOf()
 
@@ -25,6 +27,7 @@ data class CommitInfo(
      * to list of listeners
      */
 
+    @Synchronized
     fun addListener(listener: Listener) = listeners.add(listener)
 
     /**
@@ -32,6 +35,7 @@ data class CommitInfo(
      * list of changes of the
      * commit
      */
+    @Synchronized
     fun addChange(change: IRCommand) {
         changes.add(change)
         listeners.forEach { it.onCommitChange() }
@@ -42,8 +46,9 @@ data class CommitInfo(
      * list of changes of the
      * commit
      */
+    @Synchronized
     fun removeChange(change: IRCommand) {
-        changes.remove(change)
+        changes.asReversed().removeIf { it === change }
         listeners.forEach { it.onCommitChange() }
     }
 
@@ -52,6 +57,7 @@ data class CommitInfo(
      * passed value and notifies
      * subscribers
      */
+    @Synchronized
     fun setTextFieldEnabledTo(value: Boolean) {
         isTextFieldEnabled = value
         listeners.forEach { it.onCommitChange() }
@@ -60,6 +66,7 @@ data class CommitInfo(
     /**
      * Sets whether circle is reordered.
      */
+    @Synchronized
     fun setReorderedTo(value: Boolean) {
         isReordered = value
         listeners.forEach { it.onCommitChange() }
@@ -85,6 +92,7 @@ data class CommitInfo(
      * Toggles isDoubleClicked
      * and notifies subscribers
      */
+    @Synchronized
     fun flipDoubleClicked() {
         isTextFieldEnabled = !isTextFieldEnabled
         listeners.forEach { it.onCommitChange() }
@@ -97,6 +105,24 @@ data class CommitInfo(
         } else {
             changes
         }
+    }
+
+    @Synchronized
+    fun markAsPaused() {
+        isPaused = true
+        listeners.forEach { it.onCommitChange() }
+    }
+
+    @Synchronized
+    fun markAsNotPaused() {
+        isPaused = false
+        listeners.forEach { it.onCommitChange() }
+    }
+
+    @Synchronized
+    fun markAsRebased() {
+        isRebased = true
+        listeners.forEach { it.onCommitChange() }
     }
 
     /**

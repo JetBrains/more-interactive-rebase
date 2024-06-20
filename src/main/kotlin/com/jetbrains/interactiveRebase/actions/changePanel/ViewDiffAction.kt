@@ -10,35 +10,26 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.getActionShortcutText
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
+import com.jetbrains.interactiveRebase.visuals.GraphDiffDialog
 import javax.swing.JComponent
 
-class AddBranchAction :
+class ViewDiffAction :
     DumbAwareAction(
-        "Add Branch",
-        "Add another branch to the view",
-        AllIcons.Actions.AddList,
+        "See Difference",
+        "See the difference with initial state",
+        AllIcons.Actions.Diff,
     ),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project ?: return
-        val mainPanel = project.service<ActionService>().mainPanel
-        val sidePanelPane = mainPanel.sidePanelPane
-
-        sidePanelPane.isVisible = !sidePanelPane.isVisible
-        if (sidePanelPane.isVisible) {
-            mainPanel.sidePanel.updateBranchNames()
+        val project = e.project
+        if (null != project) {
+            val dialog = GraphDiffDialog(project)
+            dialog.show()
         }
-
-        sidePanelPane.setVisible(sidePanelPane.isVisible)
-
-        // This toggles the icon of the add branch
-        e.presentation.icon = if (sidePanelPane.isVisible) AllIcons.Actions.ListFiles else AllIcons.Actions.AddList
     }
 
     override fun update(e: AnActionEvent) {
-        val project = e.project ?: return
-        e.presentation.isEnabled = project.service<ActionService>().checkRebaseIsNotInProgress()
-        e.presentation.isVisible = true
+        e.project?.service<ActionService>()?.checkIfChangesMade(e)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
@@ -53,8 +44,8 @@ class AddBranchAction :
             this,
             presentation,
             place,
-            getActionShortcutText("com.jetbrains.interactiveRebase.actions.changePanel.AddBranchAction"),
-            "Add another branch to the view",
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.changePanel.ViewDiffAction"),
+            "See the difference with initial state",
         )
     }
 }

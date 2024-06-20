@@ -24,7 +24,7 @@ import java.awt.RenderingHints
  */
 class BranchPanel(
     val branch: BranchInfo,
-    val colorTheme: Palette.Theme,
+    var colorTheme: Palette.Theme,
 ) : JBPanel<JBPanel<*>>() {
     val diameter = 30
     val borderSize = 1f
@@ -49,11 +49,18 @@ class BranchPanel(
      */
     fun initializeCirclePanel(i: Int): CirclePanel {
         val commit = branch.currentCommits[i]
+        var theme = colorTheme
+        if (commit.isRebased) {
+            theme = Palette.FADED_LIME_GREEN_THEME
+        } else if (commit.isPaused) {
+            theme = Palette.LIME_GREEN_THEME
+        }
+
         var circle =
             CirclePanel(
                 diameter.toDouble(),
                 borderSize,
-                colorTheme,
+                theme,
                 branch.currentCommits[i],
             )
 
@@ -64,7 +71,7 @@ class BranchPanel(
                 CollapseCirclePanel(
                     diameter.toDouble(),
                     4f,
-                    colorTheme,
+                    theme,
                     branch.currentCommits[i],
                 )
         } else if (visualChanges.any { it is DropCommand }) {
@@ -72,7 +79,7 @@ class BranchPanel(
                 DropCirclePanel(
                     (diameter + 2).toDouble(),
                     borderSize,
-                    colorTheme,
+                    theme,
                     branch.currentCommits[i],
                 )
         } else if (visualChanges.any { it is StopToEditCommand }) {
@@ -80,7 +87,7 @@ class BranchPanel(
                 StopToEditCirclePanel(
                     diameter.toDouble(),
                     borderSize,
-                    colorTheme,
+                    theme,
                     branch.currentCommits[i],
                 )
         } else if (visualChanges.any { it is SquashCommand } || visualChanges.any { it is FixupCommand }) {
@@ -88,7 +95,7 @@ class BranchPanel(
                 SquashedCirclePanel(
                     diameter.toDouble(),
                     borderSize,
-                    colorTheme,
+                    theme,
                     branch.currentCommits[i],
                 )
         }
@@ -117,7 +124,7 @@ class BranchPanel(
         for (i in 0 until size - 1) {
             // Make line brush
             g2d.stroke = BasicStroke(borderSize)
-            g2d.color = colorTheme.regularCircleColor
+            g2d.color = circles[i].colorTheme.regularCircleColor
             drawLineBetweenCommits(i, g2d)
         }
 
@@ -137,7 +144,6 @@ class BranchPanel(
         val endY = y + height
 
         fadingAwayEffect(g2d, startX, startY, endX, endY)
-
         g2d.drawLine(startX, startY, endX, endY)
     }
 
@@ -153,7 +159,7 @@ class BranchPanel(
         endY: Int,
     ) {
         val fractions = floatArrayOf(0.0f, 0.5f)
-        val colors = arrayOf<Color>(colorTheme.regularCircleColor, JBColor.PanelBackground)
+        val colors = arrayOf<Color>(circles[circles.size - 1].colorTheme.regularCircleColor, JBColor.PanelBackground)
 
         g2d.paint =
             LinearGradientPaint(
@@ -183,7 +189,7 @@ class BranchPanel(
         val startY = circle.y + circle.height / 2
         val endY = nextCircle.y + circle.height / 2
 
-        g2d.color = colorTheme.regularCircleColor
+//        g2d.color = colorTheme.regularCircleColor
         g2d.stroke = BasicStroke(2f)
         g2d.drawLine(
             x,
