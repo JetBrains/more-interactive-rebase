@@ -173,7 +173,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
     fun testGetAlignmentForButton() {
         val sideBranchPanel = SideBranchPanel(branchName, project)
         val gbc = sideBranchPanel.getAlignmentForButton()
-        assertThat(gbc.weightx).isEqualTo(0.1)
+        assertThat(gbc.weightx).isEqualTo(0.0)
         assertThat(gbc.gridx).isEqualTo(1)
         assertThat(gbc.anchor).isEqualTo(GridBagConstraints.LINE_END)
         assertThat(gbc.insets.right).isEqualTo(10)

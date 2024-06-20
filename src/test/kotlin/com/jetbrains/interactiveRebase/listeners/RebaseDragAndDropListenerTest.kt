@@ -2,26 +2,17 @@ package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.labels.BoldLabel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.services.ActionService
-import com.jetbrains.interactiveRebase.visuals.BranchPanel
-import com.jetbrains.interactiveRebase.visuals.CirclePanel
-import com.jetbrains.interactiveRebase.visuals.DragPanel
-import com.jetbrains.interactiveRebase.visuals.GraphPanel
-import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
-import com.jetbrains.interactiveRebase.visuals.MainPanel
-import com.jetbrains.interactiveRebase.visuals.Palette
+import com.jetbrains.interactiveRebase.visuals.*
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.RoundedPanel
 import org.assertj.core.api.Assertions.assertThat
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
-import org.mockito.Mockito.spy
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
+import org.mockito.Mockito.*
 import java.awt.Dimension
 import java.awt.GridBagLayout
 import java.awt.Point
@@ -35,10 +26,11 @@ class RebaseDragAndDropListenerTest : BasePlatformTestCase() {
     private lateinit var dragPanel: DragPanel
     private lateinit var mainBranchPanel: LabeledBranchPanel
     private lateinit var addedBranchPanel: LabeledBranchPanel
-    private lateinit var mainBranchNameLabel: RoundedPanel
-    private lateinit var addedBranchNameLabel: RoundedPanel
+    private lateinit var mainBranchNameLabel: JBPanel<*>
+    private lateinit var addedBranchNameLabel: JBPanel<*>
     private lateinit var mainBranchInfo: BranchInfo
     private lateinit var branchPanel: BranchPanel
+    private lateinit var helpMsg: JBPanel<*>
 
     override fun setUp() {
         super.setUp()
@@ -48,29 +40,49 @@ class RebaseDragAndDropListenerTest : BasePlatformTestCase() {
         `when`(mainPanel.dragPanel).thenReturn(dragPanel)
 
         val label1 = BoldLabel("Branch 1")
-        mainBranchNameLabel = mock(RoundedPanel::class.java)
+        helpMsg = mock(JBPanel::class.java)
+        `when`(helpMsg.getComponent(0)).thenReturn(mock(JBPanel::class.java))
+        `when`(helpMsg.getComponent(1)).thenReturn(mock(JBLabel::class.java))
+        `when`(helpMsg.components).thenReturn(
+            arrayOf(
+                mock(JBPanel::class.java), mock(JBLabel::class.java))
+        )
+        val roundedPanel1 = mock(RoundedPanel::class.java)
+        `when`(roundedPanel1.cornerRadius).thenReturn(15)
+        `when`(roundedPanel1.getComponent(0)).thenReturn(label1)
+        mainBranchNameLabel = mock(JBPanel::class.java)
         `when`(mainBranchNameLabel.x).thenReturn(10)
         `when`(mainBranchNameLabel.y).thenReturn(20)
         `when`(mainBranchNameLabel.width).thenReturn(40)
         `when`(mainBranchNameLabel.height).thenReturn(10)
         `when`(mainBranchNameLabel.bounds).thenReturn(Rectangle(Point(10, 20), Dimension(40, 10)))
         `when`(mainBranchNameLabel.border).thenReturn(EmptyBorder(2, 3, 3, 3))
-        `when`(mainBranchNameLabel.cornerRadius).thenReturn(15)
-        `when`(mainBranchNameLabel.getComponent(0)).thenReturn(label1)
+        `when`(mainBranchNameLabel.getComponent(0)).thenReturn(roundedPanel1)
+        `when`(mainBranchNameLabel.getComponent(1)).thenReturn(helpMsg)
+        `when`(mainBranchNameLabel.getComponent(1)).thenReturn(helpMsg)
+        `when`(mainBranchNameLabel.components).thenReturn(
+            arrayOf(roundedPanel1, helpMsg)
+        )
         `when`(dragPanel.add(mainBranchNameLabel)).thenReturn(mainBranchNameLabel)
         `when`(dragPanel.width).thenReturn(200)
         `when`(dragPanel.height).thenReturn(200)
 
         val label2 = BoldLabel("Branch 2")
-        addedBranchNameLabel = mock(RoundedPanel::class.java)
+        val roundedPanel2 = mock(RoundedPanel::class.java)
+        `when`(roundedPanel2.cornerRadius).thenReturn(15)
+        `when`(roundedPanel2.getComponent(0)).thenReturn(label2)
+        addedBranchNameLabel = mock(JBPanel::class.java)
         `when`(addedBranchNameLabel.x).thenReturn(110)
         `when`(addedBranchNameLabel.y).thenReturn(20)
         `when`(addedBranchNameLabel.width).thenReturn(40)
         `when`(addedBranchNameLabel.height).thenReturn(10)
         `when`(addedBranchNameLabel.bounds).thenReturn(Rectangle(Point(110, 20), Dimension(40, 10)))
         `when`(addedBranchNameLabel.border).thenReturn(EmptyBorder(2, 3, 3, 3))
-        `when`(addedBranchNameLabel.cornerRadius).thenReturn(15)
-        `when`(addedBranchNameLabel.getComponent(0)).thenReturn(label2)
+        `when`(addedBranchNameLabel.getComponent(0)).thenReturn(roundedPanel2)
+        `when`(addedBranchNameLabel.getComponent(1)).thenReturn(null)
+        `when`(addedBranchNameLabel.components).thenReturn(
+            arrayOf(roundedPanel2)
+        )
         `when`(dragPanel.add(addedBranchNameLabel)).thenReturn(addedBranchNameLabel)
 
         mainBranchInfo = mock(BranchInfo::class.java)
@@ -135,9 +147,6 @@ class RebaseDragAndDropListenerTest : BasePlatformTestCase() {
         listener.mousePressed(event)
         assertThat(listener.initialPositionMain).isEqualTo(Point(10, 30))
         assertThat(listener.initialPositionAdded).isEqualTo(Point(210, 130))
-        verify(listener).addLabelsToDragPanel()
-        verify(listener).substituteLabelForPlaceholderMainBranch()
-        verify(listener).substituteLabelForPlaceholderAddedBranch()
     }
 
     fun testMouseDragged() {
@@ -155,7 +164,10 @@ class RebaseDragAndDropListenerTest : BasePlatformTestCase() {
         listener.mousePressed(eventPress)
         listener.mouseDragged(eventDrag)
 
-        verify(listener).formatDraggedLabelOnDrag()
+        verify(listener).addLabelsToDragPanel()
+        verify(listener).substituteLabelForPlaceholderMainBranch()
+        verify(listener).substituteLabelForPlaceholderAddedBranch()
+        verify(listener, times(2)).formatDraggedLabelOnDrag()
         verify(listener).setBranchNameLocation(eventDrag)
         verify(listener).updateMousePosition(eventDrag)
 
@@ -357,7 +369,7 @@ class RebaseDragAndDropListenerTest : BasePlatformTestCase() {
 
     fun testChangeFormattingOfSecondLabelWhenUserCanDropOnIt() {
         listener.changeFormattingOfSecondLabelWhenUserCanDropOnIt()
-        verify(addedBranchNameLabel).backgroundColor
+        verify(addedBranchNameLabel, times(7)).getComponent(0)
         verify(addedBranchNameLabel).repaint()
     }
 

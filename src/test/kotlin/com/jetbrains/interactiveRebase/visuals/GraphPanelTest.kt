@@ -55,6 +55,7 @@ class GraphPanelTest : BasePlatformTestCase() {
         `when`(mainCirclePanel.y).thenReturn(20)
         `when`(mainCirclePanel.width).thenReturn(30)
         `when`(mainCirclePanel.height).thenReturn(40)
+        `when`(mainCirclePanel.colorTheme).thenReturn(Palette.BLUE_THEME)
 
         commit4 = CommitInfo(commitProvider.createCommit("Four"), project, mutableListOf())
         commit5 = CommitInfo(commitProvider.createCommit("Five"), project, mutableListOf())
@@ -69,6 +70,7 @@ class GraphPanelTest : BasePlatformTestCase() {
         `when`(addedCirclePanel.width).thenReturn(35)
         `when`(addedCirclePanel.height).thenReturn(45)
         `when`(addedCirclePanel.commit).thenReturn(commit6)
+        `when`(addedCirclePanel.colorTheme).thenReturn(Palette.TOMATO_THEME)
 
         graphInfo = GraphInfo(branchInfo, otherBranchInfo)
 
@@ -173,6 +175,7 @@ class GraphPanelTest : BasePlatformTestCase() {
         `when`(addedCirclePanel.width).thenReturn(0)
         `when`(addedCirclePanel.height).thenReturn(45)
         `when`(addedCirclePanel.commit).thenReturn(commit6)
+        `when`(addedCirclePanel.colorTheme).thenReturn(Palette.TOMATO_THEME)
 
         val g: Graphics = mock(Graphics::class.java)
         val g2d = mock(Graphics2D::class.java)
@@ -195,6 +198,7 @@ class GraphPanelTest : BasePlatformTestCase() {
         `when`(addedCirclePanel.width).thenReturn(35)
         `when`(addedCirclePanel.height).thenReturn(0)
         `when`(addedCirclePanel.commit).thenReturn(commit6)
+        `when`(addedCirclePanel.colorTheme).thenReturn(Palette.TOMATO_THEME)
 
         graphPanel = spy(GraphPanel(project, graphInfo))
         graphPanel.mainBranchPanel.branchPanel.circles = mutableListOf(mainCirclePanel)
@@ -215,6 +219,7 @@ class GraphPanelTest : BasePlatformTestCase() {
         `when`(addedCirclePanel.width).thenReturn(0)
         `when`(addedCirclePanel.height).thenReturn(0)
         `when`(addedCirclePanel.commit).thenReturn(commit6)
+        `when`(addedCirclePanel.colorTheme).thenReturn(Palette.TOMATO_THEME)
 
         graphPanel = spy(GraphPanel(project, graphInfo))
         graphPanel.mainBranchPanel.branchPanel.circles = mutableListOf(mainCirclePanel)
@@ -237,6 +242,7 @@ class GraphPanelTest : BasePlatformTestCase() {
         `when`(addedCirclePanel.y).thenReturn(0)
         `when`(addedCirclePanel.width).thenReturn(0)
         `when`(addedCirclePanel.height).thenReturn(0)
+        `when`(addedCirclePanel.colorTheme).thenReturn(Palette.TOMATO_THEME)
 
         graphPanel = spy(GraphPanel(project, graphInfo))
         graphPanel.mainBranchPanel.branchPanel.circles = mutableListOf(mainCirclePanel)
@@ -245,16 +251,14 @@ class GraphPanelTest : BasePlatformTestCase() {
         val g: Graphics = mock(Graphics::class.java)
         val g2d = mock(Graphics2D::class.java)
         `when`(g2d.create()).thenReturn(g)
-        assertThatThrownBy {
-            graphPanel.paintComponent(g2d)
-        }
-            .isInstanceOf(UninitializedPropertyAccessException::class.java)
+        graphPanel.paintComponent(g2d)
+        assertThat(graphPanel.rebaseCircleInAddedBranch).isEqualTo(mainCirclePanel)
     }
 
     fun testGradientTransition() {
         val g2d = mock(Graphics2D::class.java)
 
-        graphPanel.gradientTransition(g2d, 0, 0, 100, 100)
+        graphPanel.gradientTransition(g2d, 0, 1, 100, 101)
 
         verify(g2d, times(1)).setPaint(
             any(LinearGradientPaint::class.java),

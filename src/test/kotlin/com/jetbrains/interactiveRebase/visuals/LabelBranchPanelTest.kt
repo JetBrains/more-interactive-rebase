@@ -162,7 +162,7 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
     fun testAddNotifyAddsComponents() {
         labeledBranch.addNotify()
         assertThat(labeledBranch.layout).isInstanceOf(GridBagLayout::class.java)
-        assertThat(labeledBranch.getComponent(0)).isInstanceOf(RoundedPanel::class.java)
+        assertThat(labeledBranch.getComponent(0)).isInstanceOf(JBPanel::class.java)
         assertThat(labeledBranch.getComponent(1)).isInstanceOf(BranchPanel::class.java)
         assertThat(labeledBranch.getComponent(2)).isInstanceOf(JBPanel::class.java)
     }
