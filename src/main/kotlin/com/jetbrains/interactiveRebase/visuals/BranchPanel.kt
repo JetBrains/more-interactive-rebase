@@ -3,20 +3,8 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
-import com.jetbrains.interactiveRebase.dataClasses.commands.CherryCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
-import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
-import java.awt.BasicStroke
-import java.awt.Color
-import java.awt.Graphics
-import java.awt.Graphics2D
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
-import java.awt.LinearGradientPaint
-import java.awt.RenderingHints
+import com.jetbrains.interactiveRebase.dataClasses.commands.*
+import java.awt.*
 
 /**
  * A panel encapsulating a branch:
@@ -92,7 +80,7 @@ class BranchPanel(
                     colorTheme,
                     branch.currentCommits[i],
                     isModifiable = branch.isWritable,
-                    )
+                )
         } else if (visualChanges.any { it is SquashCommand } || visualChanges.any { it is FixupCommand }) {
             circle =
                 SquashedCirclePanel(
@@ -172,7 +160,10 @@ class BranchPanel(
         endY: Int,
     ) {
         val fractions = floatArrayOf(0.0f, 0.5f)
-        val colors = arrayOf<Color>(colorTheme.regularCircleColor, JBColor.PanelBackground)
+        val colors = arrayOf<Color>(
+            colorTheme.regularCircleColor,
+            JBColor.PanelBackground
+        )
 
         g2d.paint =
             LinearGradientPaint(
@@ -200,9 +191,26 @@ class BranchPanel(
         // Calculate line coordinates
         val x = width / 2
         val startY = circle.y + circle.height / 2
-        val endY = nextCircle.y + circle.height / 2
+        var endY = nextCircle.y + circle.height / 2
 
-        g2d.color = colorTheme.regularCircleColor
+        val fractions = floatArrayOf(0.2f, 0.8f)
+        val colors = arrayOf<Color>(
+            circle.colorTheme.regularCircleColor,
+            nextCircle.colorTheme.regularCircleColor
+        )
+
+        if (startY == endY) {
+            endY += 5
+        }
+        g2d.paint =
+            LinearGradientPaint(
+                x.toFloat(),
+                startY.toFloat(),
+                x.toFloat(),
+                endY.toFloat(),
+                fractions,
+                colors,
+            )
         g2d.stroke = BasicStroke(2f)
         g2d.drawLine(
             x,

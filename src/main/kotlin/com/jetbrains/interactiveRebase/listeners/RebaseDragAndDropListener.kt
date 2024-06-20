@@ -11,6 +11,7 @@ import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.RoundedPanel
 import java.awt.Cursor
+import java.awt.Graphics
 import java.awt.GridBagLayout
 import java.awt.Point
 import java.awt.event.MouseAdapter
@@ -295,7 +296,7 @@ class RebaseDragAndDropListener(
         (placeholderPanel.getComponent(0) as RoundedPanel).backgroundColor = Palette.TRANSPARENT
         (placeholderPanel.getComponent(0) as RoundedPanel).getComponent(0).foreground = labeledBranchPanel.background
         val help = placeholderPanel.components.getOrNull(1) as JBPanel<*>?
-        help?.components?.getOrNull(0)?.isVisible = false
+        (help?.components?.getOrNull(0) as JBPanel<*>?)?.isOpaque = false
         help?.components?.getOrNull(1)?.foreground = labeledBranchPanel.background
         (placeholderPanel.getComponent(0) as RoundedPanel).isOpaque = false
         (placeholderPanel.getComponent(0) as RoundedPanel).removeBorderGradient()

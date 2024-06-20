@@ -212,16 +212,19 @@ class LabeledBranchPanel(
     private fun addRebaseIcon(help: JBPanel<JBPanel<*>>) {
         val iconPanel = object : JBPanel<JBPanel<*>>() {
             override fun paintComponent(g: Graphics) {
-                super.paintComponent(g)
-                val g2d = g as Graphics2D
-                val originalComposite = g2d.composite
-                g2d.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f)
-                AllIcons.Vcs.Branch.paintIcon(this, g2d, 2, 2)
-                g2d.composite = originalComposite
+                if (isOpaque) {
+                    super.paintComponent(g)
+                    val g2d = g as Graphics2D
+                    val originalComposite = g2d.composite
+                    g2d.composite = AlphaComposite
+                        .getInstance(AlphaComposite.SRC_OVER, 0.3f)
+                    AllIcons.Vcs.Branch.paintIcon(this, g2d, 2, 2)
+                    g2d.composite = originalComposite
+                }
             }
         }
-        iconPanel.isOpaque = false
         iconPanel.preferredSize = Dimension(20, 20)
+        iconPanel.minimumSize = iconPanel.preferredSize
         help.add(iconPanel)
     }
 
