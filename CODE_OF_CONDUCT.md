@@ -19,7 +19,7 @@
 We value appropriate behavior that contributes to a better working environment:
 
 - Using welcoming language
-- Being respectful respectful
+- Being respectful
 - Accepting constructive criticism
 
 Examples of unacceptable behavior by participants include:
