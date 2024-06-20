@@ -6,11 +6,13 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.visuals.MainPanel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
+import java.awt.event.KeyEvent
 
 class BranchNavigationListenerTest : BasePlatformTestCase() {
     private lateinit var listener: BranchNavigationListener
@@ -20,6 +22,13 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
     private lateinit var commit3: CommitInfo
     private lateinit var commit4: CommitInfo
     private lateinit var branchInfo: BranchInfo
+    private lateinit var mainPanel: MainPanel
+    private lateinit var upEvent: KeyEvent
+    private lateinit var downEvent: KeyEvent
+    private lateinit var shiftUpEvent: KeyEvent
+    private lateinit var shiftDownEvent: KeyEvent
+    private lateinit var altUpEvent: KeyEvent
+    private lateinit var altDownEvent: KeyEvent
 
     override fun setUp() {
         super.setUp()
@@ -40,12 +49,53 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
 
         listener = BranchNavigationListener(project, modelService)
         branchInfo = modelService.branchInfo
+
+        mainPanel = MainPanel(project)
+
+        upEvent = KeyEvent(mainPanel, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_UP, KeyEvent.CHAR_UNDEFINED)
+        downEvent = KeyEvent(mainPanel, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_DOWN, KeyEvent.CHAR_UNDEFINED)
+        shiftUpEvent =
+            KeyEvent(
+                mainPanel,
+                KeyEvent.KEY_PRESSED,
+                System.currentTimeMillis(),
+                KeyEvent.SHIFT_DOWN_MASK,
+                KeyEvent.VK_UP,
+                KeyEvent.CHAR_UNDEFINED,
+            )
+        shiftDownEvent =
+            KeyEvent(
+                mainPanel,
+                KeyEvent.KEY_PRESSED,
+                System.currentTimeMillis(),
+                KeyEvent.SHIFT_DOWN_MASK,
+                KeyEvent.VK_DOWN,
+                KeyEvent.CHAR_UNDEFINED,
+            )
+        altUpEvent =
+            KeyEvent(
+                mainPanel,
+                KeyEvent.KEY_PRESSED,
+                System.currentTimeMillis(),
+                KeyEvent.ALT_DOWN_MASK,
+                KeyEvent.VK_UP,
+                KeyEvent.CHAR_UNDEFINED,
+            )
+        altDownEvent =
+            KeyEvent(
+                mainPanel,
+                KeyEvent.KEY_PRESSED,
+                System.currentTimeMillis(),
+                KeyEvent.ALT_DOWN_MASK,
+                KeyEvent.VK_DOWN,
+                KeyEvent.CHAR_UNDEFINED,
+            )
     }
 
     fun testUpNoCommitsSelected() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
-        listener.up()
+        listener.keyPressed(upEvent)
 
         assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
         assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit1)
@@ -54,7 +104,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
     fun testDownNoCommitsSelected() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
-        listener.down()
+        listener.keyPressed(downEvent)
 
         assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
         assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit4)
@@ -64,7 +114,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
         modelService.selectSingleCommit(commit4, branchInfo)
-        listener.up()
+        listener.keyPressed(upEvent)
 
         assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
         assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit4)
@@ -74,7 +124,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
         modelService.selectSingleCommit(commit1, branchInfo)
-        listener.up()
+        listener.keyPressed(upEvent)
 
         assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
         assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit2)
@@ -85,7 +135,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
         modelService.selectSingleCommit(commit1, branchInfo)
         commit2.isCollapsed = true
-        listener.up()
+        listener.keyPressed(upEvent)
 
         assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
         assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit3)
@@ -95,7 +145,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
         modelService.selectSingleCommit(commit4, branchInfo)
-        listener.down()
+        listener.keyPressed(downEvent)
 
         assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
         assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit3)
@@ -106,7 +156,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
         modelService.selectSingleCommit(commit4, branchInfo)
         commit3.isCollapsed = true
-        listener.down()
+        listener.keyPressed(downEvent)
 
         assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
         assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit2)
@@ -116,9 +166,59 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
         modelService.selectSingleCommit(commit1, branchInfo)
-        listener.down()
+        listener.keyPressed(downEvent)
 
         assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
         assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit1)
+    }
+
+    fun testShiftUp() {
+        branchInfo.clearSelectedCommits()
+        branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
+
+        listener.keyPressed(upEvent)
+        listener.keyPressed(shiftUpEvent)
+
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(2)
+        assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit1)
+        assertThat(branchInfo.selectedCommits[1]).isEqualTo(commit2)
+    }
+
+    fun testShiftDown() {
+        branchInfo.clearSelectedCommits()
+        branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
+
+        listener.keyPressed(downEvent)
+        listener.keyPressed(shiftDownEvent)
+
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(2)
+        assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit4)
+        assertThat(branchInfo.selectedCommits[1]).isEqualTo(commit3)
+    }
+
+    fun testAltUp() {
+        branchInfo.clearSelectedCommits()
+        branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
+
+        listener.keyPressed(upEvent)
+        listener.keyPressed(altUpEvent)
+
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
+        assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit1)
+        assertThat(branchInfo.currentCommits[2]).isEqualTo(commit1)
+        assertThat(branchInfo.currentCommits[3]).isEqualTo(commit2)
+    }
+
+    fun testAltDown() {
+        branchInfo.clearSelectedCommits()
+        branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
+
+        listener.keyPressed(downEvent)
+        listener.keyPressed(altDownEvent)
+
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
+        assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit4)
+        assertThat(branchInfo.currentCommits[1]).isEqualTo(commit4)
+        assertThat(branchInfo.currentCommits[0]).isEqualTo(commit3)
     }
 }
