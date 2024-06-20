@@ -47,6 +47,12 @@ class ModelService(
     internal var previousConflictCommit: String = ""
     internal var gitDialog: GitConflictResolver? = null
     var gitUtils = IRGitUtils(project)
+    internal var cherryPickInProcess: Boolean = false
+    internal var previousCherryCommit: String = ""
+    var isDoneCherryPicking = true
+    var noMoreCherryPicking = false
+    var counterForCherry = 0
+
 
     /**
      * Fetches current branch info

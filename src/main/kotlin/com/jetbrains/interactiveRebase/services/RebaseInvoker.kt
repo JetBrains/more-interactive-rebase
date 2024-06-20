@@ -134,25 +134,27 @@ class RebaseInvoker(val project: Project) {
         commands.remove(command)
     }
 
+    fun executeCherry(){
+        expandCollapsedCommits()
+        IRGitRebaseUtils(project).cherryPick(commands)
+    }
+
     /**
      * Executes all the commands to be able to perform the rebase.
      */
     fun executeCommands() {
+        createModel()
         val commandz = commands.filterNot { it is ReorderCommand }
         var base = branchInfo.initialCommits.reversed()[0].commit.parents.first().asString()
         val rebaseCommand = commandz.findLast { command -> command is RebaseCommand }
         if (rebaseCommand != null) {
             base = (rebaseCommand as RebaseCommand).commit.commit.id.asString()
         }
-        var cherryCommits = mutableListOf<GitCommit>()
         commandz.forEach {
-            if (it is CherryCommand) {
-                cherryCommits.add(it.baseCommit.commit)
-            }
             it.execute(model, branchInfo)
         }
         if (base != null) {
-            IRGitRebaseUtils(project).rebase(base, model, cherryCommits)
+            IRGitRebaseUtils(project).rebase(base, model)
             branchInfo.currentCommits = commitsToDisplayDuringRebase
             commitsToDisplayDuringRebase = mutableListOf()
         }

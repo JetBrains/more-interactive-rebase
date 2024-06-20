@@ -7,19 +7,19 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
 import git4idea.GitCommit
 
 data class CommitInfo(
-    val commit: GitCommit,
-    val project: Project,
-    val changes: MutableList<IRCommand> = mutableListOf(),
-    var isSelected: Boolean = false,
-    var isHovered: Boolean = false,
-    var isTextFieldEnabled: Boolean = false,
-    var isSquashed: Boolean = false,
-    var isReordered: Boolean = false,
-    var isDragged: Boolean = false,
-    var isCollapsed: Boolean = false,
-    var isPaused: Boolean = false,
-    var isRebased: Boolean = false,
-    var wasCherryPicked: Boolean = false,
+        var commit: GitCommit,
+        val project: Project,
+        val changes: MutableList<IRCommand> = mutableListOf(),
+        var isSelected: Boolean = false,
+        var isHovered: Boolean = false,
+        var isTextFieldEnabled: Boolean = false,
+        var isSquashed: Boolean = false,
+        var isReordered: Boolean = false,
+        var isDragged: Boolean = false,
+        var isCollapsed: Boolean = false,
+        var isPaused: Boolean = false,
+        var isRebased: Boolean = false,
+        var wasCherryPicked: Boolean = false,
 ) {
     internal val listeners: MutableList<Listener> = mutableListOf()
 
