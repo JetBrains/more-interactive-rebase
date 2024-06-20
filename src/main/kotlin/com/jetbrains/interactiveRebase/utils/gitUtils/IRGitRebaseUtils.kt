@@ -14,6 +14,7 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.CherryCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.IRCommand
 import com.jetbrains.interactiveRebase.services.ActionService
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import git4idea.GitUtil
 import git4idea.branch.GitRebaseParams
 import git4idea.cherrypick.GitCherryPicker
@@ -42,41 +43,38 @@ class IRGitRebaseUtils(private val project: Project) {
     ){
         object : Task.Backgroundable(project, GitBundle.message("rebase.progress.indicator.preparing.title")) {
             override fun run(indicator: ProgressIndicator) {
-                commands.forEach {
-                    if (it is CherryCommand) {
-                        val base = it.baseCommit
-                        val newbie = it.commit
-                        val modelService = project.service<ModelService>()
-                        modelService.isDoneCherryPicking = false
-                        GitCherryPicker(project).cherryPick(mutableListOf(base.commit))
-                        try{
-//                            val name =modelService.branchInfo.name
-//                            val commits = project.service<CommitService>().getCommitInfoForBranch(
-//                                    project.service<CommitService>().getCommits(name))
-//                                    .toMutableList()
-                            var head:GitCommit? = null
-                            val consumer = Consumer<GitCommit>{
-                                commit -> head = commit
-                            }
-                            println(head)
-                            GitHistoryUtils.loadDetails(project, repo?.root!!, consumer, "-n", "1")
-                            val indexOfOldHead = modelService.branchInfo.currentCommits.indexOf(newbie)+1
-                            if(modelService.branchInfo.currentCommits[indexOfOldHead].commit==head){
-                                IRGitUtils(project).gitReset()
-                                modelService.isDoneCherryPicking = true
-                                return
-                            }
-                            newbie.commit = head!!
-                        }catch(e: VcsException){
-                            println("Trying to display parents of initial commit")
+                val modelService = project.service<ModelService>()
+                val cherryCommands = commands.filterIsInstance<CherryCommand>()
+
+                cherryCommands.forEachIndexed { index, command ->
+                    val base = command.baseCommit
+                    val newbie = command.commit
+                    GitCherryPicker(project).cherryPick(mutableListOf(base.commit))
+                    try{
+                        var head:GitCommit? = null
+                        val consumer = Consumer<GitCommit>{
+                            commit -> head = commit
                         }
-                        modelService.counterForCherry++
-                        modelService.isDoneCherryPicking = true
+                        println(head)
+                        GitHistoryUtils.loadDetails(project, repo?.root!!, consumer, "-n", "1")
+                        var previousHead = modelService.branchInfo.initialCommits[0].commit
+                        if(index!=0){
+                            previousHead = command.commit.commit
+                        }
+                        if(previousHead==head){
+                            IRGitUtils(project).gitReset()
 
-
+                            modelService.noMoreCherryPicking = true
+                            return
+                        }
+                        newbie.commit = head!!
+                    }catch(e: VcsException){
+                        println("Trying to display parents of initial commit")
                     }
-                }
 
+                }
+                modelService.noMoreCherryPicking = true
+                project.service<RebaseInvoker>().executeCommands()
 
             }
         }.queue()

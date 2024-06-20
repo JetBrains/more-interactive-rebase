@@ -96,7 +96,7 @@ class BranchPanel(
                 CherryCirclePanel(
                     diameter.toDouble(),
                     borderSize,
-                    colorTheme,
+                    theme,
                     branch.currentCommits[i],
                     isModifiable = branch.isWritable,
                     )

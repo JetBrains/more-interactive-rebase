@@ -322,6 +322,11 @@ class ModelService(
             c.isCollapsed = false
             c.changes.clear()
         }
+        graphInfo.addedBranch?.initialCommits?.forEach {
+            c ->
+            c.wasCherryPicked = false
+            c.changes.clear()
+        }
         graphInfo.mainBranch.currentCommits = graphInfo.mainBranch.initialCommits.toMutableList()
     }
 
@@ -412,7 +417,7 @@ class ModelService(
         params.setErrorNotificationTitle("Conflicts during rebasing.")
         params.setErrorNotificationAdditionalDescription("Please resolve the conflicts and press continue to proceed with the rebase")
 
-        val commit = branchInfo.initialCommits.find { it.commit.id.toString() == currentCommitHash }!!.commit
+        val commit = branchInfo.currentCommits.find { it.commit.id.toString() == currentCommitHash }!!.commit
         val mergeConflictDescription = wrapInHtml("Conflicts in commit <b>" + commit.subject + "</b> (" + commit.id.toShortString() + ")")
         params.setMergeDescription(mergeConflictDescription)
 

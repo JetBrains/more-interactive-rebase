@@ -17,24 +17,31 @@ class IRRepositoryChangeListener(val project: Project) : GitRepositoryChangeList
     override fun repositoryChanged(repository: GitRepository) {
         val invoker = project.service<RebaseInvoker>()
         if(invoker.commands.filterIsInstance<CherryCommand>().isNotEmpty()){
-            if(!project.service<ModelService>().noMoreCherryPicking){
-                val leftToCherryPick = invoker.commands.filterIsInstance<CherryCommand>().size -
-                        project.service<ModelService>().counterForCherry
-                while(!project.service<ModelService>().isDoneCherryPicking){
-
-                }
-                if(leftToCherryPick==0 && project.service<ModelService>().isDoneCherryPicking){
-                    project.service<ModelService>().counterForCherry = 0
-                    project.service<ModelService>().noMoreCherryPicking = true
-                    invoker.executeCommands()
-                }
-            }else{
+            if(project.service<ModelService>().noMoreCherryPicking){
                 if (repository.isRebaseInProgress) {
                     project.service<ModelService>().refreshModelDuringRebaseProcess(repository.root)
                 } else {
                     project.service<ModelService>().refreshModel()
                 }
             }
+//            if(!project.service<ModelService>().noMoreCherryPicking){
+//                val leftToCherryPick = invoker.commands.filterIsInstance<CherryCommand>().size -
+//                        project.service<ModelService>().counterForCherry
+//                while(!project.service<ModelService>().isDoneCherryPicking){
+//
+//                }
+//                if(leftToCherryPick==0 && project.service<ModelService>().isDoneCherryPicking){
+//                    project.service<ModelService>().counterForCherry = 0
+//                    project.service<ModelService>().noMoreCherryPicking = true
+//                    invoker.executeCommands()
+//                }
+//            }else{
+//                if (repository.isRebaseInProgress) {
+//                    project.service<ModelService>().refreshModelDuringRebaseProcess(repository.root)
+//                } else {
+//                    project.service<ModelService>().refreshModel()
+//                }
+//            }
 
 //            val head = GitUtil.getHead(repository)
 //            if(IRGitUtils(project).isCherryPickInProcess(repository.root)){
