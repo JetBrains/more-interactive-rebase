@@ -10,13 +10,22 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.getActionShortcutText
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
+import com.jetbrains.interactiveRebase.visuals.GraphDiffDialog
 import javax.swing.JComponent
 
-class UndoAction :
-    DumbAwareAction("Undo", "Undo the last action", AllIcons.Actions.Undo),
+class ViewDiffAction :
+    DumbAwareAction(
+        "See Difference",
+        "See the difference with initial state",
+        AllIcons.Actions.Diff,
+    ),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.undoLastAction()
+        val project = e.project
+        if (null != project) {
+            val dialog = GraphDiffDialog(project)
+            dialog.show()
+        }
     }
 
     override fun update(e: AnActionEvent) {
@@ -35,8 +44,8 @@ class UndoAction :
             this,
             presentation,
             place,
-            getActionShortcutText("com.jetbrains.interactiveRebase.actions.changePanel.UndoAction"),
-            "Undo the last action",
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.changePanel.ViewDiffAction"),
+            "See the difference with initial state",
         )
     }
 }

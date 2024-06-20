@@ -18,6 +18,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.IRRepositoryChangeListener
 import com.jetbrains.interactiveRebase.listeners.PopupListener
 import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
+import com.jetbrains.rd.framework.base.deepClonePolymorphic
 import git4idea.GitUtil
 import git4idea.merge.GitConflictResolver
 import git4idea.repo.GitRepository
@@ -427,6 +428,42 @@ class ModelService(
         previousConflictCommit = currentMergingCommit
         markRebaseCommitAsPaused(currentMergingCommit)
         createMergeConflictDialogForCommit(currentMergingCommit, root)
+    }
+
+    /**
+     * Makes a deep copy of GraphInfo
+     */
+    fun duplicateGraphInfo(graphReference: GraphInfo): GraphInfo {
+        return graphReference.copy(
+            mainBranch = duplicateBranchInfo(graphReference.mainBranch),
+            addedBranch = if (graphReference.addedBranch == null) null else duplicateBranchInfo(graphReference.addedBranch!!),
+        )
+    }
+
+    /**
+     * Makes a deep-copy of BranchInfo
+     */
+    fun duplicateBranchInfo(branchReference: BranchInfo): BranchInfo {
+        val copy =
+            branchReference.copy(
+                initialCommits = branchReference.initialCommits.map { duplicateCommitInfo(it) },
+            )
+        copy.baseCommit = if (branchReference.baseCommit == null) null else duplicateCommitInfo(branchReference.baseCommit!!)
+        copy.currentCommits = branchReference.currentCommits.map { duplicateCommitInfo(it) }.toMutableList()
+        return copy
+    }
+
+    /**
+     * Makes a deep-copy of CommitInfo for the given fields
+     */
+    fun duplicateCommitInfo(commitReference: CommitInfo): CommitInfo {
+        return commitReference.copy(
+            isSelected = false,
+            isHovered = false,
+            isDragged = false,
+            isCollapsed = commitReference.isCollapsed,
+            changes = commitReference.changes.deepClonePolymorphic(),
+        )
     }
 
     /**
