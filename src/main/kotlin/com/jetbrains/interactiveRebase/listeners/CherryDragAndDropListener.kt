@@ -122,7 +122,7 @@ class CherryDragAndDropListener(
 
         project.service<ModelService>().graphInfo.addedBranch?.clearSelectedCommits()
         project.service<ModelService>().branchInfo.clearSelectedCommits()
-        mainBranchPanel.updateCommits()
+        mainBranchPanel.branchPanel.updateCommits()
 
     }
 

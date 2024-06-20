@@ -40,9 +40,11 @@ class ActionServiceTest : BasePlatformTestCase() {
     private lateinit var modelService: ModelService
     private lateinit var commitInfo1: CommitInfo
     private lateinit var commitInfo2: CommitInfo
-    private lateinit var commitInfo3: CommitInfo
+    private lateinit var commitInfo6: CommitInfo
     private lateinit var branchInfo: BranchInfo
+    private lateinit var commitInfo3: CommitInfo
     private lateinit var commitInfo4: CommitInfo
+    private lateinit var commitInfo5: CommitInfo
     private lateinit var actionService: ActionService
     private var addedBranch: BranchInfo = BranchInfo()
 
@@ -51,8 +53,10 @@ class ActionServiceTest : BasePlatformTestCase() {
         val commitProvider = TestGitCommitProvider(project)
         commitInfo1 = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf())
         commitInfo2 = CommitInfo(commitProvider.createCommit("fix tests"), project, mutableListOf())
+        commitInfo6 = CommitInfo(commitProvider.createCommit("fix tests yeah"), project, mutableListOf())
         commitInfo3 = CommitInfo(commitProvider.createCommit("belongs to added branch"), project, mutableListOf())
         commitInfo4 = CommitInfo(commitProvider.createCommit("belongs to added branch too"), project, mutableListOf())
+        commitInfo5 = CommitInfo(commitProvider.createCommit("belongs to added branch on the top"), project, mutableListOf())
 
         val commitService = mock(CommitService::class.java)
 
@@ -65,9 +69,10 @@ class ActionServiceTest : BasePlatformTestCase() {
         }.`when`(commitService).getBranchName()
 
         modelService = ModelService(project, CoroutineScope(Dispatchers.EDT), commitService)
-        modelService.branchInfo.initialCommits = mutableListOf(commitInfo1, commitInfo2)
-        modelService.branchInfo.currentCommits = mutableListOf(commitInfo1, commitInfo2)
+        modelService.branchInfo.initialCommits = mutableListOf(commitInfo1, commitInfo2, commitInfo6)
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo1, commitInfo2, commitInfo6)
         addedBranch.name = "added"
+        addedBranch.currentCommits.add(commitInfo5)
         addedBranch.currentCommits.add(commitInfo4)
         addedBranch.currentCommits.add(commitInfo3)
         addedBranch.baseCommit = commitInfo3
@@ -298,6 +303,9 @@ class ActionServiceTest : BasePlatformTestCase() {
         // setup the commands
         val command1 = DropCommand(commitInfo1)
         val command2 = ReorderCommand(commitInfo1, 1, 2)
+        modelService.addToSelectedCommits(commitInfo3, addedBranch)
+        commitInfo3.isSelected = true
+        commitInfo3.wasCherryPicked = true
         commitInfo1.addChange(command1)
         commitInfo1.addChange(command2)
         commitInfo1.isSelected = true
@@ -314,6 +322,9 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(commitInfo2.changes.size).isEqualTo(0)
         assertThat(project.service<RebaseInvoker>().commands.size).isEqualTo(0)
         assertThat(modelService.branchInfo.selectedCommits.size).isEqualTo(0)
+        assertThat(addedBranch.selectedCommits.size).isEqualTo(0)
+        assertFalse(commitInfo3.isSelected)
+        assertFalse(commitInfo3.isSelected)
     }
 
     fun testTakeFixupActionMultipleCommits() {
@@ -1109,6 +1120,49 @@ class ActionServiceTest : BasePlatformTestCase() {
         actionService.checkCherryPick(testEvent)
         assertThat(testEvent.presentation.isEnabled).isTrue()
     }
+
+    fun testTakeNormalRebaseAction() {
+        modelService.addToSelectedCommits(commitInfo3, addedBranch)
+        actionService.takeNormalRebaseAction()
+        assertThat(branchInfo.selectedCommits.isEmpty()).isTrue()
+        assertThat(addedBranch.selectedCommits.isEmpty()).isTrue()
+        assertTrue(project.service<RebaseInvoker>().commands.isNotEmpty())
+    }
+
+
+    fun testCheckNormalRebaseAction() {
+        val testEvent = createTestEvent()
+        actionService.checkNormalRebaseAction(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isTrue()
+        modelService.addToSelectedCommits(commitInfo4, addedBranch)
+        actionService.checkNormalRebaseAction(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isTrue()
+        modelService.addToSelectedCommits(commitInfo5, addedBranch)
+        actionService.checkNormalRebaseAction(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isFalse()
+        addedBranch.clearSelectedCommits()
+        modelService.addToSelectedCommits(commitInfo3, addedBranch)
+        actionService.checkNormalRebaseAction(testEvent)
+        assertThat(testEvent.presentation.isEnabled).isFalse()
+        modelService.graphInfo.addedBranch=null
+        assertThat(testEvent.presentation.isEnabled).isFalse()
+
+    }
+
+    fun testGetParentWithoutDrop() {
+        modelService.addToSelectedCommits(commitInfo2, branchInfo)
+        actionService.takeDropAction()
+        assertThat(branchInfo.selectedCommits.isEmpty()).isTrue()
+        assertThat(addedBranch.selectedCommits.isEmpty()).isTrue()
+        assertTrue(project.service<RebaseInvoker>().commands.isNotEmpty())
+        modelService.addToSelectedCommits(commitInfo1, branchInfo)
+        actionService.getParent()
+        assertThat(actionService.getParent()).isEqualTo(commitInfo6)
+    }
+
+
+
+
 
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)
 }

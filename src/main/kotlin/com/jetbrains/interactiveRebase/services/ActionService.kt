@@ -372,6 +372,7 @@ class ActionService(val project: Project) {
         modelService.graphInfo.addedBranch?.baseCommit =
             modelService.graphInfo.addedBranch?.currentCommits?.last()
         invoker.branchInfo.clearSelectedCommits()
+        modelService.graphInfo.addedBranch?.clearSelectedCommits()
         takeCollapseAction()
     }
 
@@ -659,7 +660,7 @@ class ActionService(val project: Project) {
         modelService.graphInfo.mainBranch.currentCommits.add(index, commit)
         original.wasCherryPicked = true
 
-        mainPanel.graphPanel.addedBranchPanel?.updateCommits()
+        mainPanel.graphPanel.addedBranchPanel?.branchPanel?.updateCommits()
     }
 
     /**
