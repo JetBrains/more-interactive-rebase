@@ -15,6 +15,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.checkout
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.checkoutNew
 import com.jetbrains.interactiveRebase.integrationTests.git4ideaTestClasses.git
+import com.jetbrains.interactiveRebase.listeners.BranchNavigationListener
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
@@ -25,7 +26,21 @@ import org.awaitility.Awaitility
 import java.awt.event.MouseEvent
 import java.util.concurrent.TimeUnit
 
-class TwoBranchesActionTest : IRGitPlatformTest() {
+/**
+ * This test checks if the plugin can handle two branches being in the view at the same time.
+ * It performs the following actions:
+ * 1. Opens the plugin and initializes it with the feature branch
+ * 2. Adds the main branch to the view
+ * 3. Removes the main branch from the view
+ * 4. Adds the development branch to the view
+ * 5. Tries to rebase the feature branch on the development branch's head
+ * 6. Undoes the rebase action
+ * 7. Redoes the rebase action
+ * 8. Resets the changes made to the feature branch
+ * 9. Moves the base of the feature branch to the second to last commit on the feature branch
+ * 10. Starts the rebase process
+ */
+class UseCase4Test : IRGitPlatformTest() {
     lateinit var secondCommitOnMain: String
     lateinit var thirdCommitOnMain: String
 
@@ -89,7 +104,7 @@ class TwoBranchesActionTest : IRGitPlatformTest() {
         assertThat(modelService.branchInfo.name).isEqualTo(featureBranch)
     }
 
-    fun testTwoBranchesInView() {
+    fun testUseCase4() {
         runBlocking(Dispatchers.EDT) {
             openAndInitializePlugin(5)
             val modelService = project.service<ModelService>()
@@ -98,6 +113,8 @@ class TwoBranchesActionTest : IRGitPlatformTest() {
             val addBranchAction = AddBranchAction()
             val testEvent1 = createTestEvent(addBranchAction)
             addBranchAction.actionPerformed(testEvent1)
+
+            val nav = BranchNavigationListener(project, modelService)
 
             val sidePanel =
                 project.service<ActionService>()
@@ -210,8 +227,13 @@ class TwoBranchesActionTest : IRGitPlatformTest() {
             changeBaseAction.update(changeBaseEvent)
             assertThat(changeBaseEvent.presentation.isEnabled).isTrue()
 
-            //because animation doesn't work in tests, we need to manually update the model
-            val headOfSecondBranch = modelService.graphInfo.addedBranch?.currentCommits!![0]
+            //go to second branch with keyboard navigation
+            nav.down()
+            nav.right()
+            nav.up()
+            nav.up()
+
+            val headOfSecondBranch = modelService.graphInfo.addedBranch?.selectedCommits?.get(0)
             modelService.graphInfo.addedBranch?.baseCommit = headOfSecondBranch
             project.service<ActionService>().takeNormalRebaseAction()
 
@@ -258,7 +280,12 @@ class TwoBranchesActionTest : IRGitPlatformTest() {
             changeBaseAction.update(secondChangeBaseEvent)
             assertThat(secondChangeBaseEvent.presentation.isEnabled).isTrue()
 
-            val commitOnSecondBranch = modelService.graphInfo.addedBranch?.currentCommits!![1]
+            //go to second branch with keyboard navigation
+            nav.down()
+            nav.right()
+            nav.up()
+            val commitOnSecondBranch = modelService.graphInfo.addedBranch?.selectedCommits?.get(0)
+            println(commitOnSecondBranch?.commit?.subject)
             modelService.graphInfo.addedBranch?.baseCommit = commitOnSecondBranch
             project.service<ActionService>().takeNormalRebaseAction()
 
