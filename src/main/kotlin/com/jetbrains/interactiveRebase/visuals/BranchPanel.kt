@@ -151,7 +151,6 @@ class BranchPanel(
         val endY = y + height
 
         fadingAwayEffect(g2d, startX, startY, endX, endY)
-
         g2d.drawLine(startX, startY, endX, endY)
     }
 

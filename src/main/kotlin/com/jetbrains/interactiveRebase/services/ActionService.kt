@@ -275,6 +275,7 @@ class ActionService(val project: Project) {
      * Adds a visual change for a commit that has to be stopped to edit
      */
     fun takeStopToEditAction() {
+        invoker.undoneCommands.clear()
         val commits = modelService.getSelectedCommits()
         commits.forEach {
                 commitInfo ->
@@ -285,7 +286,6 @@ class ActionService(val project: Project) {
             }
         }
         modelService.branchInfo.clearSelectedCommits()
-        invoker.undoneCommands.clear()
     }
 
     /**
@@ -360,14 +360,7 @@ class ActionService(val project: Project) {
         val currentBranchInfo = invoker.branchInfo
         invoker.branchInfo.currentCommits = currentBranchInfo.initialCommits.toMutableList()
         invoker.branchInfo.initialCommits.forEach { commitInfo ->
-            commitInfo.changes.clear()
-            commitInfo.isSelected = false
-            commitInfo.isSquashed = false
-            commitInfo.isTextFieldEnabled = false
-            commitInfo.isDragged = false
-            commitInfo.isReordered = false
-            commitInfo.isHovered = false
-            commitInfo.isCollapsed = false
+            resetCommitInfo(commitInfo)
         }
         modelService.graphInfo.addedBranch?.initialCommits?.forEach { commitInfo ->
             commitInfo.changes.clear()
@@ -380,6 +373,20 @@ class ActionService(val project: Project) {
             modelService.graphInfo.addedBranch?.currentCommits?.last()
         invoker.branchInfo.clearSelectedCommits()
         takeCollapseAction()
+    }
+
+    /**
+     * Resets all fields of a CommitInfo
+     */
+    fun resetCommitInfo(commitInfo: CommitInfo) {
+        commitInfo.changes.clear()
+        commitInfo.isSelected = false
+        commitInfo.isSquashed = false
+        commitInfo.isTextFieldEnabled = false
+        commitInfo.isDragged = false
+        commitInfo.isReordered = false
+        commitInfo.isHovered = false
+        commitInfo.isCollapsed = false
     }
 
     /**
@@ -460,24 +467,23 @@ class ActionService(val project: Project) {
 
         selectedCommits.forEach {
             removeSquashFixChange(it)
-            ret.add(it)
+            addIfNotExists(ret, it)
         }
 
-        parent.changes.forEach {
+        parent.getChangesAfterPick().forEach {
                 change ->
             if (change is SquashCommand) {
                 change.squashedCommits.forEach {
                     removeSquashFixChange(it)
-                    ret.add(it)
+                    addIfNotExists(ret, it)
                 }
             } else if (change is FixupCommand) {
                 change.fixupCommits.forEach {
                     removeSquashFixChange(it)
-                    ret.add(it)
+                    addIfNotExists(ret, it)
                 }
             }
         }
-
         removeSquashFixChange(parent)
 
         return ret
@@ -494,7 +500,7 @@ class ActionService(val project: Project) {
             if (it is FixupCommand || it is SquashCommand) {
                 modelService.invoker.removeCommand(it)
                 if (modelService.invoker.undoneCommands.contains(it)) {
-                    modelService.invoker.undoneCommands.remove(it)
+                    modelService.invoker.undoneCommands.removeIf { x -> x === it }
                 }
                 changesToRemove.add(it)
             }
@@ -653,7 +659,7 @@ class ActionService(val project: Project) {
         modelService.graphInfo.mainBranch.currentCommits.add(index, commit)
         original.wasCherryPicked = true
 
-        mainPanel.graphPanel.addedBranchPanel?.updateCommits()
+        mainPanel.graphPanel.addedBranchPanel?.branchPanel!!.updateCommits()
     }
 
     /**
@@ -760,7 +766,7 @@ class ActionService(val project: Project) {
     /**
      * The undo button should be enabled if there are any actions to undo.
      */
-    fun checkUndo(e: AnActionEvent) {
+    fun checkIfChangesMade(e: AnActionEvent) {
         e.presentation.isEnabled = invoker.commands.isNotEmpty()
     }
 
@@ -903,5 +909,14 @@ class ActionService(val project: Project) {
         headerPanel.rebaseProcessPanel.isVisible = false
         headerPanel.revalidate()
         headerPanel.repaint()
+    }
+
+    fun <T> addIfNotExists(
+        list: MutableList<T>,
+        element: T,
+    ) {
+        if (!list.contains(element)) {
+            list.add(element)
+        }
     }
 }

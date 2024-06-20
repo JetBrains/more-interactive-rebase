@@ -1,6 +1,6 @@
 package com.jetbrains.interactiveRebase.actions.gitPanel
 
-import com.intellij.icons.AllIcons
+import com.intellij.icons.ExpUiIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
@@ -15,7 +15,7 @@ class FixupAction :
     DumbAwareAction(
         "Fixup",
         "Combines commits into one, with a default message",
-        AllIcons.Actions.ListFiles,
+        ExpUiIcons.General.ScrollDown,
     ),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {

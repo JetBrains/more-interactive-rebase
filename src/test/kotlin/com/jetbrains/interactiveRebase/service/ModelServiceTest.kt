@@ -6,6 +6,7 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
@@ -206,5 +207,61 @@ class ModelServiceTest : BasePlatformTestCase() {
         assertThat(c3.isRebased).isFalse()
         assertThat(modelService.previousConflictCommit).isEqualTo("")
 
+    }
+
+    fun testGraphDuplicatesBothBranches() {
+        val primaryBranch = BranchInfo("primary", listOf(commit1))
+        commit2.isCollapsed = true
+        val secondaryBranch = BranchInfo("secondary", listOf(commit2))
+        val graph = GraphInfo(primaryBranch, secondaryBranch)
+
+        val copy = modelService.duplicateGraphInfo(graph)
+        assertThat(copy === graph).isFalse()
+        assertThat(copy.mainBranch === primaryBranch).isFalse()
+        assertThat(copy.addedBranch).isNotNull()
+        assertThat(copy.addedBranch === graph.addedBranch).isFalse()
+
+        val copyCommit = copy.mainBranch.currentCommits[0]
+        copyCommit.isSelected = true
+        copyCommit.changes.add(DropCommand(copyCommit))
+
+        assertThat(commit1.changes.isEmpty()).isTrue()
+
+        val copyAddedCommit: CommitInfo = copy.addedBranch!!.currentCommits[0]
+        assertThat(copyAddedCommit.isCollapsed).isTrue()
+    }
+
+    fun testGraphDuplicateNullBase() {
+        val primaryBranch = BranchInfo("primary", listOf(commit1))
+        commit2.isCollapsed = true
+        val secondaryBranch = BranchInfo("secondary", listOf(commit2))
+        secondaryBranch.baseCommit = null
+        val graph = GraphInfo(primaryBranch, secondaryBranch)
+
+        val copy = modelService.duplicateGraphInfo(graph)
+        assertThat(copy === graph).isFalse()
+        assertThat(copy.mainBranch === primaryBranch).isFalse()
+        assertThat(copy.addedBranch).isNotNull()
+        assertThat(copy.addedBranch === graph.addedBranch).isFalse()
+
+        val copyCommit = copy.mainBranch.currentCommits[0]
+        copyCommit.isSelected = true
+        copyCommit.changes.add(DropCommand(copyCommit))
+
+        assertThat(commit1.changes.isEmpty()).isTrue()
+
+        val copyAddedCommit: CommitInfo = copy.addedBranch!!.currentCommits[0]
+        assertThat(copyAddedCommit.isCollapsed).isTrue()
+    }
+
+    fun testGraphDuplicatesOneBranch() {
+        val primaryBranch = BranchInfo("primary", listOf(commit1))
+        commit2.isCollapsed = true
+        val graph = GraphInfo(primaryBranch)
+
+        val copy = modelService.duplicateGraphInfo(graph)
+        assertThat(copy === graph).isFalse()
+        assertThat(copy.mainBranch === primaryBranch).isFalse()
+        assertThat(copy.addedBranch).isNull()
     }
 }

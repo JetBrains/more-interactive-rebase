@@ -88,7 +88,8 @@ class GraphPanelTest : BasePlatformTestCase() {
     }
 
     fun testCreateGraphPanelWithoutAddedBranch() {
-        val panel = GraphPanel(project)
+        val graph = GraphInfo(graphInfo.mainBranch)
+        val panel = GraphPanel(project, graph)
         assertNotNull(panel)
         assertNotNull(panel.mainBranchPanel)
         assertNull(panel.addedBranchPanel)

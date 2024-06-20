@@ -6,7 +6,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.rd.framework.base.deepClonePolymorphic
 
-class BranchInfo(
+data class BranchInfo(
     var name: String = "",
     var initialCommits: List<CommitInfo> = listOf(),
     var selectedCommits: MutableList<CommitInfo> = mutableListOf(),
