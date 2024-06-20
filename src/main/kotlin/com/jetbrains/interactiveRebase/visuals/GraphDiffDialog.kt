@@ -8,6 +8,8 @@ import com.intellij.ui.SideBorder
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.util.preferredHeight
+import com.intellij.util.ui.JBDimension
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
@@ -24,6 +26,8 @@ import javax.swing.ScrollPaneConstants
 
 class GraphDiffDialog(val project: Project) : DialogWrapper(project) {
     private var modelService = project.service<ModelService>()
+    private val width = 550
+    private val height = 850
 
     init {
         title = "Compare Interactive Rebase Changes"
@@ -45,7 +49,7 @@ class GraphDiffDialog(val project: Project) : DialogWrapper(project) {
      * Sets the size
      */
     override fun getDimensionServiceKey(): String {
-        setSize(550, 850)
+        setSize(width, height)
         return "IRGraphDiffDialog"
     }
 
@@ -70,7 +74,7 @@ class GraphDiffDialog(val project: Project) : DialogWrapper(project) {
     }
 
     override fun getPreferredSize(): Dimension {
-        return Dimension(550, 850)
+        return JBDimension(width, height)
     }
 
     /**
@@ -86,14 +90,14 @@ class GraphDiffDialog(val project: Project) : DialogWrapper(project) {
         revertChangesVisually(initialGraph)
         val initialGraphPanel: GraphPanel = createGraphDisplay(initialGraph)
 
-        initialGraphPanel.preferredSize = Dimension(260, 410)
+        initialGraphPanel.preferredSize = JBDimension(260, initialGraphPanel.preferredHeight)
 
         // Create the graph with current changes
         val currentGraph: GraphInfo = modelService.duplicateGraphInfo(actualGraph)
         expandBothBranches(currentGraph)
         val currentGraphPanel: GraphPanel = createGraphDisplay(currentGraph)
 
-        currentGraphPanel.preferredSize = Dimension(260, 410)
+        currentGraphPanel.preferredSize = JBDimension(260, currentGraphPanel.preferredHeight)
 
         // Make both scrollable
         val initialScrollable = JBScrollPane()
@@ -112,7 +116,7 @@ class GraphDiffDialog(val project: Project) : DialogWrapper(project) {
                 firstComponent = initialScrollable
                 secondComponent = currentScrollable
             }
-        split.preferredSize = Dimension(520, 820)
+        split.minimumSize = Dimension(300, 820)
         return split
     }
 
