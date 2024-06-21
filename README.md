@@ -1,7 +1,5 @@
-<h1 style="display: flex; align-items: center;">
-    <img src="src/main/resources/META-INF/pluginIcon.svg" style="width: 40px; height: 40px;" alt="Plugin Icon">
-    <span style="margin-left: 30px;">A More Interactive Rebase</span>
-</h1>
+# <img src="src/main/resources/META-INF/pluginIcon.svg" style="width: 40px; height 40 px; ">
+# A More Interactive Rebase
 
 [![Coverage Badge](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/badges/main/coverage.svg)](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/badges/main/coverage.svg)
 [![Pipeline Status](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/badges/main/pipeline.svg)](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/badges/main/pipeline.svg)
@@ -42,6 +40,9 @@ A More Interactive Rebase offers the following functionality for a better user e
 * Allows reordering of commits by drag-and-drop
 * Displays two branches with their relation visually
 * Allows changing the base of a branch on top of another branch
+* Shows the difference between the changed graph and the initial state
+* Allows for cherry-picking a commit
+* Shows the progress of the rebase and the commit on which it has stopped due to conflicts
 
 [//]: # (Add short video here)
 
@@ -205,7 +206,7 @@ If you are not very familiar with the Interactive Rebase actions that Git has to
   between branches. Use `Shift` for range selection.
 * **<u>Selecting multiple commits</u>** - Press `Shift` + `Click` for range selection and `Command`/`Ctrl` + `Click` 
   for non-contiguous selection.
-* * **<u>Deselecting commits</u>** - `Escape`
+* **<u>Deselecting commits</u>** - `Escape`
 * **<u>Select branch</u>** - `Enter` (Branch Selection Panel)
 * **<u>Deselect branch</u>** - `Escape` (Branch Selection Panel)
 
@@ -258,7 +259,7 @@ The UI of the plugin was developed with Swing.
 The product is unit tested with the frameworks JUnit 5 and Mockito, and the library AssertJ. All test classes are
 extending the BasePlatformTestCase class of the intelliJ test Framework.
 ### Integration Testing
-For system/integration testing the plugin uses
+For system/integration testing the plugin uses VCS Platform Test in order to setup all of the git actions
  
 ## 🤝 Contributing
 If you want to contribute to our project please refer to the
