@@ -47,16 +47,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
     private lateinit var message2: JBPanel<JBPanel<*>>
     private lateinit var message3: JBPanel<JBPanel<*>>
     private lateinit var labelPanelWrapper: JBPanel<JBPanel<*>>
-    private lateinit var  initialMainPanel: MainPanel
-    private lateinit var  initialBranchInfo: BranchInfo
-    private lateinit var  initialGraphInfo: GraphInfo
     private lateinit var mainPanel: MainPanel
-
-//    init {
-//        initialMainPanel = project.service<ActionService>().mainPanel
-//        initialBranchInfo = project.service<ModelService>().branchInfo
-//        initialGraphInfo = project.service<ModelService>().graphInfo
-//    }
 
     override fun setUp() {
         super.setUp()
@@ -231,7 +222,6 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         assertFalse(listener.wasHoveringOnMainBranch)
         assertFalse(listener.wasDragged)
     }
-
 
     fun testMouseDragged() {
         val eventPress =
