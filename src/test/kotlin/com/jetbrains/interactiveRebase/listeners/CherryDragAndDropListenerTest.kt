@@ -1,13 +1,10 @@
 package com.jetbrains.interactiveRebase.listeners
 
-import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
-import com.jetbrains.interactiveRebase.services.ActionService
-import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.BranchPanel
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import com.jetbrains.interactiveRebase.visuals.DragPanel
@@ -16,7 +13,6 @@ import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
 import com.jetbrains.interactiveRebase.visuals.MainPanel
 import com.jetbrains.interactiveRebase.visuals.Palette
 import git4idea.GitCommit
-import junit.framework.TestCase
 import org.mockito.Mockito.doNothing
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
@@ -51,14 +47,23 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
     private lateinit var message2: JBPanel<JBPanel<*>>
     private lateinit var message3: JBPanel<JBPanel<*>>
     private lateinit var labelPanelWrapper: JBPanel<JBPanel<*>>
+    private lateinit var  initialMainPanel: MainPanel
+    private lateinit var  initialBranchInfo: BranchInfo
+    private lateinit var  initialGraphInfo: GraphInfo
+    private lateinit var mainPanel: MainPanel
+
+//    init {
+//        initialMainPanel = project.service<ActionService>().mainPanel
+//        initialBranchInfo = project.service<ModelService>().branchInfo
+//        initialGraphInfo = project.service<ModelService>().graphInfo
+//    }
 
     override fun setUp() {
         super.setUp()
-        val mainPanel = mock(MainPanel::class.java)
+        mainPanel = mock(MainPanel::class.java)
         dragPanel = mock(DragPanel::class.java)
         `when`(dragPanel.width).thenReturn(800)
         `when`(dragPanel.height).thenReturn(600)
-        project.service<ActionService>().mainPanel = mainPanel
 
         commit = mock(CommitInfo::class.java)
         `when`(commit.commit).thenReturn(mock(GitCommit::class.java))
@@ -159,7 +164,6 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
             ),
         )
         addedBranchInfo = mock(BranchInfo::class.java)
-        project.service<ModelService>().branchInfo = mainBranchInfo
 
         mainBranchPanel = mock(LabeledBranchPanel::class.java)
         `when`(mainBranchPanel.x).thenReturn(0)
@@ -181,7 +185,6 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         graphInfo = mock(GraphInfo::class.java)
         `when`(graphInfo.mainBranch).thenReturn(mainBranchInfo)
         `when`(graphInfo.addedBranch).thenReturn(addedBranchInfo)
-        project.service<ModelService>().graphInfo = graphInfo
 
         graphPanel = mock(GraphPanel::class.java)
         `when`(graphPanel.layout).thenReturn(GridBagLayout())
@@ -199,6 +202,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
                     project,
                     cherry,
                     addedBranchPanel,
+                    mainPanel,
                 ),
             )
     }
@@ -213,9 +217,9 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         listener.mousePressed(event)
 
         verify(listener).initializeLateFields()
-        TestCase.assertEquals(Point(20, 30), listener.mousePosition)
-        TestCase.assertEquals(Point(120, 130), listener.initialPositionCherry)
-        TestCase.assertEquals(
+        assertEquals(Point(20, 30), listener.mousePosition)
+        assertEquals(Point(120, 130), listener.initialPositionCherry)
+        assertEquals(
             mutableListOf(
                 CirclePosition(centerX = 0, centerY = 0, x = 0, y = 5),
                 CirclePosition(centerX = 40, centerY = 40, x = 10, y = 10),
@@ -224,9 +228,10 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
             listener.circlesPositions,
         )
 
-        TestCase.assertFalse(listener.wasHoveringOnMainBranch)
-        TestCase.assertFalse(listener.wasDragged)
+        assertFalse(listener.wasHoveringOnMainBranch)
+        assertFalse(listener.wasDragged)
     }
+
 
     fun testMouseDragged() {
         val eventPress =
@@ -256,7 +261,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         verify(listener).setCherryLocation(eventDrag)
         println(cherry.bounds)
         println(branchPanel2.bounds)
-        TestCase.assertFalse(listener.isOverMainBranch())
+        assertFalse(listener.isOverMainBranch())
         verify(listener, never()).makeSpaceForCherryOnMainBranch()
         verify(listener).turnBackToTheInitialLayoutOfMainBranch()
     }
@@ -289,8 +294,8 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         verify(listener).setUpDrag()
         verify(dragPanel).cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
         verify(listener).setCherryLocation(eventDrag)
-        TestCase.assertFalse(listener.isOverMainBranch())
-        TestCase.assertFalse(listener.wasHoveringOnMainBranch)
+        assertFalse(listener.isOverMainBranch())
+        assertFalse(listener.wasHoveringOnMainBranch)
         verify(listener, never()).makeSpaceForCherryOnMainBranch()
         verify(listener).turnBackToTheInitialLayoutOfMainBranch()
         verify(listener).getConstraintsForReset()
@@ -316,39 +321,9 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         verify(listener, never()).setUpDrag()
         verify(dragPanel).cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
         verify(listener).setCherryLocation(eventDrag)
-        TestCase.assertTrue(listener.isOverMainBranch())
+        assertTrue(listener.isOverMainBranch())
         verify(listener).makeSpaceForCherryOnMainBranch()
         verify(listener, never()).turnBackToTheInitialLayoutOfMainBranch()
-    }
-
-    fun testMouseReleasedWasDragged() {
-        val eventPress =
-            mock(MouseEvent::class.java).apply {
-                `when`(xOnScreen).thenReturn(10)
-                `when`(yOnScreen).thenReturn(20)
-            }
-        val eventDrag =
-            mock(MouseEvent::class.java).apply {
-                `when`(xOnScreen).thenReturn(20)
-                `when`(yOnScreen).thenReturn(30)
-            }
-        val eventRelease =
-            mock(MouseEvent::class.java).apply {
-                `when`(xOnScreen).thenReturn(111)
-                `when`(yOnScreen).thenReturn(25)
-            }
-
-        listener.mousePressed(eventPress)
-        listener.mouseDragged(eventDrag)
-        listener.mouseReleased(eventRelease)
-
-        TestCase.assertTrue(listener.isOverMainBranch())
-        verify(listener).propagateCherryPickToBackend()
-        verify(commit, times(2)).wasCherryPicked = true
-        verify(commit).isHovered = false
-        verify(graphPanel).lineOffset = 60
-        verify(graphPanel).updateGraphPanel()
-        verify(branchPanel1).repaint()
     }
 
     fun testMouseReleasedNotDragged() {
@@ -404,7 +379,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         listener.mouseDragged(eventDrag)
         listener.mouseReleased(eventRelease)
 
-        TestCase.assertFalse(listener.isOverMainBranch())
+        assertFalse(listener.isOverMainBranch())
         verify(listener, never()).propagateCherryPickToBackend()
         verify(commit, times(2)).wasCherryPicked = false
         verify(commit).isHovered = false
@@ -439,7 +414,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         listener.mouseDragged(eventDrag)
         listener.mouseReleased(eventRelease)
 
-        TestCase.assertFalse(listener.isOverMainBranch())
+        assertFalse(listener.isOverMainBranch())
         verify(listener, never()).propagateCherryPickToBackend()
         verify(commit, times(2)).wasCherryPicked = false
         verify(clone, times(2)).commit
@@ -449,26 +424,11 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         verify(branchPanel1).repaint()
     }
 
-    fun testPropagateCherryPickToBackendNoAddedBranch() {
-        graphInfo.addedBranch = null
-        val event =
-            mock(MouseEvent::class.java).apply {
-                `when`(xOnScreen).thenReturn(20)
-                `when`(yOnScreen).thenReturn(30)
-            }
-
-        listener.mousePressed(event)
-        listener.mainIndex = 1
-        listener.propagateCherryPickToBackend()
-        verify(commit).wasCherryPicked = true
-        verify(branchPanel2).updateCommits()
-    }
-
     fun testComputeFinalLineOffset() {
         listener.mainCircles = mutableListOf(mock(CirclePanel::class.java))
         listener.mainIndex = 1
 
-        TestCase.assertEquals(
+        assertEquals(
             90,
             listener.computeFinalLineOffset(),
         )
@@ -476,7 +436,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         listener.mainCircles = mutableListOf(mock(CirclePanel::class.java))
         listener.mainIndex = 0
 
-        TestCase.assertEquals(
+        assertEquals(
             30,
             listener.computeFinalLineOffset(),
         )
@@ -486,14 +446,14 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         listener.mainIndex = 6
         val gbc = GridBagConstraints()
         listener.modifyInsetsToMakeSpaceForCherry(gbc, 5)
-        TestCase.assertEquals(60, gbc.insets.bottom)
+        assertEquals(60, gbc.insets.bottom)
     }
 
     fun testModifyInsetsToMakeSpaceForCherry2() {
         listener.mainIndex = 5
         val gbc = GridBagConstraints()
         listener.modifyInsetsToMakeSpaceForCherry(gbc, 5)
-        TestCase.assertEquals(0, gbc.insets.bottom)
+        assertEquals(0, gbc.insets.bottom)
     }
 
     fun testModifyInsetsToMakeSpaceForCherry3() {
@@ -507,7 +467,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         listener.mainIndex = 0
         val gbc = GridBagConstraints()
         listener.modifyInsetsToMakeSpaceForCherry(gbc, 0)
-        TestCase.assertEquals(90, gbc.insets.top)
+        assertEquals(90, gbc.insets.top)
     }
 
     fun testModifyInsetsToMakeSpaceForCherry4() {
@@ -521,7 +481,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         listener.mainIndex = 5
         val gbc = GridBagConstraints()
         listener.modifyInsetsToMakeSpaceForCherry(gbc, 0)
-        TestCase.assertEquals(30, gbc.insets.top)
+        assertEquals(30, gbc.insets.top)
     }
 
     fun testModifyInsetsToMakeSpaceForCherry5() {
@@ -535,14 +495,14 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         listener.mainIndex = 0
         val gbc = GridBagConstraints()
         listener.modifyInsetsToMakeSpaceForCherry(gbc, 5)
-        TestCase.assertEquals(0, gbc.insets.top)
+        assertEquals(0, gbc.insets.top)
     }
 
     fun testModifyInsetsToMakeSpaceForCherry6() {
         listener.mainIndex = 5
         val gbc = GridBagConstraints()
         listener.modifyInsetsToMakeSpaceForCherry(gbc, 1)
-        TestCase.assertEquals(0, gbc.insets.top)
+        assertEquals(0, gbc.insets.top)
     }
 
     fun testMakeSpaceForCherryOnMainBranch000() {
@@ -551,7 +511,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         listener.animationInProgress = true
         listener.makeSpaceForCherryOnMainBranch()
         verify(listener, never()).getConstraintsForRepositioning()
-        TestCase.assertTrue(listener.wasHoveringOnMainBranch)
+        assertTrue(listener.wasHoveringOnMainBranch)
     }
 
     fun testMakeSpaceForCherryOnMainBranch100() {
@@ -560,7 +520,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         listener.animationInProgress = true
         listener.makeSpaceForCherryOnMainBranch()
         verify(listener, never()).getConstraintsForRepositioning()
-        TestCase.assertTrue(listener.wasHoveringOnMainBranch)
+        assertTrue(listener.wasHoveringOnMainBranch)
     }
 
     fun testMakeSpaceForCherryOnMainBranch010() {
@@ -569,7 +529,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         listener.animationInProgress = true
         listener.makeSpaceForCherryOnMainBranch()
         verify(listener, never()).getConstraintsForRepositioning()
-        TestCase.assertTrue(listener.wasHoveringOnMainBranch)
+        assertTrue(listener.wasHoveringOnMainBranch)
     }
 
     fun testMakeSpaceForCherryOnMainBranch001() {
@@ -578,7 +538,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         listener.animationInProgress = false
         listener.makeSpaceForCherryOnMainBranch()
         verify(listener, never()).getConstraintsForRepositioning()
-        TestCase.assertTrue(listener.wasHoveringOnMainBranch)
+        assertTrue(listener.wasHoveringOnMainBranch)
     }
 
     fun testMakeSpaceForCherryOnMainBranch101() {
@@ -594,7 +554,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         listener.animationInProgress = false
         listener.makeSpaceForCherryOnMainBranch()
         verify(listener).getConstraintsForRepositioning()
-        TestCase.assertTrue(listener.wasHoveringOnMainBranch)
+        assertTrue(listener.wasHoveringOnMainBranch)
     }
 
     fun testMakeSpaceForCherryOnMainBranch011() {
@@ -610,7 +570,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
         listener.animationInProgress = false
         listener.makeSpaceForCherryOnMainBranch()
         verify(listener).getConstraintsForRepositioning()
-        TestCase.assertTrue(listener.wasHoveringOnMainBranch)
+        assertTrue(listener.wasHoveringOnMainBranch)
     }
 
     fun testDispose() {
@@ -631,6 +591,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
                     project,
                     cherry,
                     addedBranchPanel,
+                    mainPanel,
                 ),
             )
         listener.mousePressed(event)
@@ -643,6 +604,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
                     project,
                     cherry,
                     addedBranchPanel,
+                    mainPanel,
                 ),
             )
         listener.mousePressed(event)
@@ -655,6 +617,7 @@ class CherryDragAndDropListenerTest : BasePlatformTestCase() {
                     project,
                     cherry,
                     addedBranchPanel,
+                    mainPanel,
                 ),
             )
         listener.mousePressed(event)

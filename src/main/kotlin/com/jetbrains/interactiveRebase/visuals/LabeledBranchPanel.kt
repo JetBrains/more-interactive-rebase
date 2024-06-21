@@ -25,6 +25,7 @@ import com.jetbrains.interactiveRebase.listeners.CircleDragAndDropListener
 import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
 import com.jetbrains.interactiveRebase.listeners.LabelListener
 import com.jetbrains.interactiveRebase.listeners.TextFieldListener
+import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.services.strategies.SquashTextStrategy
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.RoundedPanel
@@ -369,6 +370,7 @@ class LabeledBranchPanel(
                         project,
                         circle,
                         this,
+                        project.service<ActionService>().mainPanel,
                     )
                 circle.addMouseListener(cherryDragAndDropListener)
                 circle.addMouseMotionListener(cherryDragAndDropListener)

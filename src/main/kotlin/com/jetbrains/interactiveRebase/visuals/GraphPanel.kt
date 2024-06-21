@@ -148,7 +148,7 @@ class GraphPanel(
         }
         val mainCircleCount = mainBranchPanel.branchPanel.circles.size
         val addedCircleCount =
-            graphInfo.addedBranch?.currentCommits!!.indexOf(graphInfo.addedBranch?.baseCommit!!) + 1
+            (graphInfo.addedBranch?.currentCommits?.indexOf(graphInfo.addedBranch?.baseCommit!!) ?: 0) + 1
         val difference = mainCircleCount - addedCircleCount + 2
         return difference * mainBranchPanel.branchPanel.diameter * 2
     }

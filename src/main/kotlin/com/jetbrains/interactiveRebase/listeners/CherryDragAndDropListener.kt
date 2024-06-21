@@ -12,6 +12,7 @@ import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import com.jetbrains.interactiveRebase.visuals.DragPanel
 import com.jetbrains.interactiveRebase.visuals.GraphPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
+import com.jetbrains.interactiveRebase.visuals.MainPanel
 import java.awt.Cursor
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -25,9 +26,10 @@ class CherryDragAndDropListener(
     val project: Project,
     private val cherry: CirclePanel,
     private val addedBranchPanel: LabeledBranchPanel,
+    val mainPanel: MainPanel,
 ) : MouseAdapter(), Disposable {
     private lateinit var clone: CirclePanel
-    private val dragPanel: DragPanel = project.service<ActionService>().mainPanel.dragPanel
+    private val dragPanel: DragPanel = mainPanel.dragPanel
     private lateinit var graphPanel: GraphPanel
     private lateinit var mainBranchPanel: LabeledBranchPanel
     private var gbc: GridBagConstraints =
@@ -69,7 +71,7 @@ class CherryDragAndDropListener(
     }
 
     internal fun initializeLateFields() {
-        graphPanel = project.service<ActionService>().mainPanel.graphPanel
+        graphPanel = mainPanel.graphPanel
         mainBranchPanel = graphPanel.mainBranchPanel
         gbcMainBranch = (graphPanel.layout as GridBagLayout).getConstraints(mainBranchPanel)
         gbcAddedBranch = (graphPanel.layout as GridBagLayout).getConstraints(addedBranchPanel)
