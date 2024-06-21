@@ -11,7 +11,6 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.listeners.LabelListener
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
-import com.jetbrains.interactiveRebase.visuals.multipleBranches.RoundedPanel
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito.mock
 import java.awt.Component.RIGHT_ALIGNMENT

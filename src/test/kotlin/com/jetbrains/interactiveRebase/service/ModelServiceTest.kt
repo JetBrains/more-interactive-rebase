@@ -1,9 +1,7 @@
 package com.jetbrains.interactiveRebase.service
 
 import com.intellij.mock.MockVirtualFile
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.service
-import com.intellij.openapi.vcs.VcsException
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
@@ -12,19 +10,20 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
-import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
-import com.jetbrains.interactiveRebase.services.*
+import com.jetbrains.interactiveRebase.services.ActionService
+import com.jetbrains.interactiveRebase.services.CommitService
+import com.jetbrains.interactiveRebase.services.ModelService
+import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
 import git4idea.GitCommit
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito
-import org.mockito.Mockito.*
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
+import org.mockito.Mockito.`when`
 
 class ModelServiceTest : BasePlatformTestCase() {
     private lateinit var modelService: ModelService
@@ -94,7 +93,6 @@ class ModelServiceTest : BasePlatformTestCase() {
         assertThat(modelService.getLastSelectedCommit()).isEqualTo(commit3)
     }
 
-
     fun testAreDisabledCommitsSelectedNull() {
         assertFalse(modelService.areDisabledCommitsSelected())
     }
@@ -141,7 +139,7 @@ class ModelServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.initialCommits = mutableListOf(commit1, commit2, commit3)
         modelService.branchInfo.currentCommits = mutableListOf(commit2, commit3)
         modelService.graphInfo.addedBranch = BranchInfo("branch")
-        modelService.graphInfo.addedBranch?.initialCommits = mutableListOf( commit3)
+        modelService.graphInfo.addedBranch?.initialCommits = mutableListOf(commit3)
         modelService.graphInfo.addedBranch?.currentCommits = mutableListOf(commit3)
 
         project.service<RebaseInvoker>().commands.add(PickCommand(commit2))
@@ -215,7 +213,6 @@ class ModelServiceTest : BasePlatformTestCase() {
         assertThat(c3.changes).isEmpty()
         assertThat(c3.isRebased).isFalse()
         assertThat(modelService.previousConflictCommit).isEqualTo("")
-
     }
 
     fun testGraphDuplicatesBothBranches() {
@@ -275,6 +272,4 @@ class ModelServiceTest : BasePlatformTestCase() {
     }
 
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)
-
-
 }

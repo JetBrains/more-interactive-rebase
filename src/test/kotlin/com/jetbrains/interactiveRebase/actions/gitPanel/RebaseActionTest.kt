@@ -4,11 +4,9 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.application.EDT
 import com.intellij.testFramework.TestActionEvent
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.jetbrains.interactiveRebase.actions.changePanel.ViewDiffAction
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
-import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.CommitService
@@ -61,8 +59,8 @@ class RebaseActionTest : BasePlatformTestCase() {
         modelService.branchInfo.initialCommits = mutableListOf(commitInfo1, commitInfo2, commitInfo6)
         modelService.branchInfo.currentCommits = mutableListOf(commitInfo1, commitInfo2, commitInfo6)
         addedBranch.name = "added"
-        addedBranch.currentCommits= mutableListOf(commitInfo5, commitInfo4, commitInfo3)
-        addedBranch.initialCommits= mutableListOf(commitInfo5, commitInfo4, commitInfo3)
+        addedBranch.currentCommits = mutableListOf(commitInfo5, commitInfo4, commitInfo3)
+        addedBranch.initialCommits = mutableListOf(commitInfo5, commitInfo4, commitInfo3)
         addedBranch.baseCommit = commitInfo3
         modelService.graphInfo = GraphInfo(modelService.branchInfo, addedBranch)
         modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
@@ -98,10 +96,9 @@ class RebaseActionTest : BasePlatformTestCase() {
         modelService.addToSelectedCommits(commitInfo3, addedBranch)
         actionService.checkNormalRebaseAction(testEvent)
         assertThat(testEvent.presentation.isEnabled).isFalse()
-        modelService.graphInfo.addedBranch=null
+        modelService.graphInfo.addedBranch = null
         assertThat(testEvent.presentation.isEnabled).isFalse()
     }
-
 
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)
 }

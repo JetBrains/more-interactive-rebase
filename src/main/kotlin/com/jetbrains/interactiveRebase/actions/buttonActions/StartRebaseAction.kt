@@ -15,12 +15,11 @@ class StartRebaseAction :
     ) {
     override fun actionPerformed(e: AnActionEvent) {
         val invoker = e.project?.service<RebaseInvoker>()
-        if(invoker?.commands?.filterIsInstance<CherryCommand>()?.size==0){
+        if (invoker?.commands?.filterIsInstance<CherryCommand>()?.size == 0) {
             invoker.executeCommands()
-        }else{
+        } else {
             invoker?.executeCherry()
         }
-
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {

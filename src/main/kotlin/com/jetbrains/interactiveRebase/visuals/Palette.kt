@@ -101,7 +101,6 @@ object Palette {
             branchNameColor = PALE_LIME_GREEN,
         )
 
-
     val FADED_LIME_GREEN_THEME =
         Theme(
             regularCircleColor = PALE_GREEN,
@@ -120,6 +119,5 @@ object Palette {
             selectedBorderColor = DARK_GRAY.darker() as JBColor,
             hoverCircleColor = JETBRAINS_HOVER,
             branchNameColor = GRAY,
-
         )
 }

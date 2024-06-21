@@ -54,7 +54,6 @@ class ModelService(
     var noMoreCherryPicking = false
     var counterForCherry = 0
 
-
     /**
      * Fetches current branch info
      * on creation and subscribes
@@ -324,7 +323,7 @@ class ModelService(
             c.changes.clear()
         }
         graphInfo.addedBranch?.initialCommits?.forEach {
-            c ->
+                c ->
             c.wasCherryPicked = false
             c.changes.clear()
         }
@@ -361,7 +360,10 @@ class ModelService(
      * When there is a problem with fetching the git information and displaying the graph
      * the dialog pops up and when clicked closes the plugin
      */
-    fun showWarningGitDialogClosesPlugin(description: String, dialogService: DialogService) {
+    fun showWarningGitDialogClosesPlugin(
+        description: String,
+        dialogService: DialogService,
+    ) {
         coroutineScope.launch(Dispatchers.EDT) {
             dialogService.warningOkCancelDialog(
                 "Git Issue",

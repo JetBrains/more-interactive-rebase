@@ -3,8 +3,20 @@ package com.jetbrains.interactiveRebase.visuals
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
-import com.jetbrains.interactiveRebase.dataClasses.commands.*
-import java.awt.*
+import com.jetbrains.interactiveRebase.dataClasses.commands.CherryCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
+import java.awt.BasicStroke
+import java.awt.Color
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import java.awt.LinearGradientPaint
+import java.awt.RenderingHints
 
 /**
  * A panel encapsulating a branch:
@@ -197,12 +209,12 @@ class BranchPanel(
         val startY = circle.y + circle.height / 2
         var endY = nextCircle.y + circle.height / 2
 
-
         val fractions = floatArrayOf(0.2f, 0.8f)
-        val colors = arrayOf<Color>(
-            circle.colorTheme.regularCircleColor,
-            nextCircle.colorTheme.regularCircleColor
-        )
+        val colors =
+            arrayOf<Color>(
+                circle.colorTheme.regularCircleColor,
+                nextCircle.colorTheme.regularCircleColor,
+            )
 
         if (startY == endY) {
             endY += 5

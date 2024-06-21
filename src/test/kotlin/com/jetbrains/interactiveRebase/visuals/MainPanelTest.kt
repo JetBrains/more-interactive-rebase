@@ -1,23 +1,18 @@
 package com.jetbrains.interactiveRebase.visuals
 
-import ai.grazie.detector.ngram.main
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.OnePixelSplitter
-import com.intellij.ui.components.JBPanel
-import com.intellij.ui.components.labels.BoldLabel
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
-
 import com.jetbrains.interactiveRebase.services.ActionService
-import com.jetbrains.interactiveRebase.services.DialogService
-
 import com.jetbrains.interactiveRebase.services.ModelService
-import com.jetbrains.interactiveRebase.visuals.multipleBranches.RoundedPanel
-import junit.framework.TestCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import org.mockito.Mockito.*
+import org.mockito.Mockito.doNothing
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
+import org.mockito.Mockito.`when`
 import java.awt.BorderLayout
 
 class MainPanelTest : BasePlatformTestCase() {
@@ -32,7 +27,6 @@ class MainPanelTest : BasePlatformTestCase() {
         modelService = ModelService(project, CoroutineScope(Dispatchers.Default))
         branchInfo = modelService.branchInfo
         mainPanel = MainPanel(project)
-
     }
 
     fun testUpdateMainPanelVisuals() {
@@ -69,8 +63,6 @@ class MainPanelTest : BasePlatformTestCase() {
         assertEquals(res, listOf(commit1, commit2))
     }
 
-
-
 //    fun testOnNameChange() {
 //        val mockDialogService = mock(DialogService::class.java)
 //        `when`(mockDialogService
@@ -98,7 +90,6 @@ class MainPanelTest : BasePlatformTestCase() {
 //
 //        TestCase.assertTrue(res2)
 //    }
-
 
     fun testUpdateMainComponentThread() {
         val mockService = mock(ModelService::class.java)

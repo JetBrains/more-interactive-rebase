@@ -1,6 +1,5 @@
 package com.jetbrains.interactiveRebase.actions.buttonActions
 
-
 import com.intellij.icons.ExpUiIcons
 import com.intellij.testFramework.TestActionEvent
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
@@ -13,7 +12,6 @@ class ContinueRebaseActionTest : BasePlatformTestCase() {
     override fun setUp() {
         super.setUp()
         action = ContinueRebaseAction()
-
     }
 
     fun testActionUpdate() {

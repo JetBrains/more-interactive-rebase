@@ -11,7 +11,15 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
-import com.jetbrains.interactiveRebase.dataClasses.commands.*
+import com.jetbrains.interactiveRebase.dataClasses.commands.CherryCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.RebaseDragAndDropListener
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.ActionService
@@ -66,8 +74,8 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.branchInfo.initialCommits = mutableListOf(commitInfo1, commitInfo2, commitInfo6)
         modelService.branchInfo.currentCommits = mutableListOf(commitInfo1, commitInfo2, commitInfo6)
         addedBranch.name = "added"
-        addedBranch.currentCommits= mutableListOf(commitInfo5, commitInfo4, commitInfo3)
-        addedBranch.initialCommits= mutableListOf(commitInfo5, commitInfo4, commitInfo3)
+        addedBranch.currentCommits = mutableListOf(commitInfo5, commitInfo4, commitInfo3)
+        addedBranch.initialCommits = mutableListOf(commitInfo5, commitInfo4, commitInfo3)
         addedBranch.baseCommit = commitInfo3
         modelService.graphInfo = GraphInfo(modelService.branchInfo, addedBranch)
         modelService.addToSelectedCommits(commitInfo1, modelService.branchInfo)
@@ -102,8 +110,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         actionService.takeDropAction()
         assertThat(commitInfo6.changes.size).isEqualTo(1)
         assertThat(commitInfo3.changes.size).isEqualTo(0)
-
-
     }
 
     fun testTakeRewordAction() {
@@ -118,7 +124,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         actionService.takeRewordAction()
         assertThat(commitInfo1.isTextFieldEnabled).isTrue()
         assertThat(commitInfo2.isTextFieldEnabled).isTrue()
-
     }
 
     fun testTakeRewordActionConsidersEmptyList() {
@@ -239,9 +244,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.rebaseInProcess = true
         actionService.checkDrop(event)
         assertThat(event.presentation.isEnabledAndVisible).isFalse()
-
-
-
     }
 
     fun testCheckFixupOrSquashDisables() {
@@ -307,7 +309,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         commitInfo2.addChange(DropCommand(commitInfo2))
         actionService.checkFixupOrSquash(e)
         assertThat(e.presentation.isEnabledAndVisible).isFalse()
-
     }
 
     fun testCheckPickDisables() {
@@ -392,7 +393,6 @@ class ActionServiceTest : BasePlatformTestCase() {
 
         assertThat(project.service<RebaseInvoker>().commands.size).isEqualTo(3)
 
-
         val c2 = FixupCommand(commitInfo6, mutableListOf(commitInfo2))
         val c3 = ReorderCommand(commitInfo6, 1, 2)
         commitInfo6.addChange(c2)
@@ -409,7 +409,7 @@ class ActionServiceTest : BasePlatformTestCase() {
 
         assertThat(project.service<RebaseInvoker>().commands.size).isEqualTo(3)
 
-        val c4 = SquashCommand(commitInfo6, mutableListOf(commitInfo2), "lol" )
+        val c4 = SquashCommand(commitInfo6, mutableListOf(commitInfo2), "lol")
         val c5 = ReorderCommand(commitInfo6, 1, 2)
         commitInfo6.addChange(c4)
         commitInfo6.addChange(c5)
@@ -425,8 +425,7 @@ class ActionServiceTest : BasePlatformTestCase() {
 
         assertThat(project.service<RebaseInvoker>().commands.size).isEqualTo(3)
 
-
-        val c6 = SquashCommand(commitInfo3, mutableListOf(commitInfo2), "lol" )
+        val c6 = SquashCommand(commitInfo3, mutableListOf(commitInfo2), "lol")
         val c7 = ReorderCommand(commitInfo6, 1, 2)
         commitInfo3.addChange(c6)
         commitInfo6.addChange(c7)
@@ -511,7 +510,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertFalse(commitInfo3.isSelected)
         assertFalse(commitInfo3.isSelected)
     }
-
 
     fun testTakeFixupActionNested() {
         modelService.invoker.commands.clear()
@@ -931,35 +929,32 @@ class ActionServiceTest : BasePlatformTestCase() {
         val commitInfo8 = CommitInfo(commitProvider.createCommit("ggg"), project, mutableListOf())
 
         modelService.branchInfo.initialCommits =
-                mutableListOf(
-                        commitInfo1,
-                        commitInfo2,
-                        commitInfo3,
-                        commitInfo4,
-                        commitInfo5,
-                        commitInfo6,
-                        commitInfo7,
-                        commitInfo8,
-                )
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
         modelService.branchInfo.currentCommits =
-                mutableListOf(
-                        commitInfo1,
-                        commitInfo2,
-                        commitInfo3,
-                        commitInfo4,
-                        commitInfo5,
-                        commitInfo6,
-                        commitInfo7,
-                        commitInfo8,
-                )
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+            )
         commitInfo7.isCollapsed = true
         val testEvent = createTestEvent()
         actionService.checkCollapse(testEvent)
         assertThat(testEvent.presentation.isEnabled).isFalse()
     }
-
-
-
 
     fun testCheckCollapseAlreadyCollapsedWithSecondBranch() {
         val commitProvider = TestGitCommitProvider(project)
@@ -973,26 +968,26 @@ class ActionServiceTest : BasePlatformTestCase() {
         val commitInfo14 = CommitInfo(commitProvider.createCommit("jjj"), project, mutableListOf())
 
         modelService.branchInfo.initialCommits =
-                mutableListOf(
-                        commitInfo1,
-                        commitInfo2,
-                        commitInfo6,
-                        commitInfo7,
-                        commitInfo8,
-                        commitInfo9,
-                        commitInfo13,
-                        commitInfo14
-                )
+            mutableListOf(
+                commitInfo1,
+                commitInfo2,
+                commitInfo6,
+                commitInfo7,
+                commitInfo8,
+                commitInfo9,
+                commitInfo13,
+                commitInfo14,
+            )
         modelService.branchInfo.currentCommits = modelService.branchInfo.initialCommits.toMutableList()
         addedBranch.currentCommits =
-                mutableListOf(
-                        commitInfo3,
-                        commitInfo4,
-                        commitInfo5,
-                        commitInfo10,
-                        commitInfo11,
-                        commitInfo12,
-                )
+            mutableListOf(
+                commitInfo3,
+                commitInfo4,
+                commitInfo5,
+                commitInfo10,
+                commitInfo11,
+                commitInfo12,
+            )
         addedBranch.initialCommits = addedBranch.currentCommits
         commitInfo7.isCollapsed = true
         commitInfo5.isCollapsed = true
@@ -1405,7 +1400,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.graphInfo.addedBranch = null
         actionService.takeCherryPickAction()
         assertThat(project.service<RebaseInvoker>().commands.size).isEqualTo(1)
-
     }
 
     fun testCheckCherryPickAction() {
@@ -1428,18 +1422,17 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.graphInfo.addedBranch = null
         actionService.checkCherryPick(testEvent)
         assertThat(testEvent.presentation.isEnabled).isFalse()
-
     }
 
-    fun takeNormalRebaseAction(){
+    fun takeNormalRebaseAction() {
         val graphPanel = mainPanel.graphPanel
         val rebaseDragAndDropListener =
-                RebaseDragAndDropListener(
-                        project,
-                        graphPanel.mainBranchPanel.branchNamePanel,
-                        graphPanel.addedBranchPanel!!.branchNamePanel,
-                        graphPanel,
-                )
+            RebaseDragAndDropListener(
+                project,
+                graphPanel.mainBranchPanel.branchNamePanel,
+                graphPanel.addedBranchPanel!!.branchNamePanel,
+                graphPanel,
+            )
         var base = modelService.graphInfo.addedBranch?.currentCommits!![0]
         if (modelService.graphInfo.addedBranch?.selectedCommits!!.isNotEmpty()) {
             base = modelService.graphInfo.addedBranch?.selectedCommits!![0]
@@ -1447,8 +1440,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         rebaseDragAndDropListener.rebase(base)
     }
 
-    fun testNormalRebaseAction(){
-
+    fun testNormalRebaseAction() {
     }
 
     fun testRebasingCommandCreation() {
@@ -1461,9 +1453,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.graphInfo.addedBranch = null
         actionService.rebasingCommandCreation()
         assertThat(project.service<RebaseInvoker>().commands.size).isEqualTo(1)
-
     }
-
 
     fun testCheckNormalRebaseAction() {
         val testEvent = createTestEvent()
@@ -1480,7 +1470,7 @@ class ActionServiceTest : BasePlatformTestCase() {
         actionService.checkNormalRebaseAction(testEvent)
         assertThat(testEvent.presentation.isEnabled).isFalse()
 
-        modelService.graphInfo.addedBranch=null
+        modelService.graphInfo.addedBranch = null
         actionService.checkNormalRebaseAction(testEvent)
         assertThat(testEvent.presentation.isEnabled).isFalse()
 
@@ -1488,7 +1478,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         modelService.addToSelectedCommits(commitInfo5, addedBranch)
         actionService.checkNormalRebaseAction(testEvent)
         assertThat(testEvent.presentation.isEnabled).isFalse()
-
     }
 
     fun testGetParentWithoutDrop() {
@@ -1509,14 +1498,14 @@ class ActionServiceTest : BasePlatformTestCase() {
         val command2 = RebaseCommand(commitInfo5)
         branchInfo.isRebased = true
 
-        //modelService.branchInfo.currentCommits = mutableListOf(commitInfo2, commitInfo1)
+        // modelService.branchInfo.currentCommits = mutableListOf(commitInfo2, commitInfo1)
         modelService.invoker.addCommand(command1)
         modelService.invoker.addCommand(command2)
         actionService.undoLastAction()
         assertThat(modelService.invoker.commands.size).isEqualTo(1)
         assertThat(modelService.invoker.undoneCommands.size).isEqualTo(1)
         assertThat(addedBranch.baseCommit).isEqualTo(commitInfo4)
-        assertFalse(modelService.graphInfo.mainBranch.isRebased )
+        assertFalse(modelService.graphInfo.mainBranch.isRebased)
     }
 
     fun testRedoRebase() {
@@ -1538,21 +1527,21 @@ class ActionServiceTest : BasePlatformTestCase() {
     fun testPrepareCherry() {
         modelService.invoker.undoneCommands.clear()
         modelService.invoker.commands.clear()
-        actionService.prepareCherry(commitInfo4,0)
+        actionService.prepareCherry(commitInfo4, 0)
         assertThat(modelService.invoker.commands.size).isEqualTo(1)
         assertThat(branchInfo.currentCommits.size).isEqualTo(4)
-        assertTrue(commitInfo4.wasCherryPicked )
+        assertTrue(commitInfo4.wasCherryPicked)
     }
 
     fun testUndoCherry() {
         modelService.invoker.undoneCommands.clear()
         modelService.invoker.commands.clear()
-        actionService.prepareCherry(commitInfo4,0)
+        actionService.prepareCherry(commitInfo4, 0)
         actionService.undoLastAction()
         assertThat(modelService.invoker.commands.size).isEqualTo(0)
         assertThat(modelService.invoker.undoneCommands.size).isEqualTo(1)
         assertThat(branchInfo.currentCommits.size).isEqualTo(3)
-        assertFalse(commitInfo4.wasCherryPicked )
+        assertFalse(commitInfo4.wasCherryPicked)
         actionService.redoLastAction()
         commitInfo4.wasCherryPicked = false
         actionService.undoLastAction()
@@ -1566,16 +1555,14 @@ class ActionServiceTest : BasePlatformTestCase() {
     fun testRedoCherry() {
         modelService.invoker.undoneCommands.clear()
         modelService.invoker.commands.clear()
-        actionService.prepareCherry(commitInfo4,0)
+        actionService.prepareCherry(commitInfo4, 0)
         actionService.undoLastAction()
         actionService.redoLastAction()
         assertThat(modelService.invoker.commands.size).isEqualTo(1)
         assertThat(modelService.invoker.undoneCommands.size).isEqualTo(0)
         assertThat(branchInfo.currentCommits.size).isEqualTo(4)
-        assertTrue(commitInfo4.wasCherryPicked )
+        assertTrue(commitInfo4.wasCherryPicked)
     }
-
-
 
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)
 }

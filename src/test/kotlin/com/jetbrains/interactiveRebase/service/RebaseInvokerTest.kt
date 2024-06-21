@@ -6,9 +6,15 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
-import com.jetbrains.interactiveRebase.dataClasses.commands.*
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
-import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
@@ -37,7 +43,6 @@ class RebaseInvokerTest : BasePlatformTestCase() {
     private lateinit var modelService: ModelService
     private lateinit var branchInfo: BranchInfo
     private lateinit var rebaseInvoker: RebaseInvoker
-
 
     override fun setUp() {
         super.setUp()
@@ -78,14 +83,12 @@ class RebaseInvokerTest : BasePlatformTestCase() {
     }
 
     fun testAddCommand() {
-
         val dropCommand = Mockito.mock(DropCommand::class.java)
         rebaseInvoker.addCommand(dropCommand)
         assertTrue(rebaseInvoker.commands.size == 1)
     }
 
     fun testRemoveCommand() {
-
         val pickCommand = Mockito.mock(PickCommand::class.java)
         rebaseInvoker.commands = mutableListOf(pickCommand)
         rebaseInvoker.removeCommand(pickCommand)
@@ -124,7 +127,6 @@ class RebaseInvokerTest : BasePlatformTestCase() {
     }
 
     fun testCreateModel() {
-
         rebaseInvoker.branchInfo.currentCommits = mutableListOf(commit2, commit4, commit5)
         rebaseInvoker.createModel()
         assertThat(rebaseInvoker.model.elements[0].index).isEqualTo(0)
@@ -138,11 +140,15 @@ class RebaseInvokerTest : BasePlatformTestCase() {
         assertThat(rebaseInvoker.model.elements[2].entry).isEqualTo(GitRebaseEntryGeneratedUsingLog(commit2.commit))
     }
 
-    fun testExecuteCommands(){
+    fun testExecuteCommands() {
         rebaseInvoker.branchInfo = branchInfo
         val message = "commit2"
-        rebaseInvoker.commands = mutableListOf(ReorderCommand(commit1,0,4),
-                DropCommand(commit2), RewordCommand(commit3, message))
+        rebaseInvoker.commands =
+            mutableListOf(
+                ReorderCommand(commit1, 0, 4),
+                DropCommand(commit2),
+                RewordCommand(commit3, message),
+            )
         rebaseInvoker.executeCommands()
         assertThat(rebaseInvoker.model.elements[0].type).isEqualTo(IRGitModel.Type.NonUnite.KeepCommit.Pick)
         assertThat(rebaseInvoker.model.elements[0].entry).isEqualTo(GitRebaseEntryGeneratedUsingLog(commit5.commit))
@@ -151,7 +157,7 @@ class RebaseInvokerTest : BasePlatformTestCase() {
         assertThat(rebaseInvoker.model.elements[1].entry).isEqualTo(GitRebaseEntryGeneratedUsingLog(commit4.commit))
 
         assertThat(rebaseInvoker.model.elements[2].type)
-                .isInstanceOf(IRGitModel.Type.NonUnite.KeepCommit.Reword::class.java)
+            .isInstanceOf(IRGitModel.Type.NonUnite.KeepCommit.Reword::class.java)
         assertThat(rebaseInvoker.model.elements[2].entry).isEqualTo(GitRebaseEntryGeneratedUsingLog(commit3.commit))
 
         assertThat(rebaseInvoker.model.elements[3].type).isEqualTo(IRGitModel.Type.NonUnite.Drop)
@@ -159,14 +165,17 @@ class RebaseInvokerTest : BasePlatformTestCase() {
 
         assertThat(rebaseInvoker.model.elements[4].type).isEqualTo(IRGitModel.Type.NonUnite.KeepCommit.Pick)
         assertThat(rebaseInvoker.model.elements[4].entry).isEqualTo(GitRebaseEntryGeneratedUsingLog(commit1.commit))
-
     }
 
-    fun testExecuteCommandsWithRebase(){
+    fun testExecuteCommandsWithRebase() {
         rebaseInvoker.branchInfo = branchInfo
         val message = "commit2"
-        rebaseInvoker.commands = mutableListOf(RebaseCommand(commit6),
-                DropCommand(commit2), RewordCommand(commit3, message))
+        rebaseInvoker.commands =
+            mutableListOf(
+                RebaseCommand(commit6),
+                DropCommand(commit2),
+                RewordCommand(commit3, message),
+            )
         rebaseInvoker.executeCommands()
         assertThat(rebaseInvoker.model.elements[0].type).isEqualTo(IRGitModel.Type.NonUnite.KeepCommit.Pick)
         assertThat(rebaseInvoker.model.elements[0].entry).isEqualTo(GitRebaseEntryGeneratedUsingLog(commit5.commit))
@@ -175,7 +184,7 @@ class RebaseInvokerTest : BasePlatformTestCase() {
         assertThat(rebaseInvoker.model.elements[1].entry).isEqualTo(GitRebaseEntryGeneratedUsingLog(commit4.commit))
 
         assertThat(rebaseInvoker.model.elements[2].type)
-                .isInstanceOf(IRGitModel.Type.NonUnite.KeepCommit.Reword::class.java)
+            .isInstanceOf(IRGitModel.Type.NonUnite.KeepCommit.Reword::class.java)
         assertThat(rebaseInvoker.model.elements[2].entry).isEqualTo(GitRebaseEntryGeneratedUsingLog(commit3.commit))
 
         assertThat(rebaseInvoker.model.elements[3].type).isEqualTo(IRGitModel.Type.NonUnite.Drop)
@@ -183,13 +192,9 @@ class RebaseInvokerTest : BasePlatformTestCase() {
 
         assertThat(rebaseInvoker.model.elements[4].type).isEqualTo(IRGitModel.Type.NonUnite.KeepCommit.Pick)
         assertThat(rebaseInvoker.model.elements[4].entry).isEqualTo(GitRebaseEntryGeneratedUsingLog(commit1.commit))
-
     }
 
-
-
-
-    fun testExecuteCherry(){
+    fun testExecuteCherry() {
         assertTrue(rebaseInvoker.undoneCommands.isEmpty())
         assertTrue(rebaseInvoker.commitsToDisplayDuringRebase.isEmpty())
         rebaseInvoker.branchInfo = branchInfo
@@ -197,22 +202,21 @@ class RebaseInvokerTest : BasePlatformTestCase() {
         verify(rebaseInvoker.gitUtils).cherryPick(anyCustom())
     }
 
-    fun testExpandCollapsedCommits(){
+    fun testExpandCollapsedCommits() {
         rebaseInvoker.branchInfo = branchInfo
-        rebaseInvoker.branchInfo.currentCommits = mutableListOf(commit3, commit4,commit5,commit6)
-        val command = CollapseCommand(commit3,  mutableListOf(commit1,commit2))
+        rebaseInvoker.branchInfo.currentCommits = mutableListOf(commit3, commit4, commit5, commit6)
+        val command = CollapseCommand(commit3, mutableListOf(commit1, commit2))
         commit1.addChange(command)
         commit2.addChange(command)
         commit3.addChange(command)
         rebaseInvoker.expandCollapsedCommits()
         assertThat(rebaseInvoker.branchInfo.currentCommits.size).isEqualTo(6)
-
     }
 
-    fun testExpandCollapsedCommitsWithDrop(){
+    fun testExpandCollapsedCommitsWithDrop() {
         rebaseInvoker.branchInfo = branchInfo
-        rebaseInvoker.branchInfo.currentCommits = mutableListOf(commit3, commit4,commit5,commit6)
-        val command = CollapseCommand(commit3,  mutableListOf(commit1,commit2))
+        rebaseInvoker.branchInfo.currentCommits = mutableListOf(commit3, commit4, commit5, commit6)
+        val command = CollapseCommand(commit3, mutableListOf(commit1, commit2))
         val dropCommand = DropCommand(commit3)
         commit1.addChange(command)
         commit2.addChange(command)
@@ -220,10 +224,9 @@ class RebaseInvokerTest : BasePlatformTestCase() {
         commit3.addChange(dropCommand)
         rebaseInvoker.expandCollapsedCommits()
         assertThat(rebaseInvoker.branchInfo.currentCommits.size).isEqualTo(6)
-
     }
 
-    fun testRemoveChangesAfterPick(){
+    fun testRemoveChangesAfterPick() {
         rebaseInvoker.branchInfo = branchInfo
         val message = "commit2"
 
@@ -232,8 +235,13 @@ class RebaseInvokerTest : BasePlatformTestCase() {
         val pickCommand = PickCommand(commit2)
         val rewordCommand = RewordCommand(commit3, message)
 
-        rebaseInvoker.commands = mutableListOf(rebaseCommand,
-               dropCommand ,pickCommand,rewordCommand )
+        rebaseInvoker.commands =
+            mutableListOf(
+                rebaseCommand,
+                dropCommand,
+                pickCommand,
+                rewordCommand,
+            )
 
         commit6.addChange(rebaseCommand)
         commit2.addChange(dropCommand)
@@ -241,10 +249,7 @@ class RebaseInvokerTest : BasePlatformTestCase() {
         commit3.addChange(rewordCommand)
         rebaseInvoker.removeChangesBeforePick()
         assertThat(rebaseInvoker.commands.size).isEqualTo(3)
-
     }
-
-
 
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)
 }
