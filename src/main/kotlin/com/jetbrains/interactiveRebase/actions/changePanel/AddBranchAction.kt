@@ -20,8 +20,7 @@ class AddBranchAction :
     ),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project ?: return
-        val mainPanel = project.service<ActionService>().mainPanel
+        val mainPanel = e.project!!.service<ActionService>().mainPanel
         val sidePanelPane = mainPanel.sidePanelPane
 
         sidePanelPane.isVisible = !sidePanelPane.isVisible
@@ -36,7 +35,7 @@ class AddBranchAction :
     }
 
     override fun update(e: AnActionEvent) {
-        val project = e.project ?: return
+        val project = e.project!!
         e.presentation.isEnabled = project.service<ActionService>().checkRebaseIsNotInProgress()
         e.presentation.isVisible = true
     }

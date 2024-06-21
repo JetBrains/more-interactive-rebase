@@ -21,8 +21,8 @@ class RebaseAction :
     ),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project
-        val graphPanel = project?.service<ActionService>()?.mainPanel?.graphPanel!!
+        val project = e.project!!
+        val graphPanel = project.service<ActionService>().mainPanel.graphPanel
         val rebaseDragAndDropListener =
             RebaseDragAndDropListener(
                 project,
@@ -42,7 +42,7 @@ class RebaseAction :
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkNormalRebaseAction(e)
+        e.project!!.service<ActionService>().checkNormalRebaseAction(e)
     }
 
     override fun createCustomComponent(

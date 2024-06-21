@@ -8,6 +8,7 @@ import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.TestActionEvent.createTestEvent
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
@@ -1075,6 +1076,13 @@ class ActionServiceTest : BasePlatformTestCase() {
             modelService.branchInfo.currentCommits,
         ).isEqualTo(mutableListOf(commitInfo2, commitInfo3, commitInfo4, commitInfo5, commitInfo6, commitInfo7, commitInfo8))
         assertThat(commitInfo2.changes.size).isEqualTo(1)
+    }
+
+    fun test() {
+        val action = RewordAction()
+        val testev = createTestEvent(action)
+        val bbut = action.createCustomComponent(testev.presentation, "string")
+        assertThat(bbut).isNotNull()
     }
 
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)

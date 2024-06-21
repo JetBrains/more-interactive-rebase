@@ -16,11 +16,11 @@ class RedoAction :
     DumbAwareAction("Redo", "Redo the last action", AllIcons.Actions.Redo),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.redoLastAction()
+        e.project!!.service<ActionService>().redoLastAction()
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkRedo(e)
+        e.project!!.service<ActionService>().checkRedo(e)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {

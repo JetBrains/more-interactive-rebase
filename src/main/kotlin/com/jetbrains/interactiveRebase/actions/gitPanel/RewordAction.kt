@@ -20,7 +20,7 @@ class RewordAction :
     ),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.takeRewordAction()
+        e.project!!.service<ActionService>().takeRewordAction()
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
@@ -28,7 +28,7 @@ class RewordAction :
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkReword(e)
+        e.project!!.service<ActionService>().checkReword(e)
     }
 
     override fun createCustomComponent(

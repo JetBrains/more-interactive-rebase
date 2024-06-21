@@ -13,9 +13,9 @@ class StartRebaseAction :
         "StartRebaseAction",
     ) {
     override fun actionPerformed(e: AnActionEvent) {
-        val invoker = e.project?.service<RebaseInvoker>()
-        invoker?.createModel()
-        invoker?.executeCommands()
+        val invoker = e.project!!.service<RebaseInvoker>()
+        invoker.createModel()
+        invoker.executeCommands()
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
@@ -23,8 +23,7 @@ class StartRebaseAction :
     }
 
     override fun update(e: AnActionEvent) {
-        val project = e.project ?: return
-        val actionService = project.service<ActionService>()
+        val actionService = e.project!!.service<ActionService>()
         actionService.checkRebaseAndReset(e)
     }
 }

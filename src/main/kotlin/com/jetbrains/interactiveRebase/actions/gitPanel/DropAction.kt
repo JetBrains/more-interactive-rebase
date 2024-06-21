@@ -15,7 +15,7 @@ class DropAction :
     DumbAwareAction("Drop", "Removes a commit from history", AllIcons.Actions.DeleteTagHover),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.takeDropAction()
+        e.project!!.service<ActionService>().takeDropAction()
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
@@ -23,7 +23,7 @@ class DropAction :
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkDrop(e)
+        e.project!!.service<ActionService>().checkDrop(e)
     }
 
     override fun createCustomComponent(
