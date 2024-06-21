@@ -12,7 +12,7 @@ import icons.DvcsImplIcons
 import javax.swing.JComponent
 
 class CherryAction :
-    DumbAwareAction("Cherry Pick", "Removes a commit from history", DvcsImplIcons.CherryPick),
+    DumbAwareAction("Cherry Pick", "Copies the selected commit and adds it to the commit history", DvcsImplIcons.CherryPick),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
         e.project?.service<ActionService>()?.takeCherryPickAction()
