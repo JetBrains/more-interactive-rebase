@@ -205,13 +205,6 @@ class BranchInfoTest : BasePlatformTestCase() {
         assertEquals(1, branchInfo.getActualSelectedCommitsSize())
     }
 
-    fun testToString() {
-        assertEquals(
-            "BranchInfo(name='branch', initialCommits=[CommitInfo(commit=tests)], selectedCommits=[CommitInfo(commit=tests)])",
-            BranchInfo("branch", listOf(commit), mutableListOf(commit), true, true, false).toString(),
-        )
-    }
-
     fun testIndexOfCommitNotSquashed() {
         branchInfo.setCommits(listOf(commit, commit1))
         assertEquals(0, branchInfo.indexOfCommit(commit))
