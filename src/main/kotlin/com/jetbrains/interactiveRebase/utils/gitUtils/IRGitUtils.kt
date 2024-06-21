@@ -50,11 +50,9 @@ class IRGitUtils(private val project: Project) {
         repo: GitRepository,
         consumer: Consumer<GitCommit>,
     ) {
-        try {
-            GitHistoryUtils.loadDetails(project, repo.root, consumer, currentBranch, "--not", referenceBranch)
-        } catch (_: VcsException) {
-            getCommitDifferenceBetweenBranches(currentBranch, referenceBranch, repo, consumer)
-        }
+
+        GitHistoryUtils.loadDetails(project, repo.root, consumer, currentBranch, "--not", referenceBranch)
+
     }
 
     /**
@@ -127,31 +125,5 @@ class IRGitUtils(private val project: Project) {
         }
     }
 
-    internal fun getCurrentCherryPickCommit(
-            root: VirtualFile,
-    ): String {
-        val worktreePath = root.path + "/.git"
-        val nextFile = File(worktreePath, "CHERRY_PICK_HEAD")
-        val next: String
-        try {
-            next = FileUtil.loadFile(nextFile, StandardCharsets.UTF_8).trim { it <= ' ' }
-            return next
-        } catch (e: Exception) {
-            return ""
-        }
-    }
 
-    internal fun isCherryPickInProcess(root: VirtualFile) : Boolean{
-        val commit = getCurrentCherryPickCommit(root)
-        if(!commit.equals("")){
-            project.service<ModelService>().cherryPickInProcess = true
-            project.service<ModelService>().previousCherryCommit = commit
-            return true
-        }else {
-            project.service<ModelService>().previousCherryCommit = ""
-
-            return false
-        }
-
-    }
 }

@@ -17,6 +17,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
+import com.jetbrains.interactiveRebase.listeners.RebaseDragAndDropListener
 import com.jetbrains.interactiveRebase.visuals.HeaderPanel
 import com.jetbrains.interactiveRebase.visuals.MainPanel
 
@@ -68,10 +69,28 @@ class ActionService(val project: Project) {
         modelService.branchInfo.clearSelectedCommits()
     }
 
+
+    fun takeNormalRebaseAction(){
+        val graphPanel = mainPanel.graphPanel
+        var base = modelService.graphInfo.addedBranch?.currentCommits!![0]
+        val rebaseDragAndDropListener =
+                RebaseDragAndDropListener(
+                        project,
+                        graphPanel.mainBranchPanel.branchNamePanel,
+                        graphPanel.addedBranchPanel!!.branchNamePanel,
+                        graphPanel,
+                )
+        if (modelService.graphInfo.addedBranch?.selectedCommits!!.isNotEmpty()) {
+            base = modelService.graphInfo.addedBranch?.selectedCommits!![0]
+        }
+        rebaseDragAndDropListener.rebase(base)
+    }
+
+
     /**
      * Creates a rebase command for a normal rebase
      */
-    fun takeNormalRebaseAction() {
+    fun rebasingCommandCreation() {
         invoker.undoneCommands.clear()
         val command = modelService.graphInfo.addedBranch?.baseCommit?.let { RebaseCommand(it) }
         if (command != null) {

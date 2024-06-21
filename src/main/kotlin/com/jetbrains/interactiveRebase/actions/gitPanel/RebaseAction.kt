@@ -21,20 +21,7 @@ class RebaseAction :
     ),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project
-        val graphPanel = project?.service<ActionService>()?.mainPanel?.graphPanel!!
-        val rebaseDragAndDropListener =
-            RebaseDragAndDropListener(
-                project,
-                graphPanel.mainBranchPanel.branchNamePanel,
-                graphPanel.addedBranchPanel!!.branchNamePanel,
-                graphPanel,
-            )
-        var base = project.service<ModelService>().graphInfo.addedBranch?.currentCommits!![0]
-        if (project.service<ModelService>().graphInfo.addedBranch?.selectedCommits!!.isNotEmpty()) {
-            base = project.service<ModelService>().graphInfo.addedBranch?.selectedCommits!![0]
-        }
-        rebaseDragAndDropListener.rebase(base)
+        e.project!!.service<ActionService>().takeNormalRebaseAction()
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {

@@ -55,7 +55,6 @@ class IRGitRebaseUtils(private val project: Project) {
                         val consumer = Consumer<GitCommit>{
                             commit -> head = commit
                         }
-                        println(head)
                         GitHistoryUtils.loadDetails(project, repo?.root!!, consumer, "-n", "1")
                         var previousHead = modelService.branchInfo.initialCommits[0].commit
                         if(index!=0){
@@ -80,21 +79,6 @@ class IRGitRebaseUtils(private val project: Project) {
         }.queue()
     }
 
-    fun detectAddedCherry(commitInfo: CommitInfo,
-                          newCommits: MutableList<CommitInfo>, initialCommits: List<CommitInfo>) : Boolean{
-        var detectCherry = false
-        newCommits.forEach { newCommit ->
-            val commit = initialCommits.find{
-                initialCommit -> initialCommit.commit.id == newCommit.commit.id
-            }
-            if(commit==null){
-                detectCherry = true
-                commitInfo.commit = newCommit.commit
-            }
-        }
-        return detectCherry
-
-    }
     /**
      * Prepares for rebase. Runs the preparation in the background. Maybe it is not necessary.
      * The commit that is passed is the initial commit of the branch

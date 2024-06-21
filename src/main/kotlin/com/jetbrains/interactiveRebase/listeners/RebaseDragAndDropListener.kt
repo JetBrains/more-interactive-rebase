@@ -390,7 +390,7 @@ class RebaseDragAndDropListener(
                 updateOffsetOfMainBranch(finalOffsetMain)
 
                 if (mainBranchPanel.branch.isRebased) {
-                    project.service<ActionService>().takeNormalRebaseAction()
+                    project.service<ActionService>().rebasingCommandCreation()
                     project.service<ActionService>().mainPanel.revalidate()
                     project.service<ActionService>().mainPanel.repaint()
                 }
