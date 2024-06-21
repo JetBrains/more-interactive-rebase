@@ -41,7 +41,6 @@ data class BranchInfo(
     internal fun setCommits(commits: List<CommitInfo>) {
         this.initialCommits = commits
         this.currentCommits = commits.toMutableList()
-        println(this.currentCommits)
         collapseCommits()
         listeners.forEach { it.onCommitChange(commits) }
     }

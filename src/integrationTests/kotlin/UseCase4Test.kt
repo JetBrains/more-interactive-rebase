@@ -286,7 +286,6 @@ class UseCase4Test : IRGitPlatformTest() {
             nav.right()
             nav.up()
             val commitOnSecondBranch = modelService.graphInfo.addedBranch?.selectedCommits?.get(0)
-            println(commitOnSecondBranch?.commit?.subject)
             modelService.graphInfo.addedBranch?.baseCommit = commitOnSecondBranch
             project.service<ActionService>().takeNormalRebaseAction()
 
