@@ -35,7 +35,7 @@ class CherryAction :
             presentation,
             place,
             getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.CherryAction"),
-            "Removes a commit from history",
+            "Copies the selected commit and adds it to the commit history",
         )
     }
 }
