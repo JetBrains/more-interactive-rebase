@@ -12,8 +12,7 @@ It will probably be a faster response and will help others with similar problems
 
 Please seek support in the following ways:
 
-1. :book: **Read the documentation ** - [README](README.md) -  for the project first. 
-
+1. :book: **Read the documentation ** - [README](README.md) -  for the project first.
 2. :bulb: **Search for answers and ask questions on [Stack Overflow](https://stackoverflow.com).** 
 3. :memo: If the issue still persists, you may **contact** one of our team members.
 
@@ -24,5 +23,3 @@ of our team members through email:
 * Aleksandra Savova - [A.Savova@student.tudelft.nl](mailto:A.Savova@student.tudelft.nl)
 * Ada Turgut - [A.Turgut@student.tudelft.nl](mailto:A.Turgut@student.tudelft.nl)
 * Galya Vergieva -  [G.Vergieva@student.tudelft.nl](mailto:G.Vergieva@student.tudelft.nl)
-
-> **Please do not contact us on our social media.**

@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.CherryCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
@@ -20,7 +21,7 @@ import com.jetbrains.interactiveRebase.visuals.HeaderPanel
 import com.jetbrains.interactiveRebase.visuals.MainPanel
 
 @Service(Service.Level.PROJECT)
-class ActionService(project: Project) {
+class ActionService(val project: Project) {
     internal var modelService = project.service<ModelService>()
     private var invoker = modelService.invoker
     var mainPanel = MainPanel(project)
@@ -77,6 +78,54 @@ class ActionService(project: Project) {
             invoker.addCommand(command)
         }
         modelService.branchInfo.clearSelectedCommits()
+        modelService.graphInfo.addedBranch?.clearSelectedCommits()
+    }
+
+    /**
+     * Creates a rebase command for a cherry-picking rebase
+     */
+    fun takeCherryPickAction() {
+        invoker.undoneCommands.clear()
+        val commits = modelService.graphInfo.addedBranch?.selectedCommits
+        commits?.forEach {
+                commitInfo ->
+            prepareCherry(commitInfo)
+        }
+        modelService.branchInfo.clearSelectedCommits()
+        modelService.graphInfo.addedBranch?.clearSelectedCommits()
+    }
+
+    fun prepareCherry(
+        commitInfo: CommitInfo,
+        index: Int = 0,
+    ) {
+        commitInfo.wasCherryPicked = true
+        val newCommit =
+            CommitInfo(
+                commitInfo.commit, project,
+                mutableListOf(), false, false,
+                false, false, false,
+                false, false,
+            )
+        modelService.graphInfo.mainBranch.currentCommits.add(index, newCommit)
+        val command = CherryCommand(commitInfo, newCommit, index)
+        newCommit.addChange(command)
+        invoker.addCommand(command)
+    }
+
+    /**
+     * Enables the Cherry Pick button.
+     * Commits form the checked out branch cannot be cherry-picked
+     */
+    fun checkCherryPick(e: AnActionEvent) {
+        val addedBranch = modelService.graphInfo.addedBranch
+        val index = addedBranch?.currentCommits?.indexOf(addedBranch.baseCommit)
+        e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isEmpty() &&
+            modelService.areDisabledCommitsSelected() &&
+            addedBranch?.selectedCommits!!.all {
+                !it.wasCherryPicked &&
+                    addedBranch.currentCommits.indexOf(it) < index!!
+            }
     }
 
     /**
@@ -316,10 +365,16 @@ class ActionService(project: Project) {
         invoker.branchInfo.initialCommits.forEach { commitInfo ->
             resetCommitInfo(commitInfo)
         }
+        modelService.graphInfo.addedBranch?.initialCommits?.forEach { commitInfo ->
+            commitInfo.changes.clear()
+            commitInfo.isSelected = false
+            commitInfo.wasCherryPicked = false
+        }
         modelService.graphInfo.mainBranch.isRebased = false
         modelService.graphInfo.addedBranch?.baseCommit =
             modelService.graphInfo.addedBranch?.currentCommits?.last()
         invoker.branchInfo.clearSelectedCommits()
+        modelService.graphInfo.addedBranch?.clearSelectedCommits()
         takeCollapseAction()
     }
 
@@ -475,7 +530,7 @@ class ActionService(project: Project) {
      *
      * The list of undone commands gets cleared when a new action is performed.
      */
-    fun undoLastAction() {
+    internal fun undoLastAction() {
         if (invoker.commands.isEmpty()) return
         val command = invoker.commands.removeLast()
         val commitToBeUndone = command.commitOfCommand()
@@ -491,6 +546,9 @@ class ActionService(project: Project) {
         }
         if (command is PickCommand) {
             removePickFromSquashOrFixup(commitToBeUndone)
+        }
+        if (command is CherryCommand) {
+            undoCherryPick(commitToBeUndone, command)
         }
         if (command is RebaseCommand) {
             undoRebase()
@@ -533,6 +591,9 @@ class ActionService(project: Project) {
         if (command is PickCommand) {
             redoPick(commitToBeRedone)
         }
+        if (command is CherryCommand) {
+            redoCherryPick(commitToBeRedone, command)
+        }
         if (command is RebaseCommand) {
             redoRebase(commitToBeRedone)
         } else {
@@ -573,6 +634,38 @@ class ActionService(project: Project) {
                 it.addChange(PickCommand(it))
             }
         }
+    }
+
+    /**
+     * If the last action that was performed by the user was a cherry-pick,
+     * this removes it from the checked out branch.
+     */
+    internal fun undoCherryPick(
+        commit: CommitInfo,
+        command: CherryCommand,
+    ) {
+        modelService.graphInfo.mainBranch.currentCommits.remove(commit)
+        val original =
+            modelService.graphInfo.addedBranch?.currentCommits?.filter { it.wasCherryPicked }?.find {
+                it.commit == commit.commit
+            }
+        original?.wasCherryPicked = false
+        // mainPanel.graphPanel.addedBranchPanel?.updateCommits()
+    }
+
+    /**
+     * If the last action that was undone by the user was a cherry-pick,
+     * this adds it back to the checked out branch.
+     */
+    internal fun redoCherryPick(
+        commit: CommitInfo,
+        command: CherryCommand,
+    ) {
+        val original = command.baseCommit
+        val index = command.index
+        modelService.graphInfo.mainBranch.currentCommits.add(index, commit)
+        original.wasCherryPicked = true
+        mainPanel.graphPanel.addedBranchPanel?.branchPanel!!.updateCommits()
     }
 
     /**

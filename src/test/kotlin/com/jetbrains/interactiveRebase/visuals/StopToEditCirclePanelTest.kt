@@ -31,9 +31,8 @@ class StopToEditCirclePanelTest : BasePlatformTestCase() {
     override fun setUp() {
         super.setUp()
         val commitProvider = TestGitCommitProvider(project)
-        commit = CommitInfo(commitProvider.createCommit("LOL"), project, mutableListOf())
         g = mock(Graphics2D::class.java)
-
+        commit = CommitInfo(commitProvider.createCommit("LOL"), project, mutableListOf())
         stopToEditCirclePanel =
             spy(
                 StopToEditCirclePanel(
@@ -51,6 +50,16 @@ class StopToEditCirclePanelTest : BasePlatformTestCase() {
     }
 
     fun testPaintCircleSelected() {
+        stopToEditCirclePanel =
+            spy(
+                StopToEditCirclePanel(
+                    50.0,
+                    2.0f,
+                    Palette.BLUE_THEME,
+                    commit,
+                    previous = mock(CirclePanel::class.java),
+                ),
+            )
         commit.isSelected = true
         stopToEditCirclePanel.paintCircle(g)
         verify(g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
@@ -66,6 +75,16 @@ class StopToEditCirclePanelTest : BasePlatformTestCase() {
     }
 
     fun testPaintCircleHovered() {
+        stopToEditCirclePanel =
+            spy(
+                StopToEditCirclePanel(
+                    50.0,
+                    2.0f,
+                    Palette.BLUE_THEME,
+                    commit,
+                    mock(CirclePanel::class.java),
+                ),
+            )
         commit.isHovered = true
         stopToEditCirclePanel.paintCircle(g)
 
@@ -80,6 +99,38 @@ class StopToEditCirclePanelTest : BasePlatformTestCase() {
         colorEquals(Palette.JETBRAINS_GRAY, colorCaptor.allValues[0])
         colorEquals(Palette.DARK_BLUE, colorCaptor.allValues[1])
         colorEquals(JBColor.BLACK, colorCaptor.allValues[2])
+    }
+
+    fun testPaintCirclePaused() {
+        commit.isPaused = true
+        stopToEditCirclePanel.paintCircle(g)
+
+        verify(g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        verify(g, times(2)).fill(any(Ellipse2D.Double::class.java))
+        verify(g, times(1)).stroke = any(BasicStroke::class.java)
+        verify(g, times(1)).draw(any(Ellipse2D.Double::class.java))
+        verify(g, times(1)).stroke = any(BasicStroke::class.java)
+        verify(g, times(2)).color = colorCaptor.capture()
+
+        assertEquals(2, colorCaptor.allValues.size)
+        colorEquals(Palette.BLUE, colorCaptor.allValues[0])
+        colorEquals(Palette.BLUE_THEME.borderColor, colorCaptor.allValues[1])
+    }
+
+    fun testPaintCircleRebased() {
+        commit.isRebased = true
+        stopToEditCirclePanel.paintCircle(g)
+
+        verify(g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        verify(g, times(2)).fill(any(Ellipse2D.Double::class.java))
+        verify(g, times(1)).stroke = any(BasicStroke::class.java)
+        verify(g, times(1)).draw(any(Ellipse2D.Double::class.java))
+        verify(g, times(1)).stroke = any(BasicStroke::class.java)
+        verify(g, times(2)).color = colorCaptor.capture()
+
+        assertEquals(2, colorCaptor.allValues.size)
+        colorEquals(Palette.BLUE, colorCaptor.allValues[0])
+        colorEquals(Palette.BLUE_THEME.borderColor, colorCaptor.allValues[1])
     }
 
     private fun colorEquals(

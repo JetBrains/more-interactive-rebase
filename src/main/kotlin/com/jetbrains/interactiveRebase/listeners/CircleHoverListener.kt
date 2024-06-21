@@ -20,8 +20,8 @@ import javax.swing.SwingUtilities
  * mouse actions that all reflect different parts of a "hover" action
  */
 
-class CircleHoverListener(private val circlePanel: CirclePanel) : MouseAdapter(), Disposable {
-    val commit: CommitInfo = circlePanel.commit
+class CircleHoverListener(val circlePanel: CirclePanel) : MouseAdapter(), Disposable {
+    internal val commit: CommitInfo = circlePanel.commit
     val branchInfo = (circlePanel.parent as BranchPanel).branch
 
     /**

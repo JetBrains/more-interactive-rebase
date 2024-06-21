@@ -1,22 +1,21 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import icons.DvcsImplIcons
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Cursor
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
-import java.awt.Point
 import java.awt.RenderingHints
-import java.awt.Toolkit
 import java.awt.geom.Ellipse2D
-import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
+import javax.swing.Icon
 
 /**
  * Visual representation of commit node in the git graph
@@ -24,11 +23,11 @@ import javax.imageio.ImageIO
 open class CirclePanel(
     open val diameter: Double,
     private val border: Float,
-    var colorTheme: Palette.Theme,
+    open var colorTheme: Palette.Theme,
     open var commit: CommitInfo,
     open var next: CirclePanel? = null,
     open var previous: CirclePanel? = null,
-) : JBPanel<JBPanel<*>>(), Disposable {
+) : JBPanel<JBPanel<*>>(), Disposable, Cloneable {
     var centerX = 0.0
     var centerY = 0.0
     lateinit var circle: Ellipse2D.Double
@@ -69,23 +68,7 @@ open class CirclePanel(
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
         createCircle(diameter)
-        var circleColor: Color =
-            if (commit.isDragged) {
-                colorTheme.draggedCircleColor
-//            } else if (commit.isReordered) {
-//                colorTheme.reorderedCircleColor
-            } else {
-                colorTheme.regularCircleColor
-            }
-        circleColor = if (commit.isSelected) circleColor.darker() else circleColor
-        val borderColor =
-            if (commit.isSelected) {
-                colorTheme.selectedBorderColor
-            } else if (commit.isDragged || commit.isReordered) {
-                colorTheme.reorderedBorderColor
-            } else {
-                colorTheme.borderColor
-            }
+        val (circleColor, borderColor) = colorCircle()
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
 //        if (commit.isDragged) {
 //            cursor = grabHandCursor()
@@ -99,38 +82,64 @@ open class CirclePanel(
         } else {
             cursor = Cursor.getDefaultCursor()
         }
+
+        if (commit.wasCherryPicked) icon(g2d, DvcsImplIcons.CherryPick)
+        if (commit.isPaused) icon(g2d, AllIcons.General.InspectionsWarningEmpty)
     }
 
-    fun openHandCursor(): Cursor {
-        val toolkit = Toolkit.getDefaultToolkit()
-        val file = this::class.java.getResource("/open-hand-cursor.png")
-        val image = ImageIO.read(file)
-        val resizedImage = resizeImage(image, 1024, 1024)
-        val hotSpot = Point(16, 16)
-        return toolkit.createCustomCursor(resizedImage, hotSpot, "OpenHandCursor")
+    /**
+     * Contains the logic for figuring out the
+     * circle color and border color
+     */
+    internal fun colorCircle(): Pair<Color, JBColor> {
+        var circleColor: Color =
+            if (commit.isDragged) {
+                colorTheme.draggedCircleColor
+            } else {
+                colorTheme.regularCircleColor
+            }
+        circleColor = if (commit.isSelected) circleColor.darker() else circleColor
+        val borderColor =
+            if (commit.isSelected) {
+                colorTheme.selectedBorderColor
+            } else if (commit.isDragged || commit.isReordered) {
+                colorTheme.reorderedBorderColor
+            } else {
+                colorTheme.borderColor
+            }
+        return Pair(circleColor, borderColor)
     }
 
-    fun grabHandCursor(): Cursor {
-        val toolkit = Toolkit.getDefaultToolkit()
-        val file = this::class.java.getResource("/grab-hand-cursor.png")
-        val image = ImageIO.read(file)
-        val resizedImage = resizeImage(image, 1024, 1024)
-        val hotSpot = Point(16, 16)
-        return toolkit.createCustomCursor(resizedImage, hotSpot, "GrabHandCursor")
-    }
+//    fun openHandCursor(): Cursor {
+//        val toolkit = Toolkit.getDefaultToolkit()
+//        val file = this::class.java.getResource("/open-hand-cursor.png")
+//        val image = ImageIO.read(file)
+//        val resizedImage = resizeImage(image, 1024, 1024)
+//        val hotSpot = Point(16, 16)
+//        return toolkit.createCustomCursor(resizedImage, hotSpot, "OpenHandCursor")
+//    }
+//
+//    fun grabHandCursor(): Cursor {
+//        val toolkit = Toolkit.getDefaultToolkit()
+//        val file = this::class.java.getResource("/grab-hand-cursor.png")
+//        val image = ImageIO.read(file)
+//        val resizedImage = resizeImage(image, 1024, 1024)
+//        val hotSpot = Point(16, 16)
+//        return toolkit.createCustomCursor(resizedImage, hotSpot, "GrabHandCursor")
+//    }
 
-    fun resizeImage(
-        originalImage: BufferedImage,
-        width: Int,
-        height: Int,
-    ): BufferedImage {
-        val resizedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
-        val g = resizedImage.createGraphics()
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        g.drawImage(originalImage, 0, 0, width, height, null)
-        g.dispose()
-        return resizedImage
-    }
+//    fun resizeImage(
+//        originalImage: BufferedImage,
+//        width: Int,
+//        height: Int,
+//    ): BufferedImage {
+//        val resizedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+//        val g = resizedImage.createGraphics()
+//        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+//        g.drawImage(originalImage, 0, 0, width, height, null)
+//        g.dispose()
+//        return resizedImage
+//    }
 
     /**
      * Creates a circle shape to be drawn inside the panel.
@@ -178,6 +187,19 @@ open class CirclePanel(
         g2d.color = borderColor
         g2d.stroke = BasicStroke(border)
         g2d.draw(circle)
+    }
+
+    fun icon(
+        g: Graphics,
+        icon: Icon,
+    ) {
+        val iconX = (width - icon.iconWidth) / 2
+        val iconY = (height - icon.iconHeight) / 2
+        icon.paintIcon(this, g, iconX, iconY)
+    }
+
+    public override fun clone(): CirclePanel {
+        return super.clone() as CirclePanel
     }
 
     override fun dispose() {

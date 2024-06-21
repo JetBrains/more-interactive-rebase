@@ -18,7 +18,7 @@ import git4ideaClasses.IRGitModel
 @Service(Service.Level.PROJECT)
 class RebaseInvoker(val project: Project) {
     var branchInfo = BranchInfo()
-
+    var gitUtils = IRGitRebaseUtils(project)
     internal lateinit var model: IRGitModel<GitRebaseEntryGeneratedUsingLog>
 
     /**
@@ -135,19 +135,27 @@ class RebaseInvoker(val project: Project) {
         commands.removeIf { it === command }
     }
 
+    fun executeCherry() {
+        expandCollapsedCommits()
+        gitUtils.cherryPick(commands)
+    }
+
     /**
      * Executes all the commands to be able to perform the rebase.
      */
     fun executeCommands() {
+        createModel()
         val commandz = commands.filterNot { it is ReorderCommand }
         var base = branchInfo.initialCommits.reversed()[0].commit.parents.first().asString()
         val rebaseCommand = commandz.findLast { command -> command is RebaseCommand }
         if (rebaseCommand != null) {
             base = (rebaseCommand as RebaseCommand).commit.commit.id.asString()
         }
-        commandz.forEach { it.execute(model, branchInfo) }
+        commandz.forEach {
+            it.execute(model, branchInfo)
+        }
         if (base != null) {
-            IRGitRebaseUtils(project).rebase(base, model)
+            gitUtils.rebase(base, model)
             branchInfo.currentCommits = commitsToDisplayDuringRebase
             commitsToDisplayDuringRebase = mutableListOf()
         }

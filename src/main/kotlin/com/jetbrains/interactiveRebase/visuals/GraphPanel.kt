@@ -42,6 +42,7 @@ class GraphPanel(
         )
 
     var addedBranchPanel: LabeledBranchPanel? = null
+    var lineOffset = mainBranchPanel.branchPanel.diameter * 2
 
     init {
         if (graphInfo.addedBranch != null) {
@@ -250,14 +251,11 @@ class GraphPanel(
 
         // Coordinates of the last circle of the added branch
         if (addedBranchPanel != null) {
-            try {
-                rebaseCircleInAddedBranch =
-                    addedBranchPanel!!.branchPanel.circles.filter { c ->
-                        c.commit == graphInfo.addedBranch?.baseCommit
-                    }[0]
-            } catch (e: Exception) {
-            }
-            var (addedCircleCenterX, addedCircleCenterY) = centerCoordinatesOfBaseCircleInAddedBranch()
+            rebaseCircleInAddedBranch = addedBranchPanel!!.branchPanel.circles
+                .firstOrNull { c -> c.commit == graphInfo.addedBranch!!.baseCommit }
+                ?: mainBranchPanel.branchPanel.circles[0]
+            var (addedCircleCenterX, addedCircleCenterY) =
+                centerCoordinatesOfBaseCircleInAddedBranch()
 
             if (Point(mainCircleCenterX, mainCircleCenterY) ==
                 Point(addedCircleCenterX, addedCircleCenterY)
@@ -279,9 +277,9 @@ class GraphPanel(
                     mainCircleCenterX.toFloat(),
                     mainCircleCenterY.toFloat(),
                     mainCircleCenterX.toFloat(),
-                    mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 2,
+                    mainCircleCenterY.toFloat() + lineOffset,
                     mainCircleCenterX.toFloat(),
-                    mainCircleCenterY.toFloat() + mainBranchPanel.branchPanel.diameter * 2,
+                    mainCircleCenterY.toFloat() + lineOffset,
                     addedCircleCenterX.toFloat(),
                     addedCircleCenterY.toFloat(),
                 )
@@ -369,7 +367,13 @@ class GraphPanel(
         endX: Int,
         endY: Int,
         fractions: FloatArray = floatArrayOf(0.0f, 0.8f),
-        colors: Array<Color> = arrayOf(mainTheme.regularCircleColor, addedTheme.regularCircleColor),
+        colors: Array<Color> =
+            arrayOf(
+                mainBranchPanel.branchPanel.circles.last()
+                    .colorTheme.regularCircleColor,
+                addedBranchPanel?.branchPanel!!.circles.last()
+                    .colorTheme.regularCircleColor,
+            ),
     ) {
         g2d.paint =
             LinearGradientPaint(

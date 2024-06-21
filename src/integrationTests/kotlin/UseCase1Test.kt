@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit
  * and the branch has been rebased successfully.
  */
 class UseCase1Test : IRGitPlatformTest() {
-    fun testDropCommit() {
+    fun testUseCase1() {
         runBlocking(Dispatchers.EDT) {
             // this opens the editor tab, and initializes everything
             openAndInitializePlugin()
@@ -46,6 +46,9 @@ class UseCase1Test : IRGitPlatformTest() {
 
             val dropAction = DropAction()
             val dropTestEvent = createTestEvent(dropAction)
+            dropAction.update(dropTestEvent)
+            assertThat(dropTestEvent.presentation.isEnabled).isTrue()
+
             dropAction.actionPerformed(dropTestEvent)
 
             val fixupCommit = modelService.branchInfo.currentCommits[1]
@@ -53,6 +56,9 @@ class UseCase1Test : IRGitPlatformTest() {
 
             val fixupAction = FixupAction()
             val fixupTestEvent = createTestEvent(fixupAction)
+            fixupAction.update(fixupTestEvent)
+            assertThat(fixupTestEvent.presentation.isEnabled).isTrue()
+
             fixupAction.actionPerformed(fixupTestEvent)
 
             val parentOfFixedUpCommit = modelService.branchInfo.currentCommits[1]
@@ -60,6 +66,9 @@ class UseCase1Test : IRGitPlatformTest() {
 
             val pickAction = PickAction()
             val pickTestEvent = createTestEvent(pickAction)
+            pickAction.update(pickTestEvent)
+            assertThat(pickTestEvent.presentation.isEnabled).isTrue()
+
             pickAction.actionPerformed(pickTestEvent)
             assertThat(modelService.branchInfo.currentCommits.size).isEqualTo(4)
 

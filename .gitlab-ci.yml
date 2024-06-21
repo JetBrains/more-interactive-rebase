@@ -93,12 +93,12 @@ integration-test-interactive-rebase-jetbrains:
     - gradle_build
   stage: test
   script:
-    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.SquashActionTest
-    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.FixupActionTest
     - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.UseCase1Test
-    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.RewordActionTest
-    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.StopToEditActionTest
-    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.TwoBranchesActionTest
+    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.UseCase2Test
+    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.UseCase3Test
+    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.UseCase4Test
+    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.UseCase5Test
+    - gradle integrationTest --tests com.jetbrains.interactiveRebase.integrationTests.UseCase6Test
   allow_failure: true
 #  only:
 #    - main

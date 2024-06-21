@@ -60,6 +60,25 @@ class CollapseCirclePanelTest : BasePlatformTestCase() {
     }
 
     fun testPaintCircleSelected() {
+        collapseCirclePanel =
+            spy(
+                CollapseCirclePanel(
+                    50.0,
+                    2.0f,
+                    Palette.BLUE_THEME,
+                    commit,
+                    mock(CirclePanel::class.java),
+                ),
+            )
+        doAnswer {
+            commit
+        }.`when`(collapseCirclePanel).commit
+        val parent = JBPanel<JBPanel<*>>()
+        parent.background = JBColor.WHITE
+
+        doAnswer {
+            parent
+        }.`when`(collapseCirclePanel).parent
         commit.isSelected = true
         collapseCirclePanel.paintCircle(g)
         verify(g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
@@ -74,6 +93,25 @@ class CollapseCirclePanelTest : BasePlatformTestCase() {
     }
 
     fun testPaintCircleHovered() {
+        collapseCirclePanel =
+            spy(
+                CollapseCirclePanel(
+                    50.0,
+                    2.0f,
+                    Palette.BLUE_THEME,
+                    commit,
+                    previous = mock(CirclePanel::class.java),
+                ),
+            )
+        doAnswer {
+            commit
+        }.`when`(collapseCirclePanel).commit
+        val parent = JBPanel<JBPanel<*>>()
+        parent.background = JBColor.WHITE
+
+        doAnswer {
+            parent
+        }.`when`(collapseCirclePanel).parent
         commit.isHovered = true
         collapseCirclePanel.paintCircle(g)
 

@@ -32,7 +32,7 @@ class MainPanel(
     JBPanel<JBPanel<*>>(), Disposable {
     internal var commitInfoPanel = CommitInfoPanel(project)
     internal var contentPanel: JBScrollPane
-    internal var sidePanelPane: JBScrollPane
+    var sidePanelPane: JBScrollPane
     var sidePanel: SidePanel
     var graphPanel: GraphPanel
     internal val dragPanel: DragPanel = DragPanel()
@@ -47,7 +47,6 @@ class MainPanel(
 
     init {
         graphWrapper.layout = OverlayLayout(graphWrapper)
-//        graphWrapper.border = BorderFactory.createLineBorder(JBColor.GREEN)
 
         graphPanel = createGraphPanel()
         contentPanel = createContentPanel()
@@ -63,7 +62,9 @@ class MainPanel(
         branchInfoListener =
             object : BranchInfo.Listener {
                 override fun onNameChange(newName: String) {
-                    sidePanel.updateBranchNames()
+                    if (primaryBranchInfo.name != graphPanel.mainBranchPanel.branchName) {
+                        sidePanel.updateBranchNames()
+                    }
                     graphPanel.mainBranchPanel.updateBranchName()
                 }
 

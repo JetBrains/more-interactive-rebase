@@ -5,6 +5,7 @@ import com.intellij.ui.OnePixelSplitter
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
+import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.ModelService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,17 +15,17 @@ import org.mockito.Mockito.`when`
 import java.awt.BorderLayout
 
 class MainPanelTest : BasePlatformTestCase() {
+    private lateinit var actionService: ActionService
     private lateinit var modelService: ModelService
     private lateinit var branchInfo: BranchInfo
     private lateinit var mainPanel: MainPanel
 
     override fun setUp() {
         super.setUp()
-
+        actionService = ActionService(project)
         modelService = ModelService(project, CoroutineScope(Dispatchers.Default))
         branchInfo = modelService.branchInfo
         mainPanel = MainPanel(project)
-//        mainPanel = MainPanel(project, branchInfo, branchInfo)
     }
 
     fun testUpdateMainPanelVisuals() {

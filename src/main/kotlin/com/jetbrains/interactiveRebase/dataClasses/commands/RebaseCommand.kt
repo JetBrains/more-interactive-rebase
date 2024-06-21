@@ -5,7 +5,7 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
-class RebaseCommand(val commit: CommitInfo) :
+data class RebaseCommand(val commit: CommitInfo) :
     IRCommand() {
     /**
      * This method is to set up connection with the
