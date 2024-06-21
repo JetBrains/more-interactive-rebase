@@ -108,63 +108,87 @@ class CommitInfoTest : BasePlatformTestCase() {
             )
     }
 
-    fun testCreationWithMultipleFlags(){
+    fun testCreationWithMultipleFlags() {
         val commitProvider = TestGitCommitProvider(project)
 
-        commitInfo = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf(), true,)
+        commitInfo = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf(), true)
         assertTrue(commitInfo.isSelected)
-        commitInfo = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf(), true,
-            true,
-            true,
-            true)
+        commitInfo =
+            CommitInfo(
+                commitProvider.createCommit("tests"),
+                project,
+                mutableListOf(),
+                true,
+                true,
+                true,
+                true,
+            )
         assertTrue(commitInfo.isSelected)
         assertTrue(commitInfo.isSquashed)
         assertTrue(commitInfo.isTextFieldEnabled)
         assertTrue(commitInfo.isHovered)
 
-        commitInfo = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf(), true,
-            true,
-            true,
-            true,
-            true,)
+        commitInfo =
+            CommitInfo(
+                commitProvider.createCommit("tests"),
+                project,
+                mutableListOf(),
+                true,
+                true,
+                true,
+                true,
+                true,
+            )
         assertTrue(commitInfo.isReordered)
 
-        commitInfo = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf(), true,
-            true,
-            true,
-            true,
-            true,
-            true)
+        commitInfo =
+            CommitInfo(
+                commitProvider.createCommit("tests"), project, mutableListOf(), true,
+                true,
+                true,
+                true,
+                true,
+                true,
+            )
         assertTrue(commitInfo.isDragged)
 
-        commitInfo = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf(), true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true)
+        commitInfo =
+            CommitInfo(
+                commitProvider.createCommit("tests"), project, mutableListOf(), true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+            )
         assertTrue(commitInfo.isCollapsed)
 
-        commitInfo = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf(), true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true)
+        commitInfo =
+            CommitInfo(
+                commitProvider.createCommit("tests"), project, mutableListOf(), true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+            )
         assertTrue(commitInfo.isPaused)
 
-        commitInfo = CommitInfo(commitProvider.createCommit("tests"), project, mutableListOf(), true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true)
+        commitInfo =
+            CommitInfo(
+                commitProvider.createCommit("tests"), project, mutableListOf(), true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+            )
         assertTrue(commitInfo.isRebased)
     }
 }

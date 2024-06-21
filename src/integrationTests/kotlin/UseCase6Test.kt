@@ -13,8 +13,8 @@ import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.awaitility.Awaitility
 import java.util.concurrent.TimeUnit
 
-class FixupActionTest : IRGitPlatformTest() {
-    fun testFixupCommit() {
+class UseCase6Test : IRGitPlatformTest() {
+    fun testUseCase6() {
         runBlocking(Dispatchers.EDT) {
             // this opens the editor tab, and initializes everything
             openAndInitializePlugin()

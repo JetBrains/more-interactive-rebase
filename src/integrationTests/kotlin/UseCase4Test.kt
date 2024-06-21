@@ -228,7 +228,7 @@ class UseCase4Test : IRGitPlatformTest() {
             changeBaseAction.update(changeBaseEvent)
             assertThat(changeBaseEvent.presentation.isEnabled).isTrue()
 
-            //go to second branch with keyboard navigation
+            // go to second branch with keyboard navigation
             nav.down()
             nav.right()
             nav.up()
@@ -241,7 +241,7 @@ class UseCase4Test : IRGitPlatformTest() {
             var invokerCommands = project.service<RebaseInvoker>().commands.filterIsInstance<RebaseCommand>()
             assertThat(invokerCommands[0].commit).isEqualTo(headOfSecondBranch)
 
-            //undoes the rebase action
+            // undoes the rebase action
             val undoAction = UndoAction()
             val undoEvent = createTestEvent(undoAction)
             undoAction.update(undoEvent)
@@ -249,11 +249,12 @@ class UseCase4Test : IRGitPlatformTest() {
 
             undoAction.actionPerformed(undoEvent)
 
-            modelService.selectSingleCommit(modelService.graphInfo.addedBranch!!.currentCommits[1],
-                modelService.graphInfo.addedBranch!!
+            modelService.selectSingleCommit(
+                modelService.graphInfo.addedBranch!!.currentCommits[1],
+                modelService.graphInfo.addedBranch!!,
             )
 
-            //redoes the rebase action
+            // redoes the rebase action
             val redoAction = RedoAction()
             val redoEvent = createTestEvent(redoAction)
             redoAction.update(redoEvent)
@@ -263,7 +264,7 @@ class UseCase4Test : IRGitPlatformTest() {
             invokerCommands = project.service<RebaseInvoker>().commands.filterIsInstance<RebaseCommand>()
             assertThat(invokerCommands[0].commit).isEqualTo(headOfSecondBranch)
 
-            //resets all changes made to the branch
+            // resets all changes made to the branch
             val resetAction = ResetAction()
             val resetEvent = createTestEvent(resetAction)
             resetAction.update(resetEvent)
@@ -276,12 +277,12 @@ class UseCase4Test : IRGitPlatformTest() {
             assertThat(resetAction.actionUpdateThread).isEqualTo(ActionUpdateThread.EDT)
             resetAction.actionPerformed(resetEvent)
 
-            //move the base of the branch to be the second to last commit on the second branch
+            // move the base of the branch to be the second to last commit on the second branch
             val secondChangeBaseEvent = createTestEvent(changeBaseAction)
             changeBaseAction.update(secondChangeBaseEvent)
             assertThat(secondChangeBaseEvent.presentation.isEnabled).isTrue()
 
-            //go to second branch with keyboard navigation
+            // go to second branch with keyboard navigation
             nav.down()
             nav.right()
             nav.up()
@@ -298,14 +299,14 @@ class UseCase4Test : IRGitPlatformTest() {
             nav.right()
             nav.left()
 
-            //starts the rebase process
+            // starts the rebase process
             val rebaseAction = StartRebaseAction()
             val rebaseEvent = createTestEvent(rebaseAction)
             assertThat(rebaseAction.actionUpdateThread).isEqualTo(ActionUpdateThread.EDT)
             rebaseAction.actionPerformed(rebaseEvent)
 
-            //asserts that the rebase action was done, moving it further away from the initial commit,
-            //3 commits to be exact
+            // asserts that the rebase action was done, moving it further away from the initial commit,
+            // 3 commits to be exact
             Awaitility.await()
                 .alias("rebase action being done")
                 .pollInSameThread()
@@ -314,7 +315,6 @@ class UseCase4Test : IRGitPlatformTest() {
                 .until {
                     countCommitsSinceSpecificCommit(initialCommitOnMain) == 10
                 }
-            }
         }
-
+    }
 }

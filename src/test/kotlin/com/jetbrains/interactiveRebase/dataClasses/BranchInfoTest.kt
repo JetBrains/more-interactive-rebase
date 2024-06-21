@@ -64,7 +64,7 @@ class BranchInfoTest : BasePlatformTestCase() {
         verify(listener, times(1)).onCurrentCommitsChange(branchInfo.currentCommits)
     }
 
-    fun testRemoveSelectedCommitsWithSquashed(){
+    fun testRemoveSelectedCommitsWithSquashed() {
         branchInfo.setCommits(listOf(commit, commit1))
         commit.addChange(SquashCommand(commit, mutableListOf(commit1), "squash"))
         commit.addChange(FixupCommand(commit, mutableListOf(commit1)))
@@ -74,7 +74,7 @@ class BranchInfoTest : BasePlatformTestCase() {
         assertEquals(0, branchInfo.selectedCommits.size)
     }
 
-    fun testEquals(){
+    fun testEquals() {
         val branchInfo1 = BranchInfo("branch", listOf(commit), mutableListOf(commit), true, true, false)
         val branchInfo2 = BranchInfo("branch", listOf(commit), mutableListOf(commit), true, true, false)
         assertEquals(branchInfo1, branchInfo2)
@@ -110,31 +110,31 @@ class BranchInfoTest : BasePlatformTestCase() {
         assertFalse(branchInfo1 == branchInfo2)
     }
 
-    fun testEqualsDifferentObjects(){
+    fun testEqualsDifferentObjects() {
         assertNotEquals(branchInfo, commit)
     }
 
-    fun testEqualsSameReference(){
+    fun testEqualsSameReference() {
         assertEquals(branchInfo, branchInfo)
     }
 
-    fun testEqualsNullable(){
+    fun testEqualsNullable() {
         assertNotEquals(branchInfo, null)
     }
 
-    fun testHashCode(){
+    fun testHashCode() {
         val branchInfo1 = BranchInfo("branch", listOf(commit), mutableListOf(commit), true, true, false)
         val branchInfo2 = BranchInfo("branch", listOf(commit), mutableListOf(commit), true, true, false)
         assertEquals(branchInfo1.hashCode(), branchInfo2.hashCode())
     }
 
-    fun testAddCommitsToCurrentCommits(){
-        branchInfo.addCommitsToCurrentCommits(0,listOf(commit, commit1))
+    fun testAddCommitsToCurrentCommits() {
+        branchInfo.addCommitsToCurrentCommits(0, listOf(commit, commit1))
         assertEquals(listOf(commit, commit1), branchInfo.currentCommits)
         verify(listener, times(1)).onCurrentCommitsChange(branchInfo.currentCommits)
     }
 
-    fun testCollapseCommitsSmallerThan7(){
+    fun testCollapseCommitsSmallerThan7() {
         val commit2 = CommitInfo(TestGitCommitProvider(project).createCommit("bla"), project, mutableListOf())
         branchInfo.setCommits(listOf(commit, commit1, commit2))
         branchInfo.collapseCommits(0, 1)
@@ -142,7 +142,7 @@ class BranchInfoTest : BasePlatformTestCase() {
         assertTrue(branchInfo.currentCommits.filterNot { it.isCollapsed }.size == 3)
     }
 
-    fun testCollapseCommits(){
+    fun testCollapseCommits() {
         val commit2 = CommitInfo(TestGitCommitProvider(project).createCommit("bla"), project, mutableListOf())
         val commit3 = CommitInfo(TestGitCommitProvider(project).createCommit("bla1"), project, mutableListOf())
         val commit4 = CommitInfo(TestGitCommitProvider(project).createCommit("bla2"), project, mutableListOf())
@@ -157,13 +157,13 @@ class BranchInfoTest : BasePlatformTestCase() {
         assertThat(branchInfo.currentCommits.filterNot { it.isCollapsed }.size).isEqualTo(3)
     }
 
-    fun testAddSelectedCommits(){
+    fun testAddSelectedCommits() {
         branchInfo.addSelectedCommits(commit)
         assertEquals(listOf(commit), branchInfo.selectedCommits)
         verify(listener, times(1)).onSelectedCommitChange(branchInfo.selectedCommits)
     }
 
-    fun testClearSelectedCommits(){
+    fun testClearSelectedCommits() {
         branchInfo.addSelectedCommits(commit)
         commit.isSelected = true
         branchInfo.clearSelectedCommits()
@@ -172,7 +172,7 @@ class BranchInfoTest : BasePlatformTestCase() {
         verify(listener, times(2)).onSelectedCommitChange(branchInfo.selectedCommits)
     }
 
-    fun testGetActualSelectedCommitsSize(){
+    fun testGetActualSelectedCommitsSize() {
         branchInfo.addSelectedCommits(commit)
         branchInfo.addSelectedCommits(commit1)
         commit.isSquashed = true
@@ -180,31 +180,34 @@ class BranchInfoTest : BasePlatformTestCase() {
         assertEquals(1, branchInfo.getActualSelectedCommitsSize())
     }
 
-    fun testToString(){
-        assertEquals("BranchInfo(name='branch', initialCommits=[CommitInfo(commit=tests)], selectedCommits=[CommitInfo(commit=tests)])", BranchInfo("branch", listOf(commit), mutableListOf(commit), true, true, false).toString())
+    fun testToString() {
+        assertEquals(
+            "BranchInfo(name='branch', initialCommits=[CommitInfo(commit=tests)], selectedCommits=[CommitInfo(commit=tests)])",
+            BranchInfo("branch", listOf(commit), mutableListOf(commit), true, true, false).toString(),
+        )
     }
 
-    fun testIndexOfCommitNotSquashed(){
+    fun testIndexOfCommitNotSquashed() {
         branchInfo.setCommits(listOf(commit, commit1))
         assertEquals(0, branchInfo.indexOfCommit(commit))
         assertEquals(1, branchInfo.indexOfCommit(commit1))
     }
 
-    fun testIndexOfCommitSquashed(){
+    fun testIndexOfCommitSquashed() {
         commit.addChange(SquashCommand(commit, mutableListOf(commit1), "squash"))
         commit.isSquashed = true
         branchInfo.setCommits(listOf(commit1, commit))
         assertEquals(0, branchInfo.indexOfCommit(commit))
     }
 
-    fun testIndexOfCommitFixedUp(){
+    fun testIndexOfCommitFixedUp() {
         commit.addChange(FixupCommand(commit, mutableListOf(commit1)))
         commit.isSquashed = true
         branchInfo.setCommits(listOf(commit1, commit))
         assertEquals(0, branchInfo.indexOfCommit(commit))
     }
 
-    fun testIndexOfCommitSquashedButNoCommand(){
+    fun testIndexOfCommitSquashedButNoCommand() {
         commit.isSquashed = true
         commit.addChange(DropCommand(commit))
         branchInfo.setCommits(listOf(commit1, commit))

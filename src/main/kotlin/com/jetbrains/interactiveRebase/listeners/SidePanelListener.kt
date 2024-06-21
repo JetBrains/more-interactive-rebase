@@ -16,7 +16,7 @@ class SidePanelListener(val project: Project, val sidePanel: SidePanel) : KeyLis
     var selected: SideBranchPanel? = null
 
     override fun keyPressed(e: KeyEvent?) {
-        if(e == null) return
+        if (e == null) return
         when (e.keyCode) {
             KeyEvent.VK_UP -> up()
             KeyEvent.VK_DOWN -> down()

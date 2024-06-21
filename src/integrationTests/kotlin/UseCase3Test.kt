@@ -24,7 +24,15 @@ import java.util.concurrent.TimeUnit
 
 /**
  * This test has to do with squashing mostly.
- *
+ * It performs the following actions:
+ * 1. Opens the editor tab and initializes everything
+ * 2. Selects the last commit
+ * 3. Performs a control click having the first commit already selected and clicking the third commit
+ * 4. Squashes the selected commits, by giving them a new commit message
+ * 5. Performs a pick action on the second commit
+ * 6. Performs an undo action
+ * 7. Performs a redo action
+ * 8. Starts the interactive rebase
  */
 class UseCase3Test : IRGitPlatformTest() {
     fun testUseCase3() {
@@ -40,11 +48,23 @@ class UseCase3Test : IRGitPlatformTest() {
             val commitToSquash = modelService.branchInfo.currentCommits[0]
             assertThat(commitToSquash.commit.subject).isEqualTo("my final commit")
 
-            //perform a control click having the first commit already selected and clicking the third commit
-            val ctrlClik = CircleHoverListener(project.service<ActionService>()
-                .mainPanel.graphPanel.mainBranchPanel.branchPanel.circles[2])
-            val clickEvent = MouseEvent(ctrlClik.circlePanel, MouseEvent.MOUSE_CLICKED, System.currentTimeMillis(),
-                InputEvent.CTRL_DOWN_MASK, 0, 0, 1, false)
+            // perform a control click having the first commit already selected and clicking the third commit
+            val ctrlClik =
+                CircleHoverListener(
+                    project.service<ActionService>()
+                        .mainPanel.graphPanel.mainBranchPanel.branchPanel.circles[2],
+                )
+            val clickEvent =
+                MouseEvent(
+                    ctrlClik.circlePanel,
+                    MouseEvent.MOUSE_CLICKED,
+                    System.currentTimeMillis(),
+                    InputEvent.CTRL_DOWN_MASK,
+                    0,
+                    0,
+                    1,
+                    false,
+                )
             ctrlClik.mouseClicked(clickEvent)
             assertThat(modelService.getSelectedCommits().size).isEqualTo(2)
 
@@ -89,7 +109,7 @@ class UseCase3Test : IRGitPlatformTest() {
             undoAction.actionPerformed(testEvent3)
             assertThat(modelService.branchInfo.currentCommits.size).isEqualTo(3)
 
-            //here we undo again
+            // here we undo again
             val testEvent4 = createTestEvent(undoAction)
             undoAction.actionPerformed(testEvent4)
             assertThat(modelService.branchInfo.currentCommits.size).isEqualTo(4)

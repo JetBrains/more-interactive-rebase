@@ -184,6 +184,4 @@ abstract class IRGitPlatformTest : VcsPlatformTest() {
         Thread.sleep(10)
         return result.toInt()
     }
-
-
 }

@@ -363,8 +363,7 @@ fun getGitCommandInstance(commandName: String): GitCommand {
     return try {
         val fieldName = commandName.toUpperCase().replace('-', '_')
         GitCommand::class.java.getDeclaredField(fieldName).get(null) as GitCommand
-    }
-    catch (e: NoSuchFieldException) {
+    } catch (e: NoSuchFieldException) {
         val constructor = GitCommand::class.java.getDeclaredConstructor(String::class.java, LockingPolicy::class.java)
         constructor.isAccessible = true
         constructor.newInstance(commandName, LockingPolicy.WRITE) as GitCommand
@@ -374,5 +373,5 @@ fun getGitCommandInstance(commandName: String): GitCommand {
 enum class LockingPolicy {
     READ,
     READ_OPTIONAL_LOCKING,
-    WRITE
+    WRITE,
 }

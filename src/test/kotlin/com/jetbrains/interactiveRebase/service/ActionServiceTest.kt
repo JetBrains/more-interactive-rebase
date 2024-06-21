@@ -1078,10 +1078,10 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(commitInfo2.changes.size).isEqualTo(1)
     }
 
-    fun test(){
+    fun test() {
         val action = RewordAction()
         val testev = createTestEvent(action)
-        val bbut  = action.createCustomComponent(testev.presentation, "string")
+        val bbut = action.createCustomComponent(testev.presentation, "string")
         assertThat(bbut).isNotNull()
     }
 

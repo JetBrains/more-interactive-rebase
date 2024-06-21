@@ -51,25 +51,25 @@ class UseCase2Test : IRGitPlatformTest() {
                 gitCommitsCountEquals(8)
             }
     }
+
     fun testUseCase2() {
         runBlocking(Dispatchers.EDT) {
             // this opens the editor tab, and initializes everything
             openAndInitializePlugin(8)
             val modelService = project.service<ModelService>()
 
-
-            //since the amount of commits > 7, there are collapsed commits, and thus we need to un-collapse the commit
+            // since the amount of commits > 7, there are collapsed commits, and thus we need to un-collapse the commit
             val commitToUncollapse = modelService.branchInfo.currentCommits[5]
-            val circlePanelOfCommit = project.service<ActionService>().
-                                        mainPanel.graphPanel.
-                                        mainBranchPanel.branchPanel.
-                                        circles[5]
+            val circlePanelOfCommit =
+                project.service<ActionService>()
+                    .mainPanel.graphPanel
+                    .mainBranchPanel.branchPanel
+                    .circles[5]
             val listenerForUncollapse = circlePanelOfCommit.mouseListeners.filterIsInstance<CircleHoverListener>()[0]
 
             val event = MouseEvent(circlePanelOfCommit, MouseEvent.MOUSE_CLICKED, 0, 0, 0, 0, 1, false)
             listenerForUncollapse.mouseClicked(event)
             assertThat(commitToUncollapse.isCollapsed).isFalse()
-
 
             // this selects the second-to-last commit and sets it up to be edited
             val commitToEdit = modelService.branchInfo.currentCommits[2]
@@ -83,12 +83,11 @@ class UseCase2Test : IRGitPlatformTest() {
 
             editAction.actionPerformed(testEvent1)
 
-
-            //this will try twice to collapse commits
+            // this will try twice to collapse commits
             modelService.selectSingleCommit(modelService.branchInfo.currentCommits[1], modelService.branchInfo)
             modelService.addToSelectedCommits(modelService.branchInfo.currentCommits[4], modelService.branchInfo)
 
-            //the first time it's not working because commits are not in range
+            // the first time it's not working because commits are not in range
             val collapseAction = CollapseAction()
             val testEvent2 = createTestEvent(collapseAction)
             collapseAction.update(testEvent2)
@@ -107,7 +106,7 @@ class UseCase2Test : IRGitPlatformTest() {
             collapseAction.actionPerformed(testEvent3)
             assertThat(modelService.branchInfo.currentCommits.size).isEqualTo(5)
 
-            //does an automatic fixup with the parent commit
+            // does an automatic fixup with the parent commit
             val fixupAction1 = FixupAction()
             val testEvent4 = createTestEvent(fixupAction1)
 
@@ -170,7 +169,11 @@ class UseCase2Test : IRGitPlatformTest() {
 
             assertThat(gitCommitsCountEquals(8)).isTrue()
             val remainingCommitMessages = repository.getAllCommitMessages()
-            assertThat(remainingCommitMessages.containsAll(listOf("first", "code quality", "i love testing", "my final commit", "fifth", "sixth", "seventh", "eight"))).isTrue()
+            assertThat(
+                remainingCommitMessages.containsAll(
+                    listOf("first", "code quality", "i love testing", "my final commit", "fifth", "sixth", "seventh", "eight"),
+                ),
+            ).isTrue()
         }
     }
 }

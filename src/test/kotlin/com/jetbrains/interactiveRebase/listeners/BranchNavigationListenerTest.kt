@@ -244,7 +244,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         var commit7 = CommitInfo(provider.createCommit("commit7"), project)
         var commit8 = CommitInfo(provider.createCommit("commit5"), project)
         var commit9 = CommitInfo(provider.createCommit("commit9"), project)
-        branchInfo.setCommits(listOf(commit9,commit8,commit7,commit6,commit5, commit3, commit2, commit1))
+        branchInfo.setCommits(listOf(commit9, commit8, commit7, commit6, commit5, commit3, commit2, commit1))
 
         listener.keyPressed(upEvent)
         listener.keyPressed(shiftUpEvent)
@@ -261,7 +261,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits[4]).isEqualTo(commit8)
     }
 
-    fun testShiftUpRemoveFromSelectedCommits(){
+    fun testShiftUpRemoveFromSelectedCommits() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
 
@@ -270,7 +270,6 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         listener.keyPressed(shiftUpEvent)
         assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
     }
-
 
     fun testShiftDown() {
         branchInfo.clearSelectedCommits()
@@ -301,7 +300,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits[3]).isEqualTo(commit1)
     }
 
-    fun testShiftDownCollapsed(){
+    fun testShiftDownCollapsed() {
         branchInfo.clearSelectedCommits()
         var provider = TestGitCommitProvider(project)
         var commit5 = CommitInfo(provider.createCommit("commit5"), project)
@@ -309,7 +308,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         var commit7 = CommitInfo(provider.createCommit("commit7"), project)
         var commit8 = CommitInfo(provider.createCommit("commit5"), project)
         var commit9 = CommitInfo(provider.createCommit("commit9"), project)
-        branchInfo.setCommits(listOf(commit9,commit8,commit7,commit6,commit5, commit3, commit2, commit1))
+        branchInfo.setCommits(listOf(commit9, commit8, commit7, commit6, commit5, commit3, commit2, commit1))
 
         listener.keyPressed(downEvent)
         listener.keyPressed(downEvent)
@@ -322,7 +321,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits.size).isEqualTo(2)
     }
 
-    fun testShiftDownIsSelected(){
+    fun testShiftDownIsSelected() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
 
@@ -358,7 +357,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(branchInfo.currentCommits[0]).isEqualTo(commit3)
     }
 
-    fun testRightAddedBranchNull(){
+    fun testRightAddedBranchNull() {
         modelService.graphInfo.addedBranch = null
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
         listener.keyPressed(downEvent)
@@ -367,7 +366,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
     }
 
-    fun testRightAddedBranchNotNull(){
+    fun testRightAddedBranchNotNull() {
         modelService.graphInfo.addedBranch = BranchInfo("added branch", listOf(commit3, commit4))
         branchInfo.setCommits(listOf(commit2, commit1))
         listener.keyPressed(downEvent)
@@ -380,7 +379,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(modelService.graphInfo.addedBranch?.selectedCommits?.get(0)).isEqualTo(commit4)
     }
 
-    fun testRightAddedBranchNotNullNoSelectedCommits(){
+    fun testRightAddedBranchNotNullNoSelectedCommits() {
         modelService.graphInfo.addedBranch = BranchInfo("added branch", listOf(commit3, commit4))
         branchInfo.setCommits(listOf(commit2, commit1))
         listener.keyPressed(rightEvent)
@@ -389,7 +388,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(modelService.graphInfo.addedBranch?.selectedCommits?.size).isEqualTo(0)
     }
 
-    fun testCurrentlyOnAddedBranch(){
+    fun testCurrentlyOnAddedBranch() {
         modelService.graphInfo.addedBranch = BranchInfo("added branch", listOf(commit3, commit4))
         branchInfo.setCommits(listOf(commit2, commit1))
         listener.keyPressed(downEvent)
@@ -403,7 +402,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
     }
 
-    fun testLeftAlreadyOnMainBranch(){
+    fun testLeftAlreadyOnMainBranch() {
         branchInfo.setCommits(listOf(commit2, commit1))
         val actionService = project.service<ActionService>()
         val sidePanel = actionService.mainPanel.sidePanel
@@ -414,7 +413,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(sidePanel.listener.selected?.branchName).isEqualTo(sidePanel.sideBranchPanels[0].branchName)
     }
 
-    fun testLeftSelectedBranchIsNoneOfTheTwo(){
+    fun testLeftSelectedBranchIsNoneOfTheTwo() {
         branchInfo.setCommits(listOf(commit2, commit1))
         val actionService = project.service<ActionService>()
         val sidePanel = actionService.mainPanel.sidePanel
@@ -425,27 +424,29 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(modelService.graphInfo.mainBranch.selectedCommits.size).isEqualTo(0)
     }
 
-    fun testEscape(){
+    fun testEscape() {
         branchInfo.setCommits(listOf(commit2, commit1))
         listener.keyPressed(downEvent)
-        val esc = KeyEvent(
-            mainPanel,
-            KeyEvent.KEY_PRESSED,
-            System.currentTimeMillis(),
-            KeyEvent.SHIFT_DOWN_MASK,
-            KeyEvent.VK_ESCAPE,
-            KeyEvent.CHAR_UNDEFINED,
-        )
+        val esc =
+            KeyEvent(
+                mainPanel,
+                KeyEvent.KEY_PRESSED,
+                System.currentTimeMillis(),
+                KeyEvent.SHIFT_DOWN_MASK,
+                KeyEvent.VK_ESCAPE,
+                KeyEvent.CHAR_UNDEFINED,
+            )
         listener.keyPressed(esc)
         assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
     }
 
-    fun testEventIsNull(){
+    fun testEventIsNull() {
         branchInfo.setCommits(listOf(commit2, commit1))
         listener.keyPressed(null)
         assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
     }
-    fun testLeftWithAlt(){
+
+    fun testLeftWithAlt() {
         leftEvent =
             KeyEvent(
                 mainPanel,
@@ -465,7 +466,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(sidePanel.listener.selected?.branchName).isEqualTo(sidePanel.sideBranchPanels[0].branchName)
     }
 
-    fun testRightWithAlt(){
+    fun testRightWithAlt() {
         rightEvent =
             KeyEvent(
                 mainPanel,
@@ -484,7 +485,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(modelService.graphInfo.addedBranch?.selectedCommits?.size).isEqualTo(0)
     }
 
-    fun testLeftWithAnyOtherKey(){
+    fun testLeftWithAnyOtherKey() {
         leftEvent =
             KeyEvent(
                 mainPanel,
@@ -504,7 +505,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(sidePanel.listener.selected?.branchName).isEqualTo(sidePanel.sideBranchPanels[0].branchName)
     }
 
-    fun testRightWithAnyOtherKey(){
+    fun testRightWithAnyOtherKey() {
         rightEvent =
             KeyEvent(
                 mainPanel,
@@ -523,7 +524,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(modelService.graphInfo.addedBranch?.selectedCommits?.size).isEqualTo(0)
     }
 
-    fun testAnyOtherKey(){
+    fun testAnyOtherKey() {
         rightEvent =
             KeyEvent(
                 mainPanel,
@@ -540,7 +541,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
     }
 
-    fun testAnyOtherKeyWithAltDown(){
+    fun testAnyOtherKeyWithAltDown() {
         rightEvent =
             KeyEvent(
                 mainPanel,
@@ -557,7 +558,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
     }
 
-    fun testNoBodyMethods(){
+    fun testNoBodyMethods() {
         val listener = BranchNavigationListener(project, modelService)
         listener.keyReleased(upEvent)
         listener.keyTyped(downEvent)
@@ -566,39 +567,35 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
     }
 
-    fun testAltUpWithSecondBranchSelected(){
+    fun testAltUpWithSecondBranchSelected() {
         modelService.graphInfo.addedBranch = BranchInfo("added branch", listOf(commit3, commit4))
         branchInfo.setCommits(listOf(commit2, commit1))
-        modelService.graphInfo.addedBranch?.selectedCommits?.add(0,commit3)
+        modelService.graphInfo.addedBranch?.selectedCommits?.add(0, commit3)
         listener.altUp()
         assertThat(modelService.graphInfo.addedBranch?.selectedCommits?.size).isEqualTo(1)
     }
 
-    fun testAltUpWithSquashed(){
-        branchInfo.setCommits(listOf(commit3,commit2, commit1))
+    fun testAltUpWithSquashed() {
+        branchInfo.setCommits(listOf(commit3, commit2, commit1))
         commit3.isSquashed = true
         branchInfo.selectedCommits = mutableListOf(commit3)
         listener.altUp()
         assertThat(branchInfo.currentCommits).isEqualTo(branchInfo.initialCommits)
     }
 
-    fun testAltDownWithSecondBranchSelected(){
+    fun testAltDownWithSecondBranchSelected() {
         modelService.graphInfo.addedBranch = BranchInfo("added branch", listOf(commit3, commit4))
         branchInfo.setCommits(listOf(commit2, commit1))
-        modelService.graphInfo.addedBranch?.selectedCommits?.add(0,commit3)
+        modelService.graphInfo.addedBranch?.selectedCommits?.add(0, commit3)
         listener.altDown()
         assertThat(modelService.graphInfo.addedBranch?.selectedCommits?.size).isEqualTo(1)
     }
 
-    fun testAltDownWithSquashed(){
-        branchInfo.setCommits(listOf(commit3,commit2, commit1))
+    fun testAltDownWithSquashed() {
+        branchInfo.setCommits(listOf(commit3, commit2, commit1))
         commit3.isSquashed = true
         branchInfo.selectedCommits = mutableListOf(commit3)
         listener.altDown()
         assertThat(branchInfo.currentCommits).isEqualTo(branchInfo.initialCommits)
     }
-
-
-
-
 }

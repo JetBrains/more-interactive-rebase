@@ -8,17 +8,17 @@ import com.jetbrains.interactiveRebase.visuals.multipleBranches.SidePanel
 import org.assertj.core.api.Assertions.assertThat
 import java.awt.event.KeyEvent
 
-class SidePanelListenerTest : BasePlatformTestCase(){
+class SidePanelListenerTest : BasePlatformTestCase() {
     lateinit var sidePanel: SidePanel
     lateinit var sideBranchPanel1: SideBranchPanel
     lateinit var sideBranchPanel2: SideBranchPanel
     lateinit var listener: SidePanelListener
 
-    lateinit var upEvent:KeyEvent
-    lateinit var downEvent : KeyEvent
-    lateinit var rightEvent : KeyEvent
-    lateinit var enterEvent : KeyEvent
-    lateinit var escapeEvent : KeyEvent
+    lateinit var upEvent: KeyEvent
+    lateinit var downEvent: KeyEvent
+    lateinit var rightEvent: KeyEvent
+    lateinit var enterEvent: KeyEvent
+    lateinit var escapeEvent: KeyEvent
 
     override fun setUp() {
         super.setUp()
@@ -76,7 +76,7 @@ class SidePanelListenerTest : BasePlatformTestCase(){
             )
     }
 
-    fun testUp(){
+    fun testUp() {
         listener.selected = sideBranchPanel2
         sideBranchPanel2.isSelected = true
         listener.keyPressed(upEvent)
@@ -88,7 +88,7 @@ class SidePanelListenerTest : BasePlatformTestCase(){
         assertThat(sideBranchPanel1.isHovered).isTrue()
     }
 
-    fun testDown(){
+    fun testDown() {
         listener.selected = sideBranchPanel1
         sideBranchPanel1.isSelected = true
         listener.keyPressed(downEvent)
@@ -100,7 +100,7 @@ class SidePanelListenerTest : BasePlatformTestCase(){
         assertThat(sideBranchPanel2.isHovered).isTrue()
     }
 
-    fun testEnter(){
+    fun testEnter() {
         project.service<RebaseInvoker>().commands.clear()
         listener.selected = sideBranchPanel1
         sideBranchPanel1.isSelected = true
@@ -113,7 +113,7 @@ class SidePanelListenerTest : BasePlatformTestCase(){
         assertThat(sideBranchPanel1.isSelected).isTrue()
     }
 
-    fun testEscape(){
+    fun testEscape() {
         project.service<RebaseInvoker>().commands.clear()
         listener.selected = sideBranchPanel1
         sideBranchPanel1.isSelected = false
@@ -127,7 +127,7 @@ class SidePanelListenerTest : BasePlatformTestCase(){
         assertThat(sideBranchPanel1.isHovered).isTrue()
     }
 
-    fun testMethodsWithEmptyBody(){
+    fun testMethodsWithEmptyBody() {
         listener.keyPressed(rightEvent)
         val emptyListener = SidePanelListener(project, sidePanel)
         emptyListener.keyTyped(upEvent)
@@ -136,10 +136,9 @@ class SidePanelListenerTest : BasePlatformTestCase(){
         emptyListener.dispose()
     }
 
-    fun testNullEvent(){
+    fun testNullEvent() {
         listener.selected = null
         listener.keyPressed(null)
         assertThat(listener.selected).isNull()
     }
-
 }

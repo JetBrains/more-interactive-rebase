@@ -19,100 +19,99 @@ import com.jetbrains.interactiveRebase.actions.gitPanel.SquashAction
 import com.jetbrains.interactiveRebase.actions.gitPanel.StopToEditAction
 import org.assertj.core.api.Assertions.assertThat
 
-class TooltipTests : BasePlatformTestCase(){
-
-    fun testRedoTooltip(){
+class TooltipTests : BasePlatformTestCase() {
+    fun testRedoTooltip() {
         val redoAction = RedoAction()
         val redoTestEvent = createTestEvent(redoAction)
         val tooltip = redoAction.createCustomComponent(redoTestEvent.presentation, "test")
         assertThat(tooltip).isInstanceOf(ActionButton::class.java)
     }
 
-    fun testUndoTooltip(){
+    fun testUndoTooltip() {
         val undoAction = UndoAction()
         val redoTestEvent = createTestEvent(undoAction)
         val tooltip = undoAction.createCustomComponent(redoTestEvent.presentation, "test")
         assertThat(tooltip).isInstanceOf(ActionButton::class.java)
     }
 
-    fun testRewordTooltip(){
+    fun testRewordTooltip() {
         val rewordAction = RewordAction()
         val rewordTestEvent = createTestEvent(rewordAction)
         val tooltip = rewordAction.createCustomComponent(rewordTestEvent.presentation, "test")
         assertThat(tooltip).isInstanceOf(ActionButton::class.java)
     }
 
-    fun testStopToEditTooltip(){
+    fun testStopToEditTooltip() {
         val stopToEditAction = StopToEditAction()
         val stopToEditTestEvent = createTestEvent(stopToEditAction)
         val tooltip = stopToEditAction.createCustomComponent(stopToEditTestEvent.presentation, "test")
         assertThat(tooltip).isInstanceOf(ActionButton::class.java)
     }
 
-    fun testSquashTooltip(){
+    fun testSquashTooltip() {
         val squashAction = SquashAction()
         val squashTestEvent = createTestEvent(squashAction)
         val tooltip = squashAction.createCustomComponent(squashTestEvent.presentation, "test")
         assertThat(tooltip).isInstanceOf(ActionButton::class.java)
     }
 
-    fun testFixupTooltip(){
+    fun testFixupTooltip() {
         val fixupAction = FixupAction()
         val fixupTestEvent = createTestEvent(fixupAction)
         val tooltip = fixupAction.createCustomComponent(fixupTestEvent.presentation, "test")
         assertThat(tooltip).isInstanceOf(ActionButton::class.java)
     }
 
-    fun testDropTooltip(){
+    fun testDropTooltip() {
         val dropAction = DropAction()
         val dropTestEvent = createTestEvent(dropAction)
         val tooltip = dropAction.createCustomComponent(dropTestEvent.presentation, "test")
         assertThat(tooltip).isInstanceOf(ActionButton::class.java)
     }
 
-    fun testPickTooltip(){
+    fun testPickTooltip() {
         val pickAction = PickAction()
         val pickTestEvent = createTestEvent(pickAction)
         val tooltip = pickAction.createCustomComponent(pickTestEvent.presentation, "test")
         assertThat(tooltip).isInstanceOf(ActionButton::class.java)
     }
 
-    fun testContinueTooltip(){
+    fun testContinueTooltip() {
         val continueAction = ContinueRebaseAction()
         val continueTestEvent = createTestEvent(continueAction)
         val tooltip = continueAction.createCustomComponent(continueTestEvent.presentation, "test")
         assertThat(tooltip).isInstanceOf(ActionButton::class.java)
     }
 
-    fun testAbortTooltip(){
+    fun testAbortTooltip() {
         val abortAction = AbortRebaseAction()
         val abortTestEvent = createTestEvent(abortAction)
         val tooltip = abortAction.createCustomComponent(abortTestEvent.presentation, "test")
         assertThat(tooltip).isInstanceOf(ActionButton::class.java)
     }
 
-    fun testCollapseTooltip(){
+    fun testCollapseTooltip() {
         val collapseAction = CollapseAction()
         val collapseTestEvent = createTestEvent(collapseAction)
         val tooltip = collapseAction.createCustomComponent(collapseTestEvent.presentation, "test")
         assertThat(tooltip).isInstanceOf(ActionButton::class.java)
     }
 
-    fun testViewDiffTooltip(){
+    fun testViewDiffTooltip() {
         val viewDiffAction = ViewDiffAction()
         val viewDiffTestEvent = createTestEvent(viewDiffAction)
         val tooltip = viewDiffAction.createCustomComponent(viewDiffTestEvent.presentation, "test")
         assertThat(tooltip).isInstanceOf(ActionButton::class.java)
     }
 
-    fun testRebaseTooltip(){
+    fun testRebaseTooltip() {
         val rebaseAction = RebaseAction()
         val rebaseTestEvent = createTestEvent(rebaseAction)
         val tooltip = rebaseAction.createCustomComponent(rebaseTestEvent.presentation, "test")
         assertThat(tooltip).isInstanceOf(ActionButton::class.java)
     }
 
-    fun testAddBranchTooltip(){
+    fun testAddBranchTooltip() {
         val addBranchAction = AddBranchAction()
         val addBranchTestEvent = createTestEvent(addBranchAction)
         val tooltip = addBranchAction.createCustomComponent(addBranchTestEvent.presentation, "test")
