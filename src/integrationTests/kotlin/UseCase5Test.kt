@@ -188,7 +188,7 @@ class UseCase5Test : IRGitPlatformTest() {
             project.service<ActionService>().takeNormalRebaseAction()
 
             // reorders the last commit to be the first one
-            nav.left()
+            nav.up()
             nav.altUp()
             nav.altUp()
             nav.altUp()
