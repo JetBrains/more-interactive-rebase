@@ -31,6 +31,7 @@ feedback would prove very useful for us. Thanks!
 7. 🗺 [Roadmap](#-roadmap)
 8. ✒ [Authors and Acknowledgement](#-authors-and-acknowledgment)
 
+<img src="Images/view.png" alt="view.png" width="800">
 
 ## ✨ Features
 A More Interactive Rebase offers the following functionality for a better user experience:
@@ -66,9 +67,7 @@ the editor tab. The branch drawn shows the latest commits on the checked out bra
 again keeps the changes that were made.
 
 
-<img src="Images/entry.png" alt="entry.png" width="500">
-
-<img src="Images/view.png" alt="view.png" width="800">
+<img src="Images/entry.png" alt="entry.png" width="800">
 
 ### Commit Information
 Clicking on one or multiple commits selects them. The commit information and file changes of the selected commits
@@ -79,49 +78,71 @@ are presented on the right side of the screen. Double-clicking on a file change 
 ### Interactive Rebase Actions
 After selecting the commits, the buttons that are *active* show the available Interactive Rebase actions. **It is
 important to note that any changes made on the graph are not actually executed until the `Start Rebasing` button
-is pressed. The idea of the graph is to show a preview of how the commit history will look in the end.** If you are 
-not very
-familiar with the Interactive Rebase actions that Git has to offer, you can read the
-[Rewriting History](https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History) Chapter provided by Git
-for more information.
+is pressed. The idea of the graph is to show a preview of how the commit history will look in the end.**  All actions 
+can be taken in various ways including the action toolbar, a context menu opened on a right click and keyboard shortcuts
+If you are not very familiar with the Interactive Rebase actions that Git has to offer, you can read the
+[Rewriting History](https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History) Chapter provided by Git for more information.
 
-* **<u>Reword</u>** - If a single commit is selected you can click the `reword` button that opens a text field
-  in place of the commit message. Alternatively, if there is no selected commit, you can just double-click on a
-  commit message, which will also enable the text field. You can edit the message and press `Enter`.
-  If you want to cancel your rewording, pressing `Escape` closes the text field.
+* **<u>Drop</u>** - After selecting commits, pressing the `drop` button will remove the selected commits from the commit 
+  history. The action can also be performed by selecting one or multiple commits and pressing `Backspace` / `Delete` or 
+  by opening the context menu and selecting the action.
 
-<img src="Images/reword.gif" alt="reword" width="500">
-
-[//]: # (![reword.gif]&#40;Images/reword.gif&#41;)
-* **<u>Reorder</u>** - You can drag and drop the commits along the branch if you want to reorder them.
-  
-<img src="Images/reorder.gif" alt="reorder" width="500">
-
-[//]: # (![reorder.gif]&#40;Images/reorder.gif&#41;)
-* **<u>Drop</u>** - After selecting commits, pressing the `drop` button will remove the selected commits from the commit history.
-  
 <img src="Images/drop.gif" alt="drop" width="500">
 
-
-* **<u>Squash</u>** - If there is only one selected commit pressing the `squash` button will squash that commit with the
-  previous one (older in the commit history). In the case where multiple commits are selected, they get squashed into
-the oldest selected commit. After squashing, a text field opens for you to reword the commit message
-  for the squashed commit.
 * **<u>Fixup</u>** - If there is only one selected commit, pressing the `fixup` button will perform fixup of that
   commit with the previous one (older in the commit history). In the case where multiple commits are selected,
   they are fixed up into the oldest selected commit. This action combines automatically the commit messages of the
-  selected commits.
+  selected commits. The action can also be performed by selecting one or multiple commits and pressing
+  `Option` / `Alt` + `F` or by opening the context menu and selecting the action.
+
+<img src="Images/fixup.gif" alt="fixup" width="500">
+
+* **<u>Pick</u>** - Selecting the commits and pressing `Pick` reverts all changes done on them except for reordering.
+  The action can also be performed by selecting one or multiple commits and pressing `Option` / `Alt` + `P` or by opening 
+  the context menu and selecting the action.
+
+<img src="Images/pick.gif" alt="pick" width="500">
+
+* **<u>Reorder</u>** - You can drag and drop the commits along the branch if you want to reorder them. The action can
+  also be performed by selecting one or multiple commits and pressing `Option` / `Alt` + `↑` to move the commit upward or
+  `Option` / `Alt` + `↓` to move the commit downward.
+
+<img src="Images/reorder.gif" alt="reorder" width="500">
+
+* **<u>Reword</u>** - If a single commit is selected you can click the `reword` button that opens a text field
+  in place of the commit message. Alternatively, if there is no selected commit, you can just double-click on a
+  commit message, which will also enable the text field. The action can also be performed by selecting one commit and 
+  pressing `Option` / `Alt` + `R` or by opening the context menu and selecting the action.You can edit the message and 
+  press `Enter` or click anywhere outside of the text field. If you want to cancel your rewording, pressing `Escape` 
+  closes the text field.
+
+<img src="Images/reword.gif" alt="reword" width="500">
+
+* **<u>Squash</u>** - If there is only one selected commit pressing the `squash` button will squash that commit with the
+  previous one (older in the commit history). In the case where multiple commits are selected, they get squashed into
+  the oldest selected commit. After squashing, a text field opens for you to reword the commit message for the squashed 
+  commit. The action can also be performed by selecting one or multiple commits and pressing `Option` / `Alt` + `S` 
+  or by opening the context menu and selecting the action.
+
+<img src="Images/reword.gif" alt="reword" width="500">
+
 * **<u>Stop to Edit</u>** - After selecting commits and pressing the `stop to edit` button the IDE opens each commit
   in chronological order (from oldest to newest) and allows you to make changes to that commit (amend it).
   After having made your changes, you have to stage them by typing `git add .`. Pressing `Continue` on the pop-up
   in the lower right corner of the screen will proceed with the rebasing of the next commit. You can also press
-  `Abort` to stop the
-  stop-to-edit action.
-* **<u>Pick</u>** - Selecting the commits and pressing `Pick` reverts all changes done on them except for reordering.
-* **<u>Reset</u>** - clicking the `Reset` button reverts the graph to its initial state,
-  before any changes were indicated.
+  `Abort` to stop the stop-to-edit action. The action can also be performed by selecting one or multiple commits and 
+  pressing `Option` / `Alt` + `E` or by opening the context menu and selecting the action.
+
+<img src="Images/stop-to-edit.gif" alt="stop to edit" width="500">
+
+### Additional Actions
+
+* **<u>Reset</u>** - Pressing the `Reset` button reverts the graph to its initial state,
+  before any changes were indicated. The action can also be performed by pressing `Cmd` / `Ctrl` + `R`
+
 * **<u>Start Rebasing</u>** - Pressing `Rebase` starts the Interactive Rebase and executes all the changes
-  that were made starting from the lowest changed commit on the graph.
+  that were made starting from the lowest changed commit on the graph. The action can also be performed by pressing
+ `Option` / `Alt` + `Enter`
 
 ### Changing the Base of a Branch
 You can rebase the checked-out branch on top of the second branch by dragging and dropping the branch name labels.
