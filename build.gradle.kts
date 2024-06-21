@@ -141,6 +141,7 @@ val integrationTestTask = tasks.register<Test>("integrationTest") {
     useJUnit()
     maxParallelForks = 1
     systemProperty("junit.jupiter.execution.parallel.enabled", "false")
+    systemProperties["idea.home.path"] = System.getProperty("java.io.tmpdir")
 }
 
 tasks {
@@ -217,7 +218,6 @@ tasks {
     }
 
     test {
-        systemProperties["idea.home.path"] = System.getProperty("java.io.tmpdir")
         useJUnit()
         jacoco {
             enabled = true
