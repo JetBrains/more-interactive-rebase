@@ -63,6 +63,7 @@ class LabeledBranchPanel(
     val branchPanel = BranchPanel(branch, colorTheme)
     val commitLabels: MutableList<JBLabel> = mutableListOf()
     val messages: MutableList<JBPanel<JBPanel<*>>> = mutableListOf()
+    val branchName = branch.name
     val branchNamePanel = branchNamePanel()
     val openTextFields: MutableList<RoundedTextField> = mutableListOf()
 
@@ -165,7 +166,7 @@ class LabeledBranchPanel(
         val panel = JBPanel<JBPanel<*>>()
         panel.isOpaque = false
         panel.layout = GridBagLayout()
-        val label = BoldLabel(branch.name)
+        val label = BoldLabel(branchName)
         label.horizontalAlignment = SwingConstants.CENTER
         val roundedPanel = RoundedPanel()
         roundedPanel.border = EmptyBorder(2, 3, 3, 3)
