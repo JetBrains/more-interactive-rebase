@@ -209,6 +209,67 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         assertThat(branchInfo.selectedCommits[1]).isEqualTo(commit2)
     }
 
+    fun testShiftUpNothingSelected() {
+        branchInfo.clearSelectedCommits()
+        branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
+
+        listener.keyPressed(shiftUpEvent)
+
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(1)
+        assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit1)
+    }
+
+    fun testShiftUpCaps() {
+        branchInfo.clearSelectedCommits()
+        branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
+
+        listener.keyPressed(shiftUpEvent)
+        listener.keyPressed(shiftUpEvent)
+        listener.keyPressed(shiftUpEvent)
+        listener.keyPressed(shiftUpEvent)
+
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(4)
+        assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit1)
+        assertThat(branchInfo.selectedCommits[1]).isEqualTo(commit2)
+        assertThat(branchInfo.selectedCommits[2]).isEqualTo(commit3)
+        assertThat(branchInfo.selectedCommits[3]).isEqualTo(commit4)
+    }
+
+    fun testShiftUpCollapsed() {
+        branchInfo.clearSelectedCommits()
+        var provider = TestGitCommitProvider(project)
+        var commit5 = CommitInfo(provider.createCommit("commit5"), project)
+        var commit6 = CommitInfo(provider.createCommit("commit6"), project)
+        var commit7 = CommitInfo(provider.createCommit("commit7"), project)
+        var commit8 = CommitInfo(provider.createCommit("commit5"), project)
+        var commit9 = CommitInfo(provider.createCommit("commit9"), project)
+        branchInfo.setCommits(listOf(commit9,commit8,commit7,commit6,commit5, commit3, commit2, commit1))
+
+        listener.keyPressed(upEvent)
+        listener.keyPressed(shiftUpEvent)
+        listener.keyPressed(shiftUpEvent)
+        listener.keyPressed(shiftUpEvent)
+        listener.keyPressed(shiftUpEvent)
+
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(5)
+        assertThat(branchInfo.selectedCommits[0]).isEqualTo(commit1)
+        assertThat(branchInfo.selectedCommits[1]).isEqualTo(commit5)
+        assertThat(branchInfo.selectedCommits[2]).isEqualTo(commit6)
+        assertThat(branchInfo.selectedCommits[3]).isEqualTo(commit7)
+        assertThat(branchInfo.selectedCommits[4]).isEqualTo(commit8)
+    }
+
+    fun testShiftUpRemoveFromSelectedCommits(){
+        branchInfo.clearSelectedCommits()
+        branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
+
+        listener.keyPressed(upEvent)
+        commit2.isSelected = true
+        listener.keyPressed(shiftUpEvent)
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
+    }
+
+
     fun testShiftDown() {
         branchInfo.clearSelectedCommits()
         branchInfo.setCommits(listOf(commit4, commit3, commit2, commit1))
@@ -296,10 +357,11 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         branchInfo.setCommits(listOf(commit2, commit1))
         val actionService = project.service<ActionService>()
         val sidePanel = actionService.mainPanel.sidePanel
+        actionService.mainPanel.sidePanel.sideBranchPanels.clear()
         sidePanel.sideBranchPanels.add(0, SideBranchPanel("haha", project))
         listener.keyPressed(downEvent)
         listener.keyPressed(leftEvent)
-        assertThat(sidePanel.listener.selected).isEqualTo(sidePanel.sideBranchPanels[0])
+        assertThat(sidePanel.listener.selected?.branchName).isEqualTo(sidePanel.sideBranchPanels[0].branchName)
     }
 
     fun testLeftSelectedBranchIsNoneOfTheTwo(){
@@ -332,5 +394,119 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         listener.keyPressed(null)
         assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
     }
+    fun testLeftWithAlt(){
+        leftEvent =
+            KeyEvent(
+                mainPanel,
+                KeyEvent.KEY_PRESSED,
+                System.currentTimeMillis(),
+                KeyEvent.ALT_DOWN_MASK,
+                KeyEvent.VK_LEFT,
+                KeyEvent.CHAR_UNDEFINED,
+            )
+        branchInfo.setCommits(listOf(commit2, commit1))
+        val actionService = project.service<ActionService>()
+        val sidePanel = actionService.mainPanel.sidePanel
+        actionService.mainPanel.sidePanel.sideBranchPanels.clear()
+        sidePanel.sideBranchPanels.add(0, SideBranchPanel("haha", project))
+        listener.keyPressed(downEvent)
+        listener.keyPressed(leftEvent)
+        assertThat(sidePanel.listener.selected?.branchName).isEqualTo(sidePanel.sideBranchPanels[0].branchName)
+    }
+
+    fun testRightWithAlt(){
+        rightEvent =
+            KeyEvent(
+                mainPanel,
+                KeyEvent.KEY_PRESSED,
+                System.currentTimeMillis(),
+                KeyEvent.ALT_DOWN_MASK,
+                KeyEvent.VK_RIGHT,
+                KeyEvent.CHAR_UNDEFINED,
+            )
+
+        modelService.graphInfo.addedBranch = BranchInfo("added branch", listOf(commit3, commit4))
+        branchInfo.setCommits(listOf(commit2, commit1))
+        listener.keyPressed(rightEvent)
+        assertThat(modelService.graphInfo.addedBranch).isNotNull
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
+        assertThat(modelService.graphInfo.addedBranch?.selectedCommits?.size).isEqualTo(0)
+    }
+
+    fun testLeftWithAnyOtherKey(){
+        leftEvent =
+            KeyEvent(
+                mainPanel,
+                KeyEvent.KEY_PRESSED,
+                System.currentTimeMillis(),
+                0,
+                KeyEvent.VK_LEFT,
+                KeyEvent.CHAR_UNDEFINED,
+            )
+        branchInfo.setCommits(listOf(commit2, commit1))
+        val actionService = project.service<ActionService>()
+        val sidePanel = actionService.mainPanel.sidePanel
+        actionService.mainPanel.sidePanel.sideBranchPanels.clear()
+        sidePanel.sideBranchPanels.add(0, SideBranchPanel("haha", project))
+        listener.keyPressed(downEvent)
+        listener.keyPressed(leftEvent)
+        assertThat(sidePanel.listener.selected?.branchName).isEqualTo(sidePanel.sideBranchPanels[0].branchName)
+    }
+
+    fun testRightWithAnyOtherKey(){
+        rightEvent =
+            KeyEvent(
+                mainPanel,
+                KeyEvent.KEY_PRESSED,
+                System.currentTimeMillis(),
+                0,
+                KeyEvent.VK_RIGHT,
+                KeyEvent.CHAR_UNDEFINED,
+            )
+
+        modelService.graphInfo.addedBranch = BranchInfo("added branch", listOf(commit3, commit4))
+        branchInfo.setCommits(listOf(commit2, commit1))
+        listener.keyPressed(rightEvent)
+        assertThat(modelService.graphInfo.addedBranch).isNotNull
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
+        assertThat(modelService.graphInfo.addedBranch?.selectedCommits?.size).isEqualTo(0)
+    }
+
+    fun testAnyOtherKey(){
+        rightEvent =
+            KeyEvent(
+                mainPanel,
+                KeyEvent.KEY_PRESSED,
+                System.currentTimeMillis(),
+                0,
+                1,
+                KeyEvent.CHAR_UNDEFINED,
+            )
+
+        modelService.graphInfo.addedBranch = BranchInfo("added branch", listOf(commit3, commit4))
+        branchInfo.setCommits(listOf(commit2, commit1))
+        listener.keyPressed(rightEvent)
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
+    }
+
+    fun testAnyOtherKeyWithAltDown(){
+        rightEvent =
+            KeyEvent(
+                mainPanel,
+                KeyEvent.KEY_PRESSED,
+                System.currentTimeMillis(),
+                KeyEvent.ALT_DOWN_MASK,
+                1,
+                KeyEvent.CHAR_UNDEFINED,
+            )
+
+        modelService.graphInfo.addedBranch = BranchInfo("added branch", listOf(commit3, commit4))
+        branchInfo.setCommits(listOf(commit2, commit1))
+        listener.keyPressed(rightEvent)
+        assertThat(branchInfo.selectedCommits.size).isEqualTo(0)
+    }
+
+
+
 
 }
