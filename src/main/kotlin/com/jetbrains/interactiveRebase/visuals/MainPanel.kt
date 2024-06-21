@@ -63,7 +63,9 @@ class MainPanel(
         branchInfoListener =
             object : BranchInfo.Listener {
                 override fun onNameChange(newName: String) {
-                    sidePanel.updateBranchNames()
+                    if (primaryBranchInfo.name != graphPanel.mainBranchPanel.branchName) {
+                        sidePanel.updateBranchNames()
+                    }
                     graphPanel.mainBranchPanel.updateBranchName()
                 }
 
