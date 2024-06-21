@@ -1430,12 +1430,12 @@ class ActionServiceTest : BasePlatformTestCase() {
     fun testRebasingCommandCreation() {
         modelService.invoker.commands.clear()
         modelService.addToSelectedCommits(commitInfo3, addedBranch)
-        actionService.rebasingCommandCreation()
+        actionService.takeNormalRebaseAction()
         assertThat(branchInfo.selectedCommits.isEmpty()).isTrue()
         assertThat(addedBranch.selectedCommits.isEmpty()).isTrue()
         assertTrue(project.service<RebaseInvoker>().commands.isNotEmpty())
         modelService.graphInfo.addedBranch = null
-        actionService.rebasingCommandCreation()
+        actionService.takeNormalRebaseAction()
         assertThat(project.service<RebaseInvoker>().commands.size).isEqualTo(1)
     }
 
