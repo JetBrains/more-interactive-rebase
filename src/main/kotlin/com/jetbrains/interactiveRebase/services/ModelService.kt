@@ -36,11 +36,11 @@ class ModelService(
 ) : Disposable {
     constructor(project: Project, coroutineScope: CoroutineScope) : this(project, coroutineScope, project.service<CommitService>())
 
-    val branchInfo = BranchInfo()
-    val graphInfo = GraphInfo(branchInfo)
+    var branchInfo = BranchInfo()
+    var graphInfo = GraphInfo(branchInfo)
     var fetched = false
-    private val graphService = project.service<GraphService>()
-    private val dialogService = project.service<DialogService>()
+    internal var graphService = project.service<GraphService>()
+    internal var dialogService = project.service<DialogService>()
     internal val invoker = project.service<RebaseInvoker>()
     internal val repositoryChangeListener = IRRepositoryChangeListener(project)
     private val repo = GitUtil.getRepositoryManager(project).getRepositoryForRootQuick(project.guessProjectDir())
@@ -48,6 +48,11 @@ class ModelService(
     internal var previousConflictCommit: String = ""
     internal var gitDialog: GitConflictResolver? = null
     var gitUtils = IRGitUtils(project)
+    internal var cherryPickInProcess: Boolean = false
+    internal var previousCherryCommit: String = ""
+    var isDoneCherryPicking = true
+    var noMoreCherryPicking = false
+    var counterForCherry = 0
 
     /**
      * Fetches current branch info
@@ -226,7 +231,7 @@ class ModelService(
                 if (n < 3) {
                     fetchGraphInfo(n + 1)
                 } else {
-                    showWarningGitDialogClosesPlugin("There was an error while fetching data from Git.")
+                    showWarningGitDialogClosesPlugin("There was an error while fetching data from Git.", dialogService)
                 }
             }
 
@@ -317,6 +322,11 @@ class ModelService(
             c.isCollapsed = false
             c.changes.clear()
         }
+        graphInfo.addedBranch?.initialCommits?.forEach {
+                c ->
+            c.wasCherryPicked = false
+            c.changes.clear()
+        }
         graphInfo.mainBranch.currentCommits = graphInfo.mainBranch.initialCommits.toMutableList()
     }
 
@@ -350,7 +360,10 @@ class ModelService(
      * When there is a problem with fetching the git information and displaying the graph
      * the dialog pops up and when clicked closes the plugin
      */
-    fun showWarningGitDialogClosesPlugin(description: String) {
+    fun showWarningGitDialogClosesPlugin(
+        description: String,
+        dialogService: DialogService,
+    ) {
         coroutineScope.launch(Dispatchers.EDT) {
             dialogService.warningOkCancelDialog(
                 "Git Issue",
@@ -407,7 +420,7 @@ class ModelService(
         params.setErrorNotificationTitle("Conflicts during rebasing.")
         params.setErrorNotificationAdditionalDescription("Please resolve the conflicts and press continue to proceed with the rebase")
 
-        val commit = branchInfo.initialCommits.find { it.commit.id.toString() == currentCommitHash }!!.commit
+        val commit = branchInfo.currentCommits.find { it.commit.id.toString() == currentCommitHash }!!.commit
         val mergeConflictDescription = wrapInHtml("Conflicts in commit <b>" + commit.subject + "</b> (" + commit.id.toShortString() + ")")
         params.setMergeDescription(mergeConflictDescription)
 

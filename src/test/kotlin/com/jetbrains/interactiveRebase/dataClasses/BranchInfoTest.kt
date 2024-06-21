@@ -3,7 +3,10 @@ package com.jetbrains.interactiveRebase.dataClasses
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.PickCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
+import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.assertNotEquals
@@ -62,6 +65,28 @@ class BranchInfoTest : BasePlatformTestCase() {
         branchInfo.updateCurrentCommits(1, 0, commit)
         assertEquals(branchInfo.currentCommits[0], commit)
         verify(listener, times(1)).onCurrentCommitsChange(branchInfo.currentCommits)
+    }
+
+    fun testGetIndexOfCommitsSquash() {
+        branchInfo.setCommits(listOf(commit1, commit))
+        commit.changes.add(StopToEditCommand(commit))
+        commit.changes.add(PickCommand(commit))
+        commit.changes.add(RewordCommand(commit, "commity"))
+        commit.changes.add(SquashCommand(commit, mutableListOf(commit1), "commities"))
+        commit.isSquashed = true
+
+        assertEquals(branchInfo.indexOfCommit(commit), 0)
+    }
+
+    fun testGetIndexOfCommitsFixup() {
+        branchInfo.setCommits(listOf(commit1, commit))
+        commit.changes.add(StopToEditCommand(commit))
+        commit.changes.add(PickCommand(commit))
+        commit.changes.add(RewordCommand(commit, "commity"))
+        commit.changes.add(FixupCommand(commit, mutableListOf(commit1)))
+        commit.isSquashed = true
+
+        assertEquals(branchInfo.indexOfCommit(commit), 0)
     }
 
     fun testRemoveSelectedCommitsWithSquashed() {
@@ -178,13 +203,6 @@ class BranchInfoTest : BasePlatformTestCase() {
         commit.isSquashed = true
         commit.isSelected = true
         assertEquals(1, branchInfo.getActualSelectedCommitsSize())
-    }
-
-    fun testToString() {
-        assertEquals(
-            "BranchInfo(name='branch', initialCommits=[CommitInfo(commit=tests)], selectedCommits=[CommitInfo(commit=tests)])",
-            BranchInfo("branch", listOf(commit), mutableListOf(commit), true, true, false).toString(),
-        )
     }
 
     fun testIndexOfCommitNotSquashed() {

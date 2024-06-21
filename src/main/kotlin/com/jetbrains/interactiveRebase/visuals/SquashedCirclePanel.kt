@@ -9,7 +9,7 @@ import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.geom.Ellipse2D
 
-class SquashedCirclePanel(
+open class SquashedCirclePanel(
     diameter: Double,
     private val border: Float,
     colorTheme: Palette.Theme,
@@ -30,24 +30,7 @@ class SquashedCirclePanel(
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
         createCircle(diameter)
-        var circleColor: Color =
-            if (commit.isDragged) {
-                colorTheme.draggedCircleColor
-            } else if (commit.isReordered) {
-                colorTheme.reorderedCircleColor
-            } else {
-                colorTheme.regularCircleColor
-            }
-        circleColor = if (commit.isSelected) circleColor.darker() else circleColor
-        val borderColor =
-            if (commit.isSelected) {
-                colorTheme.selectedBorderColor
-            } else if (commit.isDragged || commit.isReordered) {
-                colorTheme.reorderedBorderColor
-            } else {
-                colorTheme.borderColor
-            }
-
+        val (circleColor, borderColor) = colorCircle()
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
 
         if (commit.isHovered) {

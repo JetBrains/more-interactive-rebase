@@ -25,7 +25,7 @@ class RoundedButton(
                 1.0,
                 3.0,
                 width.toDouble() - 3.0,
-                height.toDouble() - 5.0,
+                height.toDouble() - 6.0,
                 arcWidth.toDouble(),
                 arcHeight.toDouble(),
             ),

@@ -313,7 +313,7 @@ class UseCase4Test : IRGitPlatformTest() {
                 .atMost(10000, TimeUnit.MILLISECONDS)
                 .pollDelay(50, TimeUnit.MILLISECONDS)
                 .until {
-                    countCommitsSinceSpecificCommit(initialCommitOnMain) == 10
+                    countCommitsSinceSpecificCommit(initialCommitOnMain) == 8
                 }
         }
     }

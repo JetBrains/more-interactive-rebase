@@ -21,7 +21,7 @@ class CommitService(private val project: Project) {
      * Usually the primary branch master or main, can be configured when adding a new branch
      */
     var referenceBranchName: String = ""
-    private var gitUtils: IRGitUtils = IRGitUtils(project)
+    internal var gitUtils: IRGitUtils = IRGitUtils(project)
     internal var branchSer = project.service<BranchService>()
 
     /**

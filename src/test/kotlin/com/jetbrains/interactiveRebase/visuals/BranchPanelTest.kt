@@ -6,6 +6,7 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 import git4idea.GitCommit
+import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
@@ -42,6 +43,60 @@ class BranchPanelTest : BasePlatformTestCase() {
     }
 
     fun testPaintComponent() {
+        val circle1 = mock(CirclePanel::class.java)
+        `when`(circle1.y).thenReturn(0)
+        `when`(circle1.height).thenReturn(30)
+        `when`(circle1.colorTheme).thenReturn(Palette.BLUE_THEME)
+        val circle2 = mock(CirclePanel::class.java)
+        `when`(circle2.y).thenReturn(0)
+        `when`(circle2.height).thenReturn(30)
+        `when`(circle2.colorTheme).thenReturn(Palette.BLUE_THEME)
+
+        branchPanel.circles[0] = circle1
+        branchPanel.circles[1] = circle2
+
+        `when`(graph.create()).thenReturn(graph2)
+
+        branchPanel.paintComponent(graph)
+
+        verify(graph2).dispose()
+        verify(graph, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+    }
+
+    fun testPaintComponentEmpty() {
+        val branch = BranchInfo("branch", mutableListOf())
+        branch.currentCommits = mutableListOf()
+        branch.isPrimary = true
+        branchPanel = spy(BranchPanel(branch, Palette.BLUE_THEME))
+
+        `when`(graph.create()).thenReturn(graph2)
+
+        branchPanel.paintComponent(graph)
+
+        verify(graph2).dispose()
+        verify(graph, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+    }
+
+    fun testPaintComponentEmptyNotPrimary() {
+        val branch = BranchInfo("branch", mutableListOf())
+        branch.currentCommits = mutableListOf()
+        branch.isPrimary = false
+        branchPanel = spy(BranchPanel(branch, Palette.BLUE_THEME))
+
+        `when`(graph.create()).thenReturn(graph2)
+
+        branchPanel.paintComponent(graph)
+
+        verify(graph2).dispose()
+        verify(graph, times(1)).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+    }
+
+    fun testPaintComponentNotEmptyNotPrimary() {
+        val branch = BranchInfo("branch", mutableListOf(commit1))
+        branch.currentCommits = mutableListOf(commit1)
+        branch.isPrimary = false
+        branchPanel = spy(BranchPanel(branch, Palette.BLUE_THEME))
+
         `when`(graph.create()).thenReturn(graph2)
 
         branchPanel.paintComponent(graph)
@@ -62,6 +117,20 @@ class BranchPanelTest : BasePlatformTestCase() {
         val circle = branchPanel.initializeCirclePanel(2)
         assertTrue(circle is DropCirclePanel)
         assertEquals(circle.commit, commit3)
+    }
+
+    fun testInitializeCirclePanelPaused() {
+        commit2.isPaused = true
+
+        val circle = branchPanel.initializeCirclePanel(1)
+        assertThat(circle.colorTheme).isEqualTo(Palette.LIME_THEME)
+    }
+
+    fun testInitializeCirclePanelRebased() {
+        commit1.isRebased = true
+
+        val circle = branchPanel.initializeCirclePanel(0)
+        assertThat(circle.colorTheme).isEqualTo(Palette.LIME_GREEN_THEME)
     }
 
     fun testInitializeCirclePanelStopToEdit() {

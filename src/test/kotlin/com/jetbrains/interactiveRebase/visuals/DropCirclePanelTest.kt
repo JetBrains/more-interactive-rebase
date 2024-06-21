@@ -52,6 +52,16 @@ class DropCirclePanelTest : BasePlatformTestCase() {
     }
 
     fun testPaintCircleSelected() {
+        dropCirclePanel =
+            spy(
+                DropCirclePanel(
+                    50.0,
+                    2.0f,
+                    Palette.BLUE_THEME,
+                    commit,
+                    mock(CirclePanel::class.java),
+                ),
+            )
         commit.isSelected = true
         dropCirclePanel.paintCircle(g)
         verify(g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
@@ -67,6 +77,16 @@ class DropCirclePanelTest : BasePlatformTestCase() {
     }
 
     fun testPaintCircleHovered() {
+        dropCirclePanel =
+            spy(
+                DropCirclePanel(
+                    50.0,
+                    2.0f,
+                    Palette.BLUE_THEME,
+                    commit,
+                    previous = mock(CirclePanel::class.java),
+                ),
+            )
         commit.isHovered = true
         dropCirclePanel.paintCircle(g)
 

@@ -50,6 +50,16 @@ class SquashedCirclePanelTest : BasePlatformTestCase() {
     }
 
     fun testPaintCircleSelected() {
+        squashedCirclePanel =
+            spy(
+                SquashedCirclePanel(
+                    50.0,
+                    2.0f,
+                    Palette.BLUE_THEME,
+                    commit,
+                    mock(CirclePanel::class.java),
+                ),
+            )
         commit.isSelected = true
         squashedCirclePanel.paintCircle(g)
         verify(g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
@@ -63,6 +73,16 @@ class SquashedCirclePanelTest : BasePlatformTestCase() {
     }
 
     fun testPaintCircleHovered() {
+        squashedCirclePanel =
+            spy(
+                SquashedCirclePanel(
+                    50.0,
+                    2.0f,
+                    Palette.BLUE_THEME,
+                    commit,
+                    previous = mock(CirclePanel::class.java),
+                ),
+            )
         commit.isHovered = true
         squashedCirclePanel.paintCircle(g)
 

@@ -34,7 +34,8 @@ object Palette {
     val BLUE_BORDER = JBColor(Color(37, 47, 65), Color(21, 147, 232))
     val LIME_BORDER = JBColor(Color(195, 180, 70), Color(144, 130, 46))
     val TOMATO_BORDER = JBColor(Color(189, 55, 43), Color(150, 42, 33))
-    val LIME_GREEN_BORDER = JBColor(Color(72, 180, 28), Color(58, 143, 23))
+    val LIME_GREEN_REGULAR = JBColor(Color(72, 180, 28), Color(58, 143, 23))
+    val LIME_GREEN_BORDER = JBColor(Color(51, 119, 23), Color(49, 106, 21))
 
     val DARKER_BLUE = JBColor(BLUE.darker(), BLUE.darker())
     val DARKER_LIME = JBColor(LIME.darker(), LIME.darker())
@@ -93,7 +94,7 @@ object Palette {
 
     val LIME_GREEN_THEME =
         Theme(
-            regularCircleColor = LIME_GREEN_BORDER,
+            regularCircleColor = LIME_GREEN_REGULAR,
             borderColor = LIME_GREEN_BORDER,
             selectedCircleColor = DARKER_LIME_GREEN,
             selectedBorderColor = LIME_GREEN_BORDER,
@@ -109,5 +110,15 @@ object Palette {
             selectedBorderColor = LIME_GREEN_BORDER,
             hoverCircleColor = JETBRAINS_HOVER,
             branchNameColor = PALE_LIME_GREEN,
+        )
+
+    val GRAY_THEME =
+        Theme(
+            regularCircleColor = GRAY,
+            borderColor = DARK_GRAY,
+            selectedCircleColor = GRAY.darker() as JBColor,
+            selectedBorderColor = DARK_GRAY.darker() as JBColor,
+            hoverCircleColor = JETBRAINS_HOVER,
+            branchNameColor = GRAY,
         )
 }
