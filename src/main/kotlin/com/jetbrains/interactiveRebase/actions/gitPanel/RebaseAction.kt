@@ -15,7 +15,7 @@ import javax.swing.JComponent
 
 class RebaseAction :
     DumbAwareAction(
-        "Rebase onto",
+        "Rebase Onto",
         "Change the base of your checked-out branch.",
         AllIcons.Vcs.Branch,
     ),
