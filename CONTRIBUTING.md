@@ -97,7 +97,7 @@ to the frontend.
 
 ### Data Classes `com.jetbrains.interactiveRebase.dataClasses`
 
-It contains the main data used in the plugin. I consists of three classes namely `BranchInfo`, `CommitInfo` 
+It contains the main data used in the plugin. It consists of three classes namely `BranchInfo`, `CommitInfo` 
 and `GraphInfo`. 
 
 `CommitInfo` contains a GitCommit which encapsulates all of the commit's data, a list of commands to 
