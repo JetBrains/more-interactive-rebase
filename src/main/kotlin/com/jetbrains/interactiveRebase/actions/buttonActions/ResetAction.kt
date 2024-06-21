@@ -8,8 +8,8 @@ import com.jetbrains.interactiveRebase.services.ActionService
 public class ResetAction :
     ButtonAction("Reset", "Reset all changes", "ResetAction") {
     override fun actionPerformed(e: AnActionEvent) {
-        val actionService = e.project?.service<ActionService>()
-        actionService?.resetAllChangesAction()
+        val actionService = e.project!!.service<ActionService>()
+        actionService.resetAllChangesAction()
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
@@ -17,8 +17,7 @@ public class ResetAction :
     }
 
     override fun update(e: AnActionEvent) {
-        val project = e.project ?: return
-        val actionService = project.service<ActionService>()
+        val actionService = e.project!!.service<ActionService>()
         actionService.checkRebaseAndReset(e)
     }
 }

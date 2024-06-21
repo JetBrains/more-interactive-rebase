@@ -4,7 +4,7 @@ import com.intellij.openapi.Disposable
 
 data class GraphInfo(var mainBranch: BranchInfo, var addedBranch: BranchInfo? = null) {
     internal var branchList = mutableListOf<String>()
-    private val listeners: MutableList<Listener> = mutableListOf()
+    internal val listeners: MutableList<Listener> = mutableListOf()
 
     @Synchronized
     internal fun addListener(listener: Listener) = listeners.add(listener)

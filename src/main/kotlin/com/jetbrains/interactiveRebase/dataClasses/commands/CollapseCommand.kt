@@ -5,7 +5,7 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitModel
 
-class CollapseCommand(var firstCommit: CommitInfo, val collapsedCommits: MutableList<CommitInfo>) : IRCommand() {
+data class CollapseCommand(var firstCommit: CommitInfo, val collapsedCommits: MutableList<CommitInfo>) : IRCommand() {
     override fun execute(
         model: IRGitModel<GitRebaseEntryGeneratedUsingLog>,
         branchInfo: BranchInfo,

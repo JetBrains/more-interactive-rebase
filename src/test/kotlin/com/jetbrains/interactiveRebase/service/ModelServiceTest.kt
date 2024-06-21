@@ -20,7 +20,9 @@ import git4idea.GitCommit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.StandardTestDispatcher
 import org.assertj.core.api.Assertions.assertThat
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
 import org.mockito.Mockito.`when`
 
 class ModelServiceTest : BasePlatformTestCase() {
@@ -35,8 +37,9 @@ class ModelServiceTest : BasePlatformTestCase() {
 
     override fun setUp() {
         super.setUp()
+        val invoker = RebaseInvoker(project)
         coroutineScope = CoroutineScope(StandardTestDispatcher())
-        commitService = mock(CommitService::class.java)
+        commitService = CommitService(project)
         modelService = ModelService(project, coroutineScope, commitService)
 
         commit1 = CommitInfo(mock(GitCommit::class.java), project)
@@ -135,6 +138,9 @@ class ModelServiceTest : BasePlatformTestCase() {
         val commit3 = CommitInfo(mock(GitCommit::class.java), project)
         modelService.branchInfo.initialCommits = mutableListOf(commit1, commit2, commit3)
         modelService.branchInfo.currentCommits = mutableListOf(commit2, commit3)
+        modelService.graphInfo.addedBranch = BranchInfo("branch")
+        modelService.graphInfo.addedBranch?.initialCommits = mutableListOf(commit3)
+        modelService.graphInfo.addedBranch?.currentCommits = mutableListOf(commit3)
 
         project.service<RebaseInvoker>().commands.add(PickCommand(commit2))
         project.service<RebaseInvoker>().undoneCommands.add(PickCommand(commit1))
@@ -143,6 +149,7 @@ class ModelServiceTest : BasePlatformTestCase() {
         commit1.isRebased = true
         commit1.isCollapsed = true
         commit2.isPaused = true
+        commit3.wasCherryPicked = true
 
         commit2.changes.add(SquashCommand(commit2, mutableListOf(commit1), "squash"))
         commit1.changes.add(FixupCommand(commit1, mutableListOf(commit2)))
@@ -157,6 +164,7 @@ class ModelServiceTest : BasePlatformTestCase() {
         assertThat(commit2.isSquashed).isFalse()
         assertThat(commit2.isPaused).isFalse()
         assertThat(commit2.isCollapsed).isFalse()
+        assertThat(commit3.wasCherryPicked).isFalse()
 
         assertThat(project.service<RebaseInvoker>().commands).isEmpty()
         assertThat(project.service<RebaseInvoker>().undoneCommands).isEmpty()
@@ -262,4 +270,6 @@ class ModelServiceTest : BasePlatformTestCase() {
         assertThat(copy.mainBranch === primaryBranch).isFalse()
         assertThat(copy.addedBranch).isNull()
     }
+
+    private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)
 }

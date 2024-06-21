@@ -21,18 +21,18 @@ class RebaseAction :
     ),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project
-        val graphPanel = project?.service<ActionService>()?.mainPanel?.graphPanel!!
+        val mainPanel = e.project!!.service<ActionService>().mainPanel
+        val graphPanel = mainPanel.graphPanel
+        var base = e.project!!.service<ModelService>().graphInfo.addedBranch?.currentCommits!![0]
         val rebaseDragAndDropListener =
             RebaseDragAndDropListener(
-                project,
+                e.project!!,
                 graphPanel.mainBranchPanel.branchNamePanel,
                 graphPanel.addedBranchPanel!!.branchNamePanel,
                 graphPanel,
             )
-        var base = project.service<ModelService>().graphInfo.addedBranch?.currentCommits!![0]
-        if (project.service<ModelService>().graphInfo.addedBranch?.selectedCommits!!.isNotEmpty()) {
-            base = project.service<ModelService>().graphInfo.addedBranch?.selectedCommits!![0]
+        if (e.project!!.service<ModelService>().graphInfo.addedBranch?.selectedCommits!!.isNotEmpty()) {
+            base = e.project!!.service<ModelService>().graphInfo.addedBranch?.selectedCommits!![0]
         }
         rebaseDragAndDropListener.rebase(base)
     }
@@ -42,7 +42,7 @@ class RebaseAction :
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkNormalRebaseAction(e)
+        e.project!!.service<ActionService>().checkNormalRebaseAction(e)
     }
 
     override fun createCustomComponent(
@@ -53,7 +53,7 @@ class RebaseAction :
             this,
             presentation,
             place,
-            getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.DropAction"),
+            getActionShortcutText("com.jetbrains.interactiveRebase.actions.gitPanel.RebaseAction"),
             "Change the base of your checked-out branch.",
         )
     }

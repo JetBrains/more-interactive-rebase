@@ -151,7 +151,7 @@ abstract class IRGitPlatformTest : VcsPlatformTest() {
         return countCommitsSinceInitialCommit() == expectedCount
     }
 
-    open fun openAndInitializePlugin() {
+    open fun openAndInitializePlugin(expectedCount: Int = 4) {
         assertCorrectCheckedOutBranch(developmentBranch)
         val openEditorTabAction = CreateEditorTabAction()
         val testEvent = createTestEvent(openEditorTabAction)
@@ -164,7 +164,7 @@ abstract class IRGitPlatformTest : VcsPlatformTest() {
         Awaitility.await()
             .atMost(15000, TimeUnit.MILLISECONDS)
             .pollDelay(50, TimeUnit.MILLISECONDS)
-            .until { modelService.branchInfo.initialCommits.size == 4 }
+            .until { modelService.branchInfo.initialCommits.size == expectedCount }
         assertThat(modelService.branchInfo.name).isEqualTo(developmentBranch)
     }
 
@@ -177,5 +177,11 @@ abstract class IRGitPlatformTest : VcsPlatformTest() {
         val headerPanel = project.service<ActionService>().getHeaderPanel()
         val changesActionsPanel = headerPanel.changeActionsPanel
         return changesActionsPanel.components[2] as RoundedButton
+    }
+
+    fun countCommitsSinceSpecificCommit(hash: String): Int {
+        val result = repository.git("rev-list --count " + hash + "..HEAD")
+        Thread.sleep(10)
+        return result.toInt()
     }
 }

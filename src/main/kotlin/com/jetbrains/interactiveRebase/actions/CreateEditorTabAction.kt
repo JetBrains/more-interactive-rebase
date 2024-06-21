@@ -17,7 +17,7 @@ class CreateEditorTabAction : AnAction(AllIcons.Vcs.Branch) {
      * @param e Carries information on the invocation place
      */
     override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project
-        project?.service<IRVirtualFileService>()?.createAndOpenIRVirtualFile()
+        val project = e.project!!
+        project.service<IRVirtualFileService>().createAndOpenIRVirtualFile()
     }
 }

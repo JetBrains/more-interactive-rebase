@@ -8,7 +8,6 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vcs.VcsException
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.util.Consumer
-import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.CherryCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.IRCommand
 import com.jetbrains.interactiveRebase.services.ActionService
@@ -54,7 +53,6 @@ class IRGitRebaseUtils(private val project: Project) {
                                     commit ->
                                 head = commit
                             }
-                        println(head)
                         GitHistoryUtils.loadDetails(project, repo?.root!!, consumer, "-n", "1")
                         var previousHead = modelService.branchInfo.initialCommits[0].commit
                         if (index != 0) {
@@ -75,26 +73,6 @@ class IRGitRebaseUtils(private val project: Project) {
                 project.service<RebaseInvoker>().executeCommands()
             }
         }.queue()
-    }
-
-    fun detectAddedCherry(
-        commitInfo: CommitInfo,
-        newCommits: MutableList<CommitInfo>,
-        initialCommits: List<CommitInfo>,
-    ): Boolean {
-        var detectCherry = false
-        newCommits.forEach { newCommit ->
-            val commit =
-                initialCommits.find {
-                        initialCommit ->
-                    initialCommit.commit.id == newCommit.commit.id
-                }
-            if (commit == null) {
-                detectCherry = true
-                commitInfo.commit = newCommit.commit
-            }
-        }
-        return detectCherry
     }
 
     /**

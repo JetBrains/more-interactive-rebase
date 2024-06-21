@@ -16,11 +16,11 @@ class UndoAction :
     DumbAwareAction("Undo", "Undo the last action", AllIcons.Actions.Undo),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.undoLastAction()
+        e.project!!.service<ActionService>().undoLastAction()
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkIfChangesMade(e)
+        e.project!!.service<ActionService>().checkIfChangesMade(e)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {

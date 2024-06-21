@@ -39,8 +39,8 @@ class ModelService(
     var branchInfo = BranchInfo()
     var graphInfo = GraphInfo(branchInfo)
     var fetched = false
-    private val graphService = project.service<GraphService>()
-    private val dialogService = project.service<DialogService>()
+    internal var graphService = project.service<GraphService>()
+    internal var dialogService = project.service<DialogService>()
     internal val invoker = project.service<RebaseInvoker>()
     internal val repositoryChangeListener = IRRepositoryChangeListener(project)
     private val repo = GitUtil.getRepositoryManager(project).getRepositoryForRootQuick(project.guessProjectDir())
