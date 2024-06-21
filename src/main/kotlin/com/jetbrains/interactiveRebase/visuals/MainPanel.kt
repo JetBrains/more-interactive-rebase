@@ -32,7 +32,7 @@ class MainPanel(
     JBPanel<JBPanel<*>>(), Disposable {
     internal var commitInfoPanel = CommitInfoPanel(project)
     internal var contentPanel: JBScrollPane
-    internal var sidePanelPane: JBScrollPane
+    var sidePanelPane: JBScrollPane
     var sidePanel: SidePanel
     var graphPanel: GraphPanel
     internal val dragPanel: DragPanel = DragPanel()

@@ -19,11 +19,11 @@ class FixupAction :
     ),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.takeFixupAction()
+        e.project!!.service<ActionService>().takeFixupAction()
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkFixupOrSquash(e)
+        e.project!!.service<ActionService>().checkFixupOrSquash(e)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {

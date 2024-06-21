@@ -27,7 +27,7 @@ class RebaseAction :
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkNormalRebaseAction(e)
+        e.project!!.service<ActionService>().checkNormalRebaseAction(e)
     }
 
     override fun createCustomComponent(

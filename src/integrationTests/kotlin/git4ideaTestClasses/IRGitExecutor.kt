@@ -361,14 +361,17 @@ class TestFile internal constructor(val repo: GitRepository, val file: File) {
 
 fun getGitCommandInstance(commandName: String): GitCommand {
     return try {
-        val fieldName = commandName.uppercase().replace('-', '_')
+        val fieldName = commandName.toUpperCase().replace('-', '_')
         GitCommand::class.java.getDeclaredField(fieldName).get(null) as GitCommand
     } catch (e: NoSuchFieldException) {
-        val constructor = GitCommand::class.java.getDeclaredConstructor(String::class.java)
+        val constructor = GitCommand::class.java.getDeclaredConstructor(String::class.java, LockingPolicy::class.java)
         constructor.isAccessible = true
-        constructor.newInstance(commandName) as GitCommand
-        //        // TODO: figure out what this is and make it work
-        //        println("doesnt work")
-        //        GitCommand::class.java.getDeclaredField("hmm").get(null) as GitCommand
+        constructor.newInstance(commandName, LockingPolicy.WRITE) as GitCommand
     }
+}
+
+enum class LockingPolicy {
+    READ,
+    READ_OPTIONAL_LOCKING,
+    WRITE,
 }

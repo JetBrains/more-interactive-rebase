@@ -8,6 +8,7 @@ import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.TestActionEvent.createTestEvent
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.jetbrains.interactiveRebase.actions.gitPanel.RewordAction
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
@@ -20,7 +21,6 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
-import com.jetbrains.interactiveRebase.listeners.RebaseDragAndDropListener
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.CommitService
@@ -1424,22 +1424,6 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(testEvent.presentation.isEnabled).isFalse()
     }
 
-    fun takeNormalRebaseAction() {
-        val graphPanel = mainPanel.graphPanel
-        val rebaseDragAndDropListener =
-            RebaseDragAndDropListener(
-                project,
-                graphPanel.mainBranchPanel.branchNamePanel,
-                graphPanel.addedBranchPanel!!.branchNamePanel,
-                graphPanel,
-            )
-        var base = modelService.graphInfo.addedBranch?.currentCommits!![0]
-        if (modelService.graphInfo.addedBranch?.selectedCommits!!.isNotEmpty()) {
-            base = modelService.graphInfo.addedBranch?.selectedCommits!![0]
-        }
-        rebaseDragAndDropListener.rebase(base)
-    }
-
     fun testNormalRebaseAction() {
     }
 
@@ -1562,6 +1546,13 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertThat(modelService.invoker.undoneCommands.size).isEqualTo(0)
         assertThat(branchInfo.currentCommits.size).isEqualTo(4)
         assertTrue(commitInfo4.wasCherryPicked)
+    }
+
+    fun test() {
+        val action = RewordAction()
+        val testev = createTestEvent(action)
+        val bbut = action.createCustomComponent(testev.presentation, "string")
+        assertThat(bbut).isNotNull()
     }
 
     private inline fun <reified T> anyCustom(): T = ArgumentMatchers.any(T::class.java)

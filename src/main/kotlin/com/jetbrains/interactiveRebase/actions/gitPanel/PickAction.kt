@@ -19,11 +19,11 @@ class PickAction :
     ),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.performPickAction()
+        e.project!!.service<ActionService>().performPickAction()
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkPick(e)
+        e.project!!.service<ActionService>().checkPick(e)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {

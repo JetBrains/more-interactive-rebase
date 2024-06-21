@@ -54,11 +54,9 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.23.1")
     testImplementation("org.assertj:assertj-swing-junit:3.9.2")
     testImplementation("junit:junit:4.12")
-//    testImplementation("com.jetbrains.intellij.platform:vcs-test-framework:241.15989.150")
-//    testImplementation("com.jetbrains.intellij.platform:test-framework:241.15989.150")
-//    testImplementation("org.jetbrains.kotlin:kotlin-test:2.0.0")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     testImplementation("org.awaitility:awaitility:4.2.0")
+
 }
 
 kotlin {

@@ -19,7 +19,7 @@ class SquashAction() :
     ),
     CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.takeSquashAction()
+        e.project!!.service<ActionService>().takeSquashAction()
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
@@ -27,7 +27,7 @@ class SquashAction() :
     }
 
     override fun update(e: AnActionEvent) {
-        e.project?.service<ActionService>()?.checkFixupOrSquash(e)
+        e.project!!.service<ActionService>().checkFixupOrSquash(e)
     }
 
     override fun createCustomComponent(
