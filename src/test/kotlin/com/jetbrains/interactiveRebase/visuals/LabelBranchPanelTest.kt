@@ -11,9 +11,10 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.listeners.LabelListener
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
-import com.jetbrains.interactiveRebase.visuals.multipleBranches.RoundedPanel
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.spy
+import org.mockito.Mockito.verify
 import java.awt.Component.RIGHT_ALIGNMENT
 import java.awt.Dimension
 import java.awt.GridBagConstraints
@@ -38,8 +39,9 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         commit2 = CommitInfo(commitProvider.createCommit("Two"), project, mutableListOf())
         commit3 = CommitInfo(commitProvider.createCommit("Three"), project, mutableListOf())
         branch = BranchInfo("branch", mutableListOf(commit1, commit2, commit3))
+        branch.isRebased = true
         branch.currentCommits = mutableListOf(commit1, commit2, commit3)
-        labeledBranch = LabeledBranchPanel(project, branch, Palette.BLUE_THEME)
+        labeledBranch = spy(LabeledBranchPanel(project, branch, Palette.BLUE_THEME))
     }
 
     fun testGenerateCommitLabel() {
@@ -156,6 +158,22 @@ class LabelBranchPanelTest : BasePlatformTestCase() {
         assertThat(labelPanelWrapper.getComponent(0)).isInstanceOf(JBPanel::class.java)
         assertThat(labelPanelWrapper.getComponent(1)).isInstanceOf(JBPanel::class.java)
         assertThat(labelPanelWrapper.getComponent(2)).isInstanceOf(JBPanel::class.java)
+    }
+
+    fun testAddBranchWithVerticalDefaultOffset() {
+        labeledBranch.addBranchWithVerticalOffset()
+        val panel = labeledBranch.labelPanelWrapper
+        val branchPanel = labeledBranch.branchPanel
+        verify(labeledBranch).remove(panel)
+        verify(labeledBranch).remove(branchPanel)
+    }
+
+    fun testAddBranchWithVerticalOffset() {
+        labeledBranch.addBranchWithVerticalOffset(10)
+        val panel = labeledBranch.labelPanelWrapper
+        val branchPanel = labeledBranch.branchPanel
+        verify(labeledBranch).remove(panel)
+        verify(labeledBranch).remove(branchPanel)
     }
 
     fun testAddNotifyAddsComponents() {

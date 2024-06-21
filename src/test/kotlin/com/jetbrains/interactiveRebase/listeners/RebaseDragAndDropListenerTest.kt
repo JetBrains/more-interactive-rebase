@@ -9,10 +9,21 @@ import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.services.ActionService
-import com.jetbrains.interactiveRebase.visuals.*
+import com.jetbrains.interactiveRebase.visuals.BranchPanel
+import com.jetbrains.interactiveRebase.visuals.CirclePanel
+import com.jetbrains.interactiveRebase.visuals.DragPanel
+import com.jetbrains.interactiveRebase.visuals.GraphPanel
+import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
+import com.jetbrains.interactiveRebase.visuals.MainPanel
+import com.jetbrains.interactiveRebase.visuals.Palette
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.RoundedPanel
 import org.assertj.core.api.Assertions.assertThat
-import org.mockito.Mockito.*
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
+import org.mockito.Mockito.spy
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import java.awt.Dimension
 import java.awt.GridBagLayout
 import java.awt.Point
@@ -45,7 +56,9 @@ class RebaseDragAndDropListenerTest : BasePlatformTestCase() {
         `when`(helpMsg.getComponent(1)).thenReturn(mock(JBLabel::class.java))
         `when`(helpMsg.components).thenReturn(
             arrayOf(
-                mock(JBPanel::class.java), mock(JBLabel::class.java))
+                mock(JBPanel::class.java),
+                mock(JBLabel::class.java),
+            ),
         )
         val roundedPanel1 = mock(RoundedPanel::class.java)
         `when`(roundedPanel1.cornerRadius).thenReturn(15)
@@ -55,13 +68,15 @@ class RebaseDragAndDropListenerTest : BasePlatformTestCase() {
         `when`(mainBranchNameLabel.y).thenReturn(20)
         `when`(mainBranchNameLabel.width).thenReturn(40)
         `when`(mainBranchNameLabel.height).thenReturn(10)
-        `when`(mainBranchNameLabel.bounds).thenReturn(Rectangle(Point(10, 20), Dimension(40, 10)))
+        `when`(mainBranchNameLabel.bounds).thenReturn(
+            Rectangle(Point(10, 20), Dimension(40, 10)),
+        )
         `when`(mainBranchNameLabel.border).thenReturn(EmptyBorder(2, 3, 3, 3))
         `when`(mainBranchNameLabel.getComponent(0)).thenReturn(roundedPanel1)
         `when`(mainBranchNameLabel.getComponent(1)).thenReturn(helpMsg)
         `when`(mainBranchNameLabel.getComponent(1)).thenReturn(helpMsg)
         `when`(mainBranchNameLabel.components).thenReturn(
-            arrayOf(roundedPanel1, helpMsg)
+            arrayOf(roundedPanel1, helpMsg),
         )
         `when`(dragPanel.add(mainBranchNameLabel)).thenReturn(mainBranchNameLabel)
         `when`(dragPanel.width).thenReturn(200)
@@ -76,12 +91,14 @@ class RebaseDragAndDropListenerTest : BasePlatformTestCase() {
         `when`(addedBranchNameLabel.y).thenReturn(20)
         `when`(addedBranchNameLabel.width).thenReturn(40)
         `when`(addedBranchNameLabel.height).thenReturn(10)
-        `when`(addedBranchNameLabel.bounds).thenReturn(Rectangle(Point(110, 20), Dimension(40, 10)))
+        `when`(addedBranchNameLabel.bounds).thenReturn(
+            Rectangle(Point(110, 20), Dimension(40, 10)),
+        )
         `when`(addedBranchNameLabel.border).thenReturn(EmptyBorder(2, 3, 3, 3))
         `when`(addedBranchNameLabel.getComponent(0)).thenReturn(roundedPanel2)
         `when`(addedBranchNameLabel.getComponent(1)).thenReturn(null)
         `when`(addedBranchNameLabel.components).thenReturn(
-            arrayOf(roundedPanel2)
+            arrayOf(roundedPanel2),
         )
         `when`(dragPanel.add(addedBranchNameLabel)).thenReturn(addedBranchNameLabel)
 

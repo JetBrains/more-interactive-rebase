@@ -127,9 +127,7 @@ class IRGitUtils(private val project: Project) {
         }
     }
 
-    internal fun getCurrentCherryPickCommit(
-            root: VirtualFile,
-    ): String {
+    internal fun getCurrentCherryPickCommit(root: VirtualFile): String {
         val worktreePath = root.path + "/.git"
         val nextFile = File(worktreePath, "CHERRY_PICK_HEAD")
         val next: String
@@ -141,17 +139,16 @@ class IRGitUtils(private val project: Project) {
         }
     }
 
-    internal fun isCherryPickInProcess(root: VirtualFile) : Boolean{
+    internal fun isCherryPickInProcess(root: VirtualFile): Boolean {
         val commit = getCurrentCherryPickCommit(root)
-        if(!commit.equals("")){
+        if (!commit.equals("")) {
             project.service<ModelService>().cherryPickInProcess = true
             project.service<ModelService>().previousCherryCommit = commit
             return true
-        }else {
+        } else {
             project.service<ModelService>().previousCherryCommit = ""
 
             return false
         }
-
     }
 }

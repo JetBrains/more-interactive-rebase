@@ -3,8 +3,6 @@ package com.jetbrains.interactiveRebase.services
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
-
-import com.jetbrains.interactiveRebase.dataClasses.commands.CherryCommand
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
@@ -13,7 +11,6 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitRebaseUtils
-import git4idea.GitCommit
 import git4ideaClasses.GitRebaseEntryGeneratedUsingLog
 import git4ideaClasses.IRGitEntry
 import git4ideaClasses.IRGitModel
@@ -138,7 +135,7 @@ class RebaseInvoker(val project: Project) {
         commands.removeIf { it === command }
     }
 
-    fun executeCherry(){
+    fun executeCherry() {
         expandCollapsedCommits()
         IRGitRebaseUtils(project).cherryPick(commands)
     }

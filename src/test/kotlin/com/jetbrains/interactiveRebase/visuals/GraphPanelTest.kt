@@ -9,7 +9,6 @@ import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.ActionService
 import junit.framework.TestCase
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
@@ -266,6 +265,40 @@ class GraphPanelTest : BasePlatformTestCase() {
         )
     }
 
+    fun testGradientTransitionColors() {
+        val g2d = mock(Graphics2D::class.java)
+
+        graphPanel.gradientTransition(
+            g2d,
+            0,
+            1,
+            100,
+            101,
+            colors = arrayOf(Palette.BLUE, Palette.TOMATO),
+        )
+
+        verify(g2d, times(1)).setPaint(
+            any(LinearGradientPaint::class.java),
+        )
+    }
+
+    fun testGradientTransitionNullException() {
+        val g2d = mock(Graphics2D::class.java)
+
+        graphPanel.addedBranchPanel = null
+
+        assertThrows(NullPointerException::class.java) {
+            graphPanel.gradientTransition(
+                g2d,
+                0,
+                1,
+                100,
+                101,
+                floatArrayOf(0.0f, 1.0f),
+            )
+        }
+    }
+
     fun testUpdateGraphPanel() {
         graphPanel.updateGraphPanel()
         verify(graphPanel).removeAll()
@@ -319,5 +352,17 @@ class GraphPanelTest : BasePlatformTestCase() {
 
         val result4 = graphPanel.computeVerticalOffsets()
         assertThat(result4).isEqualTo(Pair(5, 180))
+    }
+
+    fun testComputeVerticalOffsetsNull() {
+        graphPanel.graphInfo.addedBranch = null
+        val result = graphPanel.computeVerticalOffsets()
+        assertThat(result).isEqualTo(Pair(5, 5))
+    }
+
+    fun testComputeVerticalOffsetsBaseNull() {
+        graphPanel.graphInfo.addedBranch?.baseCommit = null
+        val result = graphPanel.computeVerticalOffsets()
+        assertThat(result).isEqualTo(Pair(5, 5))
     }
 }

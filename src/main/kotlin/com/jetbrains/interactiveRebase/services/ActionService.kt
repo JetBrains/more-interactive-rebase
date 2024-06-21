@@ -88,27 +88,31 @@ class ActionService(val project: Project) {
         invoker.undoneCommands.clear()
         val commits = modelService.graphInfo.addedBranch?.selectedCommits
         commits?.forEach {
-                commitInfo -> prepareCherry(commitInfo)
+                commitInfo ->
+            prepareCherry(commitInfo)
         }
         modelService.branchInfo.clearSelectedCommits()
         modelService.graphInfo.addedBranch?.clearSelectedCommits()
     }
 
-    fun prepareCherry(commitInfo : CommitInfo, index : Int = 0){
+    fun prepareCherry(
+        commitInfo: CommitInfo,
+        index: Int = 0,
+    ) {
         commitInfo.wasCherryPicked = true
         val newCommit =
-                CommitInfo(
-                        commitInfo.commit, project,
-                        mutableListOf(), false, false,
-                        false, false, false,
-                        false, false,
-                )
+            CommitInfo(
+                commitInfo.commit, project,
+                mutableListOf(), false, false,
+                false, false, false,
+                false, false,
+            )
         modelService.graphInfo.mainBranch.currentCommits.add(index, newCommit)
         val command = CherryCommand(commitInfo, newCommit, index)
         newCommit.addChange(command)
         invoker.addCommand(command)
-
     }
+
     /**
      * Enables the Cherry Pick button.
      * Commits form the checked out branch cannot be cherry-picked
@@ -118,11 +122,10 @@ class ActionService(val project: Project) {
         val index = addedBranch?.currentCommits?.indexOf(addedBranch.baseCommit)
         e.presentation.isEnabled = modelService.branchInfo.selectedCommits.isEmpty() &&
             modelService.areDisabledCommitsSelected() &&
-                addedBranch?.selectedCommits!!.all{
-                    !it.wasCherryPicked &&
-                            addedBranch.currentCommits.indexOf(it) < index!!
-                }
-
+            addedBranch?.selectedCommits!!.all {
+                !it.wasCherryPicked &&
+                    addedBranch.currentCommits.indexOf(it) < index!!
+            }
     }
 
     /**
@@ -366,7 +369,6 @@ class ActionService(val project: Project) {
             commitInfo.changes.clear()
             commitInfo.isSelected = false
             commitInfo.wasCherryPicked = false
-
         }
         modelService.graphInfo.mainBranch.isRebased = false
         modelService.graphInfo.addedBranch?.baseCommit =
@@ -642,20 +644,24 @@ class ActionService(val project: Project) {
         command: CherryCommand,
     ) {
         modelService.graphInfo.mainBranch.currentCommits.remove(commit)
-        val original = modelService.graphInfo.addedBranch?.currentCommits?.filter{it.wasCherryPicked}?.find{
-            it.commit==commit.commit
-        }
+        val original =
+            modelService.graphInfo.addedBranch?.currentCommits?.filter { it.wasCherryPicked }?.find {
+                it.commit == commit.commit
+            }
         original?.wasCherryPicked = false
-        //mainPanel.graphPanel.addedBranchPanel?.updateCommits()
+        // mainPanel.graphPanel.addedBranchPanel?.updateCommits()
     }
 
     /**
      * If the last action that was undone by the user was a cherry-pick,
      * this adds it back to the checked out branch.
      */
-    internal fun redoCherryPick(commit: CommitInfo, command : CherryCommand) {
+    internal fun redoCherryPick(
+        commit: CommitInfo,
+        command: CherryCommand,
+    ) {
         val original = command.baseCommit
-        val index =  command.index
+        val index = command.index
         modelService.graphInfo.mainBranch.currentCommits.add(index, commit)
         original.wasCherryPicked = true
 

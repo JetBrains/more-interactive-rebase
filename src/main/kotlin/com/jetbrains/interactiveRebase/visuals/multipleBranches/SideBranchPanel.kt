@@ -7,7 +7,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.util.preferredHeight
-import com.intellij.ui.util.preferredWidth
 import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.services.DialogService
 import com.jetbrains.interactiveRebase.services.ModelService

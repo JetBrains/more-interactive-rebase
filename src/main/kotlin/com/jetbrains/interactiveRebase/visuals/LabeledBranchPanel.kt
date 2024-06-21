@@ -20,14 +20,29 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.RewordCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
-import com.jetbrains.interactiveRebase.listeners.*
+import com.jetbrains.interactiveRebase.listeners.CherryDragAndDropListener
+import com.jetbrains.interactiveRebase.listeners.CircleDragAndDropListener
+import com.jetbrains.interactiveRebase.listeners.CircleHoverListener
+import com.jetbrains.interactiveRebase.listeners.LabelListener
+import com.jetbrains.interactiveRebase.listeners.TextFieldListener
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.services.strategies.SquashTextStrategy
 import com.jetbrains.interactiveRebase.visuals.multipleBranches.RoundedPanel
-import java.awt.*
+import java.awt.AlphaComposite
+import java.awt.Cursor
+import java.awt.Dimension
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import java.awt.Insets
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.*
+import javax.swing.JComponent
+import javax.swing.JTextField
+import javax.swing.OverlayLayout
+import javax.swing.SwingConstants
+import javax.swing.SwingUtilities
 import javax.swing.border.EmptyBorder
 
 /**
@@ -211,19 +226,21 @@ class LabeledBranchPanel(
      * of the main branch panel
      */
     private fun addRebaseIcon(help: JBPanel<JBPanel<*>>) {
-        val iconPanel = object : JBPanel<JBPanel<*>>() {
-            override fun paintComponent(g: Graphics) {
-                if (isOpaque) {
-                    super.paintComponent(g)
-                    val g2d = g as Graphics2D
-                    val originalComposite = g2d.composite
-                    g2d.composite = AlphaComposite
-                        .getInstance(AlphaComposite.SRC_OVER, 0.3f)
-                    AllIcons.Vcs.Branch.paintIcon(this, g2d, 2, 2)
-                    g2d.composite = originalComposite
+        val iconPanel =
+            object : JBPanel<JBPanel<*>>() {
+                override fun paintComponent(g: Graphics) {
+                    if (isOpaque) {
+                        super.paintComponent(g)
+                        val g2d = g as Graphics2D
+                        val originalComposite = g2d.composite
+                        g2d.composite =
+                            AlphaComposite
+                                .getInstance(AlphaComposite.SRC_OVER, 0.3f)
+                        AllIcons.Vcs.Branch.paintIcon(this, g2d, 2, 2)
+                        g2d.composite = originalComposite
+                    }
                 }
             }
-        }
         iconPanel.preferredSize = Dimension(20, 20)
         iconPanel.minimumSize = iconPanel.preferredSize
         help.add(iconPanel)

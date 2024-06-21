@@ -9,15 +9,14 @@ import git4idea.repo.GitRepository
 import git4idea.repo.GitRepositoryChangeListener
 
 class IRRepositoryChangeListener(val project: Project) : GitRepositoryChangeListener {
-
     /**
      * Refreshes the model whenever a change happens in the repository,
      * such as a commit, rebase, merge, etc.
      */
     override fun repositoryChanged(repository: GitRepository) {
         val invoker = project.service<RebaseInvoker>()
-        if(invoker.commands.filterIsInstance<CherryCommand>().isNotEmpty()){
-            if(project.service<ModelService>().noMoreCherryPicking){
+        if (invoker.commands.filterIsInstance<CherryCommand>().isNotEmpty()) {
+            if (project.service<ModelService>().noMoreCherryPicking) {
                 if (repository.isRebaseInProgress) {
                     project.service<ModelService>().refreshModelDuringRebaseProcess(repository.root)
                 } else {
@@ -49,23 +48,21 @@ class IRRepositoryChangeListener(val project: Project) : GitRepositoryChangeList
 //            }
 //            else if(project.service<ModelService>().branchInfo.initialCommits.map{it -> it.commit.id}.contains(head).not()
 //                    && project.service<ModelService>().cherryPickInProcess){
-               // project.service<ModelService>().cherryPickInProcess = false
+            // project.service<ModelService>().cherryPickInProcess = false
 //                while(!project.service<ModelService>().isDoneCerryPicking){
 //                }
-                //invoker.executeCommands()
+            // invoker.executeCommands()
 //            }
 //            else {
 //                println("cherry pick is aborted")
 //                //project.service<ModelService>().fetchGraphInfo(0)
 //            }
-
-        }else{
+        } else {
             if (repository.isRebaseInProgress) {
                 project.service<ModelService>().refreshModelDuringRebaseProcess(repository.root)
             } else {
                 project.service<ModelService>().refreshModel()
             }
         }
-
     }
 }

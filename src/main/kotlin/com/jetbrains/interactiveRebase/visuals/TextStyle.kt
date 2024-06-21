@@ -4,8 +4,6 @@ enum class TextStyle {
     ITALIC,
     BOLD,
     CROSSED,
-    LEFT_ALIGNMENT,
-    RIGHT_ALIGNMENT,
     ;
 
     companion object {
@@ -20,16 +18,6 @@ enum class TextStyle {
                     Pair(
                         "<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><strike>",
                         "</strike></span>",
-                    )
-                LEFT_ALIGNMENT ->
-                    Pair(
-                        "<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;'><body>",
-                        "</body></span>",
-                    )
-                RIGHT_ALIGNMENT ->
-                    Pair(
-                        "<span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right;'><body>",
-                        "</body></span>",
                     )
             }
         }

@@ -9,7 +9,16 @@ import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.listeners.RebaseDragAndDropListener
 import com.jetbrains.interactiveRebase.services.ModelService
-import java.awt.*
+import java.awt.BasicStroke
+import java.awt.Color
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import java.awt.Insets
+import java.awt.LinearGradientPaint
+import java.awt.Point
+import java.awt.RenderingHints
 import java.awt.geom.CubicCurve2D
 import javax.swing.SwingConstants
 
@@ -139,7 +148,7 @@ class GraphPanel(
         }
         val mainCircleCount = mainBranchPanel.branchPanel.circles.size
         val addedCircleCount =
-            (graphInfo.addedBranch?.currentCommits?.indexOf(graphInfo.addedBranch?.baseCommit!!) ?: 0) + 1
+            graphInfo.addedBranch?.currentCommits!!.indexOf(graphInfo.addedBranch?.baseCommit!!) + 1
         val difference = mainCircleCount - addedCircleCount + 2
         return difference * mainBranchPanel.branchPanel.diameter * 2
     }
@@ -242,8 +251,8 @@ class GraphPanel(
 
         // Coordinates of the last circle of the added branch
         if (addedBranchPanel != null) {
-            rebaseCircleInAddedBranch = addedBranchPanel?.branchPanel?.circles
-                ?.firstOrNull { c -> c.commit == graphInfo.addedBranch?.baseCommit }
+            rebaseCircleInAddedBranch = addedBranchPanel!!.branchPanel.circles
+                .firstOrNull { c -> c.commit == graphInfo.addedBranch!!.baseCommit }
                 ?: mainBranchPanel.branchPanel.circles[0]
             var (addedCircleCenterX, addedCircleCenterY) =
                 centerCoordinatesOfBaseCircleInAddedBranch()
@@ -307,14 +316,14 @@ class GraphPanel(
             val mainLastCircle = mainBranchPanel.branchPanel.circles.last()
             mainCircleCenterX =
                 mainBranchPanel.x + // start of the labeled branch panel
-                        mainBranchPanel.branchPanel.x + // start of the internal branch panel
-                        mainLastCircle.x + // start of the circle
-                        mainLastCircle.width / 2 // center of the circle
+                mainBranchPanel.branchPanel.x + // start of the internal branch panel
+                mainLastCircle.x + // start of the circle
+                mainLastCircle.width / 2 // center of the circle
             mainCircleCenterY =
                 mainBranchPanel.y + // start of the labeled branch panel
-                        mainBranchPanel.branchPanel.y + // start of the internal branch panel
-                        mainLastCircle.y + // start of the circle
-                        mainLastCircle.height / 2 // center of the circle
+                mainBranchPanel.branchPanel.y + // start of the internal branch panel
+                mainLastCircle.y + // start of the circle
+                mainLastCircle.height / 2 // center of the circle
         }
         return Pair(mainCircleCenterX, mainCircleCenterY)
     }
@@ -358,12 +367,13 @@ class GraphPanel(
         endX: Int,
         endY: Int,
         fractions: FloatArray = floatArrayOf(0.0f, 0.8f),
-        colors: Array<Color> = arrayOf(
-            mainBranchPanel.branchPanel.circles.last()
-                .colorTheme.regularCircleColor,
-            addedBranchPanel?.branchPanel!!.circles.last()
-                .colorTheme.regularCircleColor,
-        )
+        colors: Array<Color> =
+            arrayOf(
+                mainBranchPanel.branchPanel.circles.last()
+                    .colorTheme.regularCircleColor,
+                addedBranchPanel?.branchPanel!!.circles.last()
+                    .colorTheme.regularCircleColor,
+            ),
     ) {
         g2d.paint =
             LinearGradientPaint(

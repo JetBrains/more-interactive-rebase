@@ -2,6 +2,7 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.ui.JBColor
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import icons.DvcsImplIcons
 import java.awt.BasicStroke
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -49,6 +50,6 @@ class CherryCirclePanel(
             g2d.draw(circle)
         }
 
-        paintCherry(g2d)
+        icon(g2d, DvcsImplIcons.CherryPick)
     }
 }

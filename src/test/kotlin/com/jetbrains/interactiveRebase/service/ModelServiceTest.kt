@@ -90,7 +90,6 @@ class ModelServiceTest : BasePlatformTestCase() {
         assertThat(modelService.getLastSelectedCommit()).isEqualTo(commit3)
     }
 
-
     fun testAreDisabledCommitsSelectedNull() {
         assertFalse(modelService.areDisabledCommitsSelected())
     }
@@ -206,7 +205,6 @@ class ModelServiceTest : BasePlatformTestCase() {
         assertThat(c3.changes).isEmpty()
         assertThat(c3.isRebased).isFalse()
         assertThat(modelService.previousConflictCommit).isEqualTo("")
-
     }
 
     fun testGraphDuplicatesBothBranches() {
