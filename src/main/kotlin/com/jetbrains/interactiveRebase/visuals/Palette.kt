@@ -120,5 +120,6 @@ object Palette {
             selectedBorderColor = DARK_GRAY.darker() as JBColor,
             hoverCircleColor = JETBRAINS_HOVER,
             branchNameColor = GRAY,
-        )
+            draggedCircleColor = GRAY,
+    )
 }
