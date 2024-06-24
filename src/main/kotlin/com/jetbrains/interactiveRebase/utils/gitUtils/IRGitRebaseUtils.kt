@@ -56,7 +56,7 @@ class IRGitRebaseUtils(private val project: Project) {
                         GitHistoryUtils.loadDetails(project, repo?.root!!, consumer, "-n", "1")
                         var previousHead = modelService.branchInfo.initialCommits[0].commit
                         if (index != 0) {
-                            previousHead = command.commit.commit
+                            previousHead = cherryCommands[index - 1].commit.commit
                         }
                         if (previousHead == head) {
                             IRGitUtils(project).gitReset()
