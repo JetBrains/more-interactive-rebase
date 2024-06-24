@@ -366,7 +366,11 @@ class ActionService(val project: Project) {
             resetCommitInfo(commitInfo)
         }
         modelService.graphInfo.addedBranch?.initialCommits?.forEach { commitInfo ->
+            val collapseCommand = commitInfo.changes.find { it is CollapseCommand }
             commitInfo.changes.clear()
+            if (collapseCommand != null) {
+                commitInfo.addChange(collapseCommand)
+            }
             commitInfo.isSelected = false
             commitInfo.wasCherryPicked = false
         }

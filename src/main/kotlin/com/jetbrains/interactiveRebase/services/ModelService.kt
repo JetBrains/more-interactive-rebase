@@ -12,6 +12,7 @@ import com.intellij.xml.util.XmlStringUtil.wrapInHtml
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.FixupCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
@@ -300,6 +301,7 @@ class ModelService(
     }
 
     internal fun markRebaseCommitAsPaused(head: String) {
+        project.service<ActionService>().mainPanel.graphPanel.markRefreshedAsTrue()
         for (commit in branchInfo.currentCommits.reversed()) {
             if (commit.commit.id.toString() == head) {
                 commit.markAsPaused()
@@ -309,6 +311,8 @@ class ModelService(
                 commit.markAsRebased()
             }
         }
+        project.service<ActionService>().mainPanel.graphPanel.markRefreshedAsFalse()
+        project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
     }
 
     internal fun removeAllChangesIfNeeded() {
@@ -326,8 +330,17 @@ class ModelService(
                 c ->
             c.wasCherryPicked = false
             c.changes.clear()
+            val collapseCommand = c.changes.find { it is CollapseCommand }
+            c.changes.clear()
+            if (collapseCommand != null) {
+                c.addChange(collapseCommand)
+            }
         }
         graphInfo.mainBranch.currentCommits = graphInfo.mainBranch.initialCommits.toMutableList()
+        graphInfo.mainBranch.isRebased = false
+        if (graphInfo.addedBranch != null) {
+            graphInfo.addedBranch?.baseCommit = graphInfo.addedBranch?.currentCommits?.last()
+        }
     }
 
     /**
@@ -337,6 +350,7 @@ class ModelService(
         if (rebaseInProcess) {
             removeAllChangesIfNeeded()
             rebaseInProcess = false
+            graphInfo.mainBranch.isRebased = false
             previousConflictCommit = ""
             project.service<ActionService>().switchToChangeButtonsIfNeeded()
             project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
@@ -439,7 +453,7 @@ class ModelService(
         root: VirtualFile,
     ) {
         previousConflictCommit = currentMergingCommit
-        markRebaseCommitAsPaused(currentMergingCommit)
+//        markRebaseCommitAsPaused(currentMergingCommit)
         createMergeConflictDialogForCommit(currentMergingCommit, root)
     }
 
