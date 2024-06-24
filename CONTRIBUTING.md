@@ -100,7 +100,7 @@ to the frontend.
 It contains the main data used in the plugin. It consists of three classes namely `BranchInfo`, `CommitInfo` 
 and `GraphInfo`. 
 
-`CommitInfo` contains a GitCommit which encapsulates all of the commit's data, a list of commands to 
+`CommitInfo` contains a GitCommit which encapsulates all the commits' data, a list of commands to 
 know the state of the commit and the actions that have been taken on the commit and a list of flags to know the status 
 of the commit in order to properly display it in the GUI. 
 

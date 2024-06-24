@@ -209,24 +209,22 @@ with the rebasing.
 </div>
 
 
-# Known Bugs
-1. In the case of cherry-picking, if something fails, either one of the cherry-picks or the rebase, everything
-should be reverted to the initial state. 
+# Known Bugs 
 2. The virtual file does not get deleted when closing the project.
 3. In case the cherry-pick fails, there is no way to undo that specific action, other than resetting all changes.
-4. The labels of the branch names and the graph blink once when the user is starting to drag. That is due to moving the
+4. The labels of the branch names and the graph might blink once when the user is starting to drag. That is due to moving the
 component forward because of reparenting.
 5. The icons for the actions are not representative or custom. 
 6. Nested squashing is treated as a single flat squash, which means that multiple squash actions are undone as a 
-singular squash. Nested squashing has a lot of problem around it.
-7. If a person has a lot of local branches when displaying the side panel view with the branches the
+singular squash. There are a lot of edge cases when combining squashing and undoing.
+7. If a person has a lot of local branches when displaying the side panel view with the branches, the
 UI freezes or is very slow. To fix that there should be some kind of paging of the side panel or loading when you
 scroll.
 8. If there are very long branch names, the names of the commits get very far away from the commits because of the way
 we align the components.
 9. If there is a very long branch and the user is dragging a commit the panel does not scroll with the dragging. So,
 if the topmost commit is being dragged down it can only be dragged until the end of the screen. 
-10. Currently, cherry-picking is always executed at the beginning before the rebasing progress. Instead, the rebasing 
+10. Currently, cherry-picking is always executed at the beginning before the rebasing process. Instead, the rebasing 
 should be interrupted to do cherry-picking exactly at the moment when the user does it, so, as to minimize conflicts. 
 11. Currently, we are not checking whether the commits can be interactively rebased from here. So, when
 displaying the graph, that check should be made for each commit and gray out the commits that cannot be rebased, and 
@@ -235,9 +233,12 @@ also make them not interactive.
 bottom, which means that if there is a very long branch, the user needs to scroll. 
 13. If the user is on a branch and adds another branch to the view, and then checks out to the added branch, the view 
 breaks because the same branch is displayed twice and gives a git error. 
-14. The whole refreshing logic needs to be redone. 
+14. The whole refreshing logic needs to be redone as  all the components are removed and added again multiple times 
+for every singular change. 
 15. The model for rebasing is created with all the commits on the branch. Instead, the oldest 
 modified commit should be detected, and the model should be created with only the commits from then on.
+16. For any branch that does not have a diverging commit from main or master we just display no commits.
+17. 
 
 # Features to implement
 1. Change the cursor when it is hovering on top of a draggable component.
@@ -246,4 +247,5 @@ modified commit should be detected, and the model should be created with only th
 This also enables unsquashing a particular commit through drag and drop.
 4. The expanding of a branch should be an action and also have a  keyboard shortcut for it.
 5. The user should be able to go through the right side panel using only the keyboard.
+6. Add a search bar for the branches.
 

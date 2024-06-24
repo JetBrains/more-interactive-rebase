@@ -11,6 +11,7 @@ import com.intellij.util.Consumer
 import com.jetbrains.interactiveRebase.dataClasses.commands.CherryCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.IRCommand
 import com.jetbrains.interactiveRebase.services.ActionService
+import com.jetbrains.interactiveRebase.services.GraphService
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import git4idea.GitCommit
@@ -60,8 +61,10 @@ class IRGitRebaseUtils(private val project: Project) {
                         }
                         if (previousHead == head) {
                             var output = IRGitUtils(project).gitReset()
-
                             modelService.noMoreCherryPicking = true
+                            project.service<ModelService>().removeAllChangesIfNeeded()
+                            project.service<GraphService>().updateGraphInfo(project.service<ModelService>().graphInfo)
+                            project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
                             return
                         }
                         newbie.commit = head!!
@@ -70,6 +73,9 @@ class IRGitRebaseUtils(private val project: Project) {
                     }
                 }
                 modelService.noMoreCherryPicking = true
+                project.service<ModelService>().removeAllChangesIfNeeded()
+                project.service<GraphService>().updateGraphInfo(project.service<ModelService>().graphInfo)
+                project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
                 project.service<RebaseInvoker>().executeCommands()
             }
         }.queue()

@@ -312,6 +312,7 @@ class ModelService(
     }
 
     internal fun removeAllChangesIfNeeded() {
+        print("clear")
         project.service<RebaseInvoker>().commands.clear()
         project.service<RebaseInvoker>().undoneCommands.clear()
         graphInfo.mainBranch.initialCommits.forEach {
@@ -320,12 +321,12 @@ class ModelService(
             c.isRebased = false
             c.isPaused = false
             c.isCollapsed = false
+            c.wasCherryPicked = false
             c.changes.clear()
         }
         graphInfo.addedBranch?.initialCommits?.forEach {
                 c ->
             c.wasCherryPicked = false
-            c.changes.clear()
             val collapseCommand = c.changes.find { it is CollapseCommand }
             c.changes.clear()
             if (collapseCommand != null) {

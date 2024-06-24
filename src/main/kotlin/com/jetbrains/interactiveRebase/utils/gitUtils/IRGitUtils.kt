@@ -1,11 +1,13 @@
 package com.jetbrains.interactiveRebase.utils.gitUtils
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.Consumer
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
+import com.jetbrains.interactiveRebase.services.ModelService
 import git4idea.GitCommit
 import git4idea.GitUtil
 import git4idea.commands.Git
@@ -93,8 +95,7 @@ class IRGitUtils(private val project: Project) {
         val branchCommand: GitCommand = GitCommand.RESET
         val root: VirtualFile = getRoot() ?: throw IRInaccessibleException("Project root cannot be found")
         val lineHandler = GitLineHandler(project, root, branchCommand)
-        // , project.service<ModelService>().branchInfo.initialCommits[0].commit.id.asString()
-        val params = listOf("--hard")
+        val params = listOf("--hard", project.service<ModelService>().branchInfo.initialCommits[0].commit.id.asString())
         lineHandler.addParameters(params)
         val output: GitCommandResult = runCommand(lineHandler)
         return output.getOutputOrThrow()

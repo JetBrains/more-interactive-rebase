@@ -26,7 +26,7 @@ import javax.swing.ScrollPaneConstants
 
 class GraphDiffDialog(val project: Project) : DialogWrapper(project) {
     private var modelService = project.service<ModelService>()
-    private val width = 550
+    private val width = 900
     private val height = 850
 
     init {
@@ -138,7 +138,9 @@ class GraphDiffDialog(val project: Project) : DialogWrapper(project) {
 
         if (addedBranch != null) {
             addedBranch.initialCommits.forEach {
-                project.service<ActionService>().resetCommitInfo(it)
+                project.service<ActionService>().resetAddedCommitInfo(it)
+                it.isCollapsed = false
+                it.changes.clear()
             }
             addedBranch.currentCommits = addedBranch.initialCommits.toMutableList()
         }
