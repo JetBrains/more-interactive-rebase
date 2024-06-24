@@ -8,9 +8,12 @@ import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
+import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.CommitService
 import com.jetbrains.interactiveRebase.services.GraphService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
+import com.jetbrains.interactiveRebase.visuals.GraphPanel
+import com.jetbrains.interactiveRebase.visuals.MainPanel
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.mockito.Mockito.any
@@ -168,6 +171,10 @@ class GraphServiceTest : BasePlatformTestCase() {
 
     fun testAddBranchOneInEach() {
         project.service<RebaseInvoker>().addCommand(DropCommand(commit1))
+        val mainPanel = MainPanel(project)
+        val graphPanel = GraphPanel(project)
+        mainPanel.graphPanel = graphPanel
+        project.service<ActionService>().mainPanel = mainPanel
         val checkedOut = BranchInfo("")
         val startingCommit1 = CommitInfo(provider.createCommitWithParent("with parent in f1", "parent"), project)
         val startingCommit2 = CommitInfo(provider.createCommitWithParent("with parent in f2", "parent"), project)
@@ -191,6 +198,10 @@ class GraphServiceTest : BasePlatformTestCase() {
 
     fun testAddBranchChecksEmptyPrimary() {
         val checkedOut = BranchInfo("")
+        val mainPanel = MainPanel(project)
+        val graphPanel = GraphPanel(project)
+        mainPanel.graphPanel = graphPanel
+        project.service<ActionService>().mainPanel = mainPanel
         val startingCommit1 = CommitInfo(provider.createCommitWithParent("with parent in f1", "parent"), project)
         val startingCommit2 = CommitInfo(provider.createCommitWithParent("with parent in f2", "parent"), project)
         val parentCommit = CommitInfo(provider.createCommit("parent"), project)
@@ -257,6 +268,11 @@ class GraphServiceTest : BasePlatformTestCase() {
         `when`(commitService.getCommits("feature")).thenReturn(listOf(commit2.commit, commit1.commit))
 
         val graph = GraphInfo(b1, b2)
+        val mainPanel = MainPanel(project)
+        val graphPanel = GraphPanel(project)
+        mainPanel.graphPanel = graphPanel
+        project.service<ActionService>().mainPanel = mainPanel
+
         graphService.removeBranch(graph)
         assertThat(graph.addedBranch).isNull()
         assertThat(graph.mainBranch.isPrimary).isFalse()
