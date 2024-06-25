@@ -27,12 +27,6 @@ class ActionService(val project: Project) {
     var mainPanel = MainPanel(project)
 
     /**
-     * True if collapsed commits were expanded but were automatically collapsed again
-     * Used to enable collapse action
-     */
-    private var isNestedCollapsed: Boolean = false
-
-    /**
      * Constructor for injection during testing
      */
     constructor(project: Project, modelService: ModelService, invoker: RebaseInvoker) : this(project) {
@@ -807,7 +801,7 @@ class ActionService(val project: Project) {
      */
     fun checkCollapse(e: AnActionEvent) {
         // check if nested-collapsing was present and enable collapsing to initial state
-        if (isNestedCollapsed && modelService.getSelectedBranch().getActualSelectedCommitsSize() == 0) {
+        if (checkIfNestedCollapsingPresent() && modelService.getSelectedBranch().getActualSelectedCommitsSize() == 0) {
             e.presentation.isEnabled = true
             return
         }
@@ -844,6 +838,15 @@ class ActionService(val project: Project) {
         }
 
         e.presentation.isEnabled = checkSelectedCommitsAreInARange()
+    }
+
+    /**
+     * Returns true if any of the branches has
+     */
+    fun checkIfNestedCollapsingPresent(): Boolean {
+        val modalService = project.service<ModelService>()
+        val secondBranch = if (modalService.graphInfo.addedBranch == null) true else modalService.graphInfo.addedBranch!!.isNestedCollapsed
+        return modalService.graphInfo.mainBranch.isNestedCollapsed || secondBranch
     }
 
     /**
@@ -889,7 +892,7 @@ class ActionService(val project: Project) {
         if (collapsedCommits.size >= 30 && enableNestedCollapsing) {
             collapsedCommits = collapseAgainIfNeeded(collapsedCommits, branch, parentCommit)
         } else {
-            isNestedCollapsed = false
+            branch.isNestedCollapsed = false
         }
         branch.addCommitsToCurrentCommits(index, collapsedCommits)
     }
@@ -904,7 +907,7 @@ class ActionService(val project: Project) {
         parentCommit: CommitInfo,
     ): MutableList<CommitInfo> {
         if (alreadyCollapsed.size < 30) return alreadyCollapsed.toMutableList()
-        isNestedCollapsed = true
+        branch.isNestedCollapsed = true
         val numberToExpand = 20
         val toExpand = alreadyCollapsed.take(numberToExpand)
         val collapseAgain = alreadyCollapsed.drop(numberToExpand)
@@ -936,11 +939,12 @@ class ActionService(val project: Project) {
     fun autoCollapseBranch(branch: BranchInfo?) {
         if (branch == null) return
         // expand first if there are nested collapses present
-        if (isNestedCollapsed) {
-            val possibleParent = branch.currentCommits.find { it.isCollapsed }
-            if (possibleParent != null) expandCollapsedCommits(possibleParent, branch, enableNestedCollapsing = false)
-            isNestedCollapsed = false
+        val possibleParent = branch.currentCommits.find { it.isCollapsed }
+        if (possibleParent != null) {
+            expandCollapsedCommits(possibleParent, branch, enableNestedCollapsing = false)
+            branch.isNestedCollapsed = false
         }
+
         if (branch.currentCommits.none { it.isCollapsed }) {
             branch.collapseCommits()
         }

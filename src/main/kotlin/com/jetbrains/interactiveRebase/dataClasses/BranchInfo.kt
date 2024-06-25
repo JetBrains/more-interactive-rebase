@@ -18,6 +18,12 @@ data class BranchInfo(
     var currentCommits: MutableList<CommitInfo> = initialCommits.toMutableList()
     var baseCommit: CommitInfo? = null
 
+    /**
+     * True if collapsed commits were expanded but were automatically collapsed again
+     * Used to enable collapse action
+     */
+    var isNestedCollapsed: Boolean = false
+
     @Synchronized
     internal fun addListener(listener: Listener) = listeners.add(listener)
 
