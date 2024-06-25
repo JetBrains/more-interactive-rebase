@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets
  */
 class IRGitUtils(private val project: Project) {
     val capCommits = 2000
+
     /**
      * Gets the GitRepository given the project
      */
@@ -32,7 +33,9 @@ class IRGitUtils(private val project: Project) {
 //        return GitUtil.getRepositoryManager(
 //            project,
 //        ).getRepositoryForRoot(getRoot()) ?: throw IRInaccessibleException("Repository cannot be accessed")
-        return GitUtil.getRepositoryManager(project).getRepositoryForRootQuick(project.guessProjectDir()) ?: throw IRInaccessibleException("Repository cannot be accessed")
+        return GitUtil.getRepositoryManager(
+            project,
+        ).getRepositoryForRootQuick(project.guessProjectDir()) ?: throw IRInaccessibleException("Repository cannot be accessed")
     }
 
     /**

@@ -6,18 +6,19 @@ import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.ModelService
 
 fun Project.takeAction(method: () -> Unit) {
-        val actionService = this.service<ActionService>()
-        val graphPanel = actionService.mainPanel.graphPanel
-        val doRefresh = !actionService.mainPanel.graphPanel.refreshed
+    val actionService = this.service<ActionService>()
+    val graphPanel = actionService.mainPanel.graphPanel
+    val doRefresh = !actionService.mainPanel.graphPanel.refreshed
 
-        graphPanel.markRefreshedAsTrue()
-        try {
-            method()
-        } finally {
-            if(doRefresh){
+    graphPanel.markRefreshedAsTrue()
+    try {
+        method()
+    } finally {
+        if (doRefresh) {
             graphPanel.markRefreshedAsFalse()
-            graphPanel.updateGraphPanel()}
+            graphPanel.updateGraphPanel()
         }
+    }
 }
 
 fun Project.takeActionWithDeselecting(method: () -> Unit) {
@@ -32,8 +33,9 @@ fun Project.takeActionWithDeselecting(method: () -> Unit) {
     } finally {
         modelService.branchInfo.clearSelectedCommits()
         modelService.graphInfo.addedBranch?.clearSelectedCommits()
-        if(doRefresh){
+        if (doRefresh) {
             graphPanel.markRefreshedAsFalse()
-            graphPanel.updateGraphPanel()}
+            graphPanel.updateGraphPanel()
+        }
     }
 }

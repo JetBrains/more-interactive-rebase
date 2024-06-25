@@ -49,11 +49,11 @@ class ActionService(val project: Project) {
      */
     fun takeRewordAction() {
         project.takeAction {
-        modelService.branchInfo.selectedCommits.forEach {
-            if (!it.isSquashed) {
-                it.setTextFieldEnabledTo(true)
+            modelService.branchInfo.selectedCommits.forEach {
+                if (!it.isSquashed) {
+                    it.setTextFieldEnabledTo(true)
+                }
             }
-        }
         }
     }
 
@@ -61,7 +61,7 @@ class ActionService(val project: Project) {
      * Makes a drop change once the Drop button is clicked
      */
     fun takeDropAction() {
-        project.takeActionWithDeselecting{
+        project.takeActionWithDeselecting {
             val commits = modelService.getSelectedCommits()
             commits.forEach { commitInfo ->
                 if (!commitInfo.isSquashed) {
@@ -898,17 +898,18 @@ class ActionService(val project: Project) {
             branch.isNestedCollapsed = false
         }
         branch.addCommitsToCurrentCommits(index, collapsedCommits)
-        if(branch.currentCommits.size >= 100) {
+        if (branch.currentCommits.size >= 200) {
             createNotification()
-        } }
+        }}
     }
 
     fun createNotification() {
-        val notification = Notification(
-            "Dependencies",
-            "Consider collapsing commits to improve performance.",
-            NotificationType.INFORMATION
-        )
+        val notification =
+            Notification(
+                "Dependencies",
+                "Consider collapsing commits to improve performance.",
+                NotificationType.INFORMATION,
+            )
         notification.setTitle("Reduced performance due to large branch")
         notification.addAction(CollapseAction())
         notification.notify(project)
@@ -942,21 +943,21 @@ class ActionService(val project: Project) {
      * keeping the first 5 commits and last commit, or the selected commits.
      */
     fun takeCollapseAction() {
-       project.takeActionWithDeselecting {
-           if (modelService.getSelectedCommits().isEmpty()) {
-               autoCollapseBranch(modelService.graphInfo.mainBranch)
-               autoCollapseBranch(modelService.graphInfo.addedBranch)
-           } else {
-               val selectedCommits = modelService.getSelectedCommits()
-               selectedCommits.sortBy { modelService.getSelectedBranch().indexOfCommit(it) }
+        project.takeActionWithDeselecting {
+            if (modelService.getSelectedCommits().isEmpty()) {
+                autoCollapseBranch(modelService.graphInfo.mainBranch)
+                autoCollapseBranch(modelService.graphInfo.addedBranch)
+            } else {
+                val selectedCommits = modelService.getSelectedCommits()
+                selectedCommits.sortBy { modelService.getSelectedBranch().indexOfCommit(it) }
 
-               val currentCommits = modelService.getCurrentCommits()
-               val indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
-               val indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
+                val currentCommits = modelService.getCurrentCommits()
+                val indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
+                val indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
 
-               modelService.getSelectedBranch().collapseCommits(indexFirstCommit, indexLastCommit)
-           }
-       }
+                modelService.getSelectedBranch().collapseCommits(indexFirstCommit, indexLastCommit)
+            }
+        }
     }
 
     fun autoCollapseBranch(branch: BranchInfo?) {

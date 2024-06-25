@@ -25,8 +25,8 @@ class ViewDiffAction :
         val project = e.project
         if (null != project) {
             project.takeAction {
-            val dialog = GraphDiffDialog(project)
-            dialog.show()
+                val dialog = GraphDiffDialog(project)
+                dialog.show()
             }
         }
     }

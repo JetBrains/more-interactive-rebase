@@ -32,21 +32,22 @@ class GraphService(private val project: Project) {
         addedBranch: String,
     ) {
         project.takeAction {
-        project.service<ActionService>().resetAllChangesAction()
-        // update the checked-out branch using the added branch as reference
-        commitService.referenceBranchName = addedBranch
-        updateBranchInfo(graphInfo.mainBranch)
-        graphInfo.mainBranch.isPrimary = true
+            project.service<ActionService>().resetAllChangesAction()
+            // update the checked-out branch using the added branch as reference
+            commitService.referenceBranchName = addedBranch
+            updateBranchInfo(graphInfo.mainBranch)
+            graphInfo.mainBranch.isPrimary = true
 
-        if (graphInfo.mainBranch.initialCommits.isEmpty()) {
-            return@takeAction
+            if (graphInfo.mainBranch.initialCommits.isEmpty()) {
+                return@takeAction
+            }
+
+            // first get commits of the added branch using the checked out branch as reference
+            val newBranch = BranchInfo(addedBranch, isPrimary = false, isWritable = false)
+            graphInfo.addedBranch = newBranch
+            updateAddedBranchInfo(graphInfo)
+            graphInfo.changeAddedBranch(newBranch)
         }
-
-        // first get commits of the added branch using the checked out branch as reference
-        val newBranch = BranchInfo(addedBranch, isPrimary = false, isWritable = false)
-        graphInfo.addedBranch = newBranch
-        updateAddedBranchInfo(graphInfo)
-        graphInfo.changeAddedBranch(newBranch)}
     }
 
     /**
@@ -54,11 +55,11 @@ class GraphService(private val project: Project) {
      */
     fun removeBranch(graphInfo: GraphInfo) {
         project.takeAction {
-        graphInfo.mainBranch.isPrimary = false
-        project.service<ActionService>().resetAllChangesAction()
-        commitService.referenceBranchName = ""
-        updateBranchInfo(graphInfo.mainBranch)
-        graphInfo.changeAddedBranch(null)
+            graphInfo.mainBranch.isPrimary = false
+            project.service<ActionService>().resetAllChangesAction()
+            commitService.referenceBranchName = ""
+            updateBranchInfo(graphInfo.mainBranch)
+            graphInfo.changeAddedBranch(null)
         }
     }
 

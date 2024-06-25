@@ -26,7 +26,6 @@ import java.awt.RenderingHints
 import java.awt.geom.CubicCurve2D
 import javax.swing.SwingConstants
 
-
 /**
  * Draws one or two branches next to another
  * from their diverging point onward

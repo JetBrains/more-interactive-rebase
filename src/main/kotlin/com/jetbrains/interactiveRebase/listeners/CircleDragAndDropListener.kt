@@ -166,11 +166,12 @@ class CircleDragAndDropListener(
             } else if (initialIndex != currentIndex) {
                 repositionOnDrop()
                 //mark false to stop refreshing too many times while dropping
+                // mark false to stop refreshing too many times while dropping
                 (parent.parent as GraphPanel?)?.markRefreshedAsTrue()
                 modelService.markCommitAsReordered(commit, initialIndex, currentIndex)
                 parent.branch.updateCurrentCommits(initialIndex, currentIndex, commit)
             }
-            //call an explicit refresh
+            // call an explicit refresh
             (parent.parent as GraphPanel?)?.markRefreshedAsFalse()
             (parent.parent as GraphPanel?)?.updateGraphPanel()
             (parent.parent as GraphPanel?)?.repaint()

@@ -77,8 +77,10 @@ class ModelService(
         commit: CommitInfo,
         branchInfo: BranchInfo,
     ) {
-        clearSelectedCommits()
-        addToSelectedCommits(commit, branchInfo)
+        project.takeAction {
+            clearSelectedCommits()
+            addToSelectedCommits(commit, branchInfo)
+        }
     }
 
     /**
@@ -91,13 +93,15 @@ class ModelService(
         commit: CommitInfo,
         branchInfo: BranchInfo,
     ) {
-        if (commit.isCollapsed) return
-        commit.isSelected = true
-        branchInfo.addSelectedCommits(commit)
-        commit.getChangesAfterPick().forEach { change ->
-            if (change is FixupCommand || change is SquashCommand) {
-                project.service<ActionService>().getCombinedCommits(change).forEach {
-                    branchInfo.addSelectedCommits(it)
+        project.takeAction {
+            if (commit.isCollapsed) return@takeAction
+            commit.isSelected = true
+            branchInfo.addSelectedCommits(commit)
+            commit.getChangesAfterPick().forEach { change ->
+                if (change is FixupCommand || change is SquashCommand) {
+                    project.service<ActionService>().getCombinedCommits(change).forEach {
+                        branchInfo.addSelectedCommits(it)
+                    }
                 }
             }
         }
@@ -112,9 +116,11 @@ class ModelService(
         commit: CommitInfo,
         branchInfo: BranchInfo,
     ) {
-        commit.isSelected = false
-        if (commit.isCollapsed) return
-        branchInfo.removeSelectedCommits(commit)
+        project.takeAction {
+            commit.isSelected = false
+            if (commit.isCollapsed) return@takeAction
+            branchInfo.removeSelectedCommits(commit)
+        }
     }
 
     /**
@@ -224,7 +230,7 @@ class ModelService(
      * coroutine
      */
     fun fetchGraphInfo(n: Int) {
-        object: Task.Backgroundable(project, "Fetching commits of current branch") {
+        object : Task.Backgroundable(project, "Fetching commits of current branch") {
             override fun run(indicator: ProgressIndicator) {
                 try {
                     graphService.updateGraphInfo(graphInfo)
@@ -248,19 +254,20 @@ class ModelService(
      */
     fun populateLocalBranches(n: Int) {
         val branchService = project.service<BranchService>()
-        object: Task.Backgroundable(project, "Fetching local branches") {
+        object : Task.Backgroundable(project, "Fetching local branches") {
             override fun run(indicator: ProgressIndicator) {
-            try {
-                val list = branchService.getBranchesExceptCheckedOut()
-                if (!list.isNullOrEmpty()) {
-                    graphInfo.branchList = list.toMutableList()
-                }
-            } catch (e: VcsException) {
-                if (n < 3) {
-                    populateLocalBranches(n + 1)
+                try {
+                    val list = branchService.getBranchesExceptCheckedOut()
+                    if (!list.isNullOrEmpty()) {
+                        graphInfo.branchList = list.toMutableList()
+                    }
+                } catch (e: VcsException) {
+                    if (n < 3) {
+                        populateLocalBranches(n + 1)
+                    }
                 }
             }
-        }}.queue()
+        }.queue()
     }
 
     /**
@@ -270,21 +277,21 @@ class ModelService(
         addedBranch: String,
         n: Int,
     ) {
-        object: Task.Backgroundable(project, "Fetching commits of \"$addedBranch\"") {
+        object : Task.Backgroundable(project, "Fetching commits of \"$addedBranch\"") {
             override fun run(indicator: ProgressIndicator) {
-            try {
-                graphService.addBranch(graphInfo, addedBranch)
-            } catch (e: VcsException) {
-                if (n < 3) {
-                    addSecondBranchToGraphInfo(addedBranch, n + 1)
-                } else {
-                    showWarningGitDialogForBranch("This branch cannot be added.")
-                    project.service<ActionService>().mainPanel.sidePanel.sideBranchPanels
-                        .find { it.isSelected }?.deselectBranch()
-                    project.service<ActionService>().mainPanel.sidePanel.resetAllBranchesVisually()
+                try {
+                    graphService.addBranch(graphInfo, addedBranch)
+                } catch (e: VcsException) {
+                    if (n < 3) {
+                        addSecondBranchToGraphInfo(addedBranch, n + 1)
+                    } else {
+                        showWarningGitDialogForBranch("This branch cannot be added.")
+                        project.service<ActionService>().mainPanel.sidePanel.sideBranchPanels
+                            .find { it.isSelected }?.deselectBranch()
+                        project.service<ActionService>().mainPanel.sidePanel.resetAllBranchesVisually()
+                    }
                 }
             }
-        }
         }.queue()
     }
 
@@ -292,17 +299,18 @@ class ModelService(
      * Removes the added branch field in the graph info
      */
     fun removeSecondBranchFromGraphInfo(n: Int) {
-        object: Task.Backgroundable(project, "Removing the added branch") {
+        object : Task.Backgroundable(project, "Removing the added branch") {
             override fun run(indicator: ProgressIndicator) {
-            try {
-                graphService.removeBranch(graphInfo)
-            } catch (e: VcsException) {
-                if (n < 3) {
-                    removeSecondBranchFromGraphInfo(n + 1)
+                try {
+                    graphService.removeBranch(graphInfo)
+                } catch (e: VcsException) {
+                    if (n < 3) {
+                        removeSecondBranchFromGraphInfo(n + 1)
+                    }
+                    // TODO Handle
                 }
-                // TODO Handle
             }
-        }}.queue()
+        }.queue()
     }
 
     internal fun markRebaseCommitAsPaused(head: String) {

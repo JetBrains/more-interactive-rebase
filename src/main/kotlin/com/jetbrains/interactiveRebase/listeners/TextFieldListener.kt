@@ -38,9 +38,9 @@ class TextFieldListener(
 
     fun processEnter() {
         invoker.project.takeAction {
-        strategy.handleEnter()
-        textField.exitTextBox()
-        invoker.undoneCommands.clear()
+            strategy.handleEnter()
+            textField.exitTextBox()
+            invoker.undoneCommands.clear()
         }
     }
 }
