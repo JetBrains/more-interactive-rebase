@@ -9,14 +9,10 @@ open class GeneralCommitConsumer : CommitConsumer() {
     override var commits: MutableList<GitCommit> = mutableListOf()
 
     override fun consume(commit: GitCommit?) {
-        if (commitCounter < commitConsumptionCap) {
-            commit?.let { commits.add(it) }
-            commitCounter++
-        }
+        commit?.let { commits.add(it) }
     }
 
     fun resetCommits() {
         commits = mutableListOf()
-        commitCounter = 0
     }
 }

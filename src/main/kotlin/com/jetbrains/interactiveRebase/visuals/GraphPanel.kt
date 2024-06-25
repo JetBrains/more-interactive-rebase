@@ -26,6 +26,7 @@ import java.awt.RenderingHints
 import java.awt.geom.CubicCurve2D
 import javax.swing.SwingConstants
 
+
 /**
  * Draws one or two branches next to another
  * from their diverging point onward
@@ -64,6 +65,15 @@ class GraphPanel(
         layout = GridBagLayout()
 
         addBranches()
+
+        addPropertyChangeListener("shouldRepaint") { evt ->
+            if (evt.newValue is Boolean) {
+                val newValue = evt.newValue as Boolean
+                if (!newValue) {
+                    updateGraphPanel()
+                }
+            }
+        }
     }
 
     /**
@@ -340,6 +350,7 @@ class GraphPanel(
      */
     fun updateGraphPanel() {
         if (refreshed) return
+        println("updated graph panel")
         addedBranchPanel = null
         removeAll()
 

@@ -24,13 +24,15 @@ import java.nio.charset.StandardCharsets
  * Isolated interaction with static git utility methods
  */
 class IRGitUtils(private val project: Project) {
+    val capCommits = 2000
     /**
      * Gets the GitRepository given the project
      */
     fun getRepository(): GitRepository {
-        return GitUtil.getRepositoryManager(
-            project,
-        ).getRepositoryForRoot(getRoot()) ?: throw IRInaccessibleException("Repository cannot be accessed")
+//        return GitUtil.getRepositoryManager(
+//            project,
+//        ).getRepositoryForRoot(getRoot()) ?: throw IRInaccessibleException("Repository cannot be accessed")
+        return GitUtil.getRepositoryManager(project).getRepositoryForRootQuick(project.guessProjectDir()) ?: throw IRInaccessibleException("Repository cannot be accessed")
     }
 
     /**
@@ -49,7 +51,7 @@ class IRGitUtils(private val project: Project) {
         repo: GitRepository,
         consumer: Consumer<GitCommit>,
     ) {
-        GitHistoryUtils.loadDetails(project, repo.root, consumer, currentBranch, "--not", referenceBranch)
+        GitHistoryUtils.loadDetails(project, repo.root, consumer, currentBranch, "--not", referenceBranch, "-n $capCommits")
     }
 
     /**
@@ -71,7 +73,7 @@ class IRGitUtils(private val project: Project) {
         consumer: Consumer<GitCommit>,
         branchName: String,
     ) {
-        GitHistoryUtils.loadDetails(project, repo.root, consumer, branchName)
+        GitHistoryUtils.loadDetails(project, repo.root, consumer, branchName, "-n $capCommits")
     }
 
     /**

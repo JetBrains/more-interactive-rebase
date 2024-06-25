@@ -4,6 +4,7 @@ import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.services.strategies.RewordTextStrategy
 import com.jetbrains.interactiveRebase.services.strategies.TextFieldStrategy
+import com.jetbrains.interactiveRebase.utils.takeAction
 import com.jetbrains.interactiveRebase.visuals.RoundedTextField
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
@@ -36,8 +37,10 @@ class TextFieldListener(
     }
 
     fun processEnter() {
+        invoker.project.takeAction {
         strategy.handleEnter()
         textField.exitTextBox()
         invoker.undoneCommands.clear()
+        }
     }
 }

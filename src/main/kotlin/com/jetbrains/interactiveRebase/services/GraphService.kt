@@ -8,6 +8,7 @@ import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.exceptions.IRInaccessibleException
+import com.jetbrains.interactiveRebase.utils.takeAction
 
 @Service(Service.Level.PROJECT)
 class GraphService(private val project: Project) {
@@ -30,7 +31,7 @@ class GraphService(private val project: Project) {
         graphInfo: GraphInfo,
         addedBranch: String,
     ) {
-        project.service<ActionService>().mainPanel.graphPanel.markRefreshedAsTrue()
+        project.takeAction {
         project.service<ActionService>().resetAllChangesAction()
         // update the checked-out branch using the added branch as reference
         commitService.referenceBranchName = addedBranch
@@ -38,28 +39,27 @@ class GraphService(private val project: Project) {
         graphInfo.mainBranch.isPrimary = true
 
         if (graphInfo.mainBranch.initialCommits.isEmpty()) {
-            return
+            return@takeAction
         }
 
         // first get commits of the added branch using the checked out branch as reference
         val newBranch = BranchInfo(addedBranch, isPrimary = false, isWritable = false)
         graphInfo.addedBranch = newBranch
         updateAddedBranchInfo(graphInfo)
-        project.service<ActionService>().mainPanel.graphPanel.markRefreshedAsFalse()
-        graphInfo.changeAddedBranch(newBranch)
+        graphInfo.changeAddedBranch(newBranch)}
     }
 
     /**
      * Called when a branch is de-selected from the side panel
      */
     fun removeBranch(graphInfo: GraphInfo) {
-        project.service<ActionService>().mainPanel.graphPanel.markRefreshedAsTrue()
+        project.takeAction {
         graphInfo.mainBranch.isPrimary = false
         project.service<ActionService>().resetAllChangesAction()
         commitService.referenceBranchName = ""
         updateBranchInfo(graphInfo.mainBranch)
-        project.service<ActionService>().mainPanel.graphPanel.markRefreshedAsFalse()
         graphInfo.changeAddedBranch(null)
+        }
     }
 
     /**
