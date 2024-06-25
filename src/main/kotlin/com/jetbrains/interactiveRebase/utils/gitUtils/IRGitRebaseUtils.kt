@@ -74,8 +74,6 @@ class IRGitRebaseUtils(private val project: Project) {
                     }
                 }
                 modelService.noMoreCherryPicking = true
-                project.service<RebaseInvoker>().commands.clear()
-                project.service<RebaseInvoker>().undoneCommands.clear()
                 project.service<ModelService>().graphInfo.mainBranch.currentCommits.forEach { c ->
                     c.wasCherryPicked = false
                     c.changes.removeAll { it is CherryCommand }
@@ -85,7 +83,14 @@ class IRGitRebaseUtils(private val project: Project) {
                     c.wasCherryPicked = false
                 }
                 project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
-                project.service<RebaseInvoker>().executeCommands()
+                if (project.service<RebaseInvoker>().commands.isNotEmpty()) {
+                    project.service<RebaseInvoker>().executeCommands()
+                } else {
+                    project.service<ModelService>().removeAllChangesIfNeeded()
+                    project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
+                    project.service<ModelService>().fetchGraphInfo(0)
+                    project.service<ModelService>().populateLocalBranches(0)
+                }
             }
         }.queue()
     }

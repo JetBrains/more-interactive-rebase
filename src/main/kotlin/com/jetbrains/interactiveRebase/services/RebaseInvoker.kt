@@ -157,9 +157,9 @@ class RebaseInvoker(val project: Project) {
             it.execute(model, branchInfo)
         }
         if (base != null) {
-            gitUtils.rebase(base, model)
             branchInfo.currentCommits = commitsToDisplayDuringRebase
             commitsToDisplayDuringRebase = mutableListOf()
+            gitUtils.rebase(base, model)
         }
         commands.clear()
     }
