@@ -939,6 +939,7 @@ class ActionService(val project: Project) {
         if (isNestedCollapsed) {
             val possibleParent = branch.currentCommits.find { it.isCollapsed }
             if (possibleParent != null) expandCollapsedCommits(possibleParent, branch, enableNestedCollapsing = false)
+            isNestedCollapsed = false
         }
         if (branch.currentCommits.none { it.isCollapsed }) {
             branch.collapseCommits()
