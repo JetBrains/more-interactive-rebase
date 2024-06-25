@@ -844,9 +844,8 @@ class ActionService(val project: Project) {
      * Returns true if any of the branches has
      */
     fun checkIfNestedCollapsingPresent(): Boolean {
-        val modalService = project.service<ModelService>()
-        val secondBranch = if (modalService.graphInfo.addedBranch == null) true else modalService.graphInfo.addedBranch!!.isNestedCollapsed
-        return modalService.graphInfo.mainBranch.isNestedCollapsed || secondBranch
+        val secondBranch = if (modelService.graphInfo.addedBranch == null) false else modelService.graphInfo.addedBranch!!.isNestedCollapsed
+        return modelService.graphInfo.mainBranch.isNestedCollapsed || secondBranch
     }
 
     /**
