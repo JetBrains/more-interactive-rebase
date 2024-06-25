@@ -49,11 +49,7 @@ class ModelService(
     internal var previousConflictCommit: String = ""
     internal var gitDialog: GitConflictResolver? = null
     var gitUtils = IRGitUtils(project)
-    internal var cherryPickInProcess: Boolean = false
-    internal var previousCherryCommit: String = ""
-    var isDoneCherryPicking = true
-    var noMoreCherryPicking = false
-    var counterForCherry = 0
+    var noMoreCherryPicking = true
 
     /**
      * Fetches current branch info
@@ -316,6 +312,7 @@ class ModelService(
     }
 
     internal fun removeAllChangesIfNeeded() {
+        print("clear")
         project.service<RebaseInvoker>().commands.clear()
         project.service<RebaseInvoker>().undoneCommands.clear()
         graphInfo.mainBranch.initialCommits.forEach {
@@ -324,12 +321,12 @@ class ModelService(
             c.isRebased = false
             c.isPaused = false
             c.isCollapsed = false
+            c.wasCherryPicked = false
             c.changes.clear()
         }
         graphInfo.addedBranch?.initialCommits?.forEach {
                 c ->
             c.wasCherryPicked = false
-            c.changes.clear()
             val collapseCommand = c.changes.find { it is CollapseCommand }
             c.changes.clear()
             if (collapseCommand != null) {

@@ -366,13 +366,7 @@ class ActionService(val project: Project) {
             resetCommitInfo(commitInfo)
         }
         modelService.graphInfo.addedBranch?.initialCommits?.forEach { commitInfo ->
-            val collapseCommand = commitInfo.changes.find { it is CollapseCommand }
-            commitInfo.changes.clear()
-            if (collapseCommand != null) {
-                commitInfo.addChange(collapseCommand)
-            }
-            commitInfo.isSelected = false
-            commitInfo.wasCherryPicked = false
+            resetAddedCommitInfo(commitInfo)
         }
         modelService.graphInfo.mainBranch.isRebased = false
         modelService.graphInfo.addedBranch?.baseCommit =
@@ -380,6 +374,16 @@ class ActionService(val project: Project) {
         invoker.branchInfo.clearSelectedCommits()
         modelService.graphInfo.addedBranch?.clearSelectedCommits()
         takeCollapseAction()
+    }
+
+    fun resetAddedCommitInfo(commitInfo: CommitInfo) {
+        val collapseCommand = commitInfo.changes.find { it is CollapseCommand }
+        commitInfo.changes.clear()
+        if (collapseCommand != null) {
+            commitInfo.addChange(collapseCommand)
+        }
+        commitInfo.isSelected = false
+        commitInfo.wasCherryPicked = false
     }
 
     /**
@@ -796,9 +800,14 @@ class ActionService(val project: Project) {
      */
     fun checkCollapse(e: AnActionEvent) {
         // check if there are any already collapsed commits
-        if (modelService.getSelectedBranch().initialCommits.size <= 7) {
-            e.presentation.isEnabled = false
-            return
+        if (modelService.branchInfo.initialCommits.size <= 7) {
+            if (modelService.graphInfo.addedBranch == null) {
+                e.presentation.isEnabled = false
+                return
+            } else if (modelService.graphInfo.addedBranch!!.initialCommits.size <= 7) {
+                e.presentation.isEnabled = false
+                return
+            }
         }
 
         if (modelService.graphInfo.mainBranch.currentCommits.any { it.isCollapsed }) {
