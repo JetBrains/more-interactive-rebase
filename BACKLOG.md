@@ -230,14 +230,12 @@ should be interrupted to do cherry-picking exactly at the moment when the user d
 displaying the graph, that check should be made for each commit and gray out the commits that cannot be rebased, and 
 also make them not interactive. 
 11. The help button at the bottom does not work with linux, and it also is not fixed to the screen but is always at the
-bottom, which means that if there is a very long branch, the user needs to scroll. 
-12. If the user is on a branch and adds another branch to the view, and then checks out to the added branch, the view 
-breaks because the same branch is displayed twice and gives a git error. 
-13. The whole refreshing logic needs to be redone as  all the components are removed and added again multiple times 
+bottom, which means that if there is a very long branch, the user needs to scroll.  
+12. The whole refreshing logic needs to be redone as  all the components are removed and added again multiple times 
 for every singular change. 
-14. The model for rebasing is created with all the commits on the branch. Instead, the oldest 
+13. The model for rebasing is created with all the commits on the branch. Instead, the oldest 
 modified commit should be detected, and the model should be created with only the commits from then on. 
-15. For any branch that does not have a diverging commit from main or master we just display no commits.
+14. For any branch that does not have a diverging commit from main or master we just display no commits.
 
 
 # Features to implement
