@@ -329,7 +329,6 @@ class ModelService(
         graphInfo.addedBranch?.initialCommits?.forEach {
                 c ->
             c.wasCherryPicked = false
-            c.changes.clear()
             val collapseCommand = c.changes.find { it is CollapseCommand }
             c.changes.clear()
             if (collapseCommand != null) {

@@ -37,7 +37,7 @@ class IRGitRebaseUtils(private val project: Project) {
      * Start Cherry-Picking
      */
     internal fun cherryPick(commands: List<IRCommand>) {
-        object : Task.Backgroundable(project, GitBundle.message("rebase.progress.indicator.preparing.title")) {
+        object : Task.Backgroundable(project, "Cherry picking") {
             override fun run(indicator: ProgressIndicator) {
                 val modelService = project.service<ModelService>()
                 val cherryCommands = commands.filterIsInstance<CherryCommand>()
