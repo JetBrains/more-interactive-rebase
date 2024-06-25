@@ -84,7 +84,7 @@ commits), `changePanel` (actions that modify the main panel) and `gitPanel` (act
 all of them correlate to a command).
 
 All actions extend `AnAction` which is part of the IntelliJ Platform API. This allows for easy integration 
-with the platform as adding these actions to the `plugin.xml` file provides plenty out of the box functionality. 
+with the platform as adding these actions to the `plugin.xml` file provides plenty out-of-the-box functionality. 
 Included in this functionality is displaying tooltips when hovering over the actions, calling `actionPerformed` when
 interacted with, integration into context menus and action toolbars.
 
@@ -93,48 +93,48 @@ interacted with, integration into context menus and action toolbars.
 In here, one can find all the commands used for the invoker. All classes extend `IRCommand` and require an `execute` 
 method. The invoker will later depend on these commands to execute the actions and perform the desired interactive 
 rebase. Each command also contains specific attributes to be able to properly display and propagate the correct data 
-to the frontend. 
+to the frontend. Each command is part of the command design pattern we have implemented and the execute methods are 
+triggered by the execute method of the RebaseInvoker, which is the invoker for the patter. 
 
 ### Data Classes `com.jetbrains.interactiveRebase.dataClasses`
 
 It contains the main data used in the plugin. It consists of three classes namely `BranchInfo`, `CommitInfo` 
 and `GraphInfo`. 
 
-`CommitInfo` contains a GitCommit which encapsulates all of the commit's data, a list of commands to 
-know the state of the commit and the actions that have been taken on the commit and a list of flags to know the status 
+`CommitInfo` contains a GitCommit which encapsulates all the commits' data, a list of commands to 
+know the state of the commit, the actions that have been taken on the commit and a list of flags to know the status 
 of the commit in order to properly display it in the GUI. 
 
 `BranchInfo` contains various lists of `CommitInfo` as well as the name of branch and other flags that provide 
 information regarding the state of the branch. As for the lists,`initialCommits` is the list that reflects the state of 
-the actual branch in the repository. The `selectedCommits` keep track of which commits are currently selected in the GUI
-such that if an action gets executed, these commits get affected. Finally `currentCommits` keeps track of the commits 
-that are being displayed by the UI at any given moment in time, this is specially important for collapsed, squashed and
-fixup commits.
+the actual branch in the repository. The `selectedCommits` keep track of which commits are currently selected in the
+GUI, such that, if an action gets executed, these commits get affected. Finally `currentCommits` keeps track
+of the commits that are being displayed by the UI at any given moment in time, this is specially important for
+collapsed, squashed and fixup commits.
 
-`GraphInfo` contains two branches. The main branch which is the branch in which the user is currently checked out and
-added branch which is null when only one branch is being displayed or contains the information of the second branch if 
-two branches are being displayed.
+`GraphInfo` contains two branches. The main branch, which is the branch the user is currently checked out on, and
+the added branch, which might be null.
 
 All data classes have an internal listener class. When the events of this listeners get called, the corresponding panels
-get modified triggering a refresh in the frontend, this way we ensure that the GUI is always up to date with the data.
+get modified triggering a refresh in the frontend, this way we ensure that the GUI is always up-to-date with the data.
 
 ### Editors `com.jetbrains.interactiveRebase.editors`
 
 Solely contains the `IRFileEditorBase` class. It is responsible for creating the main panel and opening the 
 plugin as an editor tab.
 
-### Exceptions `com.jetbrains.interactiveRebase.excpetions`
+### Exceptions `com.jetbrains.interactiveRebase.exceptions`
 
 This package contains all the custom exceptions created for the plugin, at the moment only `IRInaccesibleException` 
-exists. It is mostly used when errors are encountered while fetching the data to populate the data classes when the 
+exists. It is mostly used when errors are encountered while fetching the data to populate the data classes, when the 
 plugin is opened.
 
 ### Listeners `com.jetbrains.interactiveRebase.listeners`
 
 All listeners used throughout the plugin can be found here. Inside of these package, three subpackages can be found. The 
-package `keyListeners` contains the listener used for keyboard navigation inside of the plugin as well for text input. 
+package `keyListeners` contains the listener used for keyboard navigation as well as for text input. 
 Inside of `mouseListeners`, the logic for clicking, pressing and hovering as well as that for dragging and dropping can 
-be found. Finally `systemListeners` handles those listeners who are subscribed to changes in the system such as an 
+be found. Finally `systemListeners` handles those listeners which are subscribed to changes in the system such as an 
 update in the repository or the invokation of popups.
 
 ### Providers `com.jetbrains.interactiveRebase.providers`
@@ -144,13 +144,13 @@ Contains the classes that open the `IRVirtualFile` created in order to open the 
 
 ### Services `com.jetbrains.interactiveRebase.providers`
 
-In this package all the services can be found. They contain the main business logic for the plugin. All of the
-services are handled at project level allowing us to have different instances of the plugin in different opened projects
-within the same application. 
+In this package all the services can be found. They contain the main business logic for the plugin. All the
+services are handled at project level allowing us to have different instances of the plugin in 
+different opened projects, within the same application. 
 
 #### Action Service 
 
-Responsible for all the logic regarding the actions. It handles both checking if an action is available 
+Responsible for all the logic regarding the actions. It handles both checking if an action is available, 
 and performing said action when the user interacts with the mentioned action.
 
 #### Branch Service
@@ -168,12 +168,12 @@ Manages the opening and handling of popups and dialogs that occur while making u
 
 #### Graph Service
 
-Manages all the logic regarding the fetching of a branch, regardless of it is the main branch or the added branch as 
+Manages all the logic regarding the fetching of a branch, regardless of it is the main branch or the added branch, as 
 well as looking for interesting objects of both branches such as the branching commit from one branch to the other.
 
 #### IR Virtual File Service
 
-Is tasked with creating, retrieving and closing the virtual file created to be able to open and close the plugin.
+Is tasked with creating, retrieving and closing the virtual file.
 
 #### Model Service
 
