@@ -50,27 +50,42 @@ open class SquashedCirclePanel(
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
 
         if (commit.isHovered) {
-            g2d.stroke = BasicStroke(border)
-            g2d.color = JBColor.BLACK
-            g2d.draw(backCircle)
-            g2d.color = circleColor
-            g2d.fill(middleCircle)
-
-            g2d.color = JBColor.BLACK
-            g2d.draw(middleCircle)
-            g2d.color = circleColor
-            g2d.fill(circle)
-
-            g2d.color = JBColor.BLACK
-            g2d.draw(circle)
+            drawWhiteOutlineAroundTheThreeCircles(g2d, circleColor)
         }
 
         if (commit.getChangesAfterPick().any { it is StopToEditCommand }) {
-            val icon = AllIcons.Actions.Pause
-            val iconX = circle.x + (circle.width - icon.iconWidth) / 2
-            val iconY = circle.y + (circle.height - icon.iconHeight) / 2
-            icon.paintIcon(this, g2d, iconX.toInt(), iconY.toInt())
+            paintPauseInsideSquash(g2d, circle)
         }
+    }
+
+    private fun drawWhiteOutlineAroundTheThreeCircles(
+        g2d: Graphics2D,
+        circleColor: Color,
+    ) {
+        g2d.stroke = BasicStroke(border)
+
+        g2d.color = JBColor.BLACK
+        g2d.draw(backCircle)
+        g2d.color = circleColor
+        g2d.fill(middleCircle)
+
+        g2d.color = JBColor.BLACK
+        g2d.draw(middleCircle)
+        g2d.color = circleColor
+        g2d.fill(circle)
+
+        g2d.color = JBColor.BLACK
+        g2d.draw(circle)
+    }
+
+    internal fun paintPauseInsideSquash(
+        g2d: Graphics2D,
+        ellipse: Ellipse2D,
+    ) {
+        val icon = AllIcons.Actions.Pause
+        val iconX = ellipse.x + (ellipse.width - icon.iconWidth) / 2
+        val iconY = ellipse.y + (ellipse.height - icon.iconHeight) / 2
+        icon.paintIcon(this, g2d, iconX.toInt(), iconY.toInt())
     }
 
     /**
@@ -136,7 +151,7 @@ open class SquashedCirclePanel(
      * @param fraction the fraction between 0 and 1 to interpolate
      * @return the interpolated color
      */
-    private fun interpolateColors(
+    internal fun interpolateColors(
         color1: Color,
         color2: Color,
         fraction: Float = 0.5f,

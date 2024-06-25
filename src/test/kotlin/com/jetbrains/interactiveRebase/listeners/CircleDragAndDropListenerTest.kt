@@ -140,7 +140,7 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
         listener.mouseDragged(eventDrag)
 
         verify(circle.commit).isDragged = true
-        verify(listener).setCurrentCircleLocation(70)
+        verify(listener).setCurrentCircleLocation(-30)
         verify(listener).findNewBranchIndex()
 
         verify(listener, never()).updateIndices(1, 0)
@@ -398,5 +398,46 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
 
         listener.indicateLimitedVerticalMovement(-100)
         verify(listener).moveAllCircles(100)
+    }
+
+    fun testHoveringOverCircle() {
+        val circle1 = mock(CirclePanel::class.java)
+        `when`(circle1.bounds).thenReturn(Rectangle(0, 0, 10, 10))
+        `when`(circle1.diameter).thenReturn(10.0)
+        `when`(circle.bounds).thenReturn(Rectangle(10, 10, 10, 10))
+        `when`(circle.diameter).thenReturn(10.0)
+        val circle3 = mock(CirclePanel::class.java)
+        `when`(circle3.bounds).thenReturn(Rectangle(20, 20, 10, 10))
+        `when`(circle3.diameter).thenReturn(10.0)
+        val circlePanels =
+            mutableListOf(
+                circle1,
+                circle,
+                circle3,
+            )
+        listener = spy(CircleDragAndDropListener(project, circle, circlePanels, parent))
+        assertFalse(listener.isHoveringOverCircle(2, 0))
+    }
+
+    fun testHoveringOverCircleOutOfBounds() {
+        val circle1 = mock(CirclePanel::class.java)
+        `when`(circle1.bounds).thenReturn(Rectangle(0, 0, 10, 10))
+        `when`(circle1.diameter).thenReturn(10.0)
+        `when`(circle.bounds).thenReturn(Rectangle(10, 10, 10, 10))
+        `when`(circle.diameter).thenReturn(10.0)
+        val circle3 = mock(CirclePanel::class.java)
+        `when`(circle3.bounds).thenReturn(Rectangle(20, 20, 10, 10))
+        `when`(circle3.diameter).thenReturn(10.0)
+        val circlePanels =
+            mutableListOf(
+                circle1,
+                circle,
+                circle3,
+            )
+        listener = spy(CircleDragAndDropListener(project, circle, circlePanels, parent))
+        assertFalse(listener.isHoveringOverCircle(3, -1))
+        assertFalse(listener.isHoveringOverCircle(-1, -1))
+        assertFalse(listener.isHoveringOverCircle(-1, 0))
+        assertFalse(listener.isHoveringOverCircle(1, -1))
     }
 }

@@ -273,7 +273,7 @@ class CircleDragAndDropListener(
         return newIndex
     }
 
-    private fun isHoveringOverCircle(
+    internal fun isHoveringOverCircle(
         indexForward: Int,
         indexBackward: Int,
     ): Boolean {
