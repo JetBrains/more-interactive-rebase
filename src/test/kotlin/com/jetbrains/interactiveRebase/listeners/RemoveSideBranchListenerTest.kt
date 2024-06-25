@@ -2,7 +2,12 @@ package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
+import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
+import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.ActionService
+import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.GraphPanel
 import com.jetbrains.interactiveRebase.visuals.MainPanel
@@ -23,6 +28,16 @@ class RemoveSideBranchListenerTest : BasePlatformTestCase() {
         val mainPanel = MainPanel(project)
         mainPanel.graphPanel = GraphPanel(project)
         project.service<ActionService>().mainPanel = mainPanel
+        val commit = CommitInfo(TestGitCommitProvider(project).createCommit("commit1"), project)
+        project.service<ModelService>().graphInfo =
+            GraphInfo(
+                BranchInfo(
+                    "",
+                    mutableListOf(),
+                    mutableListOf(commit),
+                ),
+                BranchInfo(),
+            )
         sideBranchPanel = SideBranchPanel("main", project)
         parent = SidePanel(mutableListOf("feature", "bugfix"), project)
         parent.sideBranchPanels.add(sideBranchPanel)

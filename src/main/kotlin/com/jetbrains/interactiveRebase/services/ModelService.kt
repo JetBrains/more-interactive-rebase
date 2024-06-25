@@ -61,12 +61,13 @@ class ModelService(
      */
     init {
         if (System.getProperty("test.mode") != "true") {
-        fetchGraphInfo(0)
-        populateLocalBranches(0)
-        project.messageBus.connect(this).subscribe(GitRepository.GIT_REPO_CHANGE, repositoryChangeListener)
+            fetchGraphInfo(0)
+            populateLocalBranches(0)
+            project.messageBus.connect(this).subscribe(GitRepository.GIT_REPO_CHANGE, repositoryChangeListener)
 
-        Toolkit.getDefaultToolkit().addAWTEventListener(PopupListener(project), AWTEvent.WINDOW_EVENT_MASK)
-        if (repo != null) rebaseInProcess = repo.isRebaseInProgress}
+            Toolkit.getDefaultToolkit().addAWTEventListener(PopupListener(project), AWTEvent.WINDOW_EVENT_MASK)
+            if (repo != null) rebaseInProcess = repo.isRebaseInProgress
+        }
     }
 
     /**
@@ -146,6 +147,7 @@ class ModelService(
             )
         commit.addChange(command)
         project.service<RebaseInvoker>().addCommand(command)
+        project.service<RebaseInvoker>().undoneCommands.clear()
     }
 
     /**

@@ -4,7 +4,9 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.JBColor
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.DialogService
@@ -21,6 +23,13 @@ import java.awt.GridBagConstraints
 
 class SideBranchPanelTest : BasePlatformTestCase() {
     val branchName = "main"
+    lateinit var graphInfo: GraphInfo
+
+    override fun setUp() {
+        super.setUp()
+        graphInfo = GraphInfo(BranchInfo(), BranchInfo())
+        graphInfo.addedBranch?.baseCommit = CommitInfo(TestGitCommitProvider(project).createCommit("add test"), project)
+    }
 
     fun testSelectBranchTriggersAcceptedWarning() {
         project.service<RebaseInvoker>().commands.clear()
@@ -30,6 +39,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
         val dialog: DialogService = mock(DialogService::class.java)
         `when`(dialog.warningYesNoDialog(anyString(), anyString())).thenReturn(true)
         val modelService = mock(ModelService::class.java)
+        `when`(modelService.graphInfo).thenReturn(graphInfo)
         val sideBranchPanel = SideBranchPanel(branchName, project, dialog, modelService)
 
         val result = sideBranchPanel.selectBranch()
@@ -53,6 +63,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
         val dialog: DialogService = mock(DialogService::class.java)
         `when`(dialog.warningYesNoDialog(anyString(), anyString())).thenReturn(false)
         val modelService = mock(ModelService::class.java)
+        `when`(modelService.graphInfo).thenReturn(graphInfo)
         val sideBranchPanel = SideBranchPanel(branchName, project, dialog, modelService)
 
         val result = sideBranchPanel.selectBranch()
@@ -77,6 +88,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
 
         `when`(dialog.warningYesNoDialog(anyString(), anyString())).thenReturn(false)
         val modelService = mock(ModelService::class.java)
+        `when`(modelService.graphInfo).thenReturn(graphInfo)
         val sideBranchPanel = SideBranchPanel(branchName, project, dialog, modelService)
         sideBranchPanel.isSelected = true
         val result = sideBranchPanel.deselectBranch()
@@ -101,6 +113,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
 
         `when`(dialog.warningYesNoDialog(anyString(), anyString())).thenReturn(true)
         val modelService = mock(ModelService::class.java)
+        `when`(modelService.graphInfo).thenReturn(graphInfo)
         val sideBranchPanel = SideBranchPanel(branchName, project, dialog, modelService)
         sideBranchPanel.isSelected = true
         val result = sideBranchPanel.deselectBranch()
@@ -118,6 +131,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
         val dialog: DialogService = mock(DialogService::class.java)
         `when`(dialog.warningYesNoDialog(anyString(), anyString())).thenReturn(false)
         val modelService = mock(ModelService::class.java)
+        `when`(modelService.graphInfo).thenReturn(graphInfo)
         val sideBranchPanel = SideBranchPanel(branchName, project, dialog, modelService)
 
         val result = sideBranchPanel.deselectBranch()
@@ -131,6 +145,7 @@ class SideBranchPanelTest : BasePlatformTestCase() {
         val dialog: DialogService = mock(DialogService::class.java)
         `when`(dialog.warningYesNoDialog(anyString(), anyString())).thenReturn(false)
         val modelService = mock(ModelService::class.java)
+        `when`(modelService.graphInfo).thenReturn(graphInfo)
         val sideBranchPanel = SideBranchPanel(branchName, project, dialog, modelService)
 
         val result = sideBranchPanel.selectBranch()

@@ -21,7 +21,10 @@ fun Project.takeAction(method: () -> Unit) {
     }
 }
 
-fun Project.takeActionWithDeselecting(method: () -> Unit, graphInfo: GraphInfo) {
+fun Project.takeActionWithDeselecting(
+    method: () -> Unit,
+    graphInfo: GraphInfo,
+) {
     val actionService = this.service<ActionService>()
     val graphPanel = actionService.mainPanel.graphPanel
     val doRefresh = !actionService.mainPanel.graphPanel.refreshed
