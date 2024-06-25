@@ -50,13 +50,13 @@ class CommitServiceTest : BasePlatformTestCase() {
         val commit1 = commitProvider.createCommit("add tests")
         val commit2 = commitProvider.createCommit("fix tests")
         val consumer = GeneralCommitConsumer()
-        consumer.commitConsumptionCap = 1
+//        consumer.commitConsumptionCap = 1
         consumer.consume(commit1)
         consumer.consume(commit2)
         assertEquals(consumer.commits, listOf(commit1))
 
         consumer.resetCommits()
-        consumer.commitConsumptionCap = 0
+//        consumer.commitConsumptionCap = 0
         consumer.consume(commit1)
         assertEmpty(consumer.commits)
     }
@@ -65,7 +65,7 @@ class CommitServiceTest : BasePlatformTestCase() {
         val commit1 = null
         val commit2 = commitProvider.createCommit("fix tests")
         val consumer = GeneralCommitConsumer()
-        consumer.commitConsumptionCap = 5
+//        consumer.commitConsumptionCap = 5
         consumer.consume(commit1)
         consumer.consume(commit2)
         assertEquals(consumer.commits, listOf(commit2))
