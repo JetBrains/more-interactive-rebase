@@ -864,14 +864,37 @@ class ActionService(val project: Project) {
         val collapseCommand = parentCommit.changes.filterIsInstance<CollapseCommand>().lastOrNull() as CollapseCommand
         if (collapseCommand == null) return
 
-        parentCommit.removeChange(collapseCommand)
+        var collapsedCommits = collapseCommand.collapsedCommits
+        parentCommit.changes.asReversed().removeIf { it === collapseCommand }
         val index = branch.currentCommits.indexOf(parentCommit)
-        val collapsedCommits = collapseCommand.collapsedCommits
-        collapsedCommits.forEach {
-            it.isCollapsed = false
-            it.removeChange(collapseCommand)
+
+        collapsedCommits.forEach { commit ->
+            commit.isCollapsed = false
+            commit.changes.asReversed().removeIf { it === collapseCommand }
+        }
+
+        if (collapsedCommits.size >= 30) {
+            collapsedCommits = collapseAgainIfNeeded(collapsedCommits, branch, parentCommit)
         }
         branch.addCommitsToCurrentCommits(index, collapsedCommits)
+    }
+
+    /**
+     * Called during expanding, if commits that are expanded is more than 30, only the first 20 are shown and the rest are collapsed again.
+     * Takes all initially collapsed commits os alreadyCollapsed, and the parent that is not included in this list as parentCommit
+     */
+    private fun collapseAgainIfNeeded(
+        alreadyCollapsed: List<CommitInfo>,
+        branch: BranchInfo,
+        parentCommit: CommitInfo,
+    ): MutableList<CommitInfo> {
+        if (alreadyCollapsed.size < 30) return alreadyCollapsed.toMutableList()
+        val numberToExpand = 20
+        val toExpand = alreadyCollapsed.take(numberToExpand)
+        val collapseAgain = alreadyCollapsed.drop(numberToExpand)
+
+        branch.collapseCommitsWithList(collapseAgain, parentCommit)
+        return toExpand.toMutableList()
     }
 
     /**

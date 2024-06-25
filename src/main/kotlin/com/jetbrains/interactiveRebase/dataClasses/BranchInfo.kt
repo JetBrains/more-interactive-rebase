@@ -53,17 +53,26 @@ data class BranchInfo(
 
         val collapsedCommits = this.currentCommits.subList(initialIndex, finalIndex).deepClonePolymorphic()
         val parentOfCollapsedCommit = this.currentCommits[finalIndex]
+        collapseCommitsWithList(collapsedCommits, parentOfCollapsedCommit)
+    }
 
+    /**
+     * Given a list of commits to be collapsed and a parent, collapses the commits.
+     */
+    fun collapseCommitsWithList(
+        collapsedCommits: List<CommitInfo>,
+        parentOfCollapsedCommit: CommitInfo,
+    ) {
         val collapsedCommand = CollapseCommand(parentOfCollapsedCommit, collapsedCommits.toMutableList())
 
-        parentOfCollapsedCommit.addChange(collapsedCommand)
+        parentOfCollapsedCommit.changes.add(collapsedCommand)
         parentOfCollapsedCommit.isCollapsed = true
         parentOfCollapsedCommit.isHovered = false
 
         this.currentCommits.removeAll(collapsedCommits)
         this.clearSelectedCommits()
         collapsedCommits.forEach {
-            it.addChange(collapsedCommand)
+            it.changes.add(collapsedCommand)
             it.isCollapsed = true
         }
     }
