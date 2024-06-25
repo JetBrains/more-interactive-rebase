@@ -2,8 +2,8 @@ package com.jetbrains.interactiveRebase.utils
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.services.ActionService
-import com.jetbrains.interactiveRebase.services.ModelService
 
 fun Project.takeAction(method: () -> Unit) {
     val actionService = this.service<ActionService>()
@@ -21,9 +21,8 @@ fun Project.takeAction(method: () -> Unit) {
     }
 }
 
-fun Project.takeActionWithDeselecting(method: () -> Unit) {
+fun Project.takeActionWithDeselecting(method: () -> Unit, graphInfo: GraphInfo) {
     val actionService = this.service<ActionService>()
-    val modelService = this.service<ModelService>()
     val graphPanel = actionService.mainPanel.graphPanel
     val doRefresh = !actionService.mainPanel.graphPanel.refreshed
 
@@ -31,8 +30,8 @@ fun Project.takeActionWithDeselecting(method: () -> Unit) {
     try {
         method()
     } finally {
-        modelService.branchInfo.clearSelectedCommits()
-        modelService.graphInfo.addedBranch?.clearSelectedCommits()
+        graphInfo.mainBranch.clearSelectedCommits()
+        graphInfo.addedBranch?.clearSelectedCommits()
         if (doRefresh) {
             graphPanel.markRefreshedAsFalse()
             graphPanel.updateGraphPanel()

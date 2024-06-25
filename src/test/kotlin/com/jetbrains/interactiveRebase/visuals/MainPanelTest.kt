@@ -1,5 +1,6 @@
 package com.jetbrains.interactiveRebase.visuals
 
+import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.OnePixelSplitter
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
@@ -22,10 +23,13 @@ class MainPanelTest : BasePlatformTestCase() {
 
     override fun setUp() {
         super.setUp()
-        actionService = ActionService(project)
+        actionService = project.service<ActionService>()
         modelService = ModelService(project, CoroutineScope(Dispatchers.Default))
         branchInfo = modelService.branchInfo
         mainPanel = MainPanel(project)
+        mainPanel.graphPanel = GraphPanel(project)
+        actionService.mainPanel = mainPanel
+        actionService.modelService = modelService
     }
 
     fun testUpdateMainPanelVisuals() {

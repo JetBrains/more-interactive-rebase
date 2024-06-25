@@ -56,6 +56,7 @@ class BranchNavigationListenerTest : BasePlatformTestCase() {
         branchInfo = modelService.branchInfo
 
         mainPanel = MainPanel(project)
+        project.service<ActionService>().mainPanel = mainPanel
 
         upEvent = KeyEvent(mainPanel, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_UP, KeyEvent.CHAR_UNDEFINED)
         downEvent = KeyEvent(mainPanel, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_DOWN, KeyEvent.CHAR_UNDEFINED)

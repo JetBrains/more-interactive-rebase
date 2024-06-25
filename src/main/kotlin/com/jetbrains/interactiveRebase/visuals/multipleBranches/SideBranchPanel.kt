@@ -171,7 +171,7 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
      * Goes through with the removal if the change is made
      */
     internal fun deselectBranch(): Boolean {
-        if(modelService.graphInfo.addedBranch?.baseCommit == null) return false
+//        if(modelService.graphInfo.addedBranch?.baseCommit == null) return false
         if (project.service<RebaseInvoker>().commands.isNotEmpty()) {
             val answer: Boolean =
                 dialogService.warningYesNoDialog(

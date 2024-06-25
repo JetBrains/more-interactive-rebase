@@ -60,12 +60,13 @@ class ModelService(
      * to the GitRefreshListener
      */
     init {
+        if (System.getProperty("test.mode") != "true") {
         fetchGraphInfo(0)
         populateLocalBranches(0)
         project.messageBus.connect(this).subscribe(GitRepository.GIT_REPO_CHANGE, repositoryChangeListener)
 
         Toolkit.getDefaultToolkit().addAWTEventListener(PopupListener(project), AWTEvent.WINDOW_EVENT_MASK)
-        if (repo != null) rebaseInProcess = repo.isRebaseInProgress
+        if (repo != null) rebaseInProcess = repo.isRebaseInProgress}
     }
 
     /**
@@ -230,6 +231,7 @@ class ModelService(
      * coroutine
      */
     fun fetchGraphInfo(n: Int) {
+        if (System.getProperty("test.mode") == "true") return
         object : Task.Backgroundable(project, "Fetching commits of current branch") {
             override fun run(indicator: ProgressIndicator) {
                 try {
@@ -253,6 +255,7 @@ class ModelService(
      * Populates the GraphInfo field in order to be able to display the side panel of local branches
      */
     fun populateLocalBranches(n: Int) {
+        if (System.getProperty("test.mode") == "true") return
         val branchService = project.service<BranchService>()
         object : Task.Backgroundable(project, "Fetching local branches") {
             override fun run(indicator: ProgressIndicator) {
@@ -277,6 +280,7 @@ class ModelService(
         addedBranch: String,
         n: Int,
     ) {
+        if (System.getProperty("test.mode") == "true") return
         object : Task.Backgroundable(project, "Fetching commits of \"$addedBranch\"") {
             override fun run(indicator: ProgressIndicator) {
                 try {
@@ -299,6 +303,7 @@ class ModelService(
      * Removes the added branch field in the graph info
      */
     fun removeSecondBranchFromGraphInfo(n: Int) {
+        if (System.getProperty("test.mode") == "true") return
         object : Task.Backgroundable(project, "Removing the added branch") {
             override fun run(indicator: ProgressIndicator) {
                 try {

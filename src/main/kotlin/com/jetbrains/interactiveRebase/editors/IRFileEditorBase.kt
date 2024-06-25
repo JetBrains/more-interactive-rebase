@@ -5,7 +5,6 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.interactiveRebase.services.ActionService
-import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.visuals.MainPanel
 import javax.swing.JComponent
 
@@ -14,7 +13,7 @@ import javax.swing.JComponent
  * It is used to create the Editor Tab for the Interactive Rebase feature.
  */
 class IRFileEditorBase(private val project: Project, private val virtualFile: VirtualFile) : FileEditorBase() {
-    private val modelService: ModelService
+//    private val modelService: ModelService
     private val actionService: ActionService
     private var component: MainPanel
 
@@ -24,7 +23,7 @@ class IRFileEditorBase(private val project: Project, private val virtualFile: Vi
         actionService = project.service<ActionService>()
 //        component = MainPanel(project)
         component = actionService.mainPanel
-        modelService = project.service<ModelService>()
+//        modelService = project.service<ModelService>()
     }
 
     /**

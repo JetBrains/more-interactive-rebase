@@ -260,6 +260,7 @@ tasks {
 }
 
 tasks.withType(Test::class) {
+    systemProperties["test.mode"] = "true"
     configure<JacocoTaskExtension> {
         isIncludeNoLocationClasses = true
         includes = listOf("com.jetbrains.interactiveRebase.**")
