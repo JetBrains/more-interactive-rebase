@@ -16,6 +16,7 @@ class IRRepositoryChangeListener(val project: Project) : GitRepositoryChangeList
      */
     override fun repositoryChanged(repository: GitRepository) {
         val invoker = project.service<RebaseInvoker>()
+        println("listener called")
         if (invoker.commands.filterIsInstance<CherryCommand>().isNotEmpty()) {
             if (project.service<ModelService>().noMoreCherryPicking) {
                 if (repository.isRebaseInProgress) {

@@ -42,10 +42,13 @@ class IRGitRebaseUtils(private val project: Project) {
             override fun run(indicator: ProgressIndicator) {
                 val modelService = project.service<ModelService>()
                 val cherryCommands = commands.filterIsInstance<CherryCommand>()
-
+                var wasReordered = false
                 cherryCommands.forEachIndexed { index, command ->
                     val base = command.baseCommit
                     val newbie = command.commit
+                    if (command.index != 0) {
+                        wasReordered = true
+                    }
                     GitCherryPicker(project).cherryPick(mutableListOf(base.commit))
                     try {
                         var head: GitCommit? = null
@@ -83,7 +86,7 @@ class IRGitRebaseUtils(private val project: Project) {
                     c.wasCherryPicked = false
                 }
                 project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
-                if (project.service<RebaseInvoker>().commands.isNotEmpty()) {
+                if (project.service<RebaseInvoker>().commands.isNotEmpty() || wasReordered) {
                     project.service<RebaseInvoker>().executeCommands()
                 } else {
                     project.service<ModelService>().removeAllChangesIfNeeded()
