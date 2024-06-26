@@ -349,7 +349,6 @@ class GraphPanel(
      */
     fun updateGraphPanel() {
         if (refreshed) return
-        println("updated graph panel")
         addedBranchPanel = null
         removeAll()
 

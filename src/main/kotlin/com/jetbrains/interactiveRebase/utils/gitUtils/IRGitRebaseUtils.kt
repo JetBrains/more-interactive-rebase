@@ -73,7 +73,6 @@ class IRGitRebaseUtils(private val project: Project) {
                         newbie.commit = head!!
                         project.service<RebaseInvoker>().commands.remove(command)
                     } catch (e: VcsException) {
-                        println("Trying to display parents of initial commit")
                     }
                 }
                 modelService.noMoreCherryPicking = true

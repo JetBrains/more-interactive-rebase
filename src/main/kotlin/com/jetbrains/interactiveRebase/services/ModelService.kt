@@ -236,18 +236,20 @@ class ModelService(
         if (System.getProperty("test.mode") == "true") return
         object : Task.Backgroundable(project, "Fetching commits of current branch") {
             override fun run(indicator: ProgressIndicator) {
-                try {
-                    graphService.updateGraphInfo(graphInfo)
-                } catch (e: VcsException) {
-                    if (n < 3) {
-                        fetchGraphInfo(n + 1)
-                    } else {
-                        showWarningGitDialogClosesPlugin("There was an error while fetching data from Git.", dialogService)
+                coroutineScope.launch {
+                    try {
+                        graphService.updateGraphInfo(graphInfo)
+                    } catch (e: VcsException) {
+                        if (n < 3) {
+                            fetchGraphInfo(n + 1)
+                        } else {
+                            showWarningGitDialogClosesPlugin("There was an error while fetching data from Git.", dialogService)
+                        }
                     }
-                }
 
-                coroutineScope.launch(Dispatchers.EDT) {
-                    project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
+                    coroutineScope.launch(Dispatchers.EDT) {
+                        project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
+                    }
                 }
             }
         }.queue()
@@ -308,13 +310,15 @@ class ModelService(
         if (System.getProperty("test.mode") == "true") return
         object : Task.Backgroundable(project, "Removing the added branch") {
             override fun run(indicator: ProgressIndicator) {
-                try {
-                    graphService.removeBranch(graphInfo)
-                } catch (e: VcsException) {
-                    if (n < 3) {
-                        removeSecondBranchFromGraphInfo(n + 1)
+                coroutineScope.launch {
+                    try {
+                        graphService.removeBranch(graphInfo)
+                    } catch (e: VcsException) {
+                        if (n < 3) {
+                            removeSecondBranchFromGraphInfo(n + 1)
+                        }
+                        // TODO Handle
                     }
-                    // TODO Handle
                 }
             }
         }.queue()
@@ -335,7 +339,6 @@ class ModelService(
     }
 
     internal fun removeAllChangesIfNeeded() {
-        print("clear")
         project.service<RebaseInvoker>().commands.clear()
         project.service<RebaseInvoker>().undoneCommands.clear()
         graphInfo.mainBranch.initialCommits.forEach {

@@ -165,7 +165,7 @@ class CircleDragAndDropListener(
                 project.service<ActionService>().takeFixupAction()
             } else if (initialIndex != currentIndex) {
                 repositionOnDrop()
-                //mark false to stop refreshing too many times while dropping
+                // mark false to stop refreshing too many times while dropping
                 // mark false to stop refreshing too many times while dropping
                 (parent.parent as GraphPanel?)?.markRefreshedAsTrue()
                 modelService.markCommitAsReordered(commit, initialIndex, currentIndex)

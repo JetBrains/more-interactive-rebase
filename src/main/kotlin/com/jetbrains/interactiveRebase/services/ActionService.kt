@@ -368,7 +368,8 @@ class ActionService(val project: Project) {
                 resetCommitInfo(commitInfo)
             }
             modelService.graphInfo.addedBranch?.initialCommits?.forEach { commitInfo ->
-                resetAddedCommitInfo(commitInfo)}
+                resetAddedCommitInfo(commitInfo)
+            }
             modelService.graphInfo.mainBranch.isRebased = false
             modelService.graphInfo.addedBranch?.baseCommit =
                 modelService.graphInfo.addedBranch?.currentCommits?.last()
@@ -885,24 +886,24 @@ class ActionService(val project: Project) {
                 parentCommit.changes.filterIsInstance<CollapseCommand>().lastOrNull() as CollapseCommand
             if (collapseCommand == null) return@takeActionWithDeselecting
 
-        var collapsedCommits = collapseCommand.collapsedCommits
-        parentCommit.changes.asReversed().removeIf { it === collapseCommand }
-        val index = branch.currentCommits.indexOf(parentCommit)
+            var collapsedCommits = collapseCommand.collapsedCommits
+            parentCommit.changes.asReversed().removeIf { it === collapseCommand }
+            val index = branch.currentCommits.indexOf(parentCommit)
 
-        collapsedCommits.forEach { commit ->
-            commit.isCollapsed = false
-            commit.changes.asReversed().removeIf { it === collapseCommand }
-        }
+            collapsedCommits.forEach { commit ->
+                commit.isCollapsed = false
+                commit.changes.asReversed().removeIf { it === collapseCommand }
+            }
 
-        if (collapsedCommits.size >= 30 && enableNestedCollapsing) {
-            collapsedCommits = collapseAgainIfNeeded(collapsedCommits, branch, parentCommit)
-        } else {
-            branch.isNestedCollapsed = false
-        }
-        branch.addCommitsToCurrentCommits(index, collapsedCommits)
-        },modelService.graphInfo)
+            if (collapsedCommits.size >= 30 && enableNestedCollapsing) {
+                collapsedCommits = collapseAgainIfNeeded(collapsedCommits, branch, parentCommit)
+            } else {
+                branch.isNestedCollapsed = false
+            }
+            branch.addCommitsToCurrentCommits(index, collapsedCommits)
+        }, modelService.graphInfo)
 
-        if (branch.currentCommits.size >= 200) {
+        if (branch.currentCommits.size >= 300) {
             createNotification()
         }
     }
@@ -917,7 +918,7 @@ class ActionService(val project: Project) {
         notification.setTitle("Reduced performance due to large branch")
         notification.addAction(CollapseAction())
         notification.notify(project)
-        Timer(20000) { notification.expire() }.apply {
+        Timer(15000) { notification.expire() }.apply {
             isRepeats = false
             start()
         }
