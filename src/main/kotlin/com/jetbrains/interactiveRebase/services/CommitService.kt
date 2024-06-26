@@ -47,8 +47,7 @@ class CommitService(private val project: Project) {
         if (referenceBranchName.isEmpty()) {
             referenceBranchName = branchSer.getDefaultReferenceBranchName() ?: branchName
         }
-
-        project.service<ModelService>().fetched = true
+//        project.service<ModelService>().fetched = true
         return getDisplayableCommitsOfBranch(branchName, repo, consumer)
     }
 
@@ -81,7 +80,9 @@ class CommitService(private val project: Project) {
             gitUtils.getCommitDifferenceBetweenBranches(branchName, referenceBranchName, repo, consumer)
 //            handleMergedBranch(consumer, branchName, repo)
         }
-        return consumer.commits
+        val commits = consumer.commits
+        project.service<ModelService>().fetched = true
+        return commits
     }
 
     /**

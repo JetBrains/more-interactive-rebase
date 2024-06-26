@@ -58,6 +58,7 @@ class SidePanelListener(val project: Project, val sidePanel: SidePanel) : KeyLis
     }
 
     internal fun escape() {
+//        if(project.service<ModelService>().graphInfo.addedBranch?.baseCommit == null) return
         if (!selected?.isSelected!!) return
         selected?.deselectBranch()
         sidePanel.resetAllBranchesVisually()
