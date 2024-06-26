@@ -23,6 +23,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import java.awt.Point
+import java.awt.Rectangle
 import java.awt.event.ActionEvent
 import java.awt.event.MouseEvent
 import javax.swing.Timer
@@ -53,12 +54,14 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
         `when`(circle.x).thenReturn(10)
         `when`(circle.y).thenReturn(20)
         `when`(circle.height).thenReturn(20)
+        `when`(circle.bounds).thenReturn(Rectangle(10, 20, 30, 20))
         other = mock(CirclePanel::class.java)
         `when`(other.commit).thenReturn(otherCommit)
         `when`(other.centerX).thenReturn(10.0)
         `when`(other.centerY).thenReturn(70.0)
         `when`(other.x).thenReturn(10)
         `when`(other.y).thenReturn(60)
+        `when`(other.bounds).thenReturn(Rectangle(10, 60, 30, 20))
         val label = JBLabel()
         label.labelFor = circle
         val otherLabel = JBLabel()
@@ -84,6 +87,7 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
 
         val branchPanel = mock(BranchPanel::class.java)
         `when`(branchPanel.height).thenReturn(200)
+        `when`(branchPanel.locationOnScreen).thenReturn(Point(100, 100))
 
         invoker = project.service<RebaseInvoker>()
 
@@ -108,7 +112,6 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
         listener.mousePressed(event)
 
         assertThat(listener.wasDragged).isFalse()
-        verify(listener).updateMousePosition(event)
         assertThat(listener.circlesPositions).isEqualTo(
             mutableListOf(
                 CirclePosition(10, 30, 10, 20),
@@ -130,33 +133,20 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
             }
         val eventDrag =
             mock(MouseEvent::class.java).apply {
-                `when`(yOnScreen).thenReturn(40)
+                `when`(yOnScreen).thenReturn(80)
             }
 
         listener.mousePressed(eventPress)
         listener.mouseDragged(eventDrag)
 
         verify(circle.commit).isDragged = true
-        verify(listener).setCurrentCircleLocation(30)
-        verify(listener).updateMousePosition(eventDrag)
+        verify(listener).setCurrentCircleLocation(-30)
         verify(listener).findNewBranchIndex()
 
         verify(listener, never()).updateIndices(1, 0)
         verify(listener, never()).repositionOnDrag()
         assertThat(listener.currentIndex).isEqualTo(0)
         verify(parent, never()).repaint()
-    }
-
-    fun testMousePosition() {
-        val event =
-            mock(MouseEvent::class.java).apply {
-                `when`(xOnScreen).thenReturn(100)
-                `when`(yOnScreen).thenReturn(100)
-            }
-
-        listener.updateMousePosition(event)
-
-        assertThat(listener.mousePosition).isEqualTo(Point(100, 100))
     }
 
     fun testMouseReleasedTrue() {
@@ -181,7 +171,7 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
         listener.wasDragged = true
         listener.mouseReleased(eventRelease)
         assertThat(commit.isDragged).isFalse()
-        verify(listener).repositionOnDrop()
+        verify(listener, never()).repositionOnDrop()
     }
 
     fun testMouseReleasedFalse() {
@@ -272,7 +262,7 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
 
         `when`(circle.y).thenReturn(49)
         assertThat(listener.findNewBranchIndex())
-            .isEqualTo(3)
+            .isEqualTo(1)
     }
 
     fun testRepositionOnDrop() {
@@ -408,5 +398,46 @@ class CircleDragAndDropListenerTest : BasePlatformTestCase() {
 
         listener.indicateLimitedVerticalMovement(-100)
         verify(listener).moveAllCircles(100)
+    }
+
+    fun testHoveringOverCircle() {
+        val circle1 = mock(CirclePanel::class.java)
+        `when`(circle1.bounds).thenReturn(Rectangle(0, 0, 10, 10))
+        `when`(circle1.diameter).thenReturn(10.0)
+        `when`(circle.bounds).thenReturn(Rectangle(10, 10, 10, 10))
+        `when`(circle.diameter).thenReturn(10.0)
+        val circle3 = mock(CirclePanel::class.java)
+        `when`(circle3.bounds).thenReturn(Rectangle(20, 20, 10, 10))
+        `when`(circle3.diameter).thenReturn(10.0)
+        val circlePanels =
+            mutableListOf(
+                circle1,
+                circle,
+                circle3,
+            )
+        listener = spy(CircleDragAndDropListener(project, circle, circlePanels, parent))
+        assertFalse(listener.isHoveringOverCircle(2, 0))
+    }
+
+    fun testHoveringOverCircleOutOfBounds() {
+        val circle1 = mock(CirclePanel::class.java)
+        `when`(circle1.bounds).thenReturn(Rectangle(0, 0, 10, 10))
+        `when`(circle1.diameter).thenReturn(10.0)
+        `when`(circle.bounds).thenReturn(Rectangle(10, 10, 10, 10))
+        `when`(circle.diameter).thenReturn(10.0)
+        val circle3 = mock(CirclePanel::class.java)
+        `when`(circle3.bounds).thenReturn(Rectangle(20, 20, 10, 10))
+        `when`(circle3.diameter).thenReturn(10.0)
+        val circlePanels =
+            mutableListOf(
+                circle1,
+                circle,
+                circle3,
+            )
+        listener = spy(CircleDragAndDropListener(project, circle, circlePanels, parent))
+        assertFalse(listener.isHoveringOverCircle(3, -1))
+        assertFalse(listener.isHoveringOverCircle(-1, -1))
+        assertFalse(listener.isHoveringOverCircle(-1, 0))
+        assertFalse(listener.isHoveringOverCircle(1, -1))
     }
 }

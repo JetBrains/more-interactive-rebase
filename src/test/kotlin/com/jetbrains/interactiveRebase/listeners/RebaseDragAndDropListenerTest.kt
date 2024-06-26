@@ -46,6 +46,7 @@ class RebaseDragAndDropListenerTest : BasePlatformTestCase() {
     override fun setUp() {
         super.setUp()
         val mainPanel = mock(MainPanel::class.java)
+        `when`(mainPanel.graphPanel).thenReturn(mock(GraphPanel::class.java))
         dragPanel = mock(DragPanel::class.java)
         project.service<ActionService>().mainPanel = mainPanel
         `when`(mainPanel.dragPanel).thenReturn(dragPanel)

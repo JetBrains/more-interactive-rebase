@@ -8,12 +8,15 @@ import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.commands.CollapseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
+import com.jetbrains.interactiveRebase.services.ActionService
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import com.jetbrains.interactiveRebase.visuals.CirclePanel
 import com.jetbrains.interactiveRebase.visuals.GraphPanel
 import com.jetbrains.interactiveRebase.visuals.LabeledBranchPanel
+import com.jetbrains.interactiveRebase.visuals.Palette
 import java.awt.Point
+import java.awt.Rectangle
 import java.awt.event.ActionEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -37,8 +40,8 @@ class CircleDragAndDropListener(
     internal var labels = parent.commitLabels
     internal var label = labels[getLabelIndex(circle, labels)]
     internal var message: JBPanel<JBPanel<*>> = messages[getLabelIndex(circle, labels)]
-    internal var mousePosition = Point(circle.x, circle.y)
     internal var circlesPositions = mutableListOf<CirclePosition>()
+    internal var circlesThemes = mutableListOf<Palette.Theme>()
     internal var messagesPositions = mutableListOf<Point>()
 
     /**
@@ -62,6 +65,7 @@ class CircleDragAndDropListener(
     internal val commits = parent.branch.currentCommits
     internal var currentIndex = commits.indexOf(commit)
     internal val initialIndex = commits.indexOf(commit)
+    internal var squashIntoIndex: Int = -1
 
     init {
         SwingUtilities.invokeLater {
@@ -76,11 +80,16 @@ class CircleDragAndDropListener(
      * 3. find positions of the labels
      */
     override fun mousePressed(e: MouseEvent) {
+        squashIntoIndex = -1
         wasDragged = false
-        updateMousePosition(e)
         circlesPositions =
             circles.map { c ->
                 CirclePosition(c.centerX.toInt(), c.centerY.toInt(), c.x, c.y)
+            }.toMutableList()
+
+        circlesThemes =
+            circles.map { c ->
+                c.colorTheme
             }.toMutableList()
         messagesPositions =
             messages.map { m ->
@@ -89,28 +98,37 @@ class CircleDragAndDropListener(
         e.consume()
     }
 
-    /**
-     * On mouse drag:
-     * 1. visual indication through formatting
-     * 2. update circle location to follow the mouse movement dynamically
-     * 3. update view dynamically and reposition all commits
-     * 4. handle limited vertical movement (outside parent component)
-     */
     override fun mouseDragged(e: MouseEvent) {
         maxY = parent.branchPanel.height - circle.height
         if (!commit.getChangesAfterPick().any { it is DropCommand || it is CollapseCommand } &&
             parent.branch.isWritable
         ) {
+            parent.branchPanel.setComponentZOrder(circle, 0)
             wasDragged = true
             commit.isDragged = true
-            val deltaY = e.yOnScreen - mousePosition.y
-            val newCircleY = circle.y + deltaY
+            val newCircleY = e.yOnScreen - parent.branchPanel.locationOnScreen.y - circle.height / 2
 
             setCurrentCircleLocation(newCircleY)
 
-            updateMousePosition(e)
-
             val newIndex = findNewBranchIndex()
+            circles.forEachIndexed { index, circle ->
+                circle.colorTheme = circlesThemes[index]
+                circle.commit.isHovered = false
+                circle.repaint()
+            }
+            if (isHoveringOverCircle(newIndex - 1, newIndex + 1)) {
+                val targetCircle = circles[squashIntoIndex]
+                if (targetCircle.commit.getChangesAfterPick().any { it is DropCommand || it is CollapseCommand }) {
+                    squashIntoIndex = -1
+                } else {
+                    circle.colorTheme = Palette.BLUE_THEME_LIGHT
+                    circle.commit.isHovered = true
+                    circle.repaint()
+                    targetCircle.colorTheme = Palette.BLUE_THEME_LIGHT
+                    targetCircle.commit.isHovered = true
+                    targetCircle.repaint()
+                }
+            }
             if (newIndex != currentIndex) {
                 updateIndices(newIndex, currentIndex)
                 repositionOnDrag()
@@ -119,20 +137,10 @@ class CircleDragAndDropListener(
             }
 
             // Handle visual indication of movement limits
-//            indicateLimitedVerticalMovement(newCircleY)
+//        indicateLimitedVerticalMovement(newCircleY)
 
             (parent.parent as GraphPanel).repaint()
         }
-        e.consume()
-    }
-
-    /**
-     * Updates the coordinates of the mouse cursor
-     * upon mouse press and while dragging
-     */
-    internal fun updateMousePosition(e: MouseEvent) {
-        mousePosition.x = e.xOnScreen
-        mousePosition.y = e.yOnScreen
         e.consume()
     }
 
@@ -146,11 +154,25 @@ class CircleDragAndDropListener(
         val modelService = project.service<ModelService>()
         if (wasDragged) {
             commit.isDragged = false
-            repositionOnDrop()
-            if (initialIndex != currentIndex) {
+            circles.forEachIndexed { index, circle ->
+                circle.colorTheme = circlesThemes[index]
+                circle.commit.isHovered = false
+                circle.repaint()
+            }
+            if (squashIntoIndex != -1) {
+                modelService.addToSelectedCommits(circle.commit, parent.branch)
+                modelService.addToSelectedCommits(circles[squashIntoIndex].commit, parent.branch)
+                project.service<ActionService>().takeFixupAction()
+            } else if (initialIndex != currentIndex) {
+                repositionOnDrop()
+                // mark false to stop refreshing too many times while dropping
+                // mark false to stop refreshing too many times while dropping
+                (parent.parent as GraphPanel?)?.markRefreshedAsTrue()
                 modelService.markCommitAsReordered(commit, initialIndex, currentIndex)
                 parent.branch.updateCurrentCommits(initialIndex, currentIndex, commit)
             }
+            // call an explicit refresh
+            (parent.parent as GraphPanel?)?.markRefreshedAsFalse()
             (parent.parent as GraphPanel?)?.updateGraphPanel()
             (parent.parent as GraphPanel?)?.repaint()
         }
@@ -236,25 +258,95 @@ class CircleDragAndDropListener(
      * based on its location while being dragged with the mouse
      */
     internal fun findNewBranchIndex(): Int {
-        var newIndex = -1
-        var closestDistance = Int.MAX_VALUE
-        val newY = circle.y
+        var newIndex = currentIndex
+        val newY = circle.y + circle.height / 2
 
         for ((index, pos) in circlesPositions.withIndex()) {
-            val distance = abs(newY - pos.centerY)
+            val targetCircleTop = pos.y + circle.height / 4
+            val targetCircleBottom = pos.y + circle.height * 3 / 4
 
-            // TODO figure out margins for rearrangement
-//            if (distance > 0) {
-//                distance += circle.height
-//            } else {
-//                distance = abs(distance) - circle.height
-//            }
-            if (distance < closestDistance) {
+            if (newY < targetCircleTop && newIndex > index) {
                 newIndex = index
-                closestDistance = distance
+                break
+            }
+
+            if (newY > targetCircleBottom && newIndex < index) {
+                newIndex = index
+                break
             }
         }
         return newIndex
+    }
+
+    internal fun isHoveringOverCircle(
+        indexForward: Int,
+        indexBackward: Int,
+    ): Boolean {
+        // Check if indexForward is within bounds
+        val forwardInBounds = indexForward >= 0 && indexForward < circles.size
+        // Check if indexBackward is within bounds
+        val backwardInBounds = indexBackward >= 0 && indexBackward < circles.size
+
+        // Early return if both indices are out of bounds
+        if (!forwardInBounds && !backwardInBounds) {
+            squashIntoIndex = -1
+            return false
+        }
+
+        // Initialize variables for forward bounds if in bounds
+        val targetBoundsForwardTight =
+            if (forwardInBounds) {
+                val targetCircleForward = circles[indexForward]
+                val targetBoundsForward = targetCircleForward.bounds
+                Rectangle(
+                    targetBoundsForward.x,
+                    (targetBoundsForward.y + targetCircleForward.diameter * 0.5).toInt(),
+                    targetBoundsForward.width,
+                    (targetBoundsForward.height - targetCircleForward.diameter).toInt(),
+                )
+            } else {
+                null
+            }
+
+        // Initialize variables for backward bounds if in bounds
+        val targetBoundsBackwardTight =
+            if (backwardInBounds) {
+                val targetCircleBackward = circles[indexBackward]
+                val targetBoundsBackward = targetCircleBackward.bounds
+                Rectangle(
+                    targetBoundsBackward.x,
+                    (targetBoundsBackward.y + targetCircleBackward.diameter * 0.5).toInt(),
+                    targetBoundsBackward.width,
+                    (targetBoundsBackward.height - targetCircleBackward.diameter).toInt(),
+                )
+            } else {
+                null
+            }
+
+        val draggingBounds = circle.bounds
+        val draggingBoundsDecreased =
+            Rectangle(
+                draggingBounds.x,
+                (draggingBounds.y + circle.diameter * 0.5).toInt(),
+                draggingBounds.width,
+                (draggingBounds.height - circle.diameter).toInt(),
+            )
+
+        // Check intersection with targetBoundsForwardTight if it exists
+        if (targetBoundsForwardTight != null && draggingBoundsDecreased.intersects(targetBoundsForwardTight)) {
+            squashIntoIndex = indexForward
+            return true
+        }
+
+        // Check intersection with targetBoundsBackwardTight if it exists
+        if (targetBoundsBackwardTight != null && draggingBoundsDecreased.intersects(targetBoundsBackwardTight)) {
+            squashIntoIndex = indexBackward
+            return true
+        }
+
+        // If neither intersection is true
+        squashIntoIndex = -1
+        return false
     }
 
     /**

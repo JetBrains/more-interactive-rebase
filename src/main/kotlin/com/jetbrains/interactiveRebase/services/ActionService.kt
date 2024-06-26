@@ -1,10 +1,13 @@
 package com.jetbrains.interactiveRebase.services
 
+import com.intellij.notification.Notification
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
+import com.jetbrains.interactiveRebase.actions.changePanel.CollapseAction
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.CherryCommand
@@ -17,8 +20,11 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.RebaseCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.ReorderCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
+import com.jetbrains.interactiveRebase.utils.takeAction
+import com.jetbrains.interactiveRebase.utils.takeActionWithDeselecting
 import com.jetbrains.interactiveRebase.visuals.HeaderPanel
 import com.jetbrains.interactiveRebase.visuals.MainPanel
+import javax.swing.Timer
 
 @Service(Service.Level.PROJECT)
 class ActionService(val project: Project) {
@@ -42,10 +48,11 @@ class ActionService(val project: Project) {
      * Enables the text field once the Reword button on the toolbar is pressed
      */
     fun takeRewordAction() {
-        invoker.undoneCommands.clear()
-        modelService.branchInfo.selectedCommits.forEach {
-            if (!it.isSquashed) {
-                it.setTextFieldEnabledTo(true)
+        project.takeAction {
+            modelService.branchInfo.selectedCommits.forEach {
+                if (!it.isSquashed) {
+                    it.setTextFieldEnabledTo(true)
+                }
             }
         }
     }
@@ -54,45 +61,40 @@ class ActionService(val project: Project) {
      * Makes a drop change once the Drop button is clicked
      */
     fun takeDropAction() {
-        invoker.undoneCommands.clear()
-        val commits = modelService.getSelectedCommits()
-        commits.forEach {
-                commitInfo ->
-            if (!commitInfo.isSquashed) {
-                val command = DropCommand(commitInfo)
-                commitInfo.addChange(command)
-                invoker.addCommand(command)
+        project.takeActionWithDeselecting({
+            val commits = modelService.getSelectedCommits()
+            commits.forEach { commitInfo ->
+                if (!commitInfo.isSquashed) {
+                    val command = DropCommand(commitInfo)
+                    commitInfo.addChange(command)
+                    invoker.addCommand(command)
+                }
             }
-        }
-
-        modelService.branchInfo.clearSelectedCommits()
+        }, modelService.graphInfo)
     }
 
     /**
      * Creates a rebase command for a normal rebase
      */
     fun takeNormalRebaseAction() {
-        invoker.undoneCommands.clear()
-        val command = modelService.graphInfo.addedBranch?.baseCommit?.let { RebaseCommand(it) }
-        if (command != null) {
-            invoker.addCommand(command)
-        }
-        modelService.branchInfo.clearSelectedCommits()
-        modelService.graphInfo.addedBranch?.clearSelectedCommits()
+        project.takeActionWithDeselecting({
+            val command = modelService.graphInfo.addedBranch?.baseCommit?.let { RebaseCommand(it) }
+            if (command != null) {
+                invoker.addCommand(command)
+            }
+        }, modelService.graphInfo)
     }
 
     /**
      * Creates a rebase command for a cherry-picking rebase
      */
     fun takeCherryPickAction() {
-        invoker.undoneCommands.clear()
-        val commits = modelService.graphInfo.addedBranch?.selectedCommits
-        commits?.forEach {
-                commitInfo ->
-            prepareCherry(commitInfo)
-        }
-        modelService.branchInfo.clearSelectedCommits()
-        modelService.graphInfo.addedBranch?.clearSelectedCommits()
+        project.takeActionWithDeselecting({
+            val commits = modelService.graphInfo.addedBranch?.selectedCommits
+            commits?.forEach { commitInfo ->
+                prepareCherry(commitInfo)
+            }
+        }, modelService.graphInfo)
     }
 
     fun prepareCherry(
@@ -278,17 +280,16 @@ class ActionService(val project: Project) {
      * Adds a visual change for a commit that has to be stopped to edit
      */
     fun takeStopToEditAction() {
-        invoker.undoneCommands.clear()
-        val commits = modelService.getSelectedCommits()
-        commits.forEach {
-                commitInfo ->
-            if (!commitInfo.isSquashed) {
-                val command = StopToEditCommand(commitInfo)
-                commitInfo.addChange(command)
-                invoker.addCommand(command)
+        project.takeActionWithDeselecting({
+            val commits = modelService.getSelectedCommits()
+            commits.forEach { commitInfo ->
+                if (!commitInfo.isSquashed) {
+                    val command = StopToEditCommand(commitInfo)
+                    commitInfo.addChange(command)
+                    invoker.addCommand(command)
+                }
             }
-        }
-        modelService.branchInfo.clearSelectedCommits()
+        }, modelService.graphInfo)
     }
 
     /**
@@ -296,24 +297,24 @@ class ActionService(val project: Project) {
      * similar to the logic in the git to-do file for rebasing
      */
     fun performPickAction() {
-        invoker.undoneCommands.clear()
-        val commits = modelService.getSelectedCommits().reversed()
-        commits.forEach { commitInfo ->
-            val changes = commitInfo.getChangesAfterPick().iterator()
-            while (changes.hasNext()) {
-                val change = changes.next()
-                if (change is FixupCommand && change.parentCommit == commitInfo) {
-                    clearFixupOnPick(change, commitInfo)
+        project.takeActionWithDeselecting({
+            val commits = modelService.getSelectedCommits().reversed()
+            commits.forEach { commitInfo ->
+                val changes = commitInfo.getChangesAfterPick().iterator()
+                while (changes.hasNext()) {
+                    val change = changes.next()
+                    if (change is FixupCommand && change.parentCommit == commitInfo) {
+                        clearFixupOnPick(change, commitInfo)
+                    }
+                    if (change is SquashCommand && change.parentCommit == commitInfo) {
+                        clearSquashOnPick(change, commitInfo)
+                    }
                 }
-                if (change is SquashCommand && change.parentCommit == commitInfo) {
-                    clearSquashOnPick(change, commitInfo)
-                }
+                val pickCommand = PickCommand(commitInfo)
+                commitInfo.addChange(pickCommand)
+                invoker.addCommand(pickCommand)
             }
-            val pickCommand = PickCommand(commitInfo)
-            commitInfo.addChange(pickCommand)
-            invoker.addCommand(pickCommand)
-        }
-        modelService.branchInfo.clearSelectedCommits()
+        }, modelService.graphInfo)
     }
 
     /**
@@ -358,24 +359,34 @@ class ActionService(val project: Project) {
      * Resets all changes made to the commits
      */
     fun resetAllChangesAction() {
-        invoker.commands = mutableListOf()
-        invoker.undoneCommands.clear()
-        val currentBranchInfo = invoker.branchInfo
-        invoker.branchInfo.currentCommits = currentBranchInfo.initialCommits.toMutableList()
-        invoker.branchInfo.initialCommits.forEach { commitInfo ->
-            resetCommitInfo(commitInfo)
+        project.takeActionWithDeselecting({
+            invoker.commands = mutableListOf()
+            invoker.undoneCommands.clear()
+            val currentBranchInfo = invoker.branchInfo
+            invoker.branchInfo.currentCommits = currentBranchInfo.initialCommits.toMutableList()
+            invoker.branchInfo.initialCommits.forEach { commitInfo ->
+                resetCommitInfo(commitInfo)
+            }
+            modelService.graphInfo.addedBranch?.initialCommits?.forEach { commitInfo ->
+                resetAddedCommitInfo(commitInfo)
+            }
+            modelService.graphInfo.mainBranch.isRebased = false
+            modelService.graphInfo.addedBranch?.baseCommit =
+                modelService.graphInfo.addedBranch?.currentCommits?.last()
+            invoker.branchInfo.clearSelectedCommits()
+            modelService.graphInfo.addedBranch?.clearSelectedCommits()
+            takeCollapseAction()
+        }, modelService.graphInfo)
+    }
+
+    fun resetAddedCommitInfo(commitInfo: CommitInfo) {
+        val collapseCommand = commitInfo.changes.find { it is CollapseCommand }
+        commitInfo.changes.clear()
+        if (collapseCommand != null) {
+            commitInfo.addChange(collapseCommand)
         }
-        modelService.graphInfo.addedBranch?.initialCommits?.forEach { commitInfo ->
-            commitInfo.changes.clear()
-            commitInfo.isSelected = false
-            commitInfo.wasCherryPicked = false
-        }
-        modelService.graphInfo.mainBranch.isRebased = false
-        modelService.graphInfo.addedBranch?.baseCommit =
-            modelService.graphInfo.addedBranch?.currentCommits?.last()
-        invoker.branchInfo.clearSelectedCommits()
-        modelService.graphInfo.addedBranch?.clearSelectedCommits()
-        takeCollapseAction()
+        commitInfo.isSelected = false
+        commitInfo.wasCherryPicked = false
     }
 
     /**
@@ -397,8 +408,9 @@ class ActionService(val project: Project) {
      * creates a squash command
      */
     fun takeSquashAction() {
-        invoker.undoneCommands.clear()
-        combineCommits(true)
+        project.takeAction {
+            combineCommits(true)
+        }
     }
 
     /**
@@ -406,8 +418,9 @@ class ActionService(val project: Project) {
      * creates a fixup command
      */
     fun takeFixupAction() {
-        invoker.undoneCommands.clear()
-        combineCommits(false)
+        project.takeAction {
+            combineCommits(false)
+        }
     }
 
     /**
@@ -789,12 +802,23 @@ class ActionService(val project: Project) {
      * - there are more than 7 commits
      * - there is no selected commit OR
      * - there are at least 2 selected commits, which are in a range.
+     * - commits were automatically collapsed again after expanding because of their length
      */
     fun checkCollapse(e: AnActionEvent) {
-        // check if there are any already collapsed commits
-        if (modelService.getSelectedBranch().initialCommits.size <= 7) {
-            e.presentation.isEnabled = false
+        // check if nested-collapsing was present and enable collapsing to initial state
+        if (checkIfNestedCollapsingPresent() && modelService.getSelectedBranch().getActualSelectedCommitsSize() == 0) {
+            e.presentation.isEnabled = true
             return
+        }
+        // check if there are any already collapsed commits
+        if (modelService.branchInfo.initialCommits.size <= 7) {
+            if (modelService.graphInfo.addedBranch == null) {
+                e.presentation.isEnabled = false
+                return
+            } else if (modelService.graphInfo.addedBranch!!.initialCommits.size <= 7) {
+                e.presentation.isEnabled = false
+                return
+            }
         }
 
         if (modelService.graphInfo.mainBranch.currentCommits.any { it.isCollapsed }) {
@@ -822,6 +846,14 @@ class ActionService(val project: Project) {
     }
 
     /**
+     * Returns true if any of the branches has
+     */
+    fun checkIfNestedCollapsingPresent(): Boolean {
+        val secondBranch = if (modelService.graphInfo.addedBranch == null) false else modelService.graphInfo.addedBranch!!.isNestedCollapsed
+        return modelService.graphInfo.mainBranch.isNestedCollapsed || secondBranch
+    }
+
+    /**
      * Checks whether the selected commits are in a range.
      */
     fun checkSelectedCommitsAreInARange(): Boolean {
@@ -845,20 +877,70 @@ class ActionService(val project: Project) {
     fun expandCollapsedCommits(
         parentCommit: CommitInfo,
         branch: BranchInfo,
+        enableNestedCollapsing: Boolean = true,
     ) {
-        if (!parentCommit.isCollapsed) return
-        parentCommit.isCollapsed = false
-        val collapseCommand = parentCommit.changes.filterIsInstance<CollapseCommand>().lastOrNull() as CollapseCommand
-        if (collapseCommand == null) return
+        project.takeActionWithDeselecting({
+            if (!parentCommit.isCollapsed) return@takeActionWithDeselecting
+            parentCommit.isCollapsed = false
+            val collapseCommand =
+                parentCommit.changes.filterIsInstance<CollapseCommand>().lastOrNull() as CollapseCommand
+            if (collapseCommand == null) return@takeActionWithDeselecting
 
-        parentCommit.removeChange(collapseCommand)
-        val index = branch.currentCommits.indexOf(parentCommit)
-        val collapsedCommits = collapseCommand.collapsedCommits
-        collapsedCommits.forEach {
-            it.isCollapsed = false
-            it.removeChange(collapseCommand)
+            var collapsedCommits = collapseCommand.collapsedCommits
+            parentCommit.changes.asReversed().removeIf { it === collapseCommand }
+            val index = branch.currentCommits.indexOf(parentCommit)
+
+            collapsedCommits.forEach { commit ->
+                commit.isCollapsed = false
+                commit.changes.asReversed().removeIf { it === collapseCommand }
+            }
+
+            if (collapsedCommits.size >= 30 && enableNestedCollapsing) {
+                collapsedCommits = collapseAgainIfNeeded(collapsedCommits, branch, parentCommit)
+            } else {
+                branch.isNestedCollapsed = false
+            }
+            branch.addCommitsToCurrentCommits(index, collapsedCommits)
+        }, modelService.graphInfo)
+
+        if (branch.currentCommits.size >= 300) {
+            createNotification()
         }
-        branch.addCommitsToCurrentCommits(index, collapsedCommits)
+    }
+
+    fun createNotification() {
+        val notification =
+            Notification(
+                "Dependencies",
+                "Consider collapsing commits to improve performance.",
+                NotificationType.INFORMATION,
+            )
+        notification.setTitle("Reduced performance due to large branch")
+        notification.addAction(CollapseAction())
+        notification.notify(project)
+        Timer(15000) { notification.expire() }.apply {
+            isRepeats = false
+            start()
+        }
+    }
+
+    /**
+     * Called during expanding, if commits that are expanded is more than 30, only the first 20 are shown and the rest are collapsed again.
+     * Takes all initially collapsed commits os alreadyCollapsed, and the parent that is not included in this list as parentCommit
+     */
+    private fun collapseAgainIfNeeded(
+        alreadyCollapsed: List<CommitInfo>,
+        branch: BranchInfo,
+        parentCommit: CommitInfo,
+    ): MutableList<CommitInfo> {
+        if (alreadyCollapsed.size < 30) return alreadyCollapsed.toMutableList()
+        branch.isNestedCollapsed = true
+        val numberToExpand = 20
+        val toExpand = alreadyCollapsed.take(numberToExpand)
+        val collapseAgain = alreadyCollapsed.drop(numberToExpand)
+
+        branch.collapseCommitsWithList(collapseAgain, parentCommit)
+        return toExpand.toMutableList()
     }
 
     /**
@@ -866,23 +948,33 @@ class ActionService(val project: Project) {
      * keeping the first 5 commits and last commit, or the selected commits.
      */
     fun takeCollapseAction() {
-        if (modelService.getSelectedCommits().isEmpty()) {
-            autoCollapseBranch(modelService.graphInfo.mainBranch)
-            autoCollapseBranch(modelService.graphInfo.addedBranch)
-        } else {
-            val selectedCommits = modelService.getSelectedCommits()
-            selectedCommits.sortBy { modelService.getSelectedBranch().indexOfCommit(it) }
+        project.takeActionWithDeselecting({
+            if (modelService.getSelectedCommits().isEmpty()) {
+                autoCollapseBranch(modelService.graphInfo.mainBranch)
+                autoCollapseBranch(modelService.graphInfo.addedBranch)
+            } else {
+                val selectedCommits = modelService.getSelectedCommits()
+                selectedCommits.sortBy { modelService.getSelectedBranch().indexOfCommit(it) }
 
-            val currentCommits = modelService.getCurrentCommits()
-            val indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
-            val indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
+                val currentCommits = modelService.getCurrentCommits()
+                val indexFirstCommit = currentCommits.indexOf(modelService.getHighestSelectedCommit())
+                val indexLastCommit = currentCommits.indexOf(modelService.getLowestSelectedCommit())
 
-            modelService.getSelectedBranch().collapseCommits(indexFirstCommit, indexLastCommit)
-        }
+                modelService.getSelectedBranch().collapseCommits(indexFirstCommit, indexLastCommit)
+            }
+        }, modelService.graphInfo)
     }
 
     fun autoCollapseBranch(branch: BranchInfo?) {
-        if (branch != null && branch.currentCommits.none { it.isCollapsed }) {
+        if (branch == null) return
+        // expand first if there are nested collapses present
+        val possibleParent = branch.currentCommits.find { it.isCollapsed }
+        if (possibleParent != null) {
+            expandCollapsedCommits(possibleParent, branch, enableNestedCollapsing = false)
+            branch.isNestedCollapsed = false
+        }
+
+        if (branch.currentCommits.none { it.isCollapsed }) {
             branch.collapseCommits()
         }
     }

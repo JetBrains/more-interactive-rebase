@@ -1,4 +1,3 @@
-# <img src="src/main/resources/META-INF/pluginIcon.svg" style="width: 40px; height 40 px; ">
 # A More Interactive Rebase
 
 [![Coverage Badge](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/badges/main/coverage.svg)](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/badges/main/coverage.svg)
@@ -236,30 +235,40 @@ In order for our Plugin to interact with the current JetBrains IDEs we are makin
 [Intellij Platform API](https://plugins.jetbrains.com/docs/intellij/explore-api.html). This streamlines the process of
 building a Plugin by offering extension points to already existing functionality. It is the framework on which 
 JetBrains' IDEs are based and provides a Virtual File System as a Component. The UI of this product is built using the
-UI framework of IntelliJ Platform, specifically custom classes that extend the Swing functionality. 
+UI framework of IntelliJ Platform, specifically custom classes that extend the Swing functionality. Thus, incorporating
+the signature design of the IDE. Furthermore, IntelliJ Platform provides additional run configurations within the 
+Gradle project which provide a number of actions such as: simulating an IDE with our plugin for manual testing, 
+creating a JAR file from which the plugin can be executed and immediately publishing into JetBrains Marketplace, etc.
 
 ### git4idea
 To allow interaction with Git functionality, we use the [git4idea](https://plugins.jetbrains.com/plugin/13173-git)
-Plugin as a library. It provides API for calling the Interactive Rebase of Git. In order to establish
-the connection the folder git4ideaClasses in this project contains some of the git4Idea classes with the
-respective copy right.
+Plugin as a library. It provides methods for calling Git commands such as Git Rebase, Git Log, Git reset, etc.
+In order to establish the connection the folder git4ideaClasses in this project contains some of the git4Idea classes
+with the respective copy right.
 
 ### IntelliJ Community
 Our Plugin is compatible with [IntelliJ Community 2024.1](https://www.jetbrains.com/idea/download/other.html) and newer
 versions. 
 ### Gradle
 For managing the dependencies during runtime and testing we use
-[Gradle 8.7](https://docs.gradle.org/8.7/release-notes.html). We have defined tasks for tools such as
-Jacoco and Spotless.
+[Gradle 8.7](https://docs.gradle.org/8.7/release-notes.html). It is included and recommended in the already available
+documentation provided on IntelliJ Plugin Platform SDK. We have defined tasks for tools such as
+Jacoco and Spotless. 
 ### Kotlin
 The plugin was developed in Kotlin, used with Java SDK 17 to ensure backwards compatibility. 
 ### Swing
 The UI of the plugin was developed with Swing.
 ### Unit Testing
-The product is unit tested with the frameworks JUnit 5 and Mockito, and the library AssertJ. All test classes are
-extending the BasePlatformTestCase class of the intelliJ test Framework.
+The product is unit tested with the frameworks JUnit 4 and Mockito, and the library AssertJ. All test classes are
+extending the BasePlatformTestCase class of the IntelliJ test Framework.  This provided access to test fixtures like a 
+test project, which was essential for instantiating all units responsible for executing the business logic.
 ### Integration Testing
-For system/integration testing the plugin uses VCS Platform Test in order to setup all of the git actions
+For system/integration testing the plugin uses VCS Platform Test in order to set up all the git actions. To effectively
+generate Git resources, we made use of two utility classes: `GitExecutor` and `GitTestUtil`.  
+
+We relied on 
+the [Awaitility](http://www.awaitility.org/) library. We used it to pause test execution until specific slow operations
+fulfill a certain assertion.
  
 ## 🤝 Contributing
 If you want to contribute to our project please refer to the

@@ -26,7 +26,7 @@ import javax.swing.ScrollPaneConstants
 
 class GraphDiffDialog(val project: Project) : DialogWrapper(project) {
     private var modelService = project.service<ModelService>()
-    private val width = 550
+    private val width = 1000
     private val height = 850
 
     init {
@@ -90,14 +90,14 @@ class GraphDiffDialog(val project: Project) : DialogWrapper(project) {
         revertChangesVisually(initialGraph)
         val initialGraphPanel: GraphPanel = createGraphDisplay(initialGraph)
 
-        initialGraphPanel.preferredSize = JBDimension(260, initialGraphPanel.preferredHeight)
+        initialGraphPanel.preferredSize = JBDimension(400, initialGraphPanel.preferredHeight)
 
         // Create the graph with current changes
         val currentGraph: GraphInfo = modelService.duplicateGraphInfo(actualGraph)
         expandBothBranches(currentGraph)
         val currentGraphPanel: GraphPanel = createGraphDisplay(currentGraph)
 
-        currentGraphPanel.preferredSize = JBDimension(260, currentGraphPanel.preferredHeight)
+        currentGraphPanel.preferredSize = JBDimension(400, currentGraphPanel.preferredHeight)
 
         // Make both scrollable
         val initialScrollable = JBScrollPane()
@@ -116,7 +116,7 @@ class GraphDiffDialog(val project: Project) : DialogWrapper(project) {
                 firstComponent = initialScrollable
                 secondComponent = currentScrollable
             }
-        split.minimumSize = Dimension(300, 820)
+        split.minimumSize = Dimension(500, 820)
         return split
     }
 
@@ -138,7 +138,9 @@ class GraphDiffDialog(val project: Project) : DialogWrapper(project) {
 
         if (addedBranch != null) {
             addedBranch.initialCommits.forEach {
-                project.service<ActionService>().resetCommitInfo(it)
+                project.service<ActionService>().resetAddedCommitInfo(it)
+                it.isCollapsed = false
+                it.changes.clear()
             }
             addedBranch.currentCommits = addedBranch.initialCommits.toMutableList()
         }
@@ -196,7 +198,7 @@ class GraphDiffDialog(val project: Project) : DialogWrapper(project) {
             }
         }
         if (collapsedParent != null) {
-            project.service<ActionService>().expandCollapsedCommits(collapsedParent!!, branchInfo)
+            project.service<ActionService>().expandCollapsedCommits(collapsedParent!!, branchInfo, enableNestedCollapsing = false)
         }
     }
 

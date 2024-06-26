@@ -9,6 +9,10 @@ import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.listeners.RebaseDragAndDropListener
 import com.jetbrains.interactiveRebase.services.ModelService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Graphics
@@ -34,6 +38,9 @@ class GraphPanel(
 ) : JBPanel<JBPanel<*>>() {
     lateinit var rebaseCircleInAddedBranch: CirclePanel
 
+    // refresh flag for batch updates
+    var refreshed: Boolean = false
+
     var mainBranchPanel: LabeledBranchPanel =
         createLabeledBranchPanel(
             graphInfo.mainBranch,
@@ -57,6 +64,15 @@ class GraphPanel(
         layout = GridBagLayout()
 
         addBranches()
+
+        addPropertyChangeListener("shouldRepaint") { evt ->
+            if (evt.newValue is Boolean) {
+                val newValue = evt.newValue as Boolean
+                if (!newValue) {
+                    updateGraphPanel()
+                }
+            }
+        }
     }
 
     /**
@@ -332,6 +348,7 @@ class GraphPanel(
      * Update branch panels
      */
     fun updateGraphPanel() {
+        if (refreshed) return
         addedBranchPanel = null
         removeAll()
 
@@ -384,5 +401,25 @@ class GraphPanel(
                 fractions,
                 colors,
             )
+    }
+
+    /**
+     * Marks the batch update refresh flag back to false, regardless if the
+     * update succeeded
+     */
+    fun markRefreshedAsTrue() {
+        refreshed = true
+        val scope = CoroutineScope(Dispatchers.Default)
+        scope.launch {
+            delay(2000)
+            refreshed = false
+        }
+    }
+
+    /**
+     * Marks the refreshed flag as false
+     */
+    fun markRefreshedAsFalse() {
+        refreshed = false
     }
 }

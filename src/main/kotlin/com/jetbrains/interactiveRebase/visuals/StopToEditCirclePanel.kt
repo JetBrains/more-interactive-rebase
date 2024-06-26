@@ -24,16 +24,12 @@ class StopToEditCirclePanel(
 
         createCircle(diameter)
         val circleColor =
-            if (commit.isPaused) {
-                colorTheme.regularCircleColor
-            } else if (commit.isRebased) {
-                colorTheme.regularCircleColor
-            } else if (commit.isSelected) {
-                Palette.DARK_GRAY.darker()
+            if (commit.isSelected) {
+                colorTheme.regularCircleColor.darker()
             } else {
-                Palette.JETBRAINS_GRAY
+                colorTheme.regularCircleColor
             }
-        val borderColor = if (commit.isSelected) colorTheme.borderColor.darker() else colorTheme.borderColor
+        val borderColor = colorTheme.borderColor
         selectedCommitAppearance(g2d, commit.isSelected, circleColor, borderColor)
 
         if (commit.isHovered) {
@@ -42,12 +38,10 @@ class StopToEditCirclePanel(
             g2d.draw(circle)
         }
 
-        // TODO: Very hard to unit test, icon cannot be mocked
         paintIcon(g2d)
     }
 
     fun paintIcon(g: Graphics) {
-//         val icon = PlatformIcons.EDIT
         val icon = AllIcons.Actions.Pause
         val iconX = (width - icon.iconWidth) / 2
         val iconY = (height - icon.iconHeight) / 2

@@ -11,6 +11,7 @@ import com.intellij.util.Consumer
 import com.jetbrains.interactiveRebase.dataClasses.commands.CherryCommand
 import com.jetbrains.interactiveRebase.dataClasses.commands.IRCommand
 import com.jetbrains.interactiveRebase.services.ActionService
+import com.jetbrains.interactiveRebase.services.GraphService
 import com.jetbrains.interactiveRebase.services.ModelService
 import com.jetbrains.interactiveRebase.services.RebaseInvoker
 import git4idea.GitCommit
@@ -37,14 +38,17 @@ class IRGitRebaseUtils(private val project: Project) {
      * Start Cherry-Picking
      */
     internal fun cherryPick(commands: List<IRCommand>) {
-        object : Task.Backgroundable(project, GitBundle.message("rebase.progress.indicator.preparing.title")) {
+        object : Task.Backgroundable(project, "Cherry picking") {
             override fun run(indicator: ProgressIndicator) {
                 val modelService = project.service<ModelService>()
                 val cherryCommands = commands.filterIsInstance<CherryCommand>()
-
+                var wasReordered = false
                 cherryCommands.forEachIndexed { index, command ->
                     val base = command.baseCommit
                     val newbie = command.commit
+                    if (command.index != 0) {
+                        wasReordered = true
+                    }
                     GitCherryPicker(project).cherryPick(mutableListOf(base.commit))
                     try {
                         var head: GitCommit? = null
@@ -56,21 +60,39 @@ class IRGitRebaseUtils(private val project: Project) {
                         GitHistoryUtils.loadDetails(project, repo?.root!!, consumer, "-n", "1")
                         var previousHead = modelService.branchInfo.initialCommits[0].commit
                         if (index != 0) {
-                            previousHead = command.commit.commit
+                            previousHead = cherryCommands[index - 1].commit.commit
                         }
                         if (previousHead == head) {
-                            IRGitUtils(project).gitReset()
-
+                            var output = IRGitUtils(project).gitReset()
                             modelService.noMoreCherryPicking = true
+                            project.service<ModelService>().removeAllChangesIfNeeded()
+                            project.service<GraphService>().updateGraphInfo(project.service<ModelService>().graphInfo)
+                            project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
                             return
                         }
                         newbie.commit = head!!
+                        project.service<RebaseInvoker>().commands.remove(command)
                     } catch (e: VcsException) {
-                        println("Trying to display parents of initial commit")
                     }
                 }
                 modelService.noMoreCherryPicking = true
-                project.service<RebaseInvoker>().executeCommands()
+                project.service<ModelService>().graphInfo.mainBranch.currentCommits.forEach { c ->
+                    c.wasCherryPicked = false
+                    c.changes.removeAll { it is CherryCommand }
+                }
+                project.service<ModelService>().graphInfo.addedBranch?.initialCommits?.forEach {
+                        c ->
+                    c.wasCherryPicked = false
+                }
+                project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
+                if (project.service<RebaseInvoker>().commands.isNotEmpty() || wasReordered) {
+                    project.service<RebaseInvoker>().executeCommands()
+                } else {
+                    project.service<ModelService>().removeAllChangesIfNeeded()
+                    project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
+                    project.service<ModelService>().fetchGraphInfo(0)
+                    project.service<ModelService>().populateLocalBranches(0)
+                }
             }
         }.queue()
     }

@@ -1,6 +1,7 @@
 package com.jetbrains.interactiveRebase.services
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
@@ -137,6 +138,7 @@ class RebaseInvoker(val project: Project) {
 
     fun executeCherry() {
         expandCollapsedCommits()
+        project.service<ModelService>().noMoreCherryPicking = false
         gitUtils.cherryPick(commands)
     }
 
@@ -155,9 +157,9 @@ class RebaseInvoker(val project: Project) {
             it.execute(model, branchInfo)
         }
         if (base != null) {
-            gitUtils.rebase(base, model)
             branchInfo.currentCommits = commitsToDisplayDuringRebase
             commitsToDisplayDuringRebase = mutableListOf()
+            gitUtils.rebase(base, model)
         }
         commands.clear()
     }
