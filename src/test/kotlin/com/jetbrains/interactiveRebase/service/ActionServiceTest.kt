@@ -1548,6 +1548,39 @@ class ActionServiceTest : BasePlatformTestCase() {
         assertTrue(commitInfo4.wasCherryPicked)
     }
 
+    fun testCollapseAgain() {
+        val alreadyCollapsed: MutableList<CommitInfo> = mutableListOf()
+        val commitProvider = TestGitCommitProvider(project)
+        for (i in 1..30) {
+            alreadyCollapsed.add(CommitInfo(commitProvider.createCommit("$i"), project))
+        }
+        modelService.branchInfo.currentCommits = mutableListOf(commitInfo1)
+        modelService.branchInfo.initialCommits = alreadyCollapsed
+        val command = CollapseCommand(commitInfo1, alreadyCollapsed)
+
+        alreadyCollapsed.forEach {
+            it.changes.add(command)
+            it.isCollapsed = true
+        }
+        commitInfo1.changes.add(command)
+        commitInfo1.isCollapsed = true
+        actionService.expandCollapsedCommits(commitInfo1, modelService.branchInfo)
+
+        assertThat(modelService.branchInfo.currentCommits).hasSize(21)
+        val expectedCommand = CollapseCommand(commitInfo1, alreadyCollapsed.drop(20).toMutableList())
+        assertThat(commitInfo1.changes).contains(expectedCommand)
+        assertThat(commitInfo1.isCollapsed).isTrue()
+        for (i in 20..29) {
+            assertThat(alreadyCollapsed[i].isCollapsed).isTrue()
+            assertThat(alreadyCollapsed[i].changes).containsExactly(expectedCommand)
+        }
+        for (i in 0..19) {
+            assertThat(alreadyCollapsed[i].isCollapsed).isFalse()
+            assertThat(alreadyCollapsed[i].changes).doesNotContain(expectedCommand)
+            assertThat(modelService.branchInfo.currentCommits).contains(alreadyCollapsed[i])
+        }
+    }
+
     fun test() {
         val action = RewordAction()
         val testev = createTestEvent(action)

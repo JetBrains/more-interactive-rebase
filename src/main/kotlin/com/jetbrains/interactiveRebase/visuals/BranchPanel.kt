@@ -83,6 +83,14 @@ class BranchPanel(
                     theme,
                     branch.currentCommits[i],
                 )
+        } else if (visualChanges.any { it is SquashCommand } || visualChanges.any { it is FixupCommand }) {
+            circle =
+                SquashedCirclePanel(
+                    diameter.toDouble(),
+                    borderSize,
+                    theme,
+                    branch.currentCommits[i],
+                )
         } else if (visualChanges.any { it is StopToEditCommand }) {
             circle =
                 StopToEditCirclePanel(
@@ -99,14 +107,6 @@ class BranchPanel(
                     theme,
                     branch.currentCommits[i],
                     isModifiable = branch.isWritable,
-                )
-        } else if (visualChanges.any { it is SquashCommand } || visualChanges.any { it is FixupCommand }) {
-            circle =
-                SquashedCirclePanel(
-                    diameter.toDouble(),
-                    borderSize,
-                    theme,
-                    branch.currentCommits[i],
                 )
         } else if (commit.wasCherryPicked) {
             circle =

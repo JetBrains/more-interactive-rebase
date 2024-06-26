@@ -198,7 +198,7 @@ class GraphDiffDialog(val project: Project) : DialogWrapper(project) {
             }
         }
         if (collapsedParent != null) {
-            project.service<ActionService>().expandCollapsedCommits(collapsedParent!!, branchInfo)
+            project.service<ActionService>().expandCollapsedCommits(collapsedParent!!, branchInfo, enableNestedCollapsing = false)
         }
     }
 

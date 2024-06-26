@@ -9,11 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
 ### Added
-
+- Squashes through drag and drop
+- Stop to edit a squashed commit puts a pause icon on the squashed commit
 
 ### Changed
+- Changes the icon for squashing to display three circles overlaying each other
+- If more than 30 commits are collapsed, only 20 are shown when expanding and the rest are still collapsed.
 
 ### Fixed
+- Fixes reordering through drag and drop with the dragged commit no longer getting offset from the mouse position
 - Fixes collapsing if main branch is small but added branch is very long.
 - Fixes collapsing of second branch on the diff.
 - Resets cherry-picking after finishing the process.
