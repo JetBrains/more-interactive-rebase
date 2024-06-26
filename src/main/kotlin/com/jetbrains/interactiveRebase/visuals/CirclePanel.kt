@@ -6,6 +6,7 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 import icons.DvcsImplIcons
 import java.awt.BasicStroke
 import java.awt.Color
@@ -84,7 +85,11 @@ open class CirclePanel(
         }
 
         if (commit.wasCherryPicked) icon(g2d, DvcsImplIcons.CherryPick)
-        if (commit.isPaused) icon(g2d, AllIcons.General.InspectionsWarningEmpty)
+        if (commit.isPaused) {
+            if (commit.changes.filterIsInstance<StopToEditCommand>().isEmpty()) {
+                icon(g2d, AllIcons.General.InspectionsWarningEmpty)
+            }
+        }
     }
 
     /**

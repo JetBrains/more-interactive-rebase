@@ -2,7 +2,9 @@ package com.jetbrains.interactiveRebase.listeners
 
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.jetbrains.interactiveRebase.dataClasses.BranchInfo
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.GraphInfo
 import com.jetbrains.interactiveRebase.dataClasses.commands.DropCommand
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import com.jetbrains.interactiveRebase.services.DialogService
@@ -32,6 +34,16 @@ class SideBranchPanelListenerTest : BasePlatformTestCase() {
         sideBranchPanelListener = SideBranchPanelListener(sideBranchPanel, parent)
         mouseEvent = MouseEvent(sideBranchPanel, 0, 0, 0, 0, 0, 0, false)
         project.service<RebaseInvoker>().commands.clear()
+        val commit = CommitInfo(TestGitCommitProvider(project).createCommit("commit1"), project)
+        project.service<ModelService>().graphInfo =
+            GraphInfo(
+                BranchInfo(
+                    "",
+                    mutableListOf(),
+                    mutableListOf(commit),
+                ),
+                BranchInfo(),
+            )
     }
 
     fun testMouseEnteredCanSelect() {
@@ -123,7 +135,7 @@ class SideBranchPanelListenerTest : BasePlatformTestCase() {
         )
         val dialog: DialogService = Mockito.mock(DialogService::class.java)
         Mockito.`when`(dialog.warningYesNoDialog(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())).thenReturn(true)
-        val modelService = Mockito.mock(ModelService::class.java)
+        val modelService = project.service<ModelService>()
         val controlledSideBranch = SideBranchPanel("main", project, dialog, modelService)
         parent.sideBranchPanels.add(controlledSideBranch)
         val controlledSideListener = SideBranchPanelListener(controlledSideBranch, parent)
@@ -142,7 +154,7 @@ class SideBranchPanelListenerTest : BasePlatformTestCase() {
         )
         val dialog: DialogService = Mockito.mock(DialogService::class.java)
         Mockito.`when`(dialog.warningYesNoDialog(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())).thenReturn(false)
-        val modelService = Mockito.mock(ModelService::class.java)
+        val modelService = project.service<ModelService>()
         val controlledSideBranch = SideBranchPanel("main", project, dialog, modelService)
         parent.sideBranchPanels.add(controlledSideBranch)
         val controlledSideListener = SideBranchPanelListener(controlledSideBranch, parent)

@@ -171,6 +171,11 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
      * Goes through with the removal if the change is made
      */
     internal fun deselectBranch(): Boolean {
+        if (modelService.graphInfo.addedBranch?.baseCommit == null &&
+            modelService.graphInfo.mainBranch.currentCommits.isNotEmpty()
+        ) {
+            return false
+        }
         if (project.service<RebaseInvoker>().commands.isNotEmpty()) {
             val answer: Boolean =
                 dialogService.warningYesNoDialog(
@@ -212,6 +217,11 @@ class SideBranchPanel(val branchName: String, val project: Project) : RoundedPan
      * Changes the color of the button when the mouse hovers over it.
      */
     internal fun buttonOnHover() {
+        if (modelService.graphInfo.addedBranch?.baseCommit == null &&
+            modelService.graphInfo.mainBranch.currentCommits.isNotEmpty()
+        ) {
+            return
+        }
         button.backgroundColor = backgroundColor.darker()
 
         button.repaint()

@@ -64,6 +64,15 @@ class GraphPanel(
         layout = GridBagLayout()
 
         addBranches()
+
+        addPropertyChangeListener("shouldRepaint") { evt ->
+            if (evt.newValue is Boolean) {
+                val newValue = evt.newValue as Boolean
+                if (!newValue) {
+                    updateGraphPanel()
+                }
+            }
+        }
     }
 
     /**

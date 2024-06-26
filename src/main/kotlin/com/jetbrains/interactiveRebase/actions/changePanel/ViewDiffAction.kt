@@ -10,6 +10,7 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.getActionShortcutText
 import com.jetbrains.interactiveRebase.actions.gitPanel.RebaseActionsGroup
 import com.jetbrains.interactiveRebase.services.ActionService
+import com.jetbrains.interactiveRebase.utils.takeAction
 import com.jetbrains.interactiveRebase.visuals.GraphDiffDialog
 import javax.swing.JComponent
 
@@ -23,8 +24,10 @@ class ViewDiffAction :
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project
         if (null != project) {
-            val dialog = GraphDiffDialog(project)
-            dialog.show()
+            project.takeAction {
+                val dialog = GraphDiffDialog(project)
+                dialog.show()
+            }
         }
     }
 

@@ -4,6 +4,8 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vcs.VcsException
@@ -19,6 +21,7 @@ import com.jetbrains.interactiveRebase.dataClasses.commands.SquashCommand
 import com.jetbrains.interactiveRebase.listeners.IRRepositoryChangeListener
 import com.jetbrains.interactiveRebase.listeners.PopupListener
 import com.jetbrains.interactiveRebase.utils.gitUtils.IRGitUtils
+import com.jetbrains.interactiveRebase.utils.takeAction
 import com.jetbrains.rd.framework.base.deepClonePolymorphic
 import git4idea.GitUtil
 import git4idea.merge.GitConflictResolver
@@ -57,12 +60,14 @@ class ModelService(
      * to the GitRefreshListener
      */
     init {
-        fetchGraphInfo(0)
-        populateLocalBranches(0)
-        project.messageBus.connect(this).subscribe(GitRepository.GIT_REPO_CHANGE, repositoryChangeListener)
+        if (System.getProperty("test.mode") != "true") {
+            fetchGraphInfo(0)
+            populateLocalBranches(0)
+            project.messageBus.connect(this).subscribe(GitRepository.GIT_REPO_CHANGE, repositoryChangeListener)
 
-        Toolkit.getDefaultToolkit().addAWTEventListener(PopupListener(project), AWTEvent.WINDOW_EVENT_MASK)
-        if (repo != null) rebaseInProcess = repo.isRebaseInProgress
+            Toolkit.getDefaultToolkit().addAWTEventListener(PopupListener(project), AWTEvent.WINDOW_EVENT_MASK)
+            if (repo != null) rebaseInProcess = repo.isRebaseInProgress
+        }
     }
 
     /**
@@ -74,8 +79,10 @@ class ModelService(
         commit: CommitInfo,
         branchInfo: BranchInfo,
     ) {
-        clearSelectedCommits()
-        addToSelectedCommits(commit, branchInfo)
+        project.takeAction {
+            clearSelectedCommits()
+            addToSelectedCommits(commit, branchInfo)
+        }
     }
 
     /**
@@ -88,13 +95,15 @@ class ModelService(
         commit: CommitInfo,
         branchInfo: BranchInfo,
     ) {
-        if (commit.isCollapsed) return
-        commit.isSelected = true
-        branchInfo.addSelectedCommits(commit)
-        commit.getChangesAfterPick().forEach { change ->
-            if (change is FixupCommand || change is SquashCommand) {
-                project.service<ActionService>().getCombinedCommits(change).forEach {
-                    branchInfo.addSelectedCommits(it)
+        project.takeAction {
+            if (commit.isCollapsed) return@takeAction
+            commit.isSelected = true
+            branchInfo.addSelectedCommits(commit)
+            commit.getChangesAfterPick().forEach { change ->
+                if (change is FixupCommand || change is SquashCommand) {
+                    project.service<ActionService>().getCombinedCommits(change).forEach {
+                        branchInfo.addSelectedCommits(it)
+                    }
                 }
             }
         }
@@ -109,9 +118,11 @@ class ModelService(
         commit: CommitInfo,
         branchInfo: BranchInfo,
     ) {
-        commit.isSelected = false
-        if (commit.isCollapsed) return
-        branchInfo.removeSelectedCommits(commit)
+        project.takeAction {
+            commit.isSelected = false
+            if (commit.isCollapsed) return@takeAction
+            branchInfo.removeSelectedCommits(commit)
+        }
     }
 
     /**
@@ -136,6 +147,7 @@ class ModelService(
             )
         commit.addChange(command)
         project.service<RebaseInvoker>().addCommand(command)
+        project.service<RebaseInvoker>().undoneCommands.clear()
     }
 
     /**
@@ -221,40 +233,48 @@ class ModelService(
      * coroutine
      */
     fun fetchGraphInfo(n: Int) {
-        coroutineScope.launch(Dispatchers.IO) {
-            try {
-                graphService.updateGraphInfo(graphInfo)
-            } catch (e: VcsException) {
-                if (n < 3) {
-                    fetchGraphInfo(n + 1)
-                } else {
-                    showWarningGitDialogClosesPlugin("There was an error while fetching data from Git.", dialogService)
+        if (System.getProperty("test.mode") == "true") return
+        object : Task.Backgroundable(project, "Fetching commits of current branch") {
+            override fun run(indicator: ProgressIndicator) {
+                coroutineScope.launch {
+                    try {
+                        graphService.updateGraphInfo(graphInfo)
+                    } catch (e: VcsException) {
+                        if (n < 3) {
+                            fetchGraphInfo(n + 1)
+                        } else {
+                            showWarningGitDialogClosesPlugin("There was an error while fetching data from Git.", dialogService)
+                        }
+                    }
+
+                    coroutineScope.launch(Dispatchers.EDT) {
+                        project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
+                    }
                 }
             }
-
-            coroutineScope.launch(Dispatchers.EDT) {
-                project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
-            }
-        }
+        }.queue()
     }
 
     /**
      * Populates the GraphInfo field in order to be able to display the side panel of local branches
      */
     fun populateLocalBranches(n: Int) {
+        if (System.getProperty("test.mode") == "true") return
         val branchService = project.service<BranchService>()
-        coroutineScope.launch(Dispatchers.IO) {
-            try {
-                val list = branchService.getBranchesExceptCheckedOut()
-                if (!list.isNullOrEmpty()) {
-                    graphInfo.branchList = list.toMutableList()
-                }
-            } catch (e: VcsException) {
-                if (n < 3) {
-                    populateLocalBranches(n + 1)
+        object : Task.Backgroundable(project, "Fetching local branches") {
+            override fun run(indicator: ProgressIndicator) {
+                try {
+                    val list = branchService.getBranchesExceptCheckedOut()
+                    if (!list.isNullOrEmpty()) {
+                        graphInfo.branchList = list.toMutableList()
+                    }
+                } catch (e: VcsException) {
+                    if (n < 3) {
+                        populateLocalBranches(n + 1)
+                    }
                 }
             }
-        }
+        }.queue()
     }
 
     /**
@@ -264,55 +284,61 @@ class ModelService(
         addedBranch: String,
         n: Int,
     ) {
-        coroutineScope.launch(Dispatchers.IO) {
-            try {
-                graphService.addBranch(graphInfo, addedBranch)
-            } catch (e: VcsException) {
-                if (n < 3) {
-                    addSecondBranchToGraphInfo(addedBranch, n + 1)
-                } else {
-                    showWarningGitDialogForBranch("This branch cannot be added.")
-                    project.service<ActionService>().mainPanel.sidePanel.sideBranchPanels
-                        .find { it.isSelected }?.deselectBranch()
-                    project.service<ActionService>().mainPanel.sidePanel.resetAllBranchesVisually()
+        if (System.getProperty("test.mode") == "true") return
+        object : Task.Backgroundable(project, "Fetching commits of \"$addedBranch\"") {
+            override fun run(indicator: ProgressIndicator) {
+                try {
+                    graphService.addBranch(graphInfo, addedBranch)
+                } catch (e: VcsException) {
+                    if (n < 3) {
+                        addSecondBranchToGraphInfo(addedBranch, n + 1)
+                    } else {
+                        showWarningGitDialogForBranch("This branch cannot be added.")
+                        project.service<ActionService>().mainPanel.sidePanel.sideBranchPanels
+                            .find { it.isSelected }?.deselectBranch()
+                        project.service<ActionService>().mainPanel.sidePanel.resetAllBranchesVisually()
+                    }
                 }
             }
-        }
+        }.queue()
     }
 
     /**
      * Removes the added branch field in the graph info
      */
     fun removeSecondBranchFromGraphInfo(n: Int) {
-        coroutineScope.launch(Dispatchers.IO) {
-            try {
-                graphService.removeBranch(graphInfo)
-            } catch (e: VcsException) {
-                if (n < 3) {
-                    removeSecondBranchFromGraphInfo(n + 1)
+        if (System.getProperty("test.mode") == "true") return
+        object : Task.Backgroundable(project, "Removing the added branch") {
+            override fun run(indicator: ProgressIndicator) {
+                coroutineScope.launch {
+                    try {
+                        graphService.removeBranch(graphInfo)
+                    } catch (e: VcsException) {
+                        if (n < 3) {
+                            removeSecondBranchFromGraphInfo(n + 1)
+                        }
+                        // TODO Handle
+                    }
                 }
-                // TODO Handle
             }
-        }
+        }.queue()
     }
 
     internal fun markRebaseCommitAsPaused(head: String) {
-        project.service<ActionService>().mainPanel.graphPanel.markRefreshedAsTrue()
-        for (commit in branchInfo.currentCommits.reversed()) {
-            if (commit.commit.id.toString() == head) {
-                commit.markAsPaused()
-                break
-            } else {
-                if (commit.isPaused) commit.markAsNotPaused()
-                commit.markAsRebased()
+        project.takeAction {
+            for (commit in branchInfo.currentCommits.reversed()) {
+                if (commit.commit.id.toString() == head) {
+                    commit.markAsPaused()
+                    break
+                } else {
+                    if (commit.isPaused) commit.markAsNotPaused()
+                    commit.markAsRebased()
+                }
             }
         }
-        project.service<ActionService>().mainPanel.graphPanel.markRefreshedAsFalse()
-        project.service<ActionService>().mainPanel.graphPanel.updateGraphPanel()
     }
 
     internal fun removeAllChangesIfNeeded() {
-        print("clear")
         project.service<RebaseInvoker>().commands.clear()
         project.service<RebaseInvoker>().undoneCommands.clear()
         graphInfo.mainBranch.initialCommits.forEach {

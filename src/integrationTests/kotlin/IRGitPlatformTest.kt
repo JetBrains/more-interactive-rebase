@@ -63,6 +63,7 @@ abstract class IRGitPlatformTest : VcsPlatformTest() {
      */
     @Throws(Exception::class)
     override fun setUp() {
+        System.setProperty("test.mode", "false")
         super.setUp()
         git = IRTestGitImpl()
         ApplicationManager.getApplication().replaceService(Git::class.java, git, testRootDisposable)
