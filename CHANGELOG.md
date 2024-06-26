@@ -4,17 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] - 
-
-
+## [1.1.5] - 2024-06-26
 
 ### Added
 - Squashes through drag and drop
-- Stop to edit a squashed commit puts a pause icon on the squashed commit
+- Stop to edit a squashed commit puts a pause icon on the squashed commit.
+- Progress Indicator when fetching data from Git.
+- Notification to collapse when there are too many expanded commits.
 
 ### Changed
-- Changes the icon for squashing to display three circles overlaying each other
+- Changes the icon for squashing to display three circles overlaying each other.
 - If more than 30 commits are collapsed, only 20 are shown when expanding and the rest are still collapsed.
+- Perform Batch Updating when performing actions.
 
 ### Fixed
 - Fixes reordering through drag and drop with the dragged commit no longer getting offset from the mouse position
@@ -25,6 +26,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Cherry-picking is not reverting if a cherry-pick fails.
 - Adding and removing a second branch does not flicker.
 - Collapsing of commits is working properly when resetting.
+- Removing a branch from the view while still fetching.
+- Reordering of commits clears history for redo.
 
 ## [1.1.4] - 2024-06-21
 
