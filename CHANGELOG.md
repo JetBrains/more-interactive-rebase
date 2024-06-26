@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
 ### Changed
+- If more than 30 commits are collapsed, only 20 are shown when expanding and the rest are still collapsed.
 
 ### Fixed
 - Fixes collapsing if main branch is small but added branch is very long.

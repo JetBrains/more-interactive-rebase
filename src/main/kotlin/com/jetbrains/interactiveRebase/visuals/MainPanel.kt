@@ -147,7 +147,7 @@ class MainPanel(
             gbc,
         )
 
-        val help = HelpPanel()
+        val help = HelpPanel(project)
         gbc.insets.left = help.width
 
         contentPanel.add(
