@@ -2,7 +2,9 @@ package com.jetbrains.interactiveRebase.visuals
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.JBColor
+import com.intellij.ui.components.JBPanel
 import com.jetbrains.interactiveRebase.dataClasses.CommitInfo
+import com.jetbrains.interactiveRebase.dataClasses.commands.StopToEditCommand
 import com.jetbrains.interactiveRebase.mockStructs.TestGitCommitProvider
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
@@ -12,6 +14,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations.openMocks
 import java.awt.BasicStroke
 import java.awt.Color
@@ -63,13 +66,13 @@ class SquashedCirclePanelTest : BasePlatformTestCase() {
         commit.isSelected = true
         squashedCirclePanel.paintCircle(g)
         verify(g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        verify(g, times(4)).fill(any(Ellipse2D.Double::class.java))
-        verify(g, times(2)).stroke = any(BasicStroke::class.java)
-        verify(g, times(2)).draw(any(Ellipse2D.Double::class.java))
+        verify(g, times(5)).fill(any(Ellipse2D.Double::class.java))
+        verify(g, times(3)).stroke = any(BasicStroke::class.java)
+        verify(g, times(3)).draw(any(Ellipse2D.Double::class.java))
 
-        verify(g, times(4)).color = colorCaptor.capture()
+        verify(g, times(6)).color = colorCaptor.capture()
 
-        assertEquals(4, colorCaptor.allValues.size)
+        assertEquals(6, colorCaptor.allValues.size)
     }
 
     fun testPaintCircleHovered() {
@@ -83,17 +86,41 @@ class SquashedCirclePanelTest : BasePlatformTestCase() {
                     previous = mock(CirclePanel::class.java),
                 ),
             )
+        val parent = mock(JBPanel<JBPanel<*>>()::class.java)
+        `when`(squashedCirclePanel.parent).thenReturn(parent)
+        `when`(parent.background).thenReturn(JBColor.BLACK)
         commit.isHovered = true
         squashedCirclePanel.paintCircle(g)
 
         verify(g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        verify(g, times(4)).fill(any(Ellipse2D.Double::class.java))
-        verify(g, times(3)).stroke = any(BasicStroke::class.java)
-        verify(g, times(3)).draw(any(Ellipse2D.Double::class.java))
-        verify(g, times(3)).stroke = any(BasicStroke::class.java)
-        verify(g, times(5)).color = colorCaptor.capture()
+        verify(g, times(7)).fill(any(Ellipse2D.Double::class.java))
+        verify(g, times(4)).stroke = any(BasicStroke::class.java)
+        verify(g, times(6)).draw(any(Ellipse2D.Double::class.java))
+        verify(g, times(4)).stroke = any(BasicStroke::class.java)
+        verify(g, times(11)).color = colorCaptor.capture()
 
-        assertEquals(5, colorCaptor.allValues.size)
+        assertEquals(11, colorCaptor.allValues.size)
+    }
+
+    fun testPaintCircleStopToEdit() {
+        val parent = mock(JBPanel<JBPanel<*>>()::class.java)
+        `when`(squashedCirclePanel.parent).thenReturn(parent)
+        val circle = mock(Ellipse2D.Double::class.java)
+        `when`(squashedCirclePanel.circle).thenReturn(circle)
+        `when`(parent.background).thenReturn(JBColor.BLACK)
+        commit.isHovered = true
+        commit.changes.add(StopToEditCommand(commit))
+        squashedCirclePanel.paintCircle(g)
+
+        verify(g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        verify(g, times(7)).fill(any(Ellipse2D.Double::class.java))
+        verify(g, times(4)).stroke = any(BasicStroke::class.java)
+        verify(g, times(6)).draw(any(Ellipse2D.Double::class.java))
+        verify(g, times(4)).stroke = any(BasicStroke::class.java)
+        verify(g, times(11)).color = colorCaptor.capture()
+        verify(squashedCirclePanel, times(1)).paintPauseInsideSquash(g, circle)
+
+        assertEquals(11, colorCaptor.allValues.size)
     }
 
     fun testDrawBorder() {
@@ -109,5 +136,10 @@ class SquashedCirclePanelTest : BasePlatformTestCase() {
         verify(g).stroke = captor.capture()
         assertEquals(2.0f, captor.value.lineWidth)
         verify(g).draw(circle)
+    }
+
+    fun testInterpolateColors() {
+        val result = squashedCirclePanel.interpolateColors(Color.WHITE, Color.BLACK, 0.6f)
+        assertEquals(Color(102, 102, 102), result)
     }
 }
