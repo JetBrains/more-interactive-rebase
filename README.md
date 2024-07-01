@@ -1,3 +1,5 @@
+## **⚠️ VERY IMPORTANT: This is an educational project. (Severe) bugs can be expected, and may not be fixed quickly. Please use with caution.**
+
 # A More Interactive Rebase
 
 [![Coverage Badge](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/badges/main/coverage.svg)](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2023-2024/cluster-p/12c/interactive-rebase-jetbrains/badges/main/coverage.svg)
